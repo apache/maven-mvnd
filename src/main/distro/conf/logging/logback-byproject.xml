@@ -1,0 +1,24 @@
+<!--
+Project-related build log messages are buffered and flushed to the console and the 
+end of the project build. Messages from one project are always grouped together
+and never interleave with messages from other projects or overall build messages. 
+ -->
+<configuration>
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+
+  <appender name="STDOUT" class="org.jboss.fuse.mvnd.logging.logback.ProjectConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %.-1level %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="Sisu" level="INFO"/>
+
+  <!-- suppress annoying @threadSafe and checksum failure warning messages -->
+  <logger name="org.apache.maven.lifecycle.internal.builder.BuilderCommon" level="ERROR"/>
+  <logger name="org.eclipse.aether.internal.impl.WarnChecksumPolicy" level="ERROR"/>
+
+  <root level="${consoleLevel:-info}">
+    <appender-ref ref="STDOUT" />
+  </root>
+</configuration>

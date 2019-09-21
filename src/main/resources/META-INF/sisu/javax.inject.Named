@@ -1,0 +1,5 @@
+org.jboss.fuse.mvnd.builder.SmartBuilder
+org.jboss.fuse.mvnd.logging.internal.MavenExecutionListener
+org.jboss.fuse.mvnd.logging.logback.internal.LogbackConfiguration
+org.jboss.fuse.mvnd.logging.logback.internal.PluginLoggingDependenciesInjector
+org.jboss.fuse.mvnd.timing.BuildTimeEventSpy

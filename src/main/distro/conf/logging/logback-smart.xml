@@ -1,0 +1,32 @@
+<!--
+  | Local developer build logging configuration. 
+  | * console log shows overall info+ build messages and project errors
+  | * overall build.log file includes all build log messages
+  | * project-specific build.log files include corresponding project build log messages  
+ -->
+<configuration>
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator" />
+
+  <!--
+    | write project-specific build log messages to ${project.build.directory}/build.log files
+   -->
+  <appender name="MEM" class="org.jboss.fuse.mvnd.logging.smart.ProjectBuildLogAppender">
+    <pattern>[%level] %msg%n</pattern>
+  </appender>
+
+  <appender name="FILE" class="org.jboss.fuse.mvnd.logging.logback.ProjectBuildLogAppender">
+    <file>build.log</file>
+    <pattern>%d{HH:mm:ss.SSS} %.-1level %msg%n</pattern>
+  </appender>
+
+  <logger name="Sisu" level="INFO" />
+
+  <!-- suppress annoying @threadSafe and checksum failure warning messages -->
+  <logger name="org.apache.maven.lifecycle.internal.builder.BuilderCommon" level="ERROR" />
+  <logger name="org.eclipse.aether.internal.impl.WarnChecksumPolicy" level="ERROR" />
+
+  <root level="${consoleLevel:-info}">
+    <appender-ref ref="MEM" />
+    <appender-ref ref="FILE" />
+  </root>
+</configuration>
