@@ -196,4 +196,4 @@ exec "$JAVACMD" \
   "-Dmaven.home=${MAVEN_HOME}" \
   "-Dlibrary.jansi.path=${MAVEN_HOME}/lib/jansi-native" \
   "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
-  ${DAEMON_LAUNCHER} "$@"
+  ${DAEMON_LAUNCHER} -T2C --builder smart "$@"
