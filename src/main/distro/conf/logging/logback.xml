@@ -4,7 +4,7 @@
   | * overall build.log file includes all build log messages
   | * project-specific build.log files include corresponding project build log messages  
  -->
-<configuration debug="true">
+<configuration>
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator" />
 
   <!--

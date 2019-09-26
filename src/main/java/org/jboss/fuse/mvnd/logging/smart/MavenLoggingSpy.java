@@ -35,12 +35,12 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
 
     @Override
     public void init(Context context) throws Exception {
+        super.init(context);
         terminal = (Terminal) context.getData().get("terminal");
         if (terminal == null) {
             terminal = TerminalBuilder.terminal();
         }
         display = new Display(terminal, false);
-        super.init(context);
     }
 
     @Override
