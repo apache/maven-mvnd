@@ -17,7 +17,7 @@
         <logbackVersion>1.2.3</logbackVersion>
         <mavenVersion>3.6.2</mavenVersion>
         <pluginTestingVersion>2.9.2</pluginTestingVersion>
-        <slf4jVersion>1.7.28</slf4jVersion>
+        <slf4jVersion>1.7.25</slf4jVersion>
         <takariLifecycleVersion>1.13.9</takariLifecycleVersion>
         <takariProvisioVersion>0.1.56</takariProvisioVersion>
     </properties>
@@ -88,6 +88,15 @@
                 <extensions>true</extensions>
                 <configuration>
                     <proc>none</proc>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>

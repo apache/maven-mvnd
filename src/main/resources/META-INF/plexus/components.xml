@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.plugin.PluginRealmCache</role>
+      <implementation>org.jboss.fuse.mvnd.plugin.CliPluginRealmCache</implementation>
+      <isolated-realm>false</isolated-realm>
+    </component>
+    <!--
+    <component>
+      <role>org.apache.maven.project.ProjectBuilder</role>
+      <role-hint>default</role-hint>
+      <implementation>org.apache.maven.project.CachingProjectBuilder</implementation>
+      <description />
+      <isolated-realm>false</isolated-realm>
+      <requirements>
+        <requirement>
+          <role>org.codehaus.plexus.logging.Logger</role>
+          <field-name>logger</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.model.building.ModelBuilder</role>
+          <field-name>modelBuilder</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.model.building.ModelProcessor</role>
+          <field-name>modelProcessor</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.project.ProjectBuildingHelper</role>
+          <field-name>projectBuildingHelper</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.bridge.MavenRepositorySystem</role>
+          <field-name>repositorySystem</field-name>
+        </requirement>
+        <requirement>
+          <role>org.eclipse.aether.RepositorySystem</role>
+          <field-name>repoSystem</field-name>
+        </requirement>
+        <requirement>
+          <role>org.eclipse.aether.impl.RemoteRepositoryManager</role>
+          <field-name>repositoryManager</field-name>
+        </requirement>
+        <requirement>
+          <role>org.apache.maven.project.ProjectDependenciesResolver</role>
+          <field-name>dependencyResolver</field-name>
+        </requirement>
+      </requirements>
+    </component>
+    -->
+  </components>
+</component-set>
