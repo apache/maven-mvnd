@@ -1,4 +1,18 @@
-
+/*
+ * Copyright 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jboss.fuse.mvnd.logging.smart;
 
 
@@ -11,14 +25,13 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import org.apache.maven.shared.utils.logging.LoggerLevelRenderer;
 import org.apache.maven.shared.utils.logging.MessageUtils;
-import org.jboss.fuse.mvnd.logging.internal.SLF4J;
 
 /**
  * This Maven-specific appender outputs project build log messages
  * to the smart logging system.
  */
-public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent>
-        implements SLF4J.LifecycleListener {
+public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
+    public static final String KEY_PROJECT_ID = "maven.project.id";
 
     private String pattern;
     private PatternLayout layout;
@@ -42,8 +55,8 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent>
     @Override
     protected void append(ILoggingEvent event) {
         Map<String, String> mdc = event.getMDCPropertyMap();
-        String projectId = mdc != null ? mdc.get(SLF4J.KEY_PROJECT_ID) : null;
-        MavenLoggingSpy.instance.append(projectId, layout.doLayout(event));
+        String projectId = mdc != null ? mdc.get(KEY_PROJECT_ID) : null;
+        AbstractLoggingSpy.instance.append(projectId, layout.doLayout(event));
     }
 
     public void setPattern(String pattern) {
