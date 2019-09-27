@@ -16,6 +16,8 @@ mvn install -Pmaven-distro
 export PATH=[mvn-root]/target/maven-distro/bin:$PATH
 ```
 
+## Usage
+
 ```
 mvnd install
 ```
