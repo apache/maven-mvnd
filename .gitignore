@@ -1,3 +1,28 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# IDEA
 .idea
-target
+*.ipr
 *.iml
+*.iws
+
+# NetBeans
+nb-configuration.xml
+
+# OSX
+.DS_Store
+
+# VS Code
+.vscode/
