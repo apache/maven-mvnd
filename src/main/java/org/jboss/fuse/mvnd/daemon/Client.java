@@ -17,7 +17,6 @@ package org.jboss.fuse.mvnd.daemon;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,19 +45,18 @@ public class Client {
     public static final String DAEMON_DEBUG = "daemon.debug";
 
     public static void main(String[] args) throws Exception {
+        LOGGER.debug("Starting client");
 
-        Path javaHome = Paths.get(System.getProperty("java.home")).normalize();
-        Path mavenHome = Paths.get(System.getProperty("maven.home"));
-        Path registryFile = mavenHome.resolve("daemon/registry.bin");
-        DaemonRegistry registry = new DaemonRegistry(registryFile);
+        Path javaHome = Layout.javaHome();
+        DaemonRegistry registry = DaemonRegistry.getDefault();
         DaemonConnector connector = new DaemonConnector(registry, Client::startDaemon, new MessageSerializer());
         List<String> opts = new ArrayList<>();
         DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome.toString(), opts));
 
         daemon.dispatch(new Message.BuildRequest(
                 Arrays.asList(args),
-                System.getProperty("user.dir"),
-                System.getProperty("maven.multiModuleProjectDirectory")));
+                Layout.getProperty("user.dir"),
+                Layout.getProperty("maven.multiModuleProjectDirectory")));
 
         List<String> log = new ArrayList<>();
         LinkedHashMap<String, String> projects = new LinkedHashMap<>();
@@ -95,8 +93,13 @@ public class Client {
             }
         }
         display.update(Collections.emptyList(), 0);
+
+        LOGGER.debug("Done receiving, printing log");
+
         log.forEach(terminal.writer()::println);
         terminal.flush();
+
+        LOGGER.debug("Done !");
     }
 
     public static String startDaemon() {
@@ -111,9 +114,9 @@ public class Client {
 //            args.add(classpath);
 
         String uid = UUID.randomUUID().toString();
-        Path mavenHome = Paths.get(System.getProperty("maven.home")).normalize();
-        Path javaHome = Paths.get(System.getProperty("java.home")).normalize();
-        Path workingDir = Paths.get(System.getProperty("user.dir")).normalize();
+        Path mavenHome = Layout.mavenHome();
+        Path javaHome = Layout.javaHome();
+        Path workingDir = Layout.userDir();
         String command = "";
         try {
             String classpath =
@@ -137,6 +140,7 @@ public class Client {
             args.add("-Dmaven.home=\"" + mavenHome + "\"");
             args.add("-Dlogback.configurationFile=logback.xml");
             args.add("-Ddaemon.uid=" + uid);
+            args.add("-Xmx4g");
             if (System.getProperty(Server.DAEMON_IDLE_TIMEOUT) != null) {
                 args.add("-D" + Server.DAEMON_IDLE_TIMEOUT + "=" + System.getProperty(Server.DAEMON_IDLE_TIMEOUT));
             }

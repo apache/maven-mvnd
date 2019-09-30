@@ -17,19 +17,22 @@ package org.jboss.fuse.mvnd.daemon;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Layout {
 
-    private static final Path MAVEN_HOME = Paths.get(System.getProperty("maven.home")).toAbsolutePath().normalize();
-
-    private static final Path JAVA_HOME = Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize();
-
     public static Path javaHome() {
-        return JAVA_HOME;
+        return Paths.get(getProperty("java.home")).toAbsolutePath().normalize();
     }
 
     public static Path mavenHome() {
-        return MAVEN_HOME;
+        return Paths.get(getProperty("maven.home")).toAbsolutePath().normalize();
+    }
+
+    public static Path userDir() {
+        return Paths.get(getProperty("user.dir")).toAbsolutePath().normalize();
     }
 
     public static Path registry() {
@@ -39,4 +42,9 @@ public class Layout {
     public static Path daemonLog(String daemon) {
         return mavenHome().resolve("daemon/daemon-" + daemon + ".log");
     }
+
+    public static String getProperty(String key) {
+        return Objects.requireNonNull(System.getProperty(key), "Undefined system property: " + key);
+    }
+
 }
