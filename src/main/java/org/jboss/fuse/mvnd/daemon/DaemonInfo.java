@@ -111,4 +111,20 @@ public class DaemonInfo {
                 idleTimeout, locale, options, state, li, lb);
     }
 
+    @Override
+    public String toString() {
+        return "DaemonInfo{" +
+                "uid='" + uid + '\'' +
+                ", javaHome='" + javaHome + '\'' +
+                ", mavenHome='" + mavenHome + '\'' +
+                ", pid=" + pid +
+                ", address=" + address +
+                ", idleTimeout=" + idleTimeout +
+                ", locale='" + locale + '\'' +
+                ", options=" + options +
+                ", state=" + state +
+                ", lastIdle=" + lastIdle +
+                ", lastBusy=" + lastBusy +
+                '}';
+    }
 }
