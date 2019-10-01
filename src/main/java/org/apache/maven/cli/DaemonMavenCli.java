@@ -159,6 +159,7 @@ public class DaemonMavenCli
     // TODO need to externalize CliRequest
     public int doMain(CliRequest cliRequest) throws Exception
     {
+        Properties props = (Properties) System.getProperties().clone();
         try {
             initialize(cliRequest);
             cli(cliRequest);
@@ -176,25 +177,9 @@ public class DaemonMavenCli
         {
             return e.exitCode;
         }
-//        catch ( UnrecognizedOptionException e )
-//        {
-            // pure user error, suppress stack trace
-//            return 1;
-//        }
-//        catch ( BuildAbort e )
-//        {
-//            CLIReportingUtils.showError( slf4jLogger, "ABORTED", e, cliRequest.showErrors );
-//
-//            return 2;
-//        }
-//        catch ( Exception e )
-//        {
-//            CLIReportingUtils.showError( slf4jLogger, "Error executing Maven.", e, cliRequest.showErrors );
-//
-//            return 1;
-//        }
         finally
         {
+            System.setProperties(props);
             eventSpyDispatcher.close();
         }
     }
