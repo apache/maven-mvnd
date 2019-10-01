@@ -30,6 +30,7 @@ import org.jboss.fuse.mvnd.daemon.Message.BuildEvent;
 import org.jboss.fuse.mvnd.daemon.Message.BuildMessage;
 import org.jboss.fuse.mvnd.daemon.Message.MessageSerializer;
 import org.jboss.fuse.mvnd.jpm.Process;
+import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.jboss.fuse.mvnd.jpm.ScriptUtils;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
@@ -39,22 +40,49 @@ import org.jline.utils.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+
 public class Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
     public static final String DAEMON_DEBUG = "daemon.debug";
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] argv) throws Exception {
         LOGGER.debug("Starting client");
+        List<String> args = new ArrayList<>(Arrays.asList(argv));
 
         Path javaHome = Layout.javaHome();
         DaemonRegistry registry = DaemonRegistry.getDefault();
+
+        boolean status = args.remove("--status");
+        if (status) {
+            System.out.println(String.format("    %36s  %5s  %5s  %7s  %s",
+                    "UUID", "PID", "Port", "Status", "Timestamp"));
+            registry.getAll().forEach(d ->
+                    System.out.println(String.format("    %36s  %5s  %5s  %7s  %s",
+                            d.getUid(), d.getPid(), d.getAddress(), d.getState(),
+                            new Date(Math.max(d.getLastIdle(), d.getLastBusy())).toString())));
+            return;
+        }
+        boolean stop = args.remove("--stop");
+        if (stop) {
+            DaemonInfo[] dis = registry.getAll().toArray(new DaemonInfo[0]);
+            if (dis.length > 0) {
+                System.out.println("Stopping " + dis.length + " running daemons");
+                for (DaemonInfo di : dis) {
+                    new ProcessImpl(di.getPid()).destroy();
+                    registry.remove(di.getUid());
+                }
+            }
+            return;
+        }
+
         DaemonConnector connector = new DaemonConnector(registry, Client::startDaemon, new MessageSerializer());
         List<String> opts = new ArrayList<>();
         DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome.toString(), opts));
 
         daemon.dispatch(new Message.BuildRequest(
-                Arrays.asList(args),
+                args,
                 Layout.getProperty("user.dir"),
                 Layout.getProperty("maven.multiModuleProjectDirectory")));
 
