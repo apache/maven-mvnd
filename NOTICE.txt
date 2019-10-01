@@ -1,0 +1,8 @@
+This project contains code coming from other projects
+licensed under the Apache Software License 2.0:
+
+ - Apache Maven project (https://maven.apache.org)
+ - Takari Smart Builder (https://github.com/takari/takari-smart-builder)
+ - maven-buildtime-extension (https://github.com/timgifford/maven-buildtime-extension)
+ - Apache Karaf (https://karaf.apache.org)
+ - Gradle Launcher (https://github.com/gradle/gradle/tree/master/subprojects/launcher)
