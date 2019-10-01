@@ -99,6 +99,8 @@ public class Client {
             return;
         }
 
+        setDefaultArgs(args);
+
         DaemonConnector connector = new DaemonConnector(registry, Client::startDaemon, new MessageSerializer());
         List<String> opts = new ArrayList<>();
         DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome.toString(), opts));
@@ -150,6 +152,15 @@ public class Client {
         terminal.flush();
 
         LOGGER.debug("Done !");
+    }
+
+    static void setDefaultArgs(List<String> args) {
+        if (!args.stream().anyMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
+            args.add("-T1C");
+        }
+        if (!args.stream().anyMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
+            args.add("-bsmart");
+        }
     }
 
     public static String startDaemon() {
