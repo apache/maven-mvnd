@@ -15,17 +15,21 @@
  */
 package org.jboss.fuse.mvnd.daemon;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.maven.cli.CLIReportingUtils;
 import org.jboss.fuse.mvnd.daemon.Message.BuildEvent;
 import org.jboss.fuse.mvnd.daemon.Message.BuildMessage;
 import org.jboss.fuse.mvnd.daemon.Message.MessageSerializer;
@@ -50,6 +54,24 @@ public class Client {
     public static void main(String[] argv) throws Exception {
         LOGGER.debug("Starting client");
         List<String> args = new ArrayList<>(Arrays.asList(argv));
+
+        // Print version if needed
+        boolean version = args.remove("-v") || args.remove("--version");
+        boolean showVersion = args.contains("-V") || args.contains("--show-version");
+        boolean debug = args.contains("-X") || args.contains("--debug");
+        if (version || showVersion || debug) {
+            Properties props = new Properties();
+            try (InputStream is = Client.class.getResourceAsStream("build.properties")) {
+                props.load(is);
+            }
+            String v = buffer().strong( "Maven Daemon " + props.getProperty("version") ).toString()
+                    + System.getProperty( "line.separator" )
+                    + CLIReportingUtils.showVersion();
+            System.out.println(v);
+            if (version) {
+                return;
+            }
+        }
 
         Path javaHome = Layout.javaHome();
         DaemonRegistry registry = DaemonRegistry.getDefault();
