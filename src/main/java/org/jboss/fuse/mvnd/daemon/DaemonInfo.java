@@ -25,7 +25,7 @@ public class DaemonInfo {
     private final String uid;
     private final String javaHome;
     private final String mavenHome;
-    private final long pid;
+    private final int pid;
     private final int address;
     private final int idleTimeout;
     private final String locale;
@@ -35,7 +35,7 @@ public class DaemonInfo {
     private final long lastBusy;
 
     public DaemonInfo(String uid, String javaHome, String mavenHome,
-                      long pid, int address, int idleTimeout,
+                      int pid, int address, int idleTimeout,
                       String locale, List<String> options,
                       DaemonState state, long lastIdle, long lastBusy) {
         this.uid = uid;
@@ -63,7 +63,7 @@ public class DaemonInfo {
         return mavenHome;
     }
 
-    public long getPid() {
+    public int getPid() {
         return pid;
     }
 
