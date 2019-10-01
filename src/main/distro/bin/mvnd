@@ -193,6 +193,7 @@ exec "$JAVACMD" \
   $MAVEN_OPTS \
   $MAVEN_DEBUG_OPTS \
   -classpath "${DAEMON_JAR}" \
+  "-Dlogback.configurationFile=${MAVEN_HOME}/conf/logging/logback.xml" \
   "-Dmaven.home=${MAVEN_HOME}" \
   "-Dlibrary.jansi.path=${MAVEN_HOME}/lib/jansi-native" \
   "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
