@@ -15,6 +15,7 @@
  */
 package org.jboss.fuse.mvnd.daemon;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -92,8 +93,15 @@ public class Client {
             if (dis.length > 0) {
                 System.out.println("Stopping " + dis.length + " running daemons");
                 for (DaemonInfo di : dis) {
-                    new ProcessImpl(di.getPid()).destroy();
-                    registry.remove(di.getUid());
+                    try {
+                        new ProcessImpl(di.getPid()).destroy();
+                    } catch (IOException t) {
+                        System.out.println("Daemon " + di.getUid() + ": " + t.getMessage());
+                    } catch (Exception t) {
+                        System.out.println("Daemon " + di.getUid() + ": " + t);
+                    } finally {
+                        registry.remove(di.getUid());
+                    }
                 }
             }
             return;
