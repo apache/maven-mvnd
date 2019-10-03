@@ -36,6 +36,7 @@ public class SmartBuilder implements Builder {
 
     public static final String PROP_PROFILING = "smartbuilder.profiling";
     public static final String MVND_BUILDER_RULES = "mvnd.builder.rules";
+    public static final String MVND_BUILDER_RULE = "mvnd.builder.rule";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -52,8 +53,23 @@ public class SmartBuilder implements Builder {
                       ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
                       ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
 
-        String rules = session.getTopLevelProject().getProperties()
+        List<String> list = new ArrayList<>();
+        String topRule = session.getTopLevelProject().getProperties()
                 .getProperty(MVND_BUILDER_RULES);
+        if (topRule != null) {
+            list.add(topRule);
+        }
+
+        session.getAllProjects().forEach(p -> {
+            String rule = p.getProperties().getProperty(MVND_BUILDER_RULE);
+            if (rule != null) {
+                list.add(rule + " before " + p.getGroupId() + ":" + p.getArtifactId());
+            }
+        });
+        String rules = null;
+        if (!list.isEmpty()) {
+            rules = String.join("\n", rules);
+        }
 
         DependencyGraph<MavenProject> graph = DependencyGraph.fromMaven(session.getProjectDependencyGraph(), rules);
 
