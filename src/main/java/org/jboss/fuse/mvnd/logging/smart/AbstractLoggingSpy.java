@@ -45,13 +45,13 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
     protected List<String> events;
 
     @Override
-    public void init(Context context) throws Exception {
+    public synchronized void init(Context context) throws Exception {
         projects = new LinkedHashMap<>();
         events = new ArrayList<>();
     }
 
     @Override
-    public void close() throws Exception {
+    public synchronized void close() throws Exception {
         events = null;
         projects = null;
     }
@@ -147,7 +147,7 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
     protected void update() {
     }
 
-    public void append(String projectId, String event) {
+    public synchronized void append(String projectId, String event) {
         ProjectBuild project = projectId != null ? projects.get(projectId) : null;
         if (project != null) {
             project.events.add(event);
