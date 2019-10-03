@@ -25,13 +25,14 @@ public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest {
         final MavenProject c = newProject("c");
         TestProjectDependencyGraph graph = new TestProjectDependencyGraph(a, b, c);
         graph.addDependency(b, a);
+        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven(graph, null);
 
         HashMap<String, AtomicLong> serviceTimes = new HashMap<>();
         serviceTimes.put(id(a), new AtomicLong(1L));
         serviceTimes.put(id(b), new AtomicLong(1L));
         serviceTimes.put(id(c), new AtomicLong(3L));
 
-        Comparator<MavenProject> cmp = org.jboss.fuse.mvnd.builder.ProjectComparator.create0(graph, serviceTimes, p -> id(p));
+        Comparator<MavenProject> cmp = ProjectComparator.create0(dp, serviceTimes, ProjectComparator::id);
 
         PausibleProjectExecutorService executor = new PausibleProjectExecutorService(1, cmp);
 
