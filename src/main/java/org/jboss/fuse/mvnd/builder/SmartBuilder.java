@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 public class SmartBuilder implements Builder {
 
     public static final String PROP_PROFILING = "smartbuilder.profiling";
+    public static final String MVND_BUILDER_RULES = "mvnd.builder.rules";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -51,7 +52,10 @@ public class SmartBuilder implements Builder {
                       ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
                       ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
 
-        DependencyGraph<MavenProject> graph = DependencyGraph.fromMaven(session.getProjectDependencyGraph());
+        String rules = session.getTopLevelProject().getProperties()
+                .getProperty(MVND_BUILDER_RULES);
+
+        DependencyGraph<MavenProject> graph = DependencyGraph.fromMaven(session.getProjectDependencyGraph(), rules);
 
         // log overall build info
         final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
