@@ -29,6 +29,11 @@
             <version>${mavenVersion}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.takari.aether</groupId>
+            <artifactId>takari-local-repository</artifactId>
+            <version>0.11.2</version>
+        </dependency>
 
         <!-- Logging -->
         <dependency>
