@@ -68,7 +68,7 @@ public class SmartBuilder implements Builder {
         });
         String rules = null;
         if (!list.isEmpty()) {
-            rules = String.join("\n", rules);
+            rules = String.join("\n", list);
         }
 
         DependencyGraph<MavenProject> graph = DependencyGraph.fromMaven(session.getProjectDependencyGraph(), rules);
