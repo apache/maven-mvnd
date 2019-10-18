@@ -200,6 +200,7 @@ public class DaemonMavenCli
                 "-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY );
             throw new ExitException( 1 );
         }
+        System.setProperty( "maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString() );
 
         //
         // Make sure the Maven home directory is an absolute path to save us from confusion with say drive-relative
