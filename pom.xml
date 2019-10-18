@@ -8,6 +8,7 @@
     <version>0.1-SNAPSHOT</version>
 
     <packaging>jar</packaging>
+    <name>Maven Daemon</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,6 +21,9 @@
         <slf4jVersion>1.7.25</slf4jVersion>
         <takariLifecycleVersion>1.13.9</takariLifecycleVersion>
         <takariProvisioVersion>0.1.56</takariProvisioVersion>
+        <takariLocalRepositoryVersion>0.11.2</takariLocalRepositoryVersion>
+        <mavenCompilerPluginVersion>3.8.1</mavenCompilerPluginVersion>
+        <mavenSurefirePluginVersion>2.22.2</mavenSurefirePluginVersion>
     </properties>
 
     <dependencies>
@@ -32,7 +36,7 @@
         <dependency>
             <groupId>io.takari.aether</groupId>
             <artifactId>takari-local-repository</artifactId>
-            <version>0.11.2</version>
+            <version>${takariLocalRepositoryVersion}</version>
         </dependency>
 
         <!-- Logging -->
@@ -113,57 +117,47 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${mavenCompilerPluginVersion}</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>io.takari.maven.plugins</groupId>
+                <artifactId>provisio-maven-plugin</artifactId>
+                <version>${takariProvisioVersion}</version>
+                <executions>
+                    <execution>
+                        <id>maven-distro</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>provision</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/maven-distro</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${mavenSurefirePluginVersion}</version>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <includes>**/*IT.java</includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>maven-distro</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.takari.maven.plugins</groupId>
-                        <artifactId>provisio-maven-plugin</artifactId>
-                        <version>${takariProvisioVersion}</version>
-                        <executions>
-                            <execution>
-                                <id>maven-distro</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>provision</goal>
-                                </goals>
-                                <configuration>
-                                    <outputDirectory>${project.build.directory}/maven-distro</outputDirectory>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.22.2</version>
-                        <executions>
-                            <execution>
-                                <id>integration-test</id>
-                                <phase>integration-test</phase>
-                                <goals>
-                                    <goal>test</goal>
-                                </goals>
-                                <configuration>
-                                    <includes>**/*IT.java</includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
 </project>
