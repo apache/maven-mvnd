@@ -6,7 +6,6 @@
       <implementation>org.jboss.fuse.mvnd.plugin.CliPluginRealmCache</implementation>
       <isolated-realm>false</isolated-realm>
     </component>
-    <!--
     <component>
       <role>org.apache.maven.project.ProjectBuilder</role>
       <role-hint>default</role-hint>
@@ -48,6 +47,5 @@
         </requirement>
       </requirements>
     </component>
-    -->
   </components>
 </component-set>
