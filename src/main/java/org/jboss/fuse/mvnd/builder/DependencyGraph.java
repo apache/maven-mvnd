@@ -29,7 +29,7 @@ import org.apache.maven.project.MavenProject;
 interface DependencyGraph<K> {
 
     static DependencyGraph<MavenProject> fromMaven(ProjectDependencyGraph graph, String rules) {
-        List<MavenProject> projects = graph.getAllProjects();
+        List<MavenProject> projects = graph.getSortedProjects();
         Map<MavenProject, List<MavenProject>> upstreams = projects.stream()
                 .collect(Collectors.toMap(p -> p, p -> graph.getUpstreamProjects(p, false)));
         Map<MavenProject, List<MavenProject>> downstreams = projects.stream()
