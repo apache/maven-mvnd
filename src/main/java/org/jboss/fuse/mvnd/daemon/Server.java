@@ -51,7 +51,7 @@ import static org.jboss.fuse.mvnd.daemon.DaemonState.Busy;
 import static org.jboss.fuse.mvnd.daemon.DaemonState.StopRequested;
 import static org.jboss.fuse.mvnd.daemon.DaemonState.Stopped;
 
-public class Server implements AutoCloseable {
+public class Server implements AutoCloseable, Runnable {
 
     public static final String DAEMON_IDLE_TIMEOUT = "daemon.idleTimeout";
 
@@ -74,19 +74,7 @@ public class Server implements AutoCloseable {
     private final Lock stateLock = new ReentrantLock();
     private final Condition condition = stateLock.newCondition();
 
-    public static void main(String[] args) throws Exception {
-        String uid = System.getProperty("daemon.uid");
-        String mavenHome = System.getProperty("maven.home");
-        if (uid == null || mavenHome == null) {
-            throw new IllegalStateException("The system properties 'daemon.uid' and 'maven.home' must be valid");
-        }
-
-        try (Server server = new Server(uid)) {
-            server.run();
-        }
-    }
-
-    private Server(String uid) throws IOException {
+    public Server(String uid) throws IOException {
         this.uid = uid;
         try {
             cli = new DaemonMavenCli();

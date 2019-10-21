@@ -188,16 +188,8 @@ public class Client {
         Path workingDir = Layout.userDir();
         String command = "";
         try {
-            String classpath =
-                    Stream.concat(
-                            Stream.concat(Files.list(mavenHome.resolve("lib/ext")),
-                                    Files.list(mavenHome.resolve("lib")))
-                                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                                    .filter(Files::isRegularFile),
-                            Stream.of(mavenHome.resolve("conf"), mavenHome.resolve("conf/logging")))
-                            .map(Path::normalize)
-                            .map(Path::toString)
-                            .collect(Collectors.joining(":"));
+            String url = ServerMain.class.getClassLoader().getResource(Server.class.getName().replace('.', '/') + ".class").toString();
+            String classpath = url.substring("file:jar:".length(), url.indexOf('!'));
             String java = ScriptUtils.isWindows() ? "bin\\java.exe" : "bin/java";
             List<String> args = new ArrayList<>();
             args.add("\"" + javaHome.resolve(java) + "\"");
@@ -214,7 +206,7 @@ public class Client {
                 args.add("-D" + Server.DAEMON_IDLE_TIMEOUT + "=" + System.getProperty(Server.DAEMON_IDLE_TIMEOUT));
             }
 
-            args.add(Server.class.getName());
+            args.add(ServerMain.class.getName());
             command = String.join(" ", args);
 
             LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
