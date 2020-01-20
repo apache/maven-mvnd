@@ -145,7 +145,10 @@ public class Client {
                 display.resize(size.getRows(), size.getColumns());
                 List<AttributedString> lines = new ArrayList<>();
                 lines.add(new AttributedString("Building..."));
-                projects.values().stream().map(AttributedString::fromAnsi).forEachOrdered(lines::add);
+                projects.values().stream()
+                        .map(AttributedString::fromAnsi)
+                        .map(s -> s.columnSubSequence(0, size.getColumns()))
+                        .forEachOrdered(lines::add);
                 display.update(lines, -1);
             } else if (m instanceof BuildMessage) {
                 BuildMessage bm = (BuildMessage) m;
