@@ -16,6 +16,7 @@
 package org.jboss.fuse.mvnd.daemon;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -113,12 +115,29 @@ public class Server implements AutoCloseable, Runnable {
                     try {
                         registry.close();
                     } finally {
-                        socket.close();
+                        try {
+                            socket.close();
+                        } finally {
+                            clearCache("sun.net.www.protocol.jar.JarFileFactory", "urlCache");
+                            clearCache("sun.net.www.protocol.jar.JarFileFactory", "fileCache");
+                        }
                     }
                 }
             }
         } catch (Throwable t) {
             LOGGER.error("Error closing daemon", t);
+        }
+    }
+
+    public void clearCache(String clazzName, String fieldName) {
+        try {
+            Class<?> clazz = ClassLoader.getSystemClassLoader().loadClass(clazzName);
+            Field f = clazz.getDeclaredField(fieldName);
+            f.setAccessible(true);
+            Map cache = (Map) f.get(null);
+            cache.clear();
+        } catch (Throwable t) {
+            // ignore
         }
     }
 
