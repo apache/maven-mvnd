@@ -16,12 +16,19 @@
 package org.jboss.fuse.mvnd.plugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.enterprise.inject.Default;
 import javax.inject.Named;
@@ -146,19 +153,52 @@ public class CliPluginRealmCache
     }
 
     protected static class TimestampedCacheRecord extends CacheRecord {
-        long timestamp;
+
+        static class ArtifactTimestamp {
+            final Path path;
+            final FileTime lastModifiedTime;
+            final Object fileKey;
+            ArtifactTimestamp(Path path) {
+                this.path = path;
+                try {
+                    BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+                    this.lastModifiedTime = attrs.lastModifiedTime();
+                    this.fileKey = attrs.fileKey();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                ArtifactTimestamp that = (ArtifactTimestamp) o;
+                return path.equals(that.path) &&
+                        Objects.equals(lastModifiedTime, that.lastModifiedTime) &&
+                        Objects.equals(fileKey, that.fileKey);
+            }
+            @Override
+            public int hashCode() {
+                return Objects.hash(path, lastModifiedTime, fileKey);
+            }
+        }
+        Set<ArtifactTimestamp> timestamp;
         public TimestampedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
             timestamp = current();
         }
         public boolean isValid() {
-            return current() == timestamp;
+            try {
+                return Objects.equals(current(), timestamp);
+            } catch (Exception e) {
+                return false;
+            }
         }
-        private long current() {
+        private Set<ArtifactTimestamp> current() {
             return getArtifacts().stream().map(Artifact::getFile)
-                    .mapToLong(File::lastModified)
-                    .max()
-                    .orElse(0);
+                    .map(File::toPath)
+                    .map(ArtifactTimestamp::new)
+                    .collect(Collectors.toSet());
         }
         public void dispose() {
             ClassRealm realm = getRealm();
