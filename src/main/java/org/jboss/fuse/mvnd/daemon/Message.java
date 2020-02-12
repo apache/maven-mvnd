@@ -23,6 +23,8 @@ import java.io.UTFDataFormatException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.plexus.util.ExceptionUtils;
+
 public abstract class Message {
 
     final long timestamp = System.nanoTime();
@@ -52,6 +54,52 @@ public abstract class Message {
 
         public String getProjectDir() {
             return projectDir;
+        }
+
+        @Override
+        public String toString() {
+            return "BuildRequest{" +
+                    "args=" + args +
+                    ", workingDir='" + workingDir + '\'' +
+                    ", projectDir='" + projectDir + '\'' +
+                    '}';
+        }
+    }
+
+    public static class BuildException extends Message {
+        final String message;
+        final String className;
+        final String stackTrace;
+
+        public BuildException(Throwable t) {
+            this(t.getMessage(), t.getClass().getName(), ExceptionUtils.getStackTrace(t));
+        }
+
+        public BuildException(String message, String className, String stackTrace) {
+            this.message = message;
+            this.className = className;
+            this.stackTrace = stackTrace;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public String getStackTrace() {
+            return stackTrace;
+        }
+
+        @Override
+        public String toString() {
+            return "BuildException{" +
+                    "message='" + message + '\'' +
+                    ", className='" + className + '\'' +
+                    ", stackTrace='" + stackTrace + '\'' +
+                    '}';
         }
     }
 
@@ -114,6 +162,7 @@ public abstract class Message {
         final int BUILD_REQUEST = 0;
         final int BUILD_EVENT = 1;
         final int BUILD_MESSAGE = 2;
+        final int BUILD_EXCEPTION = 3;
 
         @Override
         public Message read(DataInputStream input) throws EOFException, Exception {
@@ -128,6 +177,8 @@ public abstract class Message {
                     return readBuildEvent(input);
                 case BUILD_MESSAGE:
                     return readBuildMessage(input);
+                case BUILD_EXCEPTION:
+                    return readBuildException(input);
             }
             throw new IllegalStateException("Unexpected message type: " + type);
         }
@@ -143,6 +194,9 @@ public abstract class Message {
             } else if (value instanceof BuildMessage) {
                 output.write(BUILD_MESSAGE);
                 writeBuildMessage(output, (BuildMessage) value);
+            } else if (value instanceof BuildException) {
+                output.write(BUILD_EXCEPTION);
+                writeBuildException(output, (BuildException) value);
             } else {
                 throw new IllegalStateException();
             }
@@ -181,6 +235,19 @@ public abstract class Message {
 
         private void writeBuildMessage(DataOutputStream output, BuildMessage value) throws IOException {
             writeUTF(output, value.message);
+        }
+
+        private BuildException readBuildException(DataInputStream input) throws IOException {
+            String message = readUTF(input);
+            String className = readUTF(input);
+            String stackTrace = readUTF(input);
+            return new BuildException(message, className, stackTrace);
+        }
+
+        private void writeBuildException(DataOutputStream output, BuildException value) throws IOException {
+            writeUTF(output, value.message);
+            writeUTF(output, value.className);
+            writeUTF(output, value.stackTrace);
         }
 
         private List<String> readStringList(DataInputStream input) throws IOException {
