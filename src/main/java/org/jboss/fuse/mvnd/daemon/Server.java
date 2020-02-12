@@ -503,7 +503,6 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         public void close() throws Exception {
-            LOGGER.error("Closing spy", new Throwable());
             sendBuildMessages();
             super.close();
         }
