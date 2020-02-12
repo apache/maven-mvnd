@@ -30,8 +30,10 @@ import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.maven.cli.CLIReportingUtils;
 import org.jboss.fuse.mvnd.daemon.Message.BuildEvent;
+import org.jboss.fuse.mvnd.daemon.Message.BuildException;
 import org.jboss.fuse.mvnd.daemon.Message.BuildMessage;
 import org.jboss.fuse.mvnd.daemon.Message.MessageSerializer;
 import org.jboss.fuse.mvnd.jpm.Process;
@@ -41,6 +43,8 @@ import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 import org.jline.utils.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +61,7 @@ public class Client {
         List<String> args = new ArrayList<>(Arrays.asList(argv));
 
         // Print version if needed
-        boolean version = args.remove("-v") || args.remove("--version");
+        boolean version = args.remove("-v") || args.remove("-version") || args.remove("--version");
         boolean showVersion = args.contains("-V") || args.contains("--show-version");
         boolean debug = args.contains("-X") || args.contains("--debug");
         if (version || showVersion || debug) {
@@ -134,9 +138,13 @@ public class Client {
         Terminal terminal = TerminalBuilder.terminal();
         Display display = new Display(terminal, false);
         boolean exit = false;
+        BuildException error = null;
         while (!exit) {
             Message m = daemon.receive();
-            if (m instanceof BuildEvent) {
+            if (m instanceof BuildException) {
+                error = (BuildException) m;
+                exit = true;
+            } else if (m instanceof BuildEvent) {
                 BuildEvent be = (BuildEvent) m;
                 switch (be.getType()) {
                     case BuildStarted:
@@ -167,6 +175,16 @@ public class Client {
             }
         }
         display.update(Collections.emptyList(), 0);
+        if (error != null) {
+            AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
+            String msg;
+            if (UnrecognizedOptionException.class.getName().equals(error.getClassName())) {
+                msg = "Unable to parse command line options: " + error.getMessage();
+            } else {
+                msg = error.getClassName() + ": " + error.getMessage();
+            }
+            terminal.writer().println(new AttributedString(msg, s).toAnsi());
+        }
         terminal.flush();
 
         LOGGER.debug("Done receiving, printing log");

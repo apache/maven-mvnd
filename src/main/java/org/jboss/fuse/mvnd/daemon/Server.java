@@ -42,6 +42,7 @@ import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.jboss.fuse.mvnd.daemon.Message.BuildEvent;
 import org.jboss.fuse.mvnd.daemon.Message.BuildEvent.Type;
+import org.jboss.fuse.mvnd.daemon.Message.BuildException;
 import org.jboss.fuse.mvnd.daemon.Message.BuildMessage;
 import org.jboss.fuse.mvnd.daemon.Message.BuildRequest;
 import org.jboss.fuse.mvnd.daemon.Message.MessageSerializer;
@@ -386,48 +387,8 @@ public class Server implements AutoCloseable, Runnable {
             PriorityBlockingQueue<Message> queue = new PriorityBlockingQueue<Message>(64,
                     Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
 
-            AbstractLoggingSpy.instance(new AbstractLoggingSpy() {
-                @Override
-                public void init(Context context) throws Exception {
-                    super.init(context);
-                    queue.add(new BuildEvent(Type.BuildStarted, "", ""));
-                }
-                @Override
-                public void close() throws Exception {
-                    sendBuildMessages();
-                    queue.add(new BuildEvent(Type.BuildStopped, "", ""));
-                    queue.add(STOP);
-                    super.close();
-                }
-                @Override
-                protected void onStartProject(ProjectBuild project) {
-                    sendEvent(Type.ProjectStarted, project);
-                }
-                @Override
-                protected void onStopProject(ProjectBuild project) {
-                    sendEvent(Type.ProjectStopped, project);
-                }
-                @Override
-                protected void onStartMojo(ProjectBuild project) {
-                    sendEvent(Type.MojoStarted, project);
-                }
-                @Override
-                protected void onStopMojo(ProjectBuild project) {
-                    sendEvent(Type.MojoStopped, project);
-                }
-                private void sendEvent(Type type, ProjectBuild project) {
-                    String projectId = project.projectId();
-                    String disp = project.toDisplay().toAnsi(256, false);
-                    queue.add(new Message.BuildEvent(type, projectId, disp));
-                    sendBuildMessages();
-                }
-                private synchronized void sendBuildMessages() {
-                    events.stream()
-                            .map(s -> s.endsWith("\n") ? s.substring(0, s.length() - 1) : s)
-                            .map(Message.BuildMessage::new).forEachOrdered(queue::add);
-                    events.clear();
-                }
-            });
+            DaemonLoggingSpy loggingSpy = new DaemonLoggingSpy(queue);
+            AbstractLoggingSpy.instance(loggingSpy);
             Thread pumper = new Thread(() -> {
                 try {
                     while (true) {
@@ -451,9 +412,16 @@ public class Server implements AutoCloseable, Runnable {
                 }
             });
             pumper.start();
-            cli.doMain(req);
-            LOGGER.info("Build finished, finishing message dispatch");
-            pumper.join();
+            try {
+                cli.doMain(req);
+                LOGGER.info("Build finished, finishing message dispatch");
+                loggingSpy.finish();
+            } catch (Throwable t) {
+                LOGGER.error("Error while building project", t);
+                loggingSpy.fail(t);
+            } finally {
+                pumper.join();
+            }
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);
         } finally {
@@ -470,6 +438,8 @@ public class Server implements AutoCloseable, Runnable {
             return be.getType() == Type.BuildStopped ? 98 : 1;
         } else if (m instanceof BuildMessage) {
             return 2;
+        } else if (m instanceof BuildException) {
+            return 97;
         } else if (m == STOP) {
             return 99;
         } else {
@@ -516,5 +486,72 @@ public class Server implements AutoCloseable, Runnable {
 
     public long getLastBusy() {
         return info.getLastBusy();
+    }
+
+    private static class DaemonLoggingSpy extends AbstractLoggingSpy {
+        private final PriorityBlockingQueue<Message> queue;
+
+        public DaemonLoggingSpy(PriorityBlockingQueue<Message> queue) {
+            this.queue = queue;
+        }
+
+        @Override
+        public void init(Context context) throws Exception {
+            super.init(context);
+            queue.add(new BuildEvent(Type.BuildStarted, "", ""));
+        }
+
+        @Override
+        public void close() throws Exception {
+            LOGGER.error("Closing spy", new Throwable());
+            sendBuildMessages();
+            super.close();
+        }
+
+        public void finish() throws Exception {
+            queue.add(new BuildEvent(Type.BuildStopped, "", ""));
+            queue.add(STOP);
+        }
+
+        public void fail(Throwable t) throws Exception {
+            queue.add(new BuildException(t));
+            queue.add(STOP);
+        }
+
+        @Override
+        protected void onStartProject(ProjectBuild project) {
+            sendEvent(Type.ProjectStarted, project);
+        }
+
+        @Override
+        protected void onStopProject(ProjectBuild project) {
+            sendEvent(Type.ProjectStopped, project);
+        }
+
+        @Override
+        protected void onStartMojo(ProjectBuild project) {
+            sendEvent(Type.MojoStarted, project);
+        }
+
+        @Override
+        protected void onStopMojo(ProjectBuild project) {
+            sendEvent(Type.MojoStopped, project);
+        }
+
+        private void sendEvent(Type type, ProjectBuild project) {
+            String projectId = project.projectId();
+            String disp = project.toDisplay().toAnsi(256, false);
+            queue.add(new BuildEvent(type, projectId, disp));
+            sendBuildMessages();
+        }
+
+        private synchronized void sendBuildMessages() {
+            if (events != null) {
+                events.stream()
+                        .map(s -> s.endsWith("\n") ? s.substring(0, s.length() - 1) : s)
+                        .map(BuildMessage::new).forEachOrdered(queue::add);
+                events.clear();
+            }
+        }
     }
 }
