@@ -15,10 +15,12 @@
  */
 package org.jboss.fuse.mvnd.daemon;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,8 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.cli.CLIReportingUtils;
 import org.jboss.fuse.mvnd.daemon.Message.BuildEvent;
@@ -107,6 +107,17 @@ public class Client {
             return;
         }
 
+        String logFile = null;
+        for (int i = 0; i < args.size() - 2; i++) {
+            String arg = args.get(i);
+            if ("-l".equals(arg) || "--log-file".equals(arg)) {
+                logFile = args.get(i + 1);
+                args.remove(i);
+                args.remove(i);
+                break;
+            }
+        }
+
         setDefaultArgs(args);
 
         DaemonConnector connector = new DaemonConnector(registry, Client::startDaemon, new MessageSerializer());
@@ -156,11 +167,21 @@ public class Client {
             }
         }
         display.update(Collections.emptyList(), 0);
+        terminal.flush();
 
         LOGGER.debug("Done receiving, printing log");
 
-        log.forEach(terminal.writer()::println);
-        terminal.flush();
+        if (logFile != null) {
+            try (BufferedWriter bw = Files.newBufferedWriter(Paths.get(logFile))) {
+                for (String l : log) {
+                    bw.write(l);
+                    bw.newLine();
+                }
+            }
+        } else {
+            log.forEach(terminal.writer()::println);
+            terminal.flush();
+        }
 
         LOGGER.debug("Done !");
     }
