@@ -405,8 +405,6 @@ public class Server implements AutoCloseable, Runnable {
                         LOGGER.info("Dispatch message: " + m);
                         connection.dispatch(m);
                     }
-                } catch (InterruptedException e) {
-                    // ignore
                 } catch (Throwable t) {
                     LOGGER.error("Error dispatching events", t);
                 }
@@ -427,6 +425,7 @@ public class Server implements AutoCloseable, Runnable {
         } finally {
             LOGGER.info("Daemon back to idle");
             updateState(DaemonState.Idle);
+            System.gc();
         }
     }
 
