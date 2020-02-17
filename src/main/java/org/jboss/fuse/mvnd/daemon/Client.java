@@ -139,6 +139,7 @@ public class Client {
         Display display = new Display(terminal, false);
         boolean exit = false;
         BuildException error = null;
+        long lastUpdate = 0;
         while (!exit) {
             Message m = daemon.receive();
             if (m instanceof BuildException) {
@@ -160,21 +161,26 @@ public class Client {
                     case ProjectStopped:
                         projects.remove(be.projectId);
                 }
-                Size size = terminal.getSize();
-                display.resize(size.getRows(), size.getColumns());
-                List<AttributedString> lines = new ArrayList<>();
-                projects.values().stream()
-                        .map(AttributedString::fromAnsi)
-                        .map(s -> s.columnSubSequence(0, size.getColumns()))
-                        .forEachOrdered(lines::add);
-                // Make sure we don't try to display more lines than the terminal height
-                boolean rem = false;
-                while (lines.size() >= terminal.getHeight()) {
-                    lines.remove(0);
-                    rem = true;
+                // no need to refresh the display at every single step
+                long curTime = System.currentTimeMillis();
+                if (curTime - lastUpdate >= 10) {
+                    Size size = terminal.getSize();
+                    display.resize(size.getRows(), size.getColumns());
+                    List<AttributedString> lines = new ArrayList<>();
+                    projects.values().stream()
+                            .map(AttributedString::fromAnsi)
+                            .map(s -> s.columnSubSequence(0, size.getColumns() - 1))
+                            .forEachOrdered(lines::add);
+                    // Make sure we don't try to display more lines than the terminal height
+                    int rem = 0;
+                    while (lines.size() >= terminal.getHeight()) {
+                        lines.remove(0);
+                        rem++;
+                    }
+                    lines.add(0, new AttributedString("Building..." + (rem > 0 ? " (" + rem + " more)" : "")));
+                    display.update(lines, -1);
+                    lastUpdate = curTime;
                 }
-                lines.add(0, new AttributedString(rem ? "Building... (trimmed)" : "Building..."));
-                display.update(lines, -1);
             } else if (m instanceof BuildMessage) {
                 BuildMessage bm = (BuildMessage) m;
                 log.add(bm.getMessage());
