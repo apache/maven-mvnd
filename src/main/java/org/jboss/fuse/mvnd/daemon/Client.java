@@ -163,11 +163,17 @@ public class Client {
                 Size size = terminal.getSize();
                 display.resize(size.getRows(), size.getColumns());
                 List<AttributedString> lines = new ArrayList<>();
-                lines.add(new AttributedString("Building..."));
                 projects.values().stream()
                         .map(AttributedString::fromAnsi)
                         .map(s -> s.columnSubSequence(0, size.getColumns()))
                         .forEachOrdered(lines::add);
+                // Make sure we don't try to display more lines than the terminal height
+                boolean rem = false;
+                while (lines.size() >= terminal.getHeight()) {
+                    lines.remove(0);
+                    rem = true;
+                }
+                lines.add(0, new AttributedString(rem ? "Building... (trimmed)" : "Building..."));
                 display.update(lines, -1);
             } else if (m instanceof BuildMessage) {
                 BuildMessage bm = (BuildMessage) m;
