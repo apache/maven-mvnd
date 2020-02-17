@@ -37,6 +37,9 @@ interface DependencyGraph<K> {
 
         if (rules != null) {
             for (String rule : rules.split("\\s*;\\s*|\n")) {
+                if (rule.trim().isEmpty()) {
+                    continue;
+                }
                 String[] parts = rule.split("\\s*->\\s*|\\s+before\\s+");
                 if (parts.length != 2) {
                     throw new IllegalArgumentException("Invalid rule: " + rule);

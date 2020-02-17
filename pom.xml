@@ -13,6 +13,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <groovyVersion>3.0.0</groovyVersion>
         <jlineVersion>3.12.1</jlineVersion>
         <junitVersion>4.12</junitVersion>
         <logbackVersion>1.2.3</logbackVersion>
@@ -70,6 +71,11 @@
             <groupId>org.jline</groupId>
             <artifactId>jline-terminal-jansi</artifactId>
             <version>${jlineVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>${groovyVersion}</version>
         </dependency>
 
         <dependency>
