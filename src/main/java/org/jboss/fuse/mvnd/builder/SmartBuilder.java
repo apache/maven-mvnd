@@ -124,7 +124,7 @@ public class SmartBuilder implements Builder {
 
         session.getAllProjects().forEach(p -> {
             String rule = p.getProperties().getProperty(MVND_BUILDER_RULE);
-            if (rule != null) {
+            if (rule != null && !rule.trim().isEmpty()) {
                 list.add(rule + " before " + p.getGroupId() + ":" + p.getArtifactId());
             }
         });
