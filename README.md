@@ -7,7 +7,7 @@ The mvnd project aims to provide a daemon infrastructure for maven based builds.
 ```
 git clone https://github.com/gnodet/mvnd.git
 cd mvnd
-mvn install -Pmaven-distro
+mvn package
 ```
 
 ## Configuring
