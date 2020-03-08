@@ -56,7 +56,7 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
     protected void append(ILoggingEvent event) {
         Map<String, String> mdc = event.getMDCPropertyMap();
         String projectId = mdc != null ? mdc.get(KEY_PROJECT_ID) : null;
-        AbstractLoggingSpy.instance.append(projectId, layout.doLayout(event));
+        AbstractLoggingSpy.instance().append(projectId, layout.doLayout(event));
     }
 
     public void setPattern(String pattern) {
