@@ -10,7 +10,6 @@ release.properties
 .project
 .classpath
 .settings/
-bin/
 
 # IDEA
 .idea

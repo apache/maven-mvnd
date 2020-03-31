@@ -7,8 +7,8 @@
     <artifactId>mvnd</artifactId>
     <version>0.1-SNAPSHOT</version>
 
-    <packaging>jar</packaging>
-    <name>Maven Daemon</name>
+    <packaging>pom</packaging>
+    <name>Maven Daemon - Parent</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -27,143 +27,8 @@
         <mavenSurefirePluginVersion>2.22.2</mavenSurefirePluginVersion>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-embedder</artifactId>
-            <version>${mavenVersion}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.takari.aether</groupId>
-            <artifactId>takari-local-repository</artifactId>
-            <version>${takariLocalRepositoryVersion}</version>
-        </dependency>
-
-        <!-- Logging -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logbackVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <version>${slf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>${slf4jVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <version>${slf4jVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jline</groupId>
-            <artifactId>jline-terminal</artifactId>
-            <version>${jlineVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jline</groupId>
-            <artifactId>jline-terminal-jansi</artifactId>
-            <version>${jlineVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
-            <version>${groovyVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junitVersion}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.takari.maven.plugins</groupId>
-            <artifactId>takari-plugin-testing</artifactId>
-            <version>${pluginTestingVersion}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.takari.maven.plugins</groupId>
-            <artifactId>takari-plugin-integration-testing</artifactId>
-            <version>${pluginTestingVersion}</version>
-            <type>pom</type>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <groupId>io.takari.maven.plugins</groupId>
-                <artifactId>takari-lifecycle-plugin</artifactId>
-                <version>${takariLifecycleVersion}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>sisu-index</goal>
-                        </goals>
-                        <phase>process-classes</phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${mavenCompilerPluginVersion}</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>io.takari.maven.plugins</groupId>
-                <artifactId>provisio-maven-plugin</artifactId>
-                <version>${takariProvisioVersion}</version>
-                <executions>
-                    <execution>
-                        <id>maven-distro</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/maven-distro</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${mavenSurefirePluginVersion}</version>
-                <executions>
-                    <execution>
-                        <id>integration-test</id>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <includes>**/*IT.java</includes>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <modules>
+        <module>daemon</module>
+    </modules>
 
 </project>
