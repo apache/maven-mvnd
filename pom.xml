@@ -12,23 +12,89 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
 
+        <assertj.version>3.16.1</assertj.version>
         <groovyVersion>3.0.0</groovyVersion>
+        <jakarta.inject.version>1.0</jakarta.inject.version>
         <jlineVersion>3.12.1</jlineVersion>
         <junitVersion>4.12</junitVersion>
+        <junit.jupiter.version>5.6.0</junit.jupiter.version>
         <logbackVersion>1.2.3</logbackVersion>
         <mavenVersion>3.6.3</mavenVersion>
+        <mockito.version>3.3.3</mockito.version>
         <pluginTestingVersion>2.9.2</pluginTestingVersion>
         <slf4jVersion>1.7.25</slf4jVersion>
         <takariLifecycleVersion>1.13.9</takariLifecycleVersion>
         <takariProvisioVersion>0.1.56</takariProvisioVersion>
         <takariLocalRepositoryVersion>0.11.2</takariLocalRepositoryVersion>
         <mavenCompilerPluginVersion>3.8.1</mavenCompilerPluginVersion>
-        <mavenSurefirePluginVersion>2.22.2</mavenSurefirePluginVersion>
+        <surefire.version>3.0.0-M4</surefire.version>
+
     </properties>
 
     <modules>
         <module>daemon</module>
+        <module>integration-tests</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+
+            <dependency>
+                <groupId>jakarta.inject</groupId>
+                <artifactId>jakarta.inject-api</artifactId>
+                <version>${jakarta.inject.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-model</artifactId>
+                <version>${mavenVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.fuse.mvnd</groupId>
+                <artifactId>mvnd-daemon</artifactId>
+                <version>0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.fuse.mvnd</groupId>
+                <artifactId>mvnd-junit5</artifactId>
+                <version>0.1-SNAPSHOT</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surefire.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 
 </project>

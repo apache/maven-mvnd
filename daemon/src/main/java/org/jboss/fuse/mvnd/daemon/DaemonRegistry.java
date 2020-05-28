@@ -89,10 +89,6 @@ public class DaemonRegistry implements AutoCloseable {
         }
     }
 
-    public static DaemonRegistry getDefault() {
-        return new DaemonRegistry(Layout.registry());
-    }
-
     public Path getRegistryFile() {
         return registryFile;
     }
