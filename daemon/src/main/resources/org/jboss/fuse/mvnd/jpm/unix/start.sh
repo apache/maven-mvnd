@@ -23,7 +23,7 @@
 exec 1>/dev/null
 exec 2>/dev/null
 if [ "x${dir}" != "x" ]; then
-    cd ${dir}
+    cd "${dir}"
 fi
 nohup ${command} &
 echo $! > "${pid.file}"

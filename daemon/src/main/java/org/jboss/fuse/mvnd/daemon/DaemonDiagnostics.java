@@ -32,9 +32,9 @@ public class DaemonDiagnostics {
     private final String uid;
     private final Path daemonLog;
 
-    public DaemonDiagnostics(String uid) {
+    public DaemonDiagnostics(String uid, Path daemonLog) {
         this.uid = uid;
-        this.daemonLog = Layout.daemonLog(uid);
+        this.daemonLog = daemonLog;
     }
 
     @Override

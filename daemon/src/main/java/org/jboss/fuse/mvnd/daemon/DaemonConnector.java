@@ -43,10 +43,12 @@ public class DaemonConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnector.class);
 
     private final DaemonRegistry registry;
+    private final Layout layout;
     private final DaemonStarter daemonStarter;
     private final Serializer<Message> serializer;
 
-    public DaemonConnector(DaemonRegistry registry, DaemonStarter daemonStarter, Serializer<Message> serializer) {
+    public DaemonConnector(Layout layout, DaemonRegistry registry, DaemonStarter daemonStarter, Serializer<Message> serializer) {
+        this.layout = layout;
         this.registry = registry;
         this.daemonStarter = daemonStarter;
         this.serializer = serializer;
@@ -214,7 +216,7 @@ public class DaemonConnector {
                 throw new DaemonException.InterruptedException(e);
             }
         } while (System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
-        DaemonDiagnostics diag = new DaemonDiagnostics(daemon);
+        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon));
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
@@ -225,7 +227,7 @@ public class DaemonConnector {
             try {
                 return connectToDaemon(daemonInfo, new CleanupOnStaleAddress(daemonInfo, false));
             } catch (DaemonException.ConnectException e) {
-                DaemonDiagnostics diag = new DaemonDiagnostics(daemon);
+                DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon));
                 throw new DaemonException.ConnectException("Could not connect to the Maven daemon.\n" + diag.describe(), e);
             }
         }

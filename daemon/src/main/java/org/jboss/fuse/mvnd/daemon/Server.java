@@ -70,6 +70,7 @@ public class Server implements AutoCloseable, Runnable {
     private DaemonMavenCli cli;
     private DaemonInfo info;
     private DaemonRegistry registry;
+    private final Layout layout;
 
     private ScheduledExecutorService executor;
     private DaemonExpirationStrategy strategy;
@@ -79,9 +80,11 @@ public class Server implements AutoCloseable, Runnable {
 
     public Server(String uid) throws IOException {
         this.uid = uid;
+        this.layout = Layout.getEnvInstance();
         try {
             cli = new DaemonMavenCli();
-            registry = DaemonRegistry.getDefault();
+
+            registry = new DaemonRegistry(layout.registry());
             socket = ServerSocketChannel.open().bind(new InetSocketAddress(0));
 
             int idleTimeout;
@@ -95,7 +98,7 @@ public class Server implements AutoCloseable, Runnable {
 
             List<String> opts = new ArrayList<>();
             long cur = System.currentTimeMillis();
-            info = new DaemonInfo(uid, Layout.javaHome().toString(), Layout.mavenHome().toString(),
+            info = new DaemonInfo(uid, layout.javaHome().toString(), layout.mavenHome().toString(),
                     DaemonRegistry.getProcessId(), socket.socket().getLocalPort(),
                     idleTimeout, Locale.getDefault().toLanguageTag(), opts,
                     Busy, cur, cur);
