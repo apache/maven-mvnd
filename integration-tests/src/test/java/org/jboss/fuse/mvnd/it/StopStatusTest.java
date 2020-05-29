@@ -3,6 +3,7 @@ package org.jboss.fuse.mvnd.it;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -37,14 +38,18 @@ public class StopStatusTest {
         /* There should be exactly one item in the registry after the first build */
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
 
-        final ClientOutput output = Mockito.mock(ClientOutput.class);
-        client.execute(output, "--status").assertSuccess();
         final DaemonInfo d = registry.getAll().get(0);
-        final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
-        Assertions.assertThat(logMessage.getAllValues())
-                .is(new MatchInOrderAmongOthers<>(
-                        d.getUid() + " +" + d.getPid() + " +" + d.getAddress() + " +" + d.getState()));
+        {
+            /* The output of --status must be consistent with the registry */
+            final ClientOutput output = Mockito.mock(ClientOutput.class);
+            client.execute(output, "--status").assertSuccess();
+            final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+            Assertions.assertThat(logMessage.getAllValues())
+                    .is(new MatchInOrderAmongOthers<>(
+                            d.getUid() + " +" + d.getPid() + " +" + d.getAddress()));
+
+        }
 
         client.execute(Mockito.mock(ClientOutput.class), "clean").assertSuccess();
         /* There should still be exactly one item in the registry after the second build */
@@ -53,5 +58,19 @@ public class StopStatusTest {
         client.execute(Mockito.mock(ClientOutput.class), "--stop").assertSuccess();
         /* No items in the registry after we have killed all daemons */
         Assertions.assertThat(registry.getAll()).isEmpty();
+
+        {
+            /* After --stop, the output of --status may not contain the UID we have seen before */
+            final ClientOutput output = Mockito.mock(ClientOutput.class);
+            client.execute(output, "--status").assertSuccess();
+            final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+            Assertions.assertThat(
+                    logMessage.getAllValues().stream()
+                            .filter(m -> m.contains(d.getUid()))
+                            .collect(Collectors.toList()))
+                    .isEmpty();
+        }
+
     }
 }
