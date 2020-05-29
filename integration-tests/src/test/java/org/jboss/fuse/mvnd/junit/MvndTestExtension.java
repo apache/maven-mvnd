@@ -159,10 +159,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final Path settingsTemplatePath = Paths.get("src/test/resources/settings-template.xml");
             try {
                 final String template = new String(Files.readAllBytes(settingsTemplatePath), StandardCharsets.UTF_8);
-                /* mrm.repository.url is set by mrm-maven-plugin */
-                final String mrmsRepoUrl = Objects.requireNonNull(System.getProperty("mrm.repository.url"),
-                        "System property mrm.repository.url");
-                final String content = template.replace("${mrm.repository.url}", mrmsRepoUrl);
+                final String content = template;
                 try {
                     Files.write(settingsPath, content.getBytes(StandardCharsets.UTF_8));
                 } catch (Exception e) {

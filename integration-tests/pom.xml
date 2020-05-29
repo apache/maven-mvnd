@@ -47,34 +47,11 @@
 
     <build>
         <plugins>
-            <!-- mrm-maven-plugin creates a proxy backed by the local Maven repo of the main build -->
-            <!-- Thanks to this, the builds invoked from the tests do not have to download all the dependencies from the Central. -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>mrm-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>mrm-start</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>start</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>mrm-stop</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>stop</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
                         <project.version>${project.version}</project.version>
                         <mvnd.home>${project.basedir}/../daemon/target/maven-distro</mvnd.home>
                     </systemPropertyVariables>
