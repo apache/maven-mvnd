@@ -42,7 +42,7 @@ public class SingleModuleTest {
         Assertions.assertThat(installedJar).doesNotExist();
 
         final ClientOutput output = Mockito.mock(ClientOutput.class);
-        client.execute(output, "clean", "install").assertSuccess();
+        client.execute(output, "clean", "install", "-e").assertSuccess();
 
         final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
         Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
