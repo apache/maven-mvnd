@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.daemon.Client;
+import org.jboss.fuse.mvnd.daemon.ClientLayout;
 import org.jboss.fuse.mvnd.daemon.ClientOutput;
 import org.jboss.fuse.mvnd.daemon.Layout;
 import org.jboss.fuse.mvnd.junit.MvndTest;
@@ -27,15 +28,21 @@ public class SingleModuleTest {
     @Inject
     Layout layout;
 
+    @Inject
+    ClientLayout clientLayout;
+
     @Test
-    void cleanTest() throws IOException {
+    void cleanInstall() throws IOException {
         final Path helloFilePath = layout.multiModuleProjectDirectory().resolve("target/hello.txt");
         if (Files.exists(helloFilePath)) {
             Files.delete(helloFilePath);
         }
 
+        final Path installedJar = clientLayout.getLocalMavenRepository().resolve("org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
+        Assertions.assertThat(installedJar).doesNotExist();
+
         final ClientOutput output = Mockito.mock(ClientOutput.class);
-        client.execute(output, "clean", "test").assertSuccess();
+        client.execute(output, "clean", "install").assertSuccess();
 
         final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
         Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
@@ -46,6 +53,7 @@ public class SingleModuleTest {
                         "maven-compiler-plugin:[^:]+:compile",
                         "maven-compiler-plugin:[^:]+:testCompile",
                         "maven-surefire-plugin:[^:]+:test",
+                        "maven-install-plugin:[^:]+:install",
                         "SUCCESS build of project org.jboss.fuse.mvnd.test.single-module:single-module"));
 
         final Properties props = MvndTestUtil.properties(layout.multiModuleProjectDirectory().resolve("pom.xml"));
@@ -95,12 +103,18 @@ public class SingleModuleTest {
                         + ":test {execution: default-test}");
         inOrder.verify(output).projectStateChanged(
                 "single-module",
+                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-install-plugin")
+                        + ":install {execution: default-install}");
+        inOrder.verify(output).projectStateChanged(
+                "single-module",
                 ":single-module");
 
         inOrder.verify(output).projectFinished("single-module");
 
         /* The target/hello.txt is created by HelloTest */
         Assertions.assertThat(helloFilePath).exists();
+
+        Assertions.assertThat(installedJar).exists();
 
     }
 }

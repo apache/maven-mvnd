@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import org.apache.maven.cli.CLIReportingUtils;
 import org.jboss.fuse.mvnd.daemon.ClientOutput.TerminalOutput;
@@ -46,6 +46,7 @@ public class Client {
     private static final Logger LOGGER = LoggerFactory.getLogger(Client.class);
     public static final String DAEMON_DEBUG = "daemon.debug";
     private final Layout layout;
+    private final Optional<ClientLayout> clientLayout;
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
@@ -62,12 +63,13 @@ public class Client {
         }
 
         try (TerminalOutput output = new TerminalOutput(logFile)) {
-            new Client(Layout.getEnvInstance()).execute(output, args);
+            new Client(Layout.getEnvInstance(), Optional.empty()).execute(output, args);
         }
     }
 
-    public Client(Layout layout) {
+    public Client(Layout layout, Optional<ClientLayout> clientLayout) {
         this.layout = layout;
+        this.clientLayout = clientLayout;
     }
 
     public <O extends ClientOutput> ClientResult<O> execute(O output, String... argv) throws IOException {
@@ -88,8 +90,8 @@ public class Client {
             try (InputStream is = Client.class.getResourceAsStream("build.properties")) {
                 props.load(is);
             }
-            String v = buffer().strong( "Maven Daemon " + props.getProperty("version") ).toString()
-                    + System.getProperty( "line.separator" )
+            String v = buffer().strong("Maven Daemon " + props.getProperty("version")).toString()
+                    + System.getProperty("line.separator")
                     + CLIReportingUtils.showVersion();
             output.log(v);
             if (version) {
@@ -129,6 +131,7 @@ public class Client {
             }
 
             setDefaultArgs(args);
+            clientLayout.ifPresent(cl -> clientLayout(cl, args));
 
             DaemonConnector connector = new DaemonConnector(layout, registry, this::startDaemon, new MessageSerializer());
             List<String> opts = new ArrayList<>();
@@ -166,6 +169,16 @@ public class Client {
             }
         }
 
+    }
+
+    static void clientLayout(ClientLayout cl, List<String> args) {
+        if (!args.stream().anyMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
+            args.add("-s");
+            args.add(cl.getSettings().toString());
+        }
+        if (!args.stream().anyMatch(arg -> arg.startsWith("-Dmaven.repo.local"))) {
+            args.add("-Dmaven.repo.local=" + cl.getLocalMavenRepository().toString());
+        }
     }
 
     static void setDefaultArgs(List<String> args) {
