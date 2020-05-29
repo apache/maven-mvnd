@@ -14,6 +14,7 @@ import org.jboss.fuse.mvnd.daemon.Client;
 import org.jboss.fuse.mvnd.daemon.ClientOutput;
 import org.jboss.fuse.mvnd.daemon.DaemonInfo;
 import org.jboss.fuse.mvnd.daemon.DaemonRegistry;
+import org.jboss.fuse.mvnd.daemon.DaemonState;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -49,6 +50,17 @@ public class StopStatusTest {
                     .is(new MatchInOrderAmongOthers<>(
                             d.getUid() + " +" + d.getPid() + " +" + d.getAddress()));
 
+        }
+        /* Wait, till the instance becomes idle */
+        final int timeoutMs = 5000;
+        final long deadline = System.currentTimeMillis() + timeoutMs;
+        while (!registry.getAll().stream()
+                .filter(di -> di.getUid().equals(d.getUid()) && di.getState() == DaemonState.Idle)
+                .findFirst()
+                .isPresent()) {
+            Assertions.assertThat(deadline)
+                    .withFailMessage("Daemon %s should have become idle within %d", d.getUid(), timeoutMs)
+                    .isGreaterThan(System.currentTimeMillis());
         }
 
         client.execute(Mockito.mock(ClientOutput.class), "clean").assertSuccess();
