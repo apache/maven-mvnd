@@ -10,8 +10,8 @@ package org.jboss.fuse.mvnd.logging.internal;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -23,19 +23,19 @@ public class LineSplitterTest {
         this.BYTES = STRING.getBytes(UTF_8);
 
         // sanity check
-        Assert.assertEquals(4, STRING.length());
-        Assert.assertEquals(8, BYTES.length);
+        Assertions.assertEquals(4, STRING.length());
+        Assertions.assertEquals(8, BYTES.length);
     }
 
     @Test
     public void testUTF8MultibyteReassembly() throws Exception {
         LineSplitter adaptor = new LineSplitter(UTF_8);
 
-        Assert.assertTrue(adaptor.split(BYTES, 0, 1).isEmpty());
-        Assert.assertTrue(adaptor.split(BYTES, 1, 6).isEmpty());
-        Assert.assertTrue(adaptor.split(BYTES, 7, 1).isEmpty());
+        Assertions.assertTrue(adaptor.split(BYTES, 0, 1).isEmpty());
+        Assertions.assertTrue(adaptor.split(BYTES, 1, 6).isEmpty());
+        Assertions.assertTrue(adaptor.split(BYTES, 7, 1).isEmpty());
 
-        Assert.assertEquals(STRING, adaptor.flush());
+        Assertions.assertEquals(STRING, adaptor.flush());
     }
 
     @Test
@@ -49,23 +49,23 @@ public class LineSplitterTest {
         byte[] bytes = sb.toString().getBytes(UTF_8);
         adaptor.split(bytes, 0, bytes.length);
 
-        Assert.assertEquals(sb.toString(), adaptor.flush());
+        Assertions.assertEquals(sb.toString(), adaptor.flush());
     }
 
     @Test
     public void testLineSplit() throws Exception {
         LineSplitter adaptor = new LineSplitter(UTF_8);
 
-        Assert.assertEquals(Arrays.asList(""), adaptor.split("\n"));
-        Assert.assertEquals(Arrays.asList(""), adaptor.split("\r"));
-        Assert.assertEquals(Arrays.asList(""), adaptor.split("\r\n"));
-        Assert.assertEquals(Arrays.asList("", ""), adaptor.split("\r\r"));
+        Assertions.assertEquals(Arrays.asList(""), adaptor.split("\n"));
+        Assertions.assertEquals(Arrays.asList(""), adaptor.split("\r"));
+        Assertions.assertEquals(Arrays.asList(""), adaptor.split("\r\n"));
+        Assertions.assertEquals(Arrays.asList("", ""), adaptor.split("\r\r"));
 
         adaptor.split("a");
-        Assert.assertEquals("a", adaptor.flush());
+        Assertions.assertEquals("a", adaptor.flush());
 
         Collection<String> strings = adaptor.split("a\nb\rc\rd");
-        Assert.assertEquals(Arrays.asList("a", "b", "c"), strings);
-        Assert.assertEquals("d", adaptor.flush());
+        Assertions.assertEquals(Arrays.asList("a", "b", "c"), strings);
+        Assertions.assertEquals("d", adaptor.flush());
     }
 }

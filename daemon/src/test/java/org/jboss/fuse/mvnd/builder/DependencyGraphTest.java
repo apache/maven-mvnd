@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.stream.Collectors;
 
 import org.apache.maven.project.MavenProject;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class DependencyGraphTest extends AbstractSmartBuilderTest {
 
@@ -31,7 +31,7 @@ public class DependencyGraphTest extends AbstractSmartBuilderTest {
         TestProjectDependencyGraph graph = new TestProjectDependencyGraph(a, b, c);
         graph.addDependency(b, a);
         DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven(graph, "a before c");
-        Assert.assertEquals(new HashSet<>(Arrays.asList(b, c)),
+        Assertions.assertEquals(new HashSet<>(Arrays.asList(b, c)),
                 dp.getDownstreamProjects(a).collect(Collectors.toSet()));
     }
 }

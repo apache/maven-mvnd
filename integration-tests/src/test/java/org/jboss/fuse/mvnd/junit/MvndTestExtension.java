@@ -12,11 +12,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import org.jboss.fuse.mvnd.daemon.Client;
-import org.jboss.fuse.mvnd.daemon.DaemonInfo;
-import org.jboss.fuse.mvnd.daemon.DaemonRegistry;
-import org.jboss.fuse.mvnd.daemon.Layout;
-import org.jboss.fuse.mvnd.daemon.ClientLayout;
+import org.jboss.fuse.mvnd.client.Client;
+import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonInfo;
+import org.jboss.fuse.mvnd.client.DaemonRegistry;
+import org.jboss.fuse.mvnd.client.Layout;
 import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;

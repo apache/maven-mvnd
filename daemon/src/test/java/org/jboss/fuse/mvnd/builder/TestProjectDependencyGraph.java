@@ -8,7 +8,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 public class TestProjectDependencyGraph implements ProjectDependencyGraph {
 
@@ -36,13 +36,13 @@ public class TestProjectDependencyGraph implements ProjectDependencyGraph {
 
     @Override
     public List<MavenProject> getDownstreamProjects(MavenProject project, boolean transitive) {
-        Assert.assertFalse("not implemented", transitive);
+        Assertions.assertFalse(transitive, "not implemented");
         return downstream.get(project);
     }
 
     @Override
     public List<MavenProject> getUpstreamProjects(MavenProject project, boolean transitive) {
-        Assert.assertFalse("not implemented", transitive);
+        Assertions.assertFalse(transitive, "not implemented");
         return upstream.get(project);
     }
 

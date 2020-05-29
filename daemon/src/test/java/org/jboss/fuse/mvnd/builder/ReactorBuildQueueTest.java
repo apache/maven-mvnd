@@ -1,8 +1,8 @@
 package org.jboss.fuse.mvnd.builder;
 
 import org.apache.maven.project.MavenProject;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ReactorBuildQueueTest extends AbstractSmartBuilderTest {
 
@@ -16,10 +16,10 @@ public class ReactorBuildQueueTest extends AbstractSmartBuilderTest {
         ReactorBuildQueue schl = new ReactorBuildQueue(graph.getSortedProjects(), dp);
 
         assertProjects(schl.getRootProjects(), a, c);
-        Assert.assertFalse(schl.isEmpty());
+        Assertions.assertFalse(schl.isEmpty());
 
         assertProjects(schl.onProjectFinish(a), b);
-        Assert.assertTrue(schl.isEmpty());
+        Assertions.assertTrue(schl.isEmpty());
     }
 
     @Test
@@ -31,7 +31,7 @@ public class ReactorBuildQueueTest extends AbstractSmartBuilderTest {
         ReactorBuildQueue schl = new ReactorBuildQueue(graph.getSortedProjects(), dp);
 
         assertProjects(schl.getRootProjects(), a, b, c);
-        Assert.assertTrue(schl.isEmpty());
+        Assertions.assertTrue(schl.isEmpty());
     }
 
     @Test
@@ -45,12 +45,12 @@ public class ReactorBuildQueueTest extends AbstractSmartBuilderTest {
         ReactorBuildQueue schl = new ReactorBuildQueue(graph.getSortedProjects(), dp);
 
         assertProjects(schl.getRootProjects(), a, c);
-        Assert.assertFalse(schl.isEmpty());
+        Assertions.assertFalse(schl.isEmpty());
 
         assertProjects(schl.onProjectFinish(a), new MavenProject[0]);
-        Assert.assertFalse(schl.isEmpty());
+        Assertions.assertFalse(schl.isEmpty());
 
         assertProjects(schl.onProjectFinish(c), b);
-        Assert.assertTrue(schl.isEmpty());
+        Assertions.assertTrue(schl.isEmpty());
     }
 }

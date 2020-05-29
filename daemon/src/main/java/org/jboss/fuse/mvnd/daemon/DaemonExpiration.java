@@ -23,10 +23,15 @@ import java.util.Objects;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
+import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec;
+import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
+import org.jboss.fuse.mvnd.client.DaemonInfo;
+import org.jboss.fuse.mvnd.client.DaemonState;
+
+import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.DO_NOT_EXPIRE;
+import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.GRACEFUL_EXPIRE;
+import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.QUIET_EXPIRE;
 import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
-import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus.DO_NOT_EXPIRE;
-import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus.GRACEFUL_EXPIRE;
-import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus.QUIET_EXPIRE;
 
 public class DaemonExpiration {
 
@@ -224,18 +229,5 @@ public class DaemonExpiration {
             return reason;
         }
 
-    }
-
-    /**
-     * Expiration status for daemon expiration check results.
-     * Note that order here is important, higher ordinal statuses
-     * take precedent over lower ordinal statuses when aggregating
-     * results.
-     */
-    public enum DaemonExpirationStatus {
-        DO_NOT_EXPIRE,
-        QUIET_EXPIRE,
-        GRACEFUL_EXPIRE,
-        IMMEDIATE_EXPIRE;
     }
 }

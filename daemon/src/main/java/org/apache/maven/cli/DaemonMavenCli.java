@@ -89,6 +89,7 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.logging.LoggerManager;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
+import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,8 +166,8 @@ public class DaemonMavenCli
             cli(cliRequest);
             properties(cliRequest);
             logging(cliRequest);
-            version( cliRequest );
             configure(cliRequest);
+            version( cliRequest );
             toolchains(cliRequest);
             populateRequest( cliRequest );
             encryption( cliRequest );
@@ -274,11 +275,6 @@ public class DaemonMavenCli
             throw new ExitException( 0 );
         }
 
-        if ( cliRequest.commandLine.hasOption( CLIManager.VERSION ) )
-        {
-            System.out.println( CLIReportingUtils.showVersion() );
-            throw new ExitException( 0 );
-        }
     }
 
     private CommandLine cliMerge( CommandLine mavenArgs, CommandLine mavenConfig )
@@ -391,11 +387,14 @@ public class DaemonMavenCli
 
     }
 
-    private void version( CliRequest cliRequest )
+    private void version( CliRequest cliRequest ) throws ExitException
     {
-        if ( cliRequest.debug || cliRequest.commandLine.hasOption( CLIManager.SHOW_VERSION ) )
+        if ( cliRequest.debug || cliRequest.commandLine.hasOption( CLIManager.VERSION ) )
         {
-            System.out.println( CLIReportingUtils.showVersion() );
+            AbstractLoggingSpy.instance().append(null, CLIReportingUtils.showVersion());
+            if (cliRequest.commandLine.hasOption( CLIManager.VERSION )) {
+                throw new ExitException( 0 );
+            }
         }
     }
 
