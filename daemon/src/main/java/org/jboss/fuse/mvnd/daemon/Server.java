@@ -101,7 +101,7 @@ public class Server implements AutoCloseable, Runnable {
 
             List<String> opts = new ArrayList<>();
             long cur = System.currentTimeMillis();
-            info = new DaemonInfo(uid, layout.javaHome().toString(), layout.mavenHome().toString(),
+            info = new DaemonInfo(uid, System.getProperty("java.home"), layout.mavenHome().toString(),
                     DaemonRegistry.getProcessId(), socket.socket().getLocalPort(),
                     idleTimeout, Locale.getDefault().toLanguageTag(), opts,
                     Busy, cur, cur);

@@ -17,6 +17,7 @@
 
         <!-- dependency versions a..z -->
         <assertj.version>3.16.1</assertj.version>
+        <graalvm.version>20.1.0</graalvm.version>
         <groovy.version>3.0.0</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
         <jline.version>3.12.1</jline.version>
@@ -55,6 +56,12 @@
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy</artifactId>
                 <version>${groovy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.graalvm.nativeimage</groupId>
+                <artifactId>svm</artifactId>
+                <version>${graalvm.version}</version>
             </dependency>
 
             <dependency>
@@ -167,14 +174,19 @@
                     <version>${compiler.version}</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surefire.version}</version>
+                </plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>mrm-maven-plugin</artifactId>
                     <version>${mrm.version}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>${surefire.version}</version>
+                    <groupId>org.graalvm.nativeimage</groupId>
+                    <artifactId>native-image-maven-plugin</artifactId>
+                    <version>${graalvm.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

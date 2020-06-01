@@ -12,7 +12,6 @@ import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
-import org.jboss.fuse.mvnd.client.Layout;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,10 +25,7 @@ public class SingleModuleTest {
     Client client;
 
     @Inject
-    Layout layout;
-
-    @Inject
-    ClientLayout clientLayout;
+    ClientLayout layout;
 
     @Test
     void cleanInstall() throws IOException {
@@ -38,7 +34,7 @@ public class SingleModuleTest {
             Files.delete(helloFilePath);
         }
 
-        final Path installedJar = clientLayout.getLocalMavenRepository().resolve("org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
+        final Path installedJar = layout.getLocalMavenRepository().resolve("org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
         Assertions.assertThat(installedJar).doesNotExist();
 
         final ClientOutput output = Mockito.mock(ClientOutput.class);
