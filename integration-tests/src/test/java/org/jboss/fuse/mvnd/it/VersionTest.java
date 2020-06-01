@@ -7,8 +7,8 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;
+import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
-import org.jboss.fuse.mvnd.client.Layout;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -21,7 +21,7 @@ public class VersionTest {
     Client client;
 
     @Inject
-    Layout layout;
+    ClientLayout layout;
 
     @Test
     void version() throws IOException {

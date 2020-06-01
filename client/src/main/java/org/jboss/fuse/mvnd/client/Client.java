@@ -17,16 +17,17 @@ package org.jboss.fuse.mvnd.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.client.ClientOutput.TerminalOutput;
@@ -48,8 +49,8 @@ public class Client {
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
     public static final int DEFAULT_PERIODIC_CHECK_INTERVAL_MILLIS = 10 * 1000;
     public static final int CANCEL_TIMEOUT = 10 * 1000;
-    private final Layout layout;
-    private final Optional<ClientLayout> clientLayout;
+    private final ClientLayout layout;
+    private final Properties buildProperties;
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
@@ -66,13 +67,18 @@ public class Client {
         }
 
         try (TerminalOutput output = new TerminalOutput(logFile)) {
-            new Client(Layout.getEnvInstance(), Optional.empty()).execute(output, args);
+            new Client(ClientLayout.getEnvInstance()).execute(output, args);
         }
     }
 
-    public Client(Layout layout, Optional<ClientLayout> clientLayout) {
+    public Client(ClientLayout layout) {
         this.layout = layout;
-        this.clientLayout = clientLayout;
+        this.buildProperties = new Properties();
+        try (InputStream is = Client.class.getResourceAsStream("build.properties")) {
+            buildProperties.load(is);
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read build.properties");
+        }
     }
 
     public <O extends ClientOutput> ClientResult<O> execute(O output, String... argv) throws IOException {
@@ -89,11 +95,8 @@ public class Client {
         boolean showVersion = args.contains("-V") || args.contains("--show-version");
         boolean debug = args.contains("-X") || args.contains("--debug");
         if (version || showVersion || debug) {
-            Properties props = new Properties();
-            try (InputStream is = Client.class.getResourceAsStream("build.properties")) {
-                props.load(is);
-            }
-            String v = Ansi.ansi().bold().a("Maven Daemon " + props.getProperty("version")).reset().toString();
+            final String nativeSuffix = Layout.isNative() ? " (native)" : "";
+            final String v = Ansi.ansi().bold().a("Maven Daemon " + buildProperties.getProperty("version") + nativeSuffix).reset().toString();
             output.log(v);
             /* Do not return, rather pass -v to the server so that the client module does not need to depend on any Maven artifacts */
         }
@@ -130,7 +133,16 @@ public class Client {
             }
 
             setDefaultArgs(args);
-            clientLayout.ifPresent(cl -> clientLayout(cl, args));
+            final Path settings = layout.getSettings();
+            if (settings != null && !args.stream().anyMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
+                args.add("-s");
+                args.add(settings.toString());
+            }
+
+            final Path localMavenRepository = layout.getLocalMavenRepository();
+            if (localMavenRepository != null && !args.stream().anyMatch(arg -> arg.startsWith("-Dmaven.repo.local"))) {
+                args.add("-Dmaven.repo.local=" + localMavenRepository.toString());
+            }
 
             DaemonConnector connector = new DaemonConnector(layout, registry, this::startDaemon, new MessageSerializer());
             List<String> opts = new ArrayList<>();
@@ -170,16 +182,6 @@ public class Client {
 
     }
 
-    static void clientLayout(ClientLayout cl, List<String> args) {
-        if (!args.stream().anyMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
-            args.add("-s");
-            args.add(cl.getSettings().toString());
-        }
-        if (!args.stream().anyMatch(arg -> arg.startsWith("-Dmaven.repo.local"))) {
-            args.add("-Dmaven.repo.local=" + cl.getLocalMavenRepository().toString());
-        }
-    }
-
     static void setDefaultArgs(List<String> args) {
         if (!args.stream().anyMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
             args.add("-T1C");
@@ -200,17 +202,15 @@ public class Client {
 //            args.add("-cp");
 //            args.add(classpath);
 
-        String uid = UUID.randomUUID().toString();
-        Path mavenHome = layout.mavenHome();
-        Path javaHome = layout.javaHome();
-        Path workingDir = layout.userDir();
+        final String uid = UUID.randomUUID().toString();
+        final Path mavenHome = layout.mavenHome();
+        final Path workingDir = layout.userDir();
         String command = "";
         try {
-            String url = Client.class.getClassLoader().getResource(Client.class.getName().replace('.', '/') + ".class").toString();
-            String classpath = url.substring("file:jar:".length(), url.indexOf('!'));
-            String java = ScriptUtils.isWindows() ? "bin\\java.exe" : "bin/java";
+            String classpath = findClientJar(mavenHome).toString();
+            final String java = ScriptUtils.isWindows() ? "bin\\java.exe" : "bin/java";
             List<String> args = new ArrayList<>();
-            args.add("\"" + javaHome.resolve(java) + "\"");
+            args.add("\"" + layout.javaHome().resolve(java) + "\"");
             args.add("-classpath");
             args.add("\"" + classpath + "\"");
             if (Boolean.getBoolean(DAEMON_DEBUG)) {
@@ -236,6 +236,20 @@ public class Client {
             throw new DaemonException.StartException(
                     String.format("Error starting daemon: uid = %s, workingDir = %s, daemonArgs: %s",
                             uid, workingDir, command), e);
+        }
+    }
+
+    Path findClientJar(Path mavenHome) {
+        final Path ext = mavenHome.resolve("lib/ext");
+        final String clientJarName = "mvnd-client-"+ buildProperties.getProperty("version") + ".jar";
+        try (Stream<Path> files = Files.list(ext)) {
+            return files
+                    .filter(f -> f.getFileName().toString().equals(clientJarName))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Could not find " + clientJarName + " in " + ext));
+
+        } catch (IOException e) {
+            throw new RuntimeException("Could not find " + clientJarName + " in " + ext, e);
         }
     }
 

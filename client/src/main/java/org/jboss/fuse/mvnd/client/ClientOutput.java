@@ -63,23 +63,24 @@ public interface ClientOutput extends AutoCloseable {
         private void update() {
             // no need to refresh the display at every single step
             long curTime = System.currentTimeMillis();
-            if (curTime - lastUpdate >= 10) {
-                Size size = terminal.getSize();
+            if (curTime - lastUpdate >= 100) {
+                final Size size = terminal.getSize();
                 display.resize(size.getRows(), size.getColumns());
-                List<AttributedString> lines = new ArrayList<>();
-                projects.values().stream()
-                        .map(AttributedString::fromAnsi)
-                        .map(s -> s.columnSubSequence(0, size.getColumns() - 1))
-                        .forEachOrdered(lines::add);
-                // Make sure we don't try to display more lines than the terminal height
-                int rem = 0;
-                while (lines.size() >= terminal.getHeight()) {
-                    lines.remove(0);
-                    rem++;
+                final int displayableProjectCount = size.getRows() - 1;
+                final int skipRows = projects.size() > displayableProjectCount ? projects.size() - displayableProjectCount : 0;
+                final List<AttributedString> lines = new ArrayList<>(projects.size() - skipRows);
+                final int lineMaxLength = size.getColumns();
+                int i = 0;
+                for (String line : projects.values()) {
+                    if (i < skipRows) {
+                        i++;
+                    } else {
+                        lines.add(shortenIfNeeded(AttributedString.fromAnsi(line), lineMaxLength));
+                    }
                 }
-                lines.add(0, new AttributedString("Building..." + (rem > 0 ? " (" + rem + " more)" : "")));
+                lines.add(0, new AttributedString("Building..." + (skipRows > 0 ? " (" + skipRows + " more)" : "")));
                 display.update(lines, -1);
-                lastUpdate = curTime;
+                lastUpdate = System.currentTimeMillis();
             }
 
         }
@@ -186,6 +187,16 @@ public interface ClientOutput extends AutoCloseable {
             }
 
         }
+    }
+
+    static AttributedString shortenIfNeeded(AttributedString s, int length) {
+        if (s == null) {
+            return null;
+        }
+        if (s.length() > length) {
+            return s.columnSubSequence(0, length - 1);
+        }
+        return s;
     }
 
 }

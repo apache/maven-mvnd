@@ -13,7 +13,6 @@ import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
-import org.jboss.fuse.mvnd.client.Layout;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,10 +25,7 @@ public class MultiModuleTest {
     Client client;
 
     @Inject
-    Layout layout;
-
-    @Inject
-    ClientLayout clientLayout;
+    ClientLayout layout;
 
     @Test
     void cleanInstall() throws IOException {
@@ -45,7 +41,7 @@ public class MultiModuleTest {
             }
         });
 
-        final Path localMavenRepo = clientLayout.getLocalMavenRepository();
+        final Path localMavenRepo = layout.getLocalMavenRepository();
         final Path[] installedJars = {
                 localMavenRepo.resolve("org/jboss/fuse/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
                 localMavenRepo.resolve("org/jboss/fuse/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar"),

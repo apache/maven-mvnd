@@ -62,12 +62,12 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     f.setAccessible(true);
                     if (f.getType() == DaemonRegistry.class) {
                         f.set(testInstance, resource.registry);
+                    } else if (f.getType() == ClientLayout.class) {
+                        f.set(testInstance, resource.layout);
                     } else if (f.getType() == Layout.class) {
                         f.set(testInstance, resource.layout);
                     } else if (f.getType() == Client.class) {
-                        f.set(testInstance, new Client(resource.layout, Optional.of(resource.clientLayout)));
-                    } else if (f.getType() == ClientLayout.class) {
-                        f.set(testInstance, resource.clientLayout);
+                        f.set(testInstance, new Client(resource.layout));
                     }
                 }
             }
@@ -86,8 +86,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
 
     static class MvndResource implements ExtensionContext.Store.CloseableResource {
 
-        private final ClientLayout clientLayout;
-        private final Layout layout;
+        private final ClientLayout layout;
         private final DaemonRegistry registry;
 
         public static MvndResource create(String className, String rawProjectDir) throws IOException {
@@ -125,16 +124,17 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 throw new IllegalStateException(
                         "The value of mvnd.home system property points at a path that does not exist or is not a directory");
             }
-            final Layout layout = new Layout(Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
-                    mvndHome,
-                    testExecutionDir,
-                    testExecutionDir);
-            final DaemonRegistry registry = new DaemonRegistry(layout.registry());
-
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
             final Path settingsPath = createSettings(testDir.resolve("settings.xml"));
-            final ClientLayout clientLayout = new ClientLayout(localMavenRepository, settingsPath);
-            return new MvndResource(layout, registry, clientLayout);
+            final ClientLayout layout = new ClientLayout(
+                    mvndHome,
+                    testExecutionDir,
+                    testExecutionDir,
+                    Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
+                    localMavenRepository, settingsPath);
+            final DaemonRegistry registry = new DaemonRegistry(layout.registry());
+
+            return new MvndResource(layout, registry);
         }
 
         static Path deleteDir(Path dir) {
@@ -171,11 +171,10 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             return settingsPath;
         }
 
-        public MvndResource(Layout layout, DaemonRegistry registry, ClientLayout clientLayout) {
+        public MvndResource(ClientLayout layout, DaemonRegistry registry) {
             super();
             this.layout = layout;
             this.registry = registry;
-            this.clientLayout = clientLayout;
         }
 
         @Override

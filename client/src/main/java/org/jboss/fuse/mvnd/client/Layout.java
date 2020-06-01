@@ -15,29 +15,28 @@
  */
 package org.jboss.fuse.mvnd.client;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 public class Layout {
 
     private static Layout ENV_INSTANCE;
 
-    private final Path javaHome;
     private final Path mavenHome;
     private final Path userDir;
     private final Path multiModuleProjectDirectory;
 
-    public Layout(Path javaHome, Path mavenHome, Path userDir, Path multiModuleProjectDirectory) {
+    public Layout(Path mavenHome, Path userDir, Path multiModuleProjectDirectory) {
         super();
-        this.javaHome = javaHome;
         this.mavenHome = mavenHome;
         this.userDir = userDir;
         this.multiModuleProjectDirectory = multiModuleProjectDirectory;
-    }
-
-    public Path javaHome() {
-        return javaHome;
     }
 
     public Path mavenHome() {
@@ -60,18 +59,92 @@ public class Layout {
         return multiModuleProjectDirectory;
     }
 
-    private static String getProperty(String key) {
-        return Objects.requireNonNull(System.getProperty(key), "Undefined system property: " + key);
+    public static boolean isNative() {
+        return "executable".equals(System.getProperty("org.graalvm.nativeimage.kind"));
     }
 
     public static Layout getEnvInstance() {
         if (ENV_INSTANCE == null) {
-            ENV_INSTANCE = new Layout(Paths.get(getProperty("java.home")).toAbsolutePath().normalize(),
-                    Paths.get(getProperty("maven.home")).toAbsolutePath().normalize(),
-                    Paths.get(getProperty("user.dir")).toAbsolutePath().normalize(),
-                    Paths.get(getProperty("maven.multiModuleProjectDirectory")).toAbsolutePath().normalize());
+            final Properties mvndProperties = loadMvndProperties();
+            final Path pwd = Paths.get(".").toAbsolutePath().normalize();
+
+            ENV_INSTANCE = new Layout(
+                    findMavenHome(mvndProperties),
+                    pwd,
+                    findMultiModuleProjectDirectory(pwd));
         }
         return ENV_INSTANCE;
+    }
+
+
+    static Properties loadMvndProperties() {
+        final Properties result = new Properties();
+        final Path mvndPropsPath = Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd.properties");
+        if (Files.exists(mvndPropsPath)) {
+            try (InputStream in = Files.newInputStream(mvndPropsPath)) {
+                result.load(in);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not read " + mvndPropsPath);
+            }
+        }
+        return result;
+    }
+
+    static Path findMavenHome(Properties mvndProperties) {
+        String rawValue = System.getenv("MAVEN_HOME");
+        if (rawValue == null) {
+            rawValue = System.getProperty("maven.home");
+        }
+        if (isNative()) {
+            try {
+                final Path nativeExecutablePath = Paths.get(Class.forName("org.graalvm.nativeimage.ProcessProperties").getMethod("getExecutableName").invoke(null).toString()).toAbsolutePath().normalize();
+                final Path bin = nativeExecutablePath.getParent();
+                if (bin.getFileName().toString().equals("bin")) {
+                    final Path candidateMvnHome = bin.getParent();
+                    final Path libExt = candidateMvnHome.resolve("lib/ext");
+                    if (Files.isDirectory(libExt)) {
+                        try (Stream<Path> files = Files.list(libExt)) {
+                            if (files.filter(path -> path.getFileName().toString().startsWith("mvnd-")).findFirst().isPresent()) {
+                                rawValue = candidateMvnHome.toString();
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException("Could not list " + libExt);
+                        }
+                    }
+                }
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+                    | SecurityException | ClassNotFoundException e) {
+                throw new RuntimeException("Could not invoke org.graalvm.nativeimage.ProcessProperties.getExecutableName() via reflection");
+            }
+        }
+        if (rawValue == null) {
+            rawValue = mvndProperties.getProperty("maven.home");
+        }
+        if (rawValue == null) {
+            throw new IllegalStateException("Either environment variable MAVEN_HOME or maven.home property in ~/.m2/mvnd.properties or system property maven.home must be set");
+        }
+        return Paths.get(rawValue).toAbsolutePath().normalize();
+    }
+
+    static Path findMultiModuleProjectDirectory(Path pwd) {
+        final String multiModuleProjectDirectory = System.getProperty("maven.multiModuleProjectDirectory");
+        if (multiModuleProjectDirectory != null) {
+            return Paths.get(multiModuleProjectDirectory).toAbsolutePath().normalize();
+        }
+        Path dir = pwd;
+        do {
+            if (Files.isDirectory(dir.resolve(".mvn"))) {
+                return dir.toAbsolutePath().normalize();
+            }
+            dir = dir.getParent();
+        } while (dir != null);
+        throw new IllegalStateException("Could not detect maven.multiModuleProjectDirectory by climbing up from ["+ pwd +"] seeking a .mvn directory. You may want to create a .mvn directory in the root directory of your source tree.");
+    }
+
+    @Override
+    public String toString() {
+        return "Layout [mavenHome=" + mavenHome + ", userDir=" + userDir + ", multiModuleProjectDirectory="
+                + multiModuleProjectDirectory + "]";
     }
 
 }
