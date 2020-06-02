@@ -20,13 +20,28 @@ name: Linux & Windows CI
 on: [push, pull_request]
 
 jobs:
-  verify:
+  verify-linux-and-windows:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, macos-10.15, windows-2019 ]
+        os: [ ubuntu-18.04, windows-2019 ]
         java: [ 8, 11, 14 ]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: ${{ matrix.java }}
+    - name: Build with Maven
+      run: ./mvnw clean verify -B -ntp
+  verify-macos:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-10.15 ]
+        java: [ 11 ]
     steps:
     - uses: actions/checkout@v1
     - name: Set up JDK
