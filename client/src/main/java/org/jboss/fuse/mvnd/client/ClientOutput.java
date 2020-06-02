@@ -5,10 +5,15 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Consumer;
 
 import org.jboss.fuse.mvnd.client.Message.BuildException;
@@ -41,29 +46,139 @@ public interface ClientOutput extends AutoCloseable {
      */
     static class TerminalOutput implements ClientOutput {
         private static final Logger LOGGER = LoggerFactory.getLogger(TerminalOutput.class);
-
-        private final Terminal terminal;
-        private final Display display;
-        private final LinkedHashMap<String, String> projects = new LinkedHashMap<>();
-        private long lastUpdate = 0;
-        private final Log log;
-
+        private final TerminalUpdater updater;
+        private final BlockingQueue<Map.Entry<String, String>> queue;
         public TerminalOutput(Path logFile) throws IOException {
-            this.terminal = TerminalBuilder.terminal();
-            this.display = new Display(terminal, false);
-            this.log = logFile == null ? new ClientOutput.Log.MessageCollector(terminal)
-                    : new ClientOutput.Log.FileLog(logFile);
+            this.queue = new LinkedBlockingDeque<>();
+            this.updater = new TerminalUpdater(queue, logFile);
         }
 
         public void projectStateChanged(String projectId, String task) {
-            projects.put(projectId, task);
-            update();
+            try {
+                queue.put(new AbstractMap.SimpleImmutableEntry<>(projectId, task));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
 
-        private void update() {
-            // no need to refresh the display at every single step
-            long curTime = System.currentTimeMillis();
-            if (curTime - lastUpdate >= 100) {
+        public void projectFinished(String projectId) {
+            try {
+                queue.put(new AbstractMap.SimpleImmutableEntry<>(projectId, null));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        @Override
+        public void log(String message) {
+            try {
+                queue.put(new AbstractMap.SimpleImmutableEntry<>(TerminalUpdater.LOG, message));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        @Override
+        public void close() throws Exception {
+            updater.close();
+        }
+
+        @Override
+        public void error(BuildException error) {
+            final String msg;
+            if ("org.apache.commons.cli.UnrecognizedOptionException".equals(error.getClassName())) {
+                msg = "Unable to parse command line options: " + error.getMessage();
+            } else {
+                msg = error.getClassName() + ": " + error.getMessage();
+            }
+            try {
+                queue.put(new AbstractMap.SimpleImmutableEntry<>(TerminalUpdater.ERROR, msg));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        @Override
+        public void debug(String msg) {
+            LOGGER.debug(msg);
+        }
+
+        static class TerminalUpdater implements AutoCloseable {
+            private static final String LOG = "<log>";
+            private static final String ERROR = "<error>";
+            private static final String END_OF_STREAM = "<eos>";
+            private final BlockingQueue<Map.Entry<String, String>> queue;
+            private final Terminal terminal;
+            private final Display display;
+            private final LinkedHashMap<String, String> projects = new LinkedHashMap<>();
+            private final Log log;
+            private final Thread worker;
+            private volatile Exception exception;
+
+            public TerminalUpdater(BlockingQueue<Entry<String, String>> queue, Path logFile) throws IOException {
+                super();
+                this.terminal = TerminalBuilder.terminal();
+                this.display = new Display(terminal, false);
+                this.log = logFile == null ? new ClientOutput.Log.MessageCollector(terminal)
+                        : new ClientOutput.Log.FileLog(logFile);
+                this.queue = queue;
+                final Thread w = new Thread(this::run);
+                w.start();
+                this.worker = w;
+            }
+
+            void run() {
+                final List<Entry<String, String>> entries = new ArrayList<>();
+
+                while (true) {
+                    try {
+                        entries.add(queue.take());
+                        queue.drainTo(entries);
+                        for (Entry<String, String> entry : entries) {
+                            final String key = entry.getKey();
+                            final String value = entry.getValue();
+                            if (key == END_OF_STREAM) {
+                                display.update(Collections.emptyList(), 0);
+                                LOGGER.debug("Done receiving, printing log");
+                                log.close();
+                                LOGGER.debug("Done !");
+                                terminal.flush();
+                                return;
+                            } else if (key == LOG) {
+                                log.accept(value);
+                            } else if (key == ERROR) {
+                                display.update(Collections.emptyList(), 0);
+                                final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
+                                terminal.writer().println(new AttributedString(value, s).toAnsi());
+                                terminal.flush();
+                                return;
+                            } else if (value == null) {
+                                projects.remove(key);
+                            } else {
+                                projects.put(key, value);
+                            }
+                        }
+                        entries.clear();
+                        update();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception e) {
+                        this.exception = e;
+                    }
+                }
+            }
+
+            @Override
+            public void close() throws Exception {
+                queue.put(new AbstractMap.SimpleImmutableEntry<>(END_OF_STREAM, null));
+                worker.join();
+                if (exception != null) {
+                    throw exception;
+                }
+            }
+
+            private void update() {
+                // no need to refresh the display at every single step
                 final Size size = terminal.getSize();
                 display.resize(size.getRows(), size.getColumns());
                 final int displayableProjectCount = size.getRows() - 1;
@@ -80,47 +195,18 @@ public interface ClientOutput extends AutoCloseable {
                 }
                 lines.add(0, new AttributedString("Building..." + (skipRows > 0 ? " (" + skipRows + " more)" : "")));
                 display.update(lines, -1);
-                lastUpdate = System.currentTimeMillis();
             }
 
-        }
-
-        public void projectFinished(String projectId) {
-            projects.remove(projectId);
-            update();
-        }
-
-        @Override
-        public void log(String message) {
-            log.accept(message);
-        }
-
-        @Override
-        public void close() throws Exception {
-            display.update(Collections.emptyList(), 0);
-            LOGGER.debug("Done receiving, printing log");
-            log.close();
-            LOGGER.debug("Done !");
-            terminal.flush();
-        }
-
-        @Override
-        public void error(BuildException error) {
-            display.update(Collections.emptyList(), 0);
-            final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
-            final String msg;
-            if ("org.apache.commons.cli.UnrecognizedOptionException".equals(error.getClassName())) {
-                msg = "Unable to parse command line options: " + error.getMessage();
-            } else {
-                msg = error.getClassName() + ": " + error.getMessage();
+            static AttributedString shortenIfNeeded(AttributedString s, int length) {
+                if (s == null) {
+                    return null;
+                }
+                if (s.length() > length) {
+                    return s.columnSubSequence(0, length - 1);
+                }
+                return s;
             }
-            terminal.writer().println(new AttributedString(msg, s).toAnsi());
-            terminal.flush();
-        }
 
-        @Override
-        public void debug(String msg) {
-            LOGGER.debug(msg);
         }
 
     }
@@ -187,16 +273,6 @@ public interface ClientOutput extends AutoCloseable {
             }
 
         }
-    }
-
-    static AttributedString shortenIfNeeded(AttributedString s, int length) {
-        if (s == null) {
-            return null;
-        }
-        if (s.length() > length) {
-            return s.columnSubSequence(0, length - 1);
-        }
-        return s;
     }
 
 }
