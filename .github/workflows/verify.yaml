@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-name: Linux & Windows CI
+name: Linux, Windows and MacOS CI
 
 on: [push, pull_request]
 
