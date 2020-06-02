@@ -17,34 +17,61 @@ package org.jboss.fuse.mvnd.daemon;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class Layout {
 
-    public static Path javaHome() {
-        return Paths.get(getProperty("java.home")).toAbsolutePath().normalize();
+    private static Layout ENV_INSTANCE;
+
+    private final Path javaHome;
+    private final Path mavenHome;
+    private final Path userDir;
+    private final Path multiModuleProjectDirectory;
+
+    public Layout(Path javaHome, Path mavenHome, Path userDir, Path multiModuleProjectDirectory) {
+        super();
+        this.javaHome = javaHome;
+        this.mavenHome = mavenHome;
+        this.userDir = userDir;
+        this.multiModuleProjectDirectory = multiModuleProjectDirectory;
     }
 
-    public static Path mavenHome() {
-        return Paths.get(getProperty("maven.home")).toAbsolutePath().normalize();
+    public Path javaHome() {
+        return javaHome;
     }
 
-    public static Path userDir() {
-        return Paths.get(getProperty("user.dir")).toAbsolutePath().normalize();
+    public Path mavenHome() {
+        return mavenHome;
     }
 
-    public static Path registry() {
-        return mavenHome().resolve("daemon/registry.bin");
+    public Path userDir() {
+        return userDir;
     }
 
-    public static Path daemonLog(String daemon) {
-        return mavenHome().resolve("daemon/daemon-" + daemon + ".log");
+    public Path registry() {
+        return mavenHome.resolve("daemon/registry.bin");
     }
 
-    public static String getProperty(String key) {
+    public Path daemonLog(String daemon) {
+        return mavenHome.resolve("daemon/daemon-" + daemon + ".log");
+    }
+
+    public Path multiModuleProjectDirectory() {
+        return multiModuleProjectDirectory;
+    }
+
+    private static String getProperty(String key) {
         return Objects.requireNonNull(System.getProperty(key), "Undefined system property: " + key);
+    }
+
+    public static Layout getEnvInstance() {
+        if (ENV_INSTANCE == null) {
+            ENV_INSTANCE = new Layout(Paths.get(getProperty("java.home")).toAbsolutePath().normalize(),
+                    Paths.get(getProperty("maven.home")).toAbsolutePath().normalize(),
+                    Paths.get(getProperty("user.dir")).toAbsolutePath().normalize(),
+                    Paths.get(getProperty("maven.multiModuleProjectDirectory")).toAbsolutePath().normalize());
+        }
+        return ENV_INSTANCE;
     }
 
 }
