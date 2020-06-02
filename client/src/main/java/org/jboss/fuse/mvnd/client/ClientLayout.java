@@ -22,8 +22,9 @@ public class ClientLayout extends Layout {
             final Properties mvndProperties = loadMvndProperties();
             final Path pwd = Paths.get(".").toAbsolutePath().normalize();
 
+            final Path mvndHome = findMavenHome(mvndProperties);
             ENV_INSTANCE = new ClientLayout(
-                    findMavenHome(mvndProperties),
+                    mvndHome,
                     pwd,
                     findMultiModuleProjectDirectory(pwd),
                     findJavaHome(mvndProperties),
@@ -77,6 +78,20 @@ public class ClientLayout extends Layout {
         } catch (IOException e) {
             throw new RuntimeException("Could not get a real path from path " + path);
         }
+    }
+
+    static Path findLogbackConfigurationFile(Properties mvndProperties, Path mvndHome) {
+        String rawValue = mvndProperties.getProperty("logback.configurationFile");
+        if (rawValue == null) {
+            rawValue = System.getProperty("logback.configurationFile");
+        }
+        if (rawValue == null) {
+            rawValue = System.getProperty("logback.configurationFile");
+        }
+        if (rawValue != null) {
+            return Paths.get(rawValue).toAbsolutePath().normalize();
+        }
+        return mvndHome.resolve("conf/logging/logback.xml");
     }
 
     @Override
