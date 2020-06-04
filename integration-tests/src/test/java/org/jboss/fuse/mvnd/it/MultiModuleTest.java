@@ -28,7 +28,7 @@ public class MultiModuleTest {
     ClientLayout layout;
 
     @Test
-    void cleanInstall() throws IOException {
+    void cleanInstall() throws IOException, InterruptedException {
         final Path[] helloFilePaths = {
                 layout.multiModuleProjectDirectory().resolve("hello/target/hello.txt"),
                 layout.multiModuleProjectDirectory().resolve("hi/target/hi.txt")
@@ -53,7 +53,7 @@ public class MultiModuleTest {
         client.execute(output, "clean", "install", "-e").assertSuccess();
 
         final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+        Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
         Assertions.assertThat(logMessage.getAllValues())
                 .satisfiesAnyOf( /* Two orderings are possible */
                         messages -> Assertions.assertThat(messages)

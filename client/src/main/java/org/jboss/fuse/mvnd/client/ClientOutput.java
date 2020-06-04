@@ -29,17 +29,16 @@ import org.slf4j.LoggerFactory;
 /**
  * A sink for various kinds of events sent by the daemon.
  */
-public interface ClientOutput extends AutoCloseable {
+public interface ClientOutput extends AutoCloseable, Consumer<String> {
 
     public void projectStateChanged(String projectId, String display);
 
     public void projectFinished(String projectId);
 
-    public void log(String message);
+    /** Receive a log message */
+    public void accept(String message);
 
     public void error(BuildException m);
-
-    public void debug(String string);
 
     /**
      * A terminal {@link ClientOutput} based on JLine.
@@ -70,7 +69,7 @@ public interface ClientOutput extends AutoCloseable {
         }
 
         @Override
-        public void log(String message) {
+        public void accept(String message) {
             try {
                 queue.put(new AbstractMap.SimpleImmutableEntry<>(TerminalUpdater.LOG, message));
             } catch (InterruptedException e) {
@@ -96,11 +95,6 @@ public interface ClientOutput extends AutoCloseable {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-        }
-
-        @Override
-        public void debug(String msg) {
-            LOGGER.debug(msg);
         }
 
         static class TerminalUpdater implements AutoCloseable {
@@ -180,12 +174,18 @@ public interface ClientOutput extends AutoCloseable {
             private void update() {
                 // no need to refresh the display at every single step
                 final Size size = terminal.getSize();
-                display.resize(size.getRows(), size.getColumns());
-                final int displayableProjectCount = size.getRows() - 1;
+                final int rows = size.getRows();
+                display.resize(rows, size.getColumns());
+                if (rows <= 0) {
+                    display.update(Collections.emptyList(), 0);
+                    return;
+                }
+                final int displayableProjectCount = rows - 1;
                 final int skipRows = projects.size() > displayableProjectCount ? projects.size() - displayableProjectCount : 0;
                 final List<AttributedString> lines = new ArrayList<>(projects.size() - skipRows);
                 final int lineMaxLength = size.getColumns();
                 int i = 0;
+                lines.add(new AttributedString("Building..." + (skipRows > 0 ? " (" + skipRows + " more)" : "")));
                 for (String line : projects.values()) {
                     if (i < skipRows) {
                         i++;
@@ -193,7 +193,6 @@ public interface ClientOutput extends AutoCloseable {
                         lines.add(shortenIfNeeded(AttributedString.fromAnsi(line), lineMaxLength));
                     }
                 }
-                lines.add(0, new AttributedString("Building..." + (skipRows > 0 ? " (" + skipRows + " more)" : "")));
                 display.update(lines, -1);
             }
 

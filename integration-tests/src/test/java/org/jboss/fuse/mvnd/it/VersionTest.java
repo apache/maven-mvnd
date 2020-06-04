@@ -24,13 +24,13 @@ public class VersionTest {
     ClientLayout layout;
 
     @Test
-    void version() throws IOException {
+    void version() throws IOException, InterruptedException {
         final ClientOutput output = Mockito.mock(ClientOutput.class);
 
         client.execute(output, "-v").assertSuccess();
 
         final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+        Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
 
         Assertions.assertThat(logMessage.getAllValues())
                 .is(new MatchInOrderAmongOthers<>(
