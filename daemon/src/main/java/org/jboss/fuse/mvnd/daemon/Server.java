@@ -42,7 +42,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.cli.CliRequestBuilder;
 import org.apache.maven.cli.DaemonMavenCli;
-import org.jboss.fuse.mvnd.client.Client;
+import org.jboss.fuse.mvnd.client.DefaultClient;
 import org.jboss.fuse.mvnd.client.DaemonConnection;
 import org.jboss.fuse.mvnd.client.DaemonException;
 import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
@@ -92,10 +92,10 @@ public class Server implements AutoCloseable, Runnable {
             socket = ServerSocketChannel.open().bind(new InetSocketAddress(0));
 
             int idleTimeout;
-            if (System.getProperty(Client.DAEMON_IDLE_TIMEOUT) != null) {
-                idleTimeout = Integer.parseInt(System.getProperty(Client.DAEMON_IDLE_TIMEOUT));
+            if (System.getProperty(DefaultClient.DAEMON_IDLE_TIMEOUT) != null) {
+                idleTimeout = Integer.parseInt(System.getProperty(DefaultClient.DAEMON_IDLE_TIMEOUT));
             } else {
-                idleTimeout = Client.DEFAULT_IDLE_TIMEOUT;
+                idleTimeout = DefaultClient.DEFAULT_IDLE_TIMEOUT;
             }
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
@@ -339,7 +339,7 @@ public class Server implements AutoCloseable, Runnable {
     }
 
     private void cancelNow() {
-        long time = System.currentTimeMillis() + Client.CANCEL_TIMEOUT;
+        long time = System.currentTimeMillis() + DefaultClient.CANCEL_TIMEOUT;
 
 //        LOGGER.debug("Cancel requested: will wait for daemon to become idle.");
 //        try {

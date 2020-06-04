@@ -27,7 +27,7 @@ public class StopStatusTest {
     DaemonRegistry registry;
 
     @Test
-    void stopStatus() throws IOException {
+    void stopStatus() throws IOException, InterruptedException {
 
         /* The registry should be empty before we run anything */
         Assertions.assertThat(registry.getAll()).isEmpty();
@@ -42,7 +42,7 @@ public class StopStatusTest {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output, "--status").assertSuccess();
             final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+            Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
             Assertions.assertThat(logMessage.getAllValues())
                     .is(new MatchInOrderAmongOthers<>(
                             d.getUid() + " +" + d.getPid() + " +" + d.getAddress()));
@@ -73,7 +73,7 @@ public class StopStatusTest {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output, "--status").assertSuccess();
             final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+            Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
             Assertions.assertThat(
                     logMessage.getAllValues().stream()
                             .filter(m -> m.contains(d.getUid()))

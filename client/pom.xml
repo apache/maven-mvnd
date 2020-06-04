@@ -67,6 +67,7 @@
     <profiles>
         <profile>
             <id>native</id>
+
             <build>
                 <plugins>
                     <plugin>
@@ -82,7 +83,7 @@
                         </executions>
                         <configuration>
                             <skip>false</skip>
-                            <mainClass>org.jboss.fuse.mvnd.client.Client</mainClass>
+                            <mainClass>org.jboss.fuse.mvnd.client.DefaultClient</mainClass>
                             <imageName>mvnd</imageName>
                             <buildArgs>
                                 --no-server

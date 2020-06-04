@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 /**
- * Local paths relevant for the {@link Client}.
+ * Local paths relevant for the {@link DefaultClient}.
  */
 public class ClientLayout extends Layout {
 
@@ -28,7 +28,7 @@ public class ClientLayout extends Layout {
                     pwd,
                     findMultiModuleProjectDirectory(pwd),
                     findJavaHome(mvndProperties),
-                    null,
+                    findLocalRepo(),
                     null);
         }
         return ENV_INSTANCE;
@@ -58,6 +58,11 @@ public class ClientLayout extends Layout {
 
     public Path javaHome() {
         return javaHome;
+    }
+
+    static Path findLocalRepo() {
+        final String rawValue = System.getProperty("maven.repo.local");
+        return rawValue != null ? Paths.get(rawValue) : null;
     }
 
     static Path findJavaHome(Properties mvndProperties) {
