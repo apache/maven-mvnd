@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -101,7 +102,8 @@ public class Server implements AutoCloseable, Runnable {
 
             List<String> opts = new ArrayList<>();
             long cur = System.currentTimeMillis();
-            info = new DaemonInfo(uid, System.getProperty("java.home"), layout.mavenHome().toString(),
+            final Path javaHome = Paths.get(System.getProperty("java.home")).toRealPath();
+            info = new DaemonInfo(uid, javaHome.toString(), layout.mavenHome().toString(),
                     DaemonRegistry.getProcessId(), socket.socket().getLocalPort(),
                     idleTimeout, Locale.getDefault().toLanguageTag(), opts,
                     Busy, cur, cur);

@@ -18,6 +18,7 @@ package org.jboss.fuse.mvnd.client;
 import static org.jboss.fuse.mvnd.client.DaemonState.Busy;
 import static org.jboss.fuse.mvnd.client.DaemonState.Idle;
 
+import java.nio.file.Path;
 import java.util.List;
 
 public class DaemonInfo {
@@ -113,18 +114,20 @@ public class DaemonInfo {
 
     @Override
     public String toString() {
-        return "DaemonInfo{" +
-                "uid='" + uid + '\'' +
-                ", javaHome='" + javaHome + '\'' +
-                ", mavenHome='" + mavenHome + '\'' +
-                ", pid=" + pid +
-                ", address=" + address +
-                ", idleTimeout=" + idleTimeout +
-                ", locale='" + locale + '\'' +
-                ", options=" + options +
-                ", state=" + state +
-                ", lastIdle=" + lastIdle +
-                ", lastBusy=" + lastBusy +
-                '}';
+        final StringBuilder sb = new StringBuilder("DaemonInfo{uid=").append(uid);
+        appendNonKeyFields(sb);
+        return sb.append('}').toString();
+    }
+    public StringBuilder appendNonKeyFields(StringBuilder sb) {
+        return sb.append("javaHome=").append(javaHome)
+                .append(", options=").append(options)
+                .append(", mavenHome=").append(mavenHome)
+                .append(", pid=").append(pid)
+                .append(", address=").append(address)
+                .append(", idleTimeout=").append(idleTimeout)
+                .append(", locale=").append(locale)
+                .append(", state=").append(state)
+                .append(", lastIdle=").append(lastIdle)
+                .append(", lastBusy=").append(lastBusy);
     }
 }

@@ -20,6 +20,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -105,11 +108,13 @@ public class Client {
         try (DaemonRegistry registry = new DaemonRegistry(layout.registry())) {
             boolean status = args.remove("--status");
             if (status) {
-                output.log(String.format("    %36s  %5s  %5s  %7s  %s",
-                        "UUID", "PID", "Port", "Status", "Timestamp"));
-                registry.getAll().forEach(d -> output.log(String.format("    %36s  %5s  %5s  %7s  %s",
+                output.log(String.format("    %36s  %7s  %5s  %7s  %s",
+                        "UUID", "PID", "Port", "Status", "Last activity"));
+                registry.getAll().forEach(d -> output.log(String.format("    %36s  %7s  %5s  %7s  %s",
                         d.getUid(), d.getPid(), d.getAddress(), d.getState(),
-                        new Date(Math.max(d.getLastIdle(), d.getLastBusy())).toString())));
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
+                                ZoneId.systemDefault()))));
                 return new ClientResult<O>(argv, true, output);
             }
             boolean stop = args.remove("--stop");
@@ -146,7 +151,7 @@ public class Client {
 
             DaemonConnector connector = new DaemonConnector(layout, registry, this::startDaemon, new MessageSerializer());
             List<String> opts = new ArrayList<>();
-            DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome.toString(), opts));
+            DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts));
 
             daemon.dispatch(new Message.BuildRequest(
                     args,
