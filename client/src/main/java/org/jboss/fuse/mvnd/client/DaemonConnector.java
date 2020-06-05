@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,12 +180,12 @@ public class DaemonConnector {
     private List<DaemonInfo> getCompatibleDaemons(Iterable<DaemonInfo> daemons, DaemonCompatibilitySpec constraint) {
         List<DaemonInfo> compatibleDaemons = new LinkedList<>();
         for (DaemonInfo daemon : daemons) {
-            if (constraint.isSatisfiedBy(daemon)) {
+            final Result result = constraint.isSatisfiedBy(daemon);
+            if (result.isCompatible()) {
                 compatibleDaemons.add(daemon);
             } else {
-                LOGGER.info("Found daemon {} however it does not match the desired criteria.\n"
-                        + constraint.whyUnsatisfied(daemon) + "\n"
-                        + "  Looking for a different daemon...", daemon);
+                LOGGER.info("{} daemon {} does not match the desired criteria: "
+                        + result.getWhy(), daemon.getState(), daemon.getUid());
             }
         }
         return compatibleDaemons;

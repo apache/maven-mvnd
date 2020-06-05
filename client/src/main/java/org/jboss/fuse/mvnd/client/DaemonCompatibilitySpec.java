@@ -16,36 +16,42 @@
 package org.jboss.fuse.mvnd.client;
 
 
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class DaemonCompatibilitySpec {
 
-    private final String javaHome;
+    private final Path javaHome;
     private final List<String> options;
 
-    public DaemonCompatibilitySpec(String javaHome, List<String> options) {
-        this.javaHome = javaHome;
-        this.options = options;
+    /**
+     * @param javaHome make sure the Path is a result of {@link Path#toRealPath(java.nio.file.LinkOption...)}
+     * @param options the options
+     */
+    public DaemonCompatibilitySpec(Path javaHome, List<String> options) {
+        this.javaHome = Objects.requireNonNull(javaHome, "javaHome");
+        this.options = Objects.requireNonNull(options, "options");
     }
 
-    public boolean isSatisfiedBy(DaemonInfo daemon) {
-        return whyUnsatisfied(daemon) == null;
-    }
-
-    public String whyUnsatisfied(DaemonInfo daemon) {
+    public Result isSatisfiedBy(DaemonInfo daemon) {
         if (!javaHomeMatches(daemon)) {
-            return "Java home is different.\n" + description(daemon);
-        } else if (!daemonOptsMatch(daemon)) {
-            return "At least one daemon option is different.\n" + description(daemon);
+            return new Result(false, () -> "Java home is different.\n" + diff(daemon));
         }
-        return null;
+        if (!daemonOptsMatch(daemon)) {
+            return new Result(false, () -> "At least one daemon option is different.\n" + diff(daemon));
+        }
+        return new Result(true, () -> {throw new RuntimeException("No reason if DaemonCompatibilityResult.compatible == true");});
     }
 
-    private String description(DaemonInfo context) {
-        return "Wanted: " + this + "\n"
-            + "Actual: " + context + "\n";
+    private String diff(DaemonInfo context) {
+        final StringBuilder sb = new StringBuilder("Wanted: ");
+        appendFields(sb);
+        sb.append("\nActual: ");
+        context.appendNonKeyFields(sb).append("uid=").append(context.getUid()).append('\n');
+        return sb.toString();
     }
 
     private boolean daemonOptsMatch(DaemonInfo daemon) {
@@ -54,16 +60,35 @@ public class DaemonCompatibilitySpec {
     }
 
     private boolean javaHomeMatches(DaemonInfo daemon) {
-        return Objects.equals(
-                Paths.get(daemon.getJavaHome()).normalize(),
-                Paths.get(javaHome).normalize());
+        return javaHome.equals(Paths.get(daemon.getJavaHome()));
+    }
+
+    StringBuilder appendFields(StringBuilder sb) {
+        return sb.append("javaHome=").append(javaHome)
+                .append(", options=").append(options);
     }
 
     @Override
     public String toString() {
-        return "DaemonCompatibilitySpec{" +
-                "javaHome='" + javaHome + '\'' +
-                ", daemonOpts=" + options +
-                '}';
+        return appendFields(new StringBuilder("DaemonCompatibilitySpec{")).append('}').toString();
+    }
+
+    public static class Result {
+        private final boolean compatible;
+        private final Supplier<String> why;
+
+        Result(boolean compatible, Supplier<String> why) {
+            super();
+            this.compatible = compatible;
+            this.why = why;
+        }
+
+        public boolean isCompatible() {
+            return compatible;
+        }
+
+        public String getWhy() {
+            return why.get();
+        }
     }
 }

@@ -16,6 +16,7 @@
 package org.jboss.fuse.mvnd.daemon;
 
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
 import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec;
+import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
 import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
 import org.jboss.fuse.mvnd.client.DaemonInfo;
 import org.jboss.fuse.mvnd.client.DaemonState;
@@ -129,9 +131,10 @@ public class DaemonExpiration {
     static DaemonExpirationStrategy compatible() {
         return daemon -> {
             DaemonCompatibilitySpec constraint = new DaemonCompatibilitySpec(
-                    daemon.getInfo().getJavaHome(), daemon.getInfo().getOptions());
+                    Paths.get(daemon.getInfo().getJavaHome()), daemon.getInfo().getOptions());
             long compatible = daemon.getRegistry().getAll().stream()
-                    .filter(constraint::isSatisfiedBy)
+                    .map(constraint::isSatisfiedBy)
+                    .filter(Result::isCompatible)
                     .count();
             if (compatible > 1) {
                 return new DaemonExpirationResult(GRACEFUL_EXPIRE, "other compatible daemons were started");
