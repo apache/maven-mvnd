@@ -1,20 +1,17 @@
 package org.jboss.fuse.mvnd.it;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.Condition;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
-import org.jboss.fuse.mvnd.daemon.Client;
-import org.jboss.fuse.mvnd.daemon.ClientOutput;
-import org.jboss.fuse.mvnd.daemon.DaemonInfo;
-import org.jboss.fuse.mvnd.daemon.DaemonRegistry;
-import org.jboss.fuse.mvnd.daemon.DaemonState;
+import org.jboss.fuse.mvnd.client.Client;
+import org.jboss.fuse.mvnd.client.ClientOutput;
+import org.jboss.fuse.mvnd.client.DaemonInfo;
+import org.jboss.fuse.mvnd.client.DaemonRegistry;
+import org.jboss.fuse.mvnd.client.DaemonState;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -30,7 +27,7 @@ public class StopStatusTest {
     DaemonRegistry registry;
 
     @Test
-    void stopStatus() throws IOException {
+    void stopStatus() throws IOException, InterruptedException {
 
         /* The registry should be empty before we run anything */
         Assertions.assertThat(registry.getAll()).isEmpty();
@@ -45,7 +42,7 @@ public class StopStatusTest {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output, "--status").assertSuccess();
             final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+            Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
             Assertions.assertThat(logMessage.getAllValues())
                     .is(new MatchInOrderAmongOthers<>(
                             d.getUid() + " +" + d.getPid() + " +" + d.getAddress()));
@@ -76,7 +73,7 @@ public class StopStatusTest {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output, "--status").assertSuccess();
             final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+            Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
             Assertions.assertThat(
                     logMessage.getAllValues().stream()
                             .filter(m -> m.contains(d.getUid()))

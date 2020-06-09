@@ -11,8 +11,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.util.concurrent.Monitor;
 import org.apache.maven.project.MavenProject;
 import org.jboss.fuse.mvnd.builder.ProjectExecutorService.ProjectRunnable;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.jboss.fuse.mvnd.builder.ProjectComparator.id;
 
@@ -70,7 +70,7 @@ public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest {
         executor.resume();
         executor.awaitShutdown();
 
-        Assert.assertEquals(Arrays.asList(a, c, a, b), executed);
+        Assertions.assertEquals(Arrays.asList(a, c, a, b), executed);
     }
 
     // copy&paste from ThreadPoolExecutor javadoc (use of Guava is a nice touch there)

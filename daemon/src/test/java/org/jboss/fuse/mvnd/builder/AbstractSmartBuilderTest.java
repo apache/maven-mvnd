@@ -5,11 +5,11 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.apache.maven.project.MavenProject;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 abstract class AbstractSmartBuilderTest {
     protected void assertProjects(Collection<MavenProject> actual, MavenProject... expected) {
-        Assert.assertEquals(new HashSet<MavenProject>(Arrays.asList(expected)), new HashSet<>(actual));
+        Assertions.assertEquals(new HashSet<MavenProject>(Arrays.asList(expected)), new HashSet<>(actual));
     }
 
     protected MavenProject newProject(String artifactId) {

@@ -15,11 +15,16 @@
  */
 package org.jboss.fuse.mvnd.daemon;
 
+import static org.jboss.fuse.mvnd.client.DaemonState.Busy;
+import static org.jboss.fuse.mvnd.client.DaemonState.StopRequested;
+import static org.jboss.fuse.mvnd.client.DaemonState.Stopped;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,31 +42,30 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.cli.CliRequestBuilder;
 import org.apache.maven.cli.DaemonMavenCli;
+import org.jboss.fuse.mvnd.client.DefaultClient;
+import org.jboss.fuse.mvnd.client.DaemonConnection;
+import org.jboss.fuse.mvnd.client.DaemonException;
+import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
+import org.jboss.fuse.mvnd.client.DaemonInfo;
+import org.jboss.fuse.mvnd.client.DaemonRegistry;
+import org.jboss.fuse.mvnd.client.DaemonState;
+import org.jboss.fuse.mvnd.client.DaemonStopEvent;
+import org.jboss.fuse.mvnd.client.Layout;
+import org.jboss.fuse.mvnd.client.Message;
+import org.jboss.fuse.mvnd.client.Message.BuildEvent;
+import org.jboss.fuse.mvnd.client.Message.BuildException;
+import org.jboss.fuse.mvnd.client.Message.BuildMessage;
+import org.jboss.fuse.mvnd.client.Message.BuildRequest;
+import org.jboss.fuse.mvnd.client.Message.MessageSerializer;
+import org.jboss.fuse.mvnd.client.Message.BuildEvent.Type;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
-import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
-import org.jboss.fuse.mvnd.daemon.Message.BuildEvent;
-import org.jboss.fuse.mvnd.daemon.Message.BuildEvent.Type;
-import org.jboss.fuse.mvnd.daemon.Message.BuildException;
-import org.jboss.fuse.mvnd.daemon.Message.BuildMessage;
-import org.jboss.fuse.mvnd.daemon.Message.BuildRequest;
-import org.jboss.fuse.mvnd.daemon.Message.MessageSerializer;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.jboss.fuse.mvnd.daemon.DaemonState.Busy;
-import static org.jboss.fuse.mvnd.daemon.DaemonState.StopRequested;
-import static org.jboss.fuse.mvnd.daemon.DaemonState.Stopped;
-
 public class Server implements AutoCloseable, Runnable {
 
-    public static final String DAEMON_IDLE_TIMEOUT = "daemon.idleTimeout";
-
-    public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
-    public static final int DEFAULT_PERIODIC_CHECK_INTERVAL_MILLIS = 10 * 1000;
-
-    public static final int CANCEL_TIMEOUT = 10 * 1000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
 
@@ -88,17 +92,18 @@ public class Server implements AutoCloseable, Runnable {
             socket = ServerSocketChannel.open().bind(new InetSocketAddress(0));
 
             int idleTimeout;
-            if (System.getProperty(DAEMON_IDLE_TIMEOUT) != null) {
-                idleTimeout = Integer.parseInt(System.getProperty(DAEMON_IDLE_TIMEOUT));
+            if (System.getProperty(DefaultClient.DAEMON_IDLE_TIMEOUT) != null) {
+                idleTimeout = Integer.parseInt(System.getProperty(DefaultClient.DAEMON_IDLE_TIMEOUT));
             } else {
-                idleTimeout = DEFAULT_IDLE_TIMEOUT;
+                idleTimeout = DefaultClient.DEFAULT_IDLE_TIMEOUT;
             }
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
 
             List<String> opts = new ArrayList<>();
             long cur = System.currentTimeMillis();
-            info = new DaemonInfo(uid, layout.javaHome().toString(), layout.mavenHome().toString(),
+            final Path javaHome = Paths.get(System.getProperty("java.home")).toRealPath();
+            info = new DaemonInfo(uid, javaHome.toString(), layout.mavenHome().toString(),
                     DaemonRegistry.getProcessId(), socket.socket().getLocalPort(),
                     idleTimeout, Locale.getDefault().toLanguageTag(), opts,
                     Busy, cur, cur);
@@ -334,7 +339,7 @@ public class Server implements AutoCloseable, Runnable {
     }
 
     private void cancelNow() {
-        long time = System.currentTimeMillis() + CANCEL_TIMEOUT;
+        long time = System.currentTimeMillis() + DefaultClient.CANCEL_TIMEOUT;
 
 //        LOGGER.debug("Cancel requested: will wait for daemon to become idle.");
 //        try {
@@ -382,9 +387,9 @@ public class Server implements AutoCloseable, Runnable {
         try {
             LOGGER.info("Executing request");
             CliRequest req = new CliRequestBuilder()
-                    .arguments(buildRequest.args)
-                    .workingDirectory(Paths.get(buildRequest.workingDir))
-                    .projectDirectory(Paths.get(buildRequest.projectDir))
+                    .arguments(buildRequest.getArgs())
+                    .workingDirectory(Paths.get(buildRequest.getWorkingDir()))
+                    .projectDirectory(Paths.get(buildRequest.getProjectDir()))
                     .build();
 
             PriorityBlockingQueue<Message> queue = new PriorityBlockingQueue<Message>(64,

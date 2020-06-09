@@ -7,8 +7,8 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.maven.project.MavenProject;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.jboss.fuse.mvnd.builder.ProjectComparator.id;
 
@@ -28,9 +28,9 @@ public class ProjectComparatorTest extends AbstractSmartBuilderTest {
         queue.add(b);
         queue.add(c);
 
-        Assert.assertEquals(a, queue.poll());
-        Assert.assertEquals(c, queue.poll());
-        Assert.assertEquals(b, queue.poll());
+        Assertions.assertEquals(a, queue.poll());
+        Assertions.assertEquals(c, queue.poll());
+        Assertions.assertEquals(b, queue.poll());
     }
 
     @Test
@@ -52,9 +52,9 @@ public class ProjectComparatorTest extends AbstractSmartBuilderTest {
         queue.add(b);
         queue.add(c);
 
-        Assert.assertEquals(c, queue.poll());
-        Assert.assertEquals(a, queue.poll());
-        Assert.assertEquals(b, queue.poll());
+        Assertions.assertEquals(c, queue.poll());
+        Assertions.assertEquals(a, queue.poll());
+        Assertions.assertEquals(b, queue.poll());
     }
 
 }

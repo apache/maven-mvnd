@@ -10,10 +10,9 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.EqualsInOrderAmongOthers;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
-import org.jboss.fuse.mvnd.daemon.Client;
-import org.jboss.fuse.mvnd.daemon.ClientLayout;
-import org.jboss.fuse.mvnd.daemon.ClientOutput;
-import org.jboss.fuse.mvnd.daemon.Layout;
+import org.jboss.fuse.mvnd.client.Client;
+import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -26,13 +25,10 @@ public class MultiModuleTest {
     Client client;
 
     @Inject
-    Layout layout;
-
-    @Inject
-    ClientLayout clientLayout;
+    ClientLayout layout;
 
     @Test
-    void cleanInstall() throws IOException {
+    void cleanInstall() throws IOException, InterruptedException {
         final Path[] helloFilePaths = {
                 layout.multiModuleProjectDirectory().resolve("hello/target/hello.txt"),
                 layout.multiModuleProjectDirectory().resolve("hi/target/hi.txt")
@@ -45,7 +41,7 @@ public class MultiModuleTest {
             }
         });
 
-        final Path localMavenRepo = clientLayout.getLocalMavenRepository();
+        final Path localMavenRepo = layout.getLocalMavenRepository();
         final Path[] installedJars = {
                 localMavenRepo.resolve("org/jboss/fuse/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
                 localMavenRepo.resolve("org/jboss/fuse/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar"),
@@ -57,7 +53,7 @@ public class MultiModuleTest {
         client.execute(output, "clean", "install", "-e").assertSuccess();
 
         final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).log(logMessage.capture());
+        Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
         Assertions.assertThat(logMessage.getAllValues())
                 .satisfiesAnyOf( /* Two orderings are possible */
                         messages -> Assertions.assertThat(messages)

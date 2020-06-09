@@ -12,6 +12,10 @@
 
     <name>Maven Daemon - Integration Tests</name>
 
+    <properties>
+        <mvnd.native.executable>${project.basedir}/../client/target/mvnd</mvnd.native.executable>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>jakarta.inject</groupId>
@@ -59,4 +63,44 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <mvnd.native.executable>${project.basedir}/../client/target/mvnd.exe</mvnd.native.executable>
+            </properties>
+        </profile>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <systemPropertyVariables>
+                                        <project.version>${project.version}</project.version>
+                                        <mvnd.home>${project.basedir}/../daemon/target/maven-distro</mvnd.home>
+                                        <mvnd.native.executable>${mvnd.native.executable}</mvnd.native.executable>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

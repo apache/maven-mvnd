@@ -104,7 +104,7 @@ fi
 
 DAEMON_JAR=`echo "${MVND_HOME}"/lib/ext/*.jar "${MVND_HOME}"/lib/*.jar`
 DAEMON_JAR=$(echo $DAEMON_JAR | sed -e 's/ /:/g')
-DAEMON_LAUNCHER=org.jboss.fuse.mvnd.daemon.Client
+DAEMON_LAUNCHER=org.jboss.fuse.mvnd.client.Client
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin ; then

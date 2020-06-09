@@ -16,6 +16,7 @@
 package org.jboss.fuse.mvnd.daemon;
 
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -23,10 +24,16 @@ import java.util.Objects;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
+import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec;
+import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
+import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
+import org.jboss.fuse.mvnd.client.DaemonInfo;
+import org.jboss.fuse.mvnd.client.DaemonState;
+
+import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.DO_NOT_EXPIRE;
+import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.GRACEFUL_EXPIRE;
+import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.QUIET_EXPIRE;
 import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
-import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus.DO_NOT_EXPIRE;
-import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus.GRACEFUL_EXPIRE;
-import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStatus.QUIET_EXPIRE;
 
 public class DaemonExpiration {
 
@@ -124,9 +131,10 @@ public class DaemonExpiration {
     static DaemonExpirationStrategy compatible() {
         return daemon -> {
             DaemonCompatibilitySpec constraint = new DaemonCompatibilitySpec(
-                    daemon.getInfo().getJavaHome(), daemon.getInfo().getOptions());
+                    Paths.get(daemon.getInfo().getJavaHome()), daemon.getInfo().getOptions());
             long compatible = daemon.getRegistry().getAll().stream()
-                    .filter(constraint::isSatisfiedBy)
+                    .map(constraint::isSatisfiedBy)
+                    .filter(Result::isCompatible)
                     .count();
             if (compatible > 1) {
                 return new DaemonExpirationResult(GRACEFUL_EXPIRE, "other compatible daemons were started");
@@ -224,18 +232,5 @@ public class DaemonExpiration {
             return reason;
         }
 
-    }
-
-    /**
-     * Expiration status for daemon expiration check results.
-     * Note that order here is important, higher ordinal statuses
-     * take precedent over lower ordinal statuses when aggregating
-     * results.
-     */
-    public enum DaemonExpirationStatus {
-        DO_NOT_EXPIRE,
-        QUIET_EXPIRE,
-        GRACEFUL_EXPIRE,
-        IMMEDIATE_EXPIRE;
     }
 }
