@@ -30,8 +30,26 @@ mvnd install
 Prerequisites:
 
 * Download and unpack GraalVM CE from https://github.com/graalvm/graalvm-ce-builds/releases[GitHub]
-* Set `GRAALVM_HOME` to where you unpacked GraalVM in the previous step
-* `$GRAALVM_HOME/bin/gu install native-image`
+* Set `JAVA_HOME` to where you unpacked GraalVM in the previous step. Check that `java -version` output is as
+  expected:
++
+[source,shell]
+----
+$ $JAVA_HOME/bin/java -version
+openjdk version "11.0.7" 2020-04-14
+OpenJDK Runtime Environment GraalVM CE 20.1.0 (build 11.0.7+10-jvmci-20.1-b02)
+OpenJDK 64-Bit Server VM GraalVM CE 20.1.0 (build 11.0.7+10-jvmci-20.1-b02, mixed mode, sharing)
+----
++
+* Install the `native-image` tool:
++
+[source,shell]
+----
+$ $JAVA_HOME/bin/gu install native-image
+----
+
+* `native-image` may require additional software to be installed depending on your platform - see the
+https://www.graalvm.org/docs/reference-manual/native-image/#prerequisites[`native-image` documentation].
 
 Build the native mvnd client
 
@@ -46,7 +64,7 @@ $ ls -lh target/mvnd
 -rwxrwxr-x. 1 ppalaga ppalaga 14M Jun  2 13:23 target/mvnd
 ----
 
-Install the native `mvnd` client:
+Install the native `mvnd` client (`mvnd.exe` on Windows):
 
 * Add the `target/mvnd` binary to `PATH` or copy it to `~/bin` or some other location already included in `PATH`
 * Take care that the `mvnd` binary has a higher precendence than the `mvnd` shell script in the `bin` directory of
@@ -58,6 +76,7 @@ Install the native `mvnd` client:
 # An absolute path to your Maven Daemon installation
 maven.home = [mvnd-source-root]/mvnd/daemon/target/maven-distro
 # java.home is optional if you have JAVA_HOME environment variable set
+# This is for running the mvnd server, hence a stock non-GraalVM JDK is enough.
 java.home = ...
 ----
 
