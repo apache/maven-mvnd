@@ -26,10 +26,16 @@ import java.io.PrintStream;
 import java.util.Map;
 import java.util.Scanner;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ScriptUtils {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptUtils.class);
+
     public static int execute(String name, Map<String, String> props) throws IOException {
-        File script = File.createTempFile("jpm.", ".script");
+        final File script = File.createTempFile("jpm.", ".script");
+
         try {
             if (isWindows()) {
                 String res = "windows/" + name + ".vbs";
@@ -50,6 +56,7 @@ public class ScriptUtils {
     }
 
     public static int executeProcess(java.lang.ProcessBuilder builder) throws IOException {
+        builder.inheritIO();
         try {
             java.lang.Process process = builder.start();
             return process.waitFor();
@@ -59,6 +66,7 @@ public class ScriptUtils {
     }
 
     public static void copyFilteredResource(String resource, File outFile, Map<String, String> props) throws IOException {
+        LOG.trace("Writing a script to {}", outFile);
         InputStream is = null;
         try {
             is = ScriptUtils.class.getResourceAsStream(resource);
@@ -69,6 +77,7 @@ public class ScriptUtils {
                 while (scanner.hasNextLine() ) {
                     String line = scanner.nextLine();
                     line = filter(line, props);
+                    LOG.trace("Script line {}", line);
                     out.println(line);
                 }
                 scanner.close();
