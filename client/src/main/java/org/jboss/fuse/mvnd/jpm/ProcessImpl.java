@@ -26,12 +26,17 @@ import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ProcessImpl implements Process {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -8140632422386086507L;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProcessImpl.class);
 
     private int pid;
     //private File input;
@@ -110,7 +115,7 @@ public class ProcessImpl implements Process {
         //File input = File.createTempFile("jpm.", ".input");
         //File output = File.createTempFile("jpm.", ".output");
         //File error = File.createTempFile("jpm.", ".error");
-        File pidFile = File.createTempFile("jpm.", ".pid");
+        final File pidFile = File.createTempFile("jpm.", ".pid");
         try {
             Map<String, String> props = new HashMap<>();
             //props.put("${in.file}", input.getCanonicalPath());
@@ -127,6 +132,7 @@ public class ProcessImpl implements Process {
                 throw new IOException("Unable to create process (error code: " + ret + ")");
             }
             int pid = readPid(pidFile);
+            LOG.debug("Read server pid {} from {}", pid, pidFile);
             return new ProcessImpl(pid/*, input, output, error*/);
         } finally {
             pidFile.delete();
