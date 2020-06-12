@@ -17,6 +17,7 @@ package org.jboss.fuse.mvnd.client;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,7 +25,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -55,16 +55,24 @@ public class DefaultClient implements Client {
     private final Properties buildProperties;
 
     public static void main(String[] argv) throws Exception {
-        final List<String> args = new ArrayList<>(Arrays.asList(argv));
+        final List<String> args = new ArrayList<>(argv.length);
 
         Path logFile = null;
-        for (int i = 0; i < args.size() - 2; i++) {
-            String arg = args.get(i);
+        int i = 0;
+        while (i < argv.length) {
+            final String arg = argv[i++];
             if ("-l".equals(arg) || "--log-file".equals(arg)) {
-                logFile = Paths.get(args.get(i + 1));
-                args.remove(i);
-                args.remove(i);
-                break;
+                if (i < argv.length) {
+                    logFile = Paths.get(argv[i++]);
+                } else {
+                    throw new IllegalArgumentException("-l and --log-file need to befollowed by a path");
+                }
+            } else if ("--install".equals(arg)) {
+                install(false);
+            } else if ("--update".equals(arg)) {
+                install(true);
+            } else {
+                args.add(arg);
             }
         }
 
@@ -73,14 +81,36 @@ public class DefaultClient implements Client {
         }
     }
 
+    private static void install(boolean overwrite) {
+        final Properties buildProps = loadBuildProperties();
+        final String version = buildProps.getProperty("version");
+        final String rawZipUri = System.getProperty("mvnd.zip.uri", "https://github.com/ppalaga/mvnd/releases/download/"+ version +"/mvnd-" + version + ".zip");
+        final URI zipUri = URI.create(rawZipUri);
+        final Path mvndHome;
+        final String rawMvndHome = Layout.findEnvMavenHome();
+        if (rawMvndHome == null) {
+            mvndHome = Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd/" + version);
+        } else {
+            mvndHome = Paths.get(rawMvndHome);
+        }
+        final String rawJavaHome = System.getProperty("java.home");
+        final Path javaHome = rawJavaHome != null ? Paths.get(rawJavaHome) : null;
+        Installer.installServer(zipUri, Layout.MVND_PROPS_PATH, mvndHome, javaHome, overwrite);
+    }
+
     public DefaultClient(ClientLayout layout) {
         this.layout = layout;
-        this.buildProperties = new Properties();
+        this.buildProperties = loadBuildProperties();
+    }
+
+    static Properties loadBuildProperties() {
+        final Properties result = new Properties();
         try (InputStream is = DefaultClient.class.getResourceAsStream("build.properties")) {
-            buildProperties.load(is);
+            result.load(is);
         } catch (IOException e) {
             throw new RuntimeException("Could not read build.properties");
         }
+        return result;
     }
 
     @Override
@@ -95,9 +125,13 @@ public class DefaultClient implements Client {
         boolean debug = args.contains("-X") || args.contains("--debug");
         if (version || showVersion || debug) {
             final String nativeSuffix = Layout.isNative() ? " (native)" : "";
-            final String v = Ansi.ansi().bold().a("Maven Daemon " + buildProperties.getProperty("version") + nativeSuffix).reset().toString();
+            final String v = Ansi.ansi().bold().a("Maven Daemon " + buildProperties.getProperty("version") + nativeSuffix)
+                    .reset().toString();
             output.accept(v);
-            /* Do not return, rather pass -v to the server so that the client module does not need to depend on any Maven artifacts */
+            /*
+             * Do not return, rather pass -v to the server so that the client module does not need to depend on any
+             * Maven artifacts
+             */
         }
 
         final Path javaHome = layout.javaHome();
@@ -162,17 +196,17 @@ public class DefaultClient implements Client {
                 } else if (m instanceof BuildEvent) {
                     BuildEvent be = (BuildEvent) m;
                     switch (be.getType()) {
-                        case BuildStarted:
-                            break;
-                        case BuildStopped:
-                            return new DefaultResult(argv, true);
-                        case ProjectStarted:
-                        case MojoStarted:
-                        case MojoStopped:
-                            output.projectStateChanged(be.projectId, be.display);
-                            break;
-                        case ProjectStopped:
-                            output.projectFinished(be.projectId);
+                    case BuildStarted:
+                        break;
+                    case BuildStopped:
+                        return new DefaultResult(argv, true);
+                    case ProjectStarted:
+                    case MojoStarted:
+                    case MojoStopped:
+                        output.projectStateChanged(be.projectId, be.display);
+                        break;
+                    case ProjectStopped:
+                        output.projectFinished(be.projectId);
                     }
                 } else if (m instanceof BuildMessage) {
                     BuildMessage bm = (BuildMessage) m;
@@ -236,13 +270,14 @@ public class DefaultClient implements Client {
         } catch (Exception e) {
             throw new DaemonException.StartException(
                     String.format("Error starting daemon: uid = %s, workingDir = %s, daemonArgs: %s",
-                            uid, workingDir, command), e);
+                            uid, workingDir, command),
+                    e);
         }
     }
 
     Path findClientJar(Path mavenHome) {
         final Path ext = mavenHome.resolve("lib/ext");
-        final String clientJarName = "mvnd-client-"+ buildProperties.getProperty("version") + ".jar";
+        final String clientJarName = "mvnd-client-" + buildProperties.getProperty("version") + ".jar";
         try (Stream<Path> files = Files.list(ext)) {
             return files
                     .filter(f -> f.getFileName().toString().equals(clientJarName))
