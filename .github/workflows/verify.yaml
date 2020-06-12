@@ -15,62 +15,204 @@
 # limitations under the License.
 #
 
-name: Linux, Windows and MacOS CI
-
+name: GitHub Actions
 on: [push, pull_request]
+
+env:
+  GRAALVM_VERSION: '20.1.0.java11'
 
 jobs:
 
   linux:
     runs-on: ubuntu-18.04
     steps:
+
     - uses: actions/checkout@v1
+
     - name: setup-graalvm-ce
       uses: DeLaGuardo/setup-graalvm@3
       with:
-        graalvm-version: '20.1.0.java11'
+        graalvm-version: ${{ env.GRAALVM_VERSION }}
+
     - name: gu install native-image
       run: gu install native-image
+
     - name: mvn clean verify
       run: ./mvnw clean verify -Pnative -B -ntp -e
+
+    - name: Upload mvnd
+      uses: actions/upload-artifact@v2
+      with:
+        name: mvnd-linux-amd64
+        path: client/target/mvnd
+    - name: Upload mvnd-dist.zip
+      uses: actions/upload-artifact@v2
+      with:
+        name: mvnd-dist.zip
+        path: daemon/target/mvnd-dist-*.zip
+
 
   windows:
     runs-on: windows-2019
     steps:
+
+    - name: Set CHOCO_CACHE_PATH
+      run: |
+        echo "::set-env name=CHOCO_CACHE_PATH::C:\Users\$env:UserName\AppData\Local\Temp\chocolatey"
+
+    - name: Cache chocolatey localCache
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.CHOCO_CACHE_PATH }}
+        key: ${{ runner.os }}-choco-cache-2
+
+    - name: choco install visualstudio2017-workload-vctools
+      run: choco install visualstudio2017-workload-vctools --no-progress
+
     - name: setup-graalvm-ce
       uses: DeLaGuardo/setup-graalvm@3
       with:
-        graalvm-version: '20.1.0.java11'
+        graalvm-version: ${{ env.GRAALVM_VERSION }}
+
     - name: gu install native-image
       shell: cmd
       run: gu install native-image
-    - name: choco install visualstudio2017-workload-vctools
-      run: choco install visualstudio2017-workload-vctools
+
+    - uses: actions/cache@v2
+      with:
+        path: ${{ env.JAVA_HOME }}\bin\native-image.exe
+        key: ${{ runner.os }}-native-image-${{ env.GRAALVM_VERSION }}
+
+    - name:
+      id: native_image_exe_exists
+      uses: andstor/file-existence-action@v1
+      with:
+        files: ${{ env.JAVA_HOME }}\bin\native-image.exe
+
     - name: Compile native-image.cmd to native-image.exe
+      if: ${{ steps.native_image_exe_exists.outputs.files_exists == 'false' }}
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
         "%JAVA_HOME%\bin\native-image.cmd" -jar "%JAVA_HOME%\lib\graalvm\svm-driver.jar" native-image
+
     - name: move native-image.exe %JAVA_HOME%\bin\
+      if: ${{ steps.native_image_exe_exists.outputs.files_exists == 'false' }}
       shell: cmd
       run: |
         move native-image.exe "%JAVA_HOME%\bin\"
+
     - uses: actions/checkout@v1
+
     - name: mvn clean verify
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
         ./mvnw clean verify -Pnative -B -ntp -e
 
-  macos:
+    - name: Upload mvnd
+      uses: actions/upload-artifact@v2
+      with:
+        name: mvnd-windows-amd64.exe
+        path: client/target/mvnd.exe
+
+
+  darwin:
     runs-on: macos-10.15
     steps:
+
     - uses: actions/checkout@v1
+
     - name: setup-graalvm-ce
       uses: DeLaGuardo/setup-graalvm@3
       with:
-        graalvm-version: '20.1.0.java11'
+        graalvm-version: ${{ env.GRAALVM_VERSION }}
+
     - name: gu install native-image
       run: gu install native-image
+
     - name: mvn clean verify
       run: ./mvnw clean verify -Pnative -B -ntp -e
+
+    - name: Upload mvnd
+      uses: actions/upload-artifact@v2
+      with:
+        name: mvnd-darwin-amd64
+        path: client/target/mvnd
+
+
+  deploy:
+    runs-on: ubuntu-18.04
+    needs: [linux, windows, darwin]
+    if: startsWith(github.ref, 'refs/tags') # deploy only for tags
+    steps:
+
+    - name: Download artifacts
+      uses: actions/download-artifact@v2
+
+    - name: ls -R
+      run: ls -R
+
+    - name: Set environment
+      run: |
+        if [[ ${GITHUB_REF} = refs/heads/* ]]
+        then
+            VERSION=${GITHUB_REF##*/}-${GITHUB_SHA::8}
+        else
+            VERSION=${GITHUB_REF##*/}
+        fi
+        echo "Using VERSION=$VERSION"
+        echo "::set-env name=VERSION::$VERSION"
+        mv ./mvnd-dist.zip/mvnd-dist-*.zip ./mvnd-dist.zip/mvnd-dist.zip
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.VERSION }}
+        release_name: Release ${{ env.VERSION }}
+        draft: false
+        prerelease: false
+
+    - name: Deploy mvnd-linux-amd64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: mvnd-linux-amd64/mvnd
+        asset_name: mvnd-linux-amd64
+        asset_content_type: application/x-executable
+
+    - name: Deploy mvnd-dist.zip
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: mvnd-dist.zip/mvnd-dist.zip
+        asset_name: mvnd-dist.zip
+        asset_content_type: application/zip
+
+    - name: Deploy mvnd-darwin-amd64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: mvnd-darwin-amd64/mvnd
+        asset_name: mvnd-darwin-amd64
+        asset_content_type: application/x-executable
+
+    - name: Deploy mvnd-windows-amd64.exe
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: mvnd-windows-amd64.exe/mvnd.exe
+        asset_name: mvnd-windows-amd64.exe
+        asset_content_type: application/vnd.microsoft.portable-executable
+

@@ -26,6 +26,8 @@ import java.util.stream.Stream;
 
 public class Layout {
 
+    public static final Path MVND_PROPS_PATH = Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd.properties");
+
     private static Layout ENV_INSTANCE;
 
     private final Path mavenHome;
@@ -79,22 +81,18 @@ public class Layout {
 
     static Properties loadMvndProperties() {
         final Properties result = new Properties();
-        final Path mvndPropsPath = Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd.properties");
-        if (Files.exists(mvndPropsPath)) {
-            try (InputStream in = Files.newInputStream(mvndPropsPath)) {
+        if (Files.exists(MVND_PROPS_PATH)) {
+            try (InputStream in = Files.newInputStream(MVND_PROPS_PATH)) {
                 result.load(in);
             } catch (IOException e) {
-                throw new RuntimeException("Could not read " + mvndPropsPath);
+                throw new RuntimeException("Could not read " + MVND_PROPS_PATH);
             }
         }
         return result;
     }
 
     static Path findMavenHome(Properties mvndProperties) {
-        String rawValue = System.getenv("MAVEN_HOME");
-        if (rawValue == null) {
-            rawValue = System.getProperty("maven.home");
-        }
+        String rawValue = findEnvMavenHome();
         if (isNative()) {
             try {
                 final Path nativeExecutablePath = Paths.get(Class.forName("org.graalvm.nativeimage.ProcessProperties").getMethod("getExecutableName").invoke(null).toString()).toAbsolutePath().normalize();
@@ -124,6 +122,14 @@ public class Layout {
             throw new IllegalStateException("Either environment variable MAVEN_HOME or maven.home property in ~/.m2/mvnd.properties or system property maven.home must be set");
         }
         return Paths.get(rawValue).toAbsolutePath().normalize();
+    }
+
+    public static String findEnvMavenHome() {
+        String rawValue = System.getenv("MAVEN_HOME");
+        if (rawValue == null) {
+            rawValue = System.getProperty("maven.home");
+        }
+        return rawValue;
     }
 
     static Path findMultiModuleProjectDirectory(Path pwd) {
