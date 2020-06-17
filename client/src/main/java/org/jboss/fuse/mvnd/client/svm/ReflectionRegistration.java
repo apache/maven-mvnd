@@ -8,7 +8,8 @@ import com.oracle.svm.core.annotate.AutomaticFeature;
 public class ReflectionRegistration implements Feature {
     public void beforeAnalysis(BeforeAnalysisAccess access) {
 //        try {
-//        } catch (NoSuchMethodException | SecurityException e) {
+//            RuntimeReflection.register(AsiExtraField.class.getConstructors());
+//        } catch (SecurityException e) {
 //            throw new RuntimeException(e);
 //        }
     }

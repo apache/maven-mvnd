@@ -20,19 +20,13 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 public class ServerMain {
 
     public static void main(String[] args) throws Exception {
-        String uidStr = System.getProperty("daemon.uid");
-        String mavenHomeStr = System.getProperty("maven.home");
-        if (uidStr == null || mavenHomeStr == null) {
-            throw new IllegalStateException("The system properties 'daemon.uid' and 'maven.home' must be valid");
-        }
-
-        Path mavenHome = Paths.get(mavenHomeStr);
+        final String uidStr = Environment.DAEMON_UID.systemProperty().orFail().asString();
+        final Path mavenHome = Environment.MAVEN_HOME.systemProperty().orFail().asPath();
         URL[] classpath =
                 Stream.concat(
                         Stream.concat(Files.list(mavenHome.resolve("lib/ext")),

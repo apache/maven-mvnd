@@ -1,10 +1,10 @@
 package org.jboss.fuse.mvnd.client;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 /**
  * Local paths relevant for the {@link DefaultClient}.
@@ -19,31 +19,32 @@ public class ClientLayout extends Layout {
 
     public static ClientLayout getEnvInstance() {
         if (ENV_INSTANCE == null) {
-            final Properties mvndProperties = loadMvndProperties();
+            final Path mvndPropertiesPath = Environment.findMvndPropertiesPath();
+            final Supplier<Properties> mvndProperties = lazyMvndProperties(mvndPropertiesPath);
             final Path pwd = Paths.get(".").toAbsolutePath().normalize();
-
-            final Path mvndHome = findMavenHome(mvndProperties);
+            final Path mvndHome = Environment.findMavenHome(mvndProperties, mvndPropertiesPath);
             ENV_INSTANCE = new ClientLayout(
+                    mvndPropertiesPath,
                     mvndHome,
                     pwd,
-                    findMultiModuleProjectDirectory(pwd),
-                    findJavaHome(mvndProperties),
+                    Environment.findMultiModuleProjectDirectory(pwd),
+                    Environment.findJavaHome(mvndProperties, mvndPropertiesPath),
                     findLocalRepo(),
                     null);
         }
         return ENV_INSTANCE;
     }
 
-    public ClientLayout(Path mavenHome, Path userDir, Path multiModuleProjectDirectory, Path javaHome,
+    public ClientLayout(Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory, Path javaHome,
             Path localMavenRepository, Path settings) {
-        super(mavenHome, userDir, multiModuleProjectDirectory);
+        super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory);
         this.localMavenRepository = localMavenRepository;
         this.settings = settings;
         this.javaHome = Objects.requireNonNull(javaHome, "javaHome");
     }
 
     /**
-     * @return absolute normalized path to local Maven repository or {@code null}
+     * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the default
      */
     public Path getLocalMavenRepository() {
         return localMavenRepository;
@@ -61,38 +62,14 @@ public class ClientLayout extends Layout {
     }
 
     static Path findLocalRepo() {
-        final String rawValue = System.getProperty("maven.repo.local");
-        return rawValue != null ? Paths.get(rawValue) : null;
+        return Environment.MAVEN_REPO_LOCAL.systemProperty().asPath();
     }
 
-    static Path findJavaHome(Properties mvndProperties) {
-        String rawValue = System.getenv("JAVA_HOME");
-        if (rawValue == null) {
-            rawValue = mvndProperties.getProperty("java.home");
-        }
-        if (rawValue == null) {
-            rawValue = System.getProperty("java.home");
-        }
-        if (rawValue == null) {
-            throw new IllegalStateException(
-                    "Either environment variable JAVA_HOME or java.home property in ~/.m2/mvnd.properties or system property java.home must be set");
-        }
-        final Path path = Paths.get(rawValue);
-        try {
-            return path.toRealPath();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not get a real path from path " + path);
-        }
-    }
-
-    static Path findLogbackConfigurationFile(Properties mvndProperties, Path mvndHome) {
-        String rawValue = mvndProperties.getProperty("logback.configurationFile");
-        if (rawValue == null) {
-            rawValue = System.getProperty("logback.configurationFile");
-        }
-        if (rawValue == null) {
-            rawValue = System.getProperty("logback.configurationFile");
-        }
+    static Path findLogbackConfigurationFile(Supplier<Properties> mvndProperties, Path mvndPropertiesPath, Path mvndHome) {
+        final String rawValue = Environment.LOGBACK_CONFIGURATION_FILE
+                .systemProperty()
+                .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                .asString();
         if (rawValue != null) {
             return Paths.get(rawValue).toAbsolutePath().normalize();
         }

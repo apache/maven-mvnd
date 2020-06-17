@@ -25,10 +25,14 @@ import java.util.stream.Stream;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Installer {
+    private static final Logger LOG = LoggerFactory.getLogger(Installer.class);
     private static final int BUFFER_SIZE = 4096;
     private static final int MAX_PERMISSIONS = 0777;
+
     public static void installServer(URI zipUri, Path mvndPropsPath, Path mvndHome, Path javaHome, boolean overwrite) {
         final boolean mvndHomeExists = Files.exists(mvndHome);
         if (!overwrite && mvndHomeExists) {
@@ -47,7 +51,7 @@ public class Installer {
         writeMvndProperties(mvndPropsPath, mvndHome, javaHome);
     }
 
-    private static void deleteIfExists(Path path) {
+    static void deleteIfExists(Path path) {
         if (Files.isRegularFile(path)) {
             try {
                 Files.delete(path);
@@ -71,6 +75,7 @@ public class Installer {
     }
 
     static void writeMvndProperties(Path mvndPropsPath, Path mvndHome, Path javaHome) {
+        LOG.debug("Writing {}", mvndPropsPath);
         final String template = readTemplate();
         final String javaHomeLine = javaHome == null ? "" : "java.home = " + javaHome.toString();
         final String content = String.format(template, mvndHome.toString(), javaHomeLine);
@@ -91,21 +96,22 @@ public class Installer {
         }
     }
 
-    static void unzip(Path localZip, Path mvndHome) {
+    static void unzip(Path localZip, Path destinationDir) {
+        LOG.debug("Unzipping {} to {}", localZip, destinationDir);
         try {
-            Files.createDirectories(mvndHome);
+            Files.createDirectories(destinationDir);
         } catch (IOException e) {
-            throw new RuntimeException("Could not create directories " + mvndHome, e);
+            throw new RuntimeException("Could not create directories " + destinationDir, e);
         }
         try (ZipFile zip = new ZipFile(Files.newByteChannel(localZip))) {
             final Map<Integer, Set<PosixFilePermission>> permissionCache = new HashMap<>();
             final Enumeration<ZipArchiveEntry> entries = zip.getEntries();
             while (entries.hasMoreElements()) {
                 final ZipArchiveEntry entry = entries.nextElement();
-                final Path dest = mvndHome.resolve(entry.getName()).normalize();
-                if (!dest.startsWith(mvndHome)) {
+                final Path dest = destinationDir.resolve(entry.getName()).normalize();
+                if (!dest.startsWith(destinationDir)) {
                     /* Avoid writing to paths outside of mvndHome */
-                    throw new IllegalStateException("Tainted ZIP entry name " + entry.getName());
+                    throw new IllegalStateException("Possibly tainted ZIP entry name " + entry.getName() + " would have to be unpacked outside of " + destinationDir);
                 }
                 if (entry.isDirectory()) {
                     Files.createDirectories(dest);
@@ -120,21 +126,24 @@ public class Installer {
                                 "Could not unzip entry " + entry.getName() + " from " + localZip + " to " + dest);
                     }
                 }
-                final PosixFileAttributeView attributes = Files.getFileAttributeView(dest, PosixFileAttributeView.class);
-                if (attributes != null) {
-                    int mode = (int) (entry.getUnixMode() & MAX_PERMISSIONS);
-                    Files.setPosixFilePermissions(dest, permissionCache.computeIfAbsent(mode, Installer::toPermissionSet));
+                final int mode = (int) (entry.getUnixMode() & MAX_PERMISSIONS);
+                if (mode != 0) {
+                    final PosixFileAttributeView attributes = Files.getFileAttributeView(dest, PosixFileAttributeView.class);
+                    if (attributes != null) {
+                        Files.setPosixFilePermissions(dest, permissionCache.computeIfAbsent(mode, Installer::toPermissionSet));
+                    }
                 }
                 Files.setLastModifiedTime(dest, FileTime.from(entry.getTime(), TimeUnit.MILLISECONDS));
             }
         } catch (IOException e) {
-            throw new RuntimeException("Could not unzip " + localZip, e);
+            throw new RuntimeException("Could not unzip " + localZip + " to " + destinationDir, e);
         }
     }
 
     static Path download(URI zipUri) {
         try {
             final Path localZip = Files.createTempFile("", "-mvnd-dist.zip");
+            LOG.debug("Downloading {} to {}", zipUri, localZip);
             try (
                     InputStream in = new BufferedInputStream(zipUri.toURL().openStream(), BUFFER_SIZE);
                     OutputStream out = new BufferedOutputStream(Files.newOutputStream(localZip), BUFFER_SIZE)) {
