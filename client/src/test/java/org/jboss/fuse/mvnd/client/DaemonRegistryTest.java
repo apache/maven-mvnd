@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.daemon;
+package org.jboss.fuse.mvnd.client;
 
 import java.io.File;
 import java.io.IOException;

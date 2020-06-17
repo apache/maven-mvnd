@@ -43,6 +43,7 @@ import org.apache.maven.cli.CliRequest;
 import org.apache.maven.cli.CliRequestBuilder;
 import org.apache.maven.cli.DaemonMavenCli;
 import org.jboss.fuse.mvnd.client.DefaultClient;
+import org.jboss.fuse.mvnd.client.Environment;
 import org.jboss.fuse.mvnd.client.DaemonConnection;
 import org.jboss.fuse.mvnd.client.DaemonException;
 import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
@@ -91,12 +92,10 @@ public class Server implements AutoCloseable, Runnable {
             registry = new DaemonRegistry(layout.registry());
             socket = ServerSocketChannel.open().bind(new InetSocketAddress(0));
 
-            int idleTimeout;
-            if (System.getProperty(DefaultClient.DAEMON_IDLE_TIMEOUT) != null) {
-                idleTimeout = Integer.parseInt(System.getProperty(DefaultClient.DAEMON_IDLE_TIMEOUT));
-            } else {
-                idleTimeout = DefaultClient.DEFAULT_IDLE_TIMEOUT;
-            }
+            final int idleTimeout = Environment.DAEMON_IDLE_TIMEOUT
+                    .systemProperty()
+                    .orDefault(() -> String.valueOf(DefaultClient.DEFAULT_IDLE_TIMEOUT))
+                    .asInt();
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
 

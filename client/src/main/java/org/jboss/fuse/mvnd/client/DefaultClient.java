@@ -46,8 +46,6 @@ import org.slf4j.LoggerFactory;
 public class DefaultClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
-    public static final String DAEMON_DEBUG = "daemon.debug";
-    public static final String DAEMON_IDLE_TIMEOUT = "daemon.idleTimeout";
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
     public static final int DEFAULT_PERIODIC_CHECK_INTERVAL_MILLIS = 10 * 1000;
     public static final int CANCEL_TIMEOUT = 10 * 1000;
@@ -67,10 +65,6 @@ public class DefaultClient implements Client {
                 } else {
                     throw new IllegalArgumentException("-l and --log-file need to befollowed by a path");
                 }
-            } else if ("--install".equals(arg)) {
-                install(false);
-            } else if ("--update".equals(arg)) {
-                install(true);
             } else {
                 args.add(arg);
             }
@@ -81,21 +75,35 @@ public class DefaultClient implements Client {
         }
     }
 
-    private static void install(boolean overwrite) {
+    private static void install(boolean overwrite, final Properties commandLineProperties) {
         final Properties buildProps = loadBuildProperties();
         final String version = buildProps.getProperty("version");
-        final String rawZipUri = System.getProperty("mvnd.zip.uri", "https://github.com/ppalaga/mvnd/releases/download/"+ version +"/mvnd-" + version + ".zip");
+        final String rawZipUri = Environment.MVND_DIST_URI
+                .commandLineProperty(() -> commandLineProperties)
+                .orEnvironmentVariable()
+                .orSystemProperty()
+                .orDefault(() -> "https://github.com/mvndaemon/mvnd/releases/download/" + version + "/mvnd-dist.zip")
+                .asString();
         final URI zipUri = URI.create(rawZipUri);
-        final Path mvndHome;
-        final String rawMvndHome = Layout.findEnvMavenHome();
-        if (rawMvndHome == null) {
-            mvndHome = Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd/" + version);
-        } else {
-            mvndHome = Paths.get(rawMvndHome);
-        }
-        final String rawJavaHome = System.getProperty("java.home");
-        final Path javaHome = rawJavaHome != null ? Paths.get(rawJavaHome) : null;
-        Installer.installServer(zipUri, Layout.MVND_PROPS_PATH, mvndHome, javaHome, overwrite);
+        final Path mvndHome = Environment.MAVEN_HOME
+                .commandLineProperty(() -> commandLineProperties)
+                .orEnvironmentVariable()
+                .orSystemProperty()
+                .orDefault(() -> Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd/" + version).toString())
+                .asPath()
+                .toAbsolutePath().normalize();
+        final Path javaHome = Environment.JAVA_HOME
+                .systemProperty() // only write java.home to mvnd.properties if it was explicitly set on command line
+                                  // via -Djava.home=...
+                .asPath();
+        final Path mvndPropertiesPath = Environment.MVND_PROPERTIES_PATH
+                .commandLineProperty(() -> commandLineProperties)
+                .orEnvironmentVariable()
+                .orSystemProperty()
+                .orDefault(() -> Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd.properties").toString())
+                .asPath()
+                .toAbsolutePath().normalize();
+        Installer.installServer(zipUri, mvndPropertiesPath, mvndHome, javaHome, overwrite);
     }
 
     public DefaultClient(ClientLayout layout) {
@@ -103,7 +111,7 @@ public class DefaultClient implements Client {
         this.buildProperties = loadBuildProperties();
     }
 
-    static Properties loadBuildProperties() {
+    public static Properties loadBuildProperties() {
         final Properties result = new Properties();
         try (InputStream is = DefaultClient.class.getResourceAsStream("build.properties")) {
             result.load(is);
@@ -117,14 +125,56 @@ public class DefaultClient implements Client {
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
         LOGGER.debug("Starting client");
 
-        final List<String> args = new ArrayList<>(argv);
+        final List<String> args = new ArrayList<>(argv.size());
+        boolean version = false;
+        boolean showVersion = false;
+        boolean debug = false;
+        boolean install = false;
+        final Properties commandLineProperties = new Properties();
+        for (String arg : argv) {
+            switch (arg) {
+            case "-v":
+            case "-version":
+            case "--version":
+                version = true;
+                args.add(arg);
+                break;
+            case "-V":
+            case "--show-version":
+                showVersion = true;
+                args.add(arg);
+                break;
+            case "-X":
+            case "--debug":
+                debug = true;
+                args.add(arg);
+                break;
+            case "--install":
+                install = true;
+                break;
+            default:
+                if (arg.startsWith("-D")) {
+                    final int eqPos = arg.indexOf('=');
+                    if (eqPos >= 0) {
+                        commandLineProperties.setProperty(arg.substring(2, eqPos), arg.substring(eqPos+1));
+                    } else {
+                        commandLineProperties.setProperty(arg.substring(2), null);
+                    }
+                }
+                args.add(arg);
+                break;
+            }
+        }
+
+        if (install) {
+            install(false, commandLineProperties);
+            return new DefaultResult(argv, null);
+        }
+
 
         // Print version if needed
-        boolean version = args.contains("-v") || args.contains("-version") || args.contains("--version");
-        boolean showVersion = args.contains("-V") || args.contains("--show-version");
-        boolean debug = args.contains("-X") || args.contains("--debug");
         if (version || showVersion || debug) {
-            final String nativeSuffix = Layout.isNative() ? " (native)" : "";
+            final String nativeSuffix = Environment.isNative() ? " (native)" : "";
             final String v = Ansi.ansi().bold().a("Maven Daemon " + buildProperties.getProperty("version") + nativeSuffix)
                     .reset().toString();
             output.accept(v);
@@ -145,7 +195,7 @@ public class DefaultClient implements Client {
                         LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
                                 ZoneId.systemDefault()))));
-                return new DefaultResult(argv, true);
+                return new DefaultResult(argv, null);
             }
             boolean stop = args.remove("--stop");
             if (stop) {
@@ -164,7 +214,7 @@ public class DefaultClient implements Client {
                         }
                     }
                 }
-                return new DefaultResult(argv, true);
+                return new DefaultResult(argv, null);
             }
 
             setDefaultArgs(args);
@@ -191,15 +241,16 @@ public class DefaultClient implements Client {
             while (true) {
                 Message m = daemon.receive();
                 if (m instanceof BuildException) {
-                    output.error((BuildException) m);
-                    return new DefaultResult(argv, false);
+                    final BuildException e = (BuildException) m;
+                    output.error(e);
+                    return new DefaultResult(argv, new Exception(e.getClassName() + ": "+ e.getMessage() + "\n" + e.getStackTrace()));
                 } else if (m instanceof BuildEvent) {
                     BuildEvent be = (BuildEvent) m;
                     switch (be.getType()) {
                     case BuildStarted:
                         break;
                     case BuildStopped:
-                        return new DefaultResult(argv, true);
+                        return new DefaultResult(argv, null);
                     case ProjectStarted:
                     case MojoStarted:
                     case MojoStopped:
@@ -248,16 +299,16 @@ public class DefaultClient implements Client {
             args.add("\"" + layout.javaHome().resolve(java) + "\"");
             args.add("-classpath");
             args.add("\"" + classpath + "\"");
-            if (Boolean.getBoolean(DAEMON_DEBUG)) {
+            if (Environment.DAEMON_DEBUG.systemProperty().orDefault(() -> "false").asBoolean()) {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
             args.add("-Dmaven.home=\"" + mavenHome + "\"");
             args.add("-Dlogback.configurationFile=logback.xml");
             args.add("-Ddaemon.uid=" + uid);
             args.add("-Xmx4g");
-            final String timeout = System.getProperty(DAEMON_IDLE_TIMEOUT);
+            final String timeout = Environment.DAEMON_IDLE_TIMEOUT.systemProperty().asString();
             if (timeout != null) {
-                args.add("-D" + DAEMON_IDLE_TIMEOUT + "=" + timeout);
+                args.add(Environment.DAEMON_IDLE_TIMEOUT.asCommandLineProperty(timeout));
             }
             args.add("\"-Dmaven.multiModuleProjectDirectory=" + layout.multiModuleProjectDirectory().toString() + "\"");
 
@@ -291,26 +342,26 @@ public class DefaultClient implements Client {
 
     private class DefaultResult implements ExecutionResult {
 
-        private final boolean success;
+        private final Exception exception;
         private final List<String> args;
 
-        private DefaultResult(List<String> args, boolean success) {
+        private DefaultResult(List<String> args, Exception exception) {
             super();
             this.args = args;
-            this.success = success;
+            this.exception = exception;
         }
 
         @Override
         public ExecutionResult assertSuccess() {
-            if (!this.success) {
-                throw new AssertionError(appendCommand(new StringBuilder("Build failed: ")));
+            if (exception != null) {
+                throw new AssertionError(appendCommand(new StringBuilder("Build failed: ")).toString(), exception);
             }
             return this;
         }
 
         @Override
         public ExecutionResult assertFailure() {
-            if (this.success) {
+            if (exception == null) {
                 throw new AssertionError(appendCommand(new StringBuilder("Build did not fail: ")));
             }
             return this;
@@ -318,7 +369,7 @@ public class DefaultClient implements Client {
 
         @Override
         public boolean isSuccess() {
-            return success;
+            return exception == null;
         }
 
         StringBuilder appendCommand(StringBuilder sb) {

@@ -13,7 +13,6 @@ import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
@@ -27,7 +26,7 @@ public class SingleModuleNativeIT {
     ClientLayout layout;
 
     @Test
-    void cleanInstall(TestInfo testInfo) throws IOException, InterruptedException {
+    void cleanInstall() throws IOException, InterruptedException {
         final Path helloFilePath = layout.multiModuleProjectDirectory().resolve("target/hello.txt");
         if (Files.exists(helloFilePath)) {
             Files.delete(helloFilePath);
