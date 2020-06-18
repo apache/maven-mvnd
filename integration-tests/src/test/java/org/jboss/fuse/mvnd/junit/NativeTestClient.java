@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jboss.fuse.mvnd.junit;
 
 import java.io.BufferedReader;
@@ -16,6 +31,7 @@ import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
+import org.jboss.fuse.mvnd.client.Environment;
 import org.jboss.fuse.mvnd.client.ExecutionResult;
 
 /**
@@ -43,14 +59,23 @@ public class NativeTestClient implements Client {
         final List<String> cmd = new ArrayList<String>(args.size() + 1);
         cmd.add(mvndNativeExecutablePath.toString());
         args.stream().forEach(cmd::add);
-        cmd.add("-Dmaven.repo.local=" + layout.getLocalMavenRepository().toString());
-        ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
+        if (!Environment.MVND_PROPERTIES_PATH.hasCommandLineProperty(args)) {
+            cmd.add(Environment.MVND_PROPERTIES_PATH.asCommandLineProperty(layout.getMvndPropertiesPath().toString()));
+        }
+        if (!Environment.MAVEN_REPO_LOCAL.hasCommandLineProperty(args)) {
+            cmd.add(Environment.MAVEN_REPO_LOCAL.asCommandLineProperty(layout.getLocalMavenRepository().toString()));
+        }
+        final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
                 .directory(layout.userDir().toFile()) //
-                .redirectErrorStream(false);
+                .redirectErrorStream(true);
 
-        Map<String, String> env = builder.environment();
-        env.put("MAVEN_HOME", System.getProperty("mvnd.home"));
-        env.put("JAVA_HOME", System.getProperty("java.home"));
+        final Map<String, String> env = builder.environment();
+        if (!Environment.MAVEN_HOME.hasCommandLineProperty(args)) {
+            env.put("MAVEN_HOME", System.getProperty("mvnd.home"));
+        }
+        if (!Environment.JAVA_HOME.hasCommandLineProperty(args)) {
+            env.put("JAVA_HOME", System.getProperty("java.home"));
+        }
         final String cmdString = cmd.stream().collect(Collectors.joining(" "));
         output.accept("Executing " + cmdString);
         try (CommandProcess process = new CommandProcess(builder.start(), cmd, output)) {
@@ -64,15 +89,16 @@ public class NativeTestClient implements Client {
 
         private final int exitCode;
         private final List<String> args;
+        private final List<String> log;
 
-        public Result(List<String> args, int exitCode) {
+        public Result(List<String> args, int exitCode, List<String> log) {
             super();
             this.args = new ArrayList<>(args);
             this.exitCode = exitCode;
+            this.log = log;
         }
 
         StringBuilder appendCommand(StringBuilder sb) {
-            sb.append("mvnd");
             for (String arg : args) {
                 sb.append(" \"").append(arg).append('"');
             }
@@ -90,7 +116,16 @@ public class NativeTestClient implements Client {
 
         public Result assertSuccess() {
             if (exitCode != 0) {
-                throw new AssertionError(appendCommand(new StringBuilder("mvnd returned ").append(exitCode).append(": ")));
+                final StringBuilder sb = appendCommand(new StringBuilder("mvnd returned ").append(exitCode));
+                if (exitCode == TIMEOUT_EXIT_CODE) {
+                    sb.append(" (timeout)");
+                }
+                sb.append("--- stderr+stdout start ---");
+                synchronized (log) {
+                    log.stream().forEach(s -> sb.append('\n').append(s));
+                }
+                sb.append("--- stderr+stdout end ---");
+                throw new AssertionError(sb);
             }
             return this;
         }
@@ -114,13 +149,19 @@ public class NativeTestClient implements Client {
         private final Process process;
         private final Thread shutDownHook;
         private final StreamGobbler stdOut;
-        private List<String> args;
+        private final List<String> args;
+        private final List<String> log = new ArrayList<>();
 
         public CommandProcess(Process process, List<String> args, Consumer<String> outputConsumer) {
             super();
             this.process = process;
             this.args = args;
-            this.stdOut = new StreamGobbler(process.getInputStream(), outputConsumer);
+            final Consumer<String> loggingConsumer = s -> {
+                synchronized (log) {
+                    log.add(s);
+                }
+            };
+            this.stdOut = new StreamGobbler(process.getInputStream(), loggingConsumer.andThen(outputConsumer));
             stdOut.start();
 
             this.shutDownHook = new Thread(new Runnable() {
@@ -148,7 +189,8 @@ public class NativeTestClient implements Client {
                 Runtime.getRuntime().removeShutdownHook(shutDownHook);
             } catch (Exception ignored) {
             }
-            return new Result(args, timeouted ? TIMEOUT_EXIT_CODE : process.exitValue());
+            final int exitCode = timeouted ? TIMEOUT_EXIT_CODE : process.exitValue();
+            return new Result(args, exitCode, log);
         }
 
     }

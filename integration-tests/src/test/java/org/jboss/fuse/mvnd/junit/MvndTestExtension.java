@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jboss.fuse.mvnd.junit;
 
 import java.io.IOException;
@@ -68,13 +83,11 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     f.setAccessible(true);
                     if (f.getType() == DaemonRegistry.class) {
                         f.set(testInstance, resource.registry);
-                    } else if (f.getType() == ClientLayout.class) {
-                        f.set(testInstance, resource.layout);
-                    } else if (f.getType() == Layout.class) {
+                    } else if (Layout.class.isAssignableFrom(f.getType())) {
                         f.set(testInstance, resource.layout);
                     } else if (f.getType() == Client.class) {
                         if (resource.isNative) {
-                            final Path mvndNativeExecutablePath = Paths.get(System.getProperty("mvnd.native.executable"));
+                            final Path mvndNativeExecutablePath = Paths.get(System.getProperty("mvnd.native.executable")).toAbsolutePath().normalize();
                             if (!Files.isRegularFile(mvndNativeExecutablePath)) {
                                 throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
                             }
@@ -101,7 +114,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
 
     static class MvndResource implements ExtensionContext.Store.CloseableResource {
 
-        private final ClientLayout layout;
+        private final TestLayout layout;
         private final DaemonRegistry registry;
         private final boolean isNative;
         private final long timeoutMs;
@@ -141,9 +154,12 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 throw new IllegalStateException(
                         "The value of mvnd.home system property points at a path that does not exist or is not a directory");
             }
+            final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
             final Path settingsPath = createSettings(testDir.resolve("settings.xml"));
-            final ClientLayout layout = new ClientLayout(
+            final TestLayout layout = new TestLayout(
+                    testDir,
+                    mvndPropertiesPath,
                     mvndHome,
                     testExecutionDir,
                     testExecutionDir,
@@ -188,7 +204,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             return settingsPath;
         }
 
-        public MvndResource(ClientLayout layout, DaemonRegistry registry, boolean isNative, long timeoutMs) {
+        public MvndResource(TestLayout layout, DaemonRegistry registry, boolean isNative, long timeoutMs) {
             super();
             this.layout = layout;
             this.registry = registry;

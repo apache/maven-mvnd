@@ -13,19 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.client.svm;
+package org.jboss.fuse.mvnd.junit;
 
-import org.graalvm.nativeimage.hosted.Feature;
+import java.nio.file.Path;
 
-import com.oracle.svm.core.annotate.AutomaticFeature;
+import org.jboss.fuse.mvnd.client.ClientLayout;
 
-@AutomaticFeature
-public class ReflectionRegistration implements Feature {
-    public void beforeAnalysis(BeforeAnalysisAccess access) {
-//        try {
-//            RuntimeReflection.register(AsiExtraField.class.getConstructors());
-//        } catch (SecurityException e) {
-//            throw new RuntimeException(e);
-//        }
+public class TestLayout extends ClientLayout {
+    private final Path testDir;
+
+    public TestLayout(Path testDir, Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory,
+            Path javaHome,
+            Path localMavenRepository, Path settings) {
+        super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory, javaHome, localMavenRepository, settings);
+        this.testDir = testDir;
     }
+
+    public Path getTestDir() {
+        return testDir;
+    }
+
 }

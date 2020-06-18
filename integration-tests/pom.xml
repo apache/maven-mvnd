@@ -58,6 +58,7 @@
                     <systemPropertyVariables>
                         <project.version>${project.version}</project.version>
                         <mvnd.home>${project.basedir}/../daemon/target/maven-distro</mvnd.home>
+                        <mvnd.dist.path>${project.basedir}/../daemon/target/mvnd-dist-${project.version}.zip</mvnd.dist.path>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -94,6 +95,7 @@
                                         <project.version>${project.version}</project.version>
                                         <mvnd.home>${project.basedir}/../daemon/target/maven-distro</mvnd.home>
                                         <mvnd.native.executable>${mvnd.native.executable}</mvnd.native.executable>
+                                        <mvnd.dist.path>${project.basedir}/../daemon/target/mvnd-dist-${project.version}.zip</mvnd.dist.path>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
