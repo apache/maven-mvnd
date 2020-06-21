@@ -48,16 +48,17 @@ public class Installer {
     private static final Logger LOG = LoggerFactory.getLogger(Installer.class);
     private static final int BUFFER_SIZE = 4096;
     private static final int MAX_PERMISSIONS = 0777;
+    private static final int PROGRESS_STEP_BYTES = 1024 * 1024;
 
     public static void installServer(URI zipUri, Path mvndPropsPath, Path mvndHome, Path javaHome, boolean overwrite) {
         final boolean mvndHomeExists = Files.exists(mvndHome);
         if (!overwrite && mvndHomeExists) {
             throw new IllegalStateException(
-                    "Cannot install if mvnd.home " + mvndHome + " exists. Consider --update instead of --install.");
+                    "Cannot install if mvnd.home " + mvndHome + " exists. Delete it if you want to reinstall.");
         }
         if (!overwrite && Files.exists(mvndPropsPath)) {
             throw new IllegalStateException(
-                    "Cannot install if " + mvndPropsPath + " exists. Consider --update instead of --install.");
+                    "Cannot install if " + mvndPropsPath + " exists. Delete it if you want to reinstall.");
         }
         deleteIfExists(mvndHome);
         deleteIfExists(mvndPropsPath);
@@ -91,7 +92,7 @@ public class Installer {
     }
 
     static void writeMvndProperties(Path mvndPropsPath, Path mvndHome, Path javaHome) {
-        LOG.debug("Writing {}", mvndPropsPath);
+        LOG.info("Writing {}", mvndPropsPath);
         final String template = readTemplate();
         final String javaHomeLine = javaHome == null ? "" : "java.home = " + javaHome.toString();
         final String content = String.format(template, mvndHome.toString(), javaHomeLine);
@@ -105,7 +106,7 @@ public class Installer {
     static String readTemplate() {
         try (InputStream in = Installer.class.getResourceAsStream("mvnd.properties.template");
                 ByteArrayOutputStream out = new ByteArrayOutputStream(256)) {
-            copy(in, out);
+            copy(in, out, false);
             return new String(out.toByteArray(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException("Could not read build.properties");
@@ -113,7 +114,11 @@ public class Installer {
     }
 
     static void unzip(Path localZip, Path destinationDir) {
-        LOG.debug("Unzipping {} to {}", localZip, destinationDir);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Unpacking {} to {}", localZip, destinationDir);
+        } else {
+            LOG.info("Unpacking to {}", destinationDir);
+        }
         try {
             Files.createDirectories(destinationDir);
         } catch (IOException e) {
@@ -136,7 +141,7 @@ public class Installer {
                     try (
                             InputStream in = new BufferedInputStream(zip.getInputStream(entry), BUFFER_SIZE);
                             OutputStream out = new BufferedOutputStream(Files.newOutputStream(dest), BUFFER_SIZE)) {
-                        copy(in, out);
+                        copy(in, out, false);
                     } catch (IOException e) {
                         throw new RuntimeException(
                                 "Could not unzip entry " + entry.getName() + " from " + localZip + " to " + dest);
@@ -159,11 +164,15 @@ public class Installer {
     static Path download(URI zipUri) {
         try {
             final Path localZip = Files.createTempFile("", "-mvnd-dist.zip");
-            LOG.debug("Downloading {} to {}", zipUri, localZip);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Downloading {} to {}", zipUri, localZip);
+            } else {
+                LOG.info("Downloading {}", zipUri);
+            }
             try (
                     InputStream in = new BufferedInputStream(zipUri.toURL().openStream(), BUFFER_SIZE);
                     OutputStream out = new BufferedOutputStream(Files.newOutputStream(localZip), BUFFER_SIZE)) {
-                copy(in, out);
+                copy(in, out, LOG.isInfoEnabled());
             } catch (IOException e) {
                 throw new RuntimeException("Could not download " + zipUri + " to " + localZip, e);
             }
@@ -173,11 +182,23 @@ public class Installer {
         }
     }
 
-    static void copy(InputStream in, OutputStream out) throws IOException {
+    static void copy(InputStream in, OutputStream out, boolean printProgress) throws IOException {
         final byte buf[] = new byte[BUFFER_SIZE];
         int len;
+        long byteCount = 0;
+        long nextStep = PROGRESS_STEP_BYTES;
         while ((len = in.read(buf)) >= 0) {
+            if (printProgress) {
+                byteCount += len;
+                if (byteCount >= nextStep) {
+                    nextStep += PROGRESS_STEP_BYTES;
+                    System.out.print('.');
+                }
+            }
             out.write(buf, 0, len);
+        }
+        if (printProgress) {
+            System.out.println();
         }
     }
 
