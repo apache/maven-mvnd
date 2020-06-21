@@ -141,7 +141,7 @@ public class DefaultClient implements Client {
                     if (eqPos >= 0) {
                         commandLineProperties.setProperty(arg.substring(2, eqPos), arg.substring(eqPos+1));
                     } else {
-                        commandLineProperties.setProperty(arg.substring(2), null);
+                        commandLineProperties.setProperty(arg.substring(2), "");
                     }
                 }
                 args.add(arg);
