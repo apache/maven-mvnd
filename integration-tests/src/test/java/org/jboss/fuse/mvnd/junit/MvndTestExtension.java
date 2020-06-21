@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 import org.jboss.fuse.mvnd.client.DefaultClient;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.DaemonInfo;
 import org.jboss.fuse.mvnd.client.DaemonRegistry;
 import org.jboss.fuse.mvnd.client.Layout;
