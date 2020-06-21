@@ -120,11 +120,11 @@ public class NativeTestClient implements Client {
                 if (exitCode == TIMEOUT_EXIT_CODE) {
                     sb.append(" (timeout)");
                 }
-                sb.append("--- stderr+stdout start ---");
+                sb.append("\n--- stderr+stdout start ---");
                 synchronized (log) {
                     log.stream().forEach(s -> sb.append('\n').append(s));
                 }
-                sb.append("--- stderr+stdout end ---");
+                sb.append("\n--- stderr+stdout end ---");
                 throw new AssertionError(sb);
             }
             return this;
