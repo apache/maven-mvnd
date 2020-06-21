@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.jboss.fuse.mvnd.client.DefaultClient;
+import org.jboss.fuse.mvnd.client.BuildProperties;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonInfo;
 import org.jboss.fuse.mvnd.client.DaemonRegistry;
@@ -92,7 +93,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                             }
                             f.set(testInstance, new NativeTestClient(resource.layout, mvndNativeExecutablePath, resource.timeoutMs));
                         } else {
-                            f.set(testInstance, new DefaultClient(resource.layout));
+                            f.set(testInstance, new DefaultClient(() -> resource.layout, BuildProperties.getInstance()));
                         }
                     } else if (f.getType() == NativeTestClient.class) {
                     }

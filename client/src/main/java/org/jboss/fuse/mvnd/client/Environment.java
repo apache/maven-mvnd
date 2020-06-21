@@ -94,7 +94,7 @@ public enum Environment {
         return MVND_PROPERTIES_PATH
                 .environmentVariable()
                 .orSystemProperty()
-                .orDefault(() -> Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd.properties").toString())
+                .orDefault(() -> System.getProperty("user.home") + "/.m2/mvnd.properties")
                 .asPath()
                 .toAbsolutePath().normalize();
     }
