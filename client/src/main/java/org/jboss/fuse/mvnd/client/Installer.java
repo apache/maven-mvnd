@@ -165,7 +165,7 @@ public class Installer {
                     OutputStream out = new BufferedOutputStream(Files.newOutputStream(localZip), BUFFER_SIZE)) {
                 copy(in, out);
             } catch (IOException e) {
-                throw new RuntimeException("Could not download " + zipUri + " to " + localZip);
+                throw new RuntimeException("Could not download " + zipUri + " to " + localZip, e);
             }
             return localZip;
         } catch (IOException e) {
