@@ -37,5 +37,5 @@ public @interface MvndNativeTest {
     /**
      * Timeout for {@link Client#execute(org.jboss.fuse.mvnd.client.ClientOutput, java.util.List)} in seconds
      */
-    long timeoutSec() default 30;
+    long timeoutSec() default 300;
 }

@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.inject.Inject;
 
 import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.client.BuildProperties;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.client.DefaultClient;
@@ -83,7 +84,7 @@ public class InstallDaemonNativeIT {
                     PosixFilePermission.OTHERS_EXECUTE);
         }
 
-        final String version = DefaultClient.loadBuildProperties().getProperty("version");
+        final String version = BuildProperties.getInstance().getVersion();
         Assertions.assertThat(mavenHome.resolve("lib/ext/mvnd-client-" + version + ".jar")).exists();
         Assertions.assertThat(mavenHome.resolve("lib/ext/mvnd-daemon-" + version + ".jar")).exists();
     }

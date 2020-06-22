@@ -18,6 +18,8 @@ package org.jboss.fuse.mvnd.client;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,10 +27,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
+import org.jboss.fuse.mvnd.jpm.Process;
+import org.jboss.fuse.mvnd.jpm.ScriptUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,14 +49,14 @@ public class DaemonConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnector.class);
 
     private final DaemonRegistry registry;
-    private final Layout layout;
-    private final DaemonStarter daemonStarter;
+    private final ClientLayout layout;
     private final Serializer<Message> serializer;
+    private final BuildProperties buildProperties;
 
-    public DaemonConnector(Layout layout, DaemonRegistry registry, DaemonStarter daemonStarter, Serializer<Message> serializer) {
+    public DaemonConnector(ClientLayout layout, DaemonRegistry registry, BuildProperties buildProperties, Serializer<Message> serializer) {
         this.layout = layout;
         this.registry = registry;
-        this.daemonStarter = daemonStarter;
+        this.buildProperties = buildProperties;
         this.serializer = serializer;
     }
 
@@ -203,7 +208,7 @@ public class DaemonConnector {
     }
 
     public DaemonClientConnection startDaemon(DaemonCompatibilitySpec constraint) {
-        final String daemon = daemonStarter.startDaemon();
+        final String daemon = startDaemon();
         LOGGER.debug("Started Maven daemon {}", daemon);
         long start = System.currentTimeMillis();
         do {
@@ -220,6 +225,55 @@ public class DaemonConnector {
         DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon));
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
+
+    private String startDaemon() {
+
+        final String uid = UUID.randomUUID().toString();
+        final Path mavenHome = layout.mavenHome();
+        final Path workingDir = layout.userDir();
+        String command = "";
+        try {
+            String classpath = findClientJar(mavenHome).toString();
+            final String java = ScriptUtils.isWindows() ? "bin\\java.exe" : "bin/java";
+            List<String> args = new ArrayList<>();
+            args.add("\"" + layout.javaHome().resolve(java) + "\"");
+            args.add("-classpath");
+            args.add("\"" + classpath + "\"");
+            if (Environment.DAEMON_DEBUG.systemProperty().orDefault(() -> "false").asBoolean()) {
+                args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
+            }
+            args.add("-Dmaven.home=\"" + mavenHome + "\"");
+            args.add("-Dlogback.configurationFile=logback.xml");
+            args.add("-Ddaemon.uid=" + uid);
+            args.add("-Xmx4g");
+            final String timeout = Environment.DAEMON_IDLE_TIMEOUT.systemProperty().asString();
+            if (timeout != null) {
+                args.add(Environment.DAEMON_IDLE_TIMEOUT.asCommandLineProperty(timeout));
+            }
+            args.add("\"-Dmaven.multiModuleProjectDirectory=" + layout.multiModuleProjectDirectory().toString() + "\"");
+
+            args.add(ServerMain.class.getName());
+            command = String.join(" ", args);
+
+            LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
+            Process.create(workingDir.toFile(), command);
+            return uid;
+        } catch (Exception e) {
+            throw new DaemonException.StartException(
+                    String.format("Error starting daemon: uid = %s, workingDir = %s, daemonArgs: %s",
+                            uid, workingDir, command),
+                    e);
+        }
+    }
+
+    private Path findClientJar(Path mavenHome) {
+        final Path result = mavenHome.resolve("lib/ext/mvnd-client-" + buildProperties.getVersion() + ".jar");
+        if (!Files.isRegularFile(result)) {
+            throw new RuntimeException("File must exist and must be a regular file: " + result);
+        }
+        return result;
+    }
+
 
     private DaemonClientConnection connectToDaemonWithId(String daemon) throws DaemonException.ConnectException {
         // Look for 'our' daemon among the busy daemons - a daemon will start in busy state so that nobody else will grab it.
