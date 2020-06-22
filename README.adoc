@@ -2,33 +2,68 @@
 
 The mvnd project aims to provide a daemon infrastructure for maven based builds.  It borrows techniques from Gradle and Takari to provide a simple and efficient system.
 
-== Building
+== Install `mvnd`
+
+If you are on Linux or Mac, you can use the following shell commands. On Windows, you can perform the steps manually.
 
 [source,shell]
 ----
-git clone https://github.com/gnodet/mvnd.git
-cd mvnd
-mvn package
+cd ~/bin <1>
+os=$(uname | tr '[:upper:]' '[:lower:]') <2>
+curl https://github.com/mvndaemon/mvnd/releases/latest/download/mvnd-${os}-amd64 -o mvnd <3>
+chmod +x mvnd <4>
+mvnd --install <5>
 ----
+<1> Change to `~/bin` or any other location already included in `PATH`; otherwise, you'll need to add `mvnd` to
+  `PATH` manually
+<2> Detect the name of the current operating system and turn it to lower case
+<3> Download the latest `mvnd` executable for the given OS from https://github.com/mvndaemon/mvnd/releases[`mvnd` releases page]; store the executable as `mvnd` (or `mvnd.exe` on Windows)
+<4> Make it executable (not required on Windows)
+<5> Run `mvnd --install` to download and install the server part. This will:
++
+* Download `mvnd-dist.zip`
+* Unpack it to `~/.m2/mvnd/<version>`
+* Create `~/.m2/mvnd.properties`
 
-== Configuring
+Optionally, you can open `~/.m2/mvnd.properties` and set the `java.home` property in case you do not want to bother with setting `JAVA_HOME` environment variable.
+
+Now you can test whether `mvnd` works:
 
 [source,shell]
 ----
-export PATH=[mvnd-source-root]/daemon/target/maven-distro/bin:$PATH
+$ mvnd --version
+Maven Daemon 0.0.0 (native)
+Apache Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)
+Maven home: /home/ppalaga/orgs/mvnd/mvnd/daemon/target/maven-distro
+Java version: 11.0.1, vendor: AdoptOpenJDK, runtime: /home/data/jvm/adopt-openjdk/jdk-11.0.1+13
+Default locale: en_IE, platform encoding: UTF-8
+OS name: "linux", version: "5.6.13-200.fc31.x86_64", arch: "amd64", family: "unix"
 ----
+
 
 == Usage
 
+`mvnd` is designed to accept the same command line options like stock `mvn` (plus some extras - see below), e.g.:
+
 [source,shell]
 ----
-mvnd install
+mvnd clean install
 ----
 
-== Native `mvnd` client
+== `mvnd` specific options
 
-Prerequisites:
+`--install` installs the server part
 
+`--status` lists running daemons
+
+`--stop` kills all running daemons
+
+== Build `mvnd` from source
+
+=== Prerequisites:
+
+* `git`
+* Maven
 * Download and unpack GraalVM CE from https://github.com/graalvm/graalvm-ce-builds/releases[GitHub]
 * Set `JAVA_HOME` to where you unpacked GraalVM in the previous step. Check that `java -version` output is as
   expected:
@@ -51,48 +86,19 @@ $ $JAVA_HOME/bin/gu install native-image
 * `native-image` may require additional software to be installed depending on your platform - see the
 https://www.graalvm.org/docs/reference-manual/native-image/#prerequisites[`native-image` documentation].
 
-Build the native mvnd client
+=== Build `mvnd`
 
 [source,shell]
 ----
-$ cd mvnd/client
-$ mvn clean package -Pnative
+$ git clone https://github.com/mvndaemon/mvnd.git
+$ cd mvnd
+$ mvn clean verify -Pnative
 ...
+$ cd client
 $ file target/mvnd
 target/mvnd: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), dynamically linked, interpreter /lib64/ld-linux-x86-64.so.2, BuildID[sha1]=93a554f3807550a13c986d2af9a311ef299bdc5a, for GNU/Linux 3.2.0, with debug_info, not stripped
 $ ls -lh target/mvnd
--rwxrwxr-x. 1 ppalaga ppalaga 14M Jun  2 13:23 target/mvnd
+-rwxrwxr-x. 1 ppalaga ppalaga 25M Jun  2 13:23 target/mvnd
 ----
-
-Install the native `mvnd` client (`mvnd.exe` on Windows):
-
-* Add the `target/mvnd` binary to `PATH` or copy it to `~/bin` or some other location already included in `PATH`
-* Take care that the `mvnd` binary has a higher precendence than the `mvnd` shell script in the `bin` directory of
-  the Maven Daemon distribution.
-* Create `~/.m2/mvnd.properties` with the following content:
-+
-[source,properties]
-----
-# An absolute path to your Maven Daemon installation
-maven.home = [mvnd-source-root]/mvnd/daemon/target/maven-distro
-# java.home is optional if you have JAVA_HOME environment variable set
-# This is for running the mvnd server, hence a stock non-GraalVM JDK is enough.
-java.home = ...
-----
-
-Make sure the native `mvnd` client works:
-
-[source,shell]
-----
-$ mvnd --version
-Maven Daemon 0.1-SNAPSHOT (native)
-Apache Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)
-Maven home: /home/ppalaga/orgs/mvnd/mvnd/daemon/target/maven-distro
-Java version: 11.0.1, vendor: AdoptOpenJDK, runtime: /home/data/jvm/adopt-openjdk/jdk-11.0.1+13
-Default locale: en_IE, platform encoding: UTF-8
-OS name: "linux", version: "5.6.13-200.fc31.x86_64", arch: "amd64", family: "unix"
-----
-
-You sould see `(native)` in the first line of the output
 
 This project is still in prototype mode, so feedback is most welcomed!
