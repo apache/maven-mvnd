@@ -1,0 +1,44 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jboss.fuse.mvnd.test.module-and-plugin</groupId>
+        <artifactId>module-and-plugin</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>module-and-plugin-hello</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jboss.fuse.mvnd.test.module-and-plugin</groupId>
+                <artifactId>module-and-plugin-maven-plugin</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>hello</id>
+                        <goals>
+                            <goal>hello</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <file>${basedir}/target/hello.txt</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
