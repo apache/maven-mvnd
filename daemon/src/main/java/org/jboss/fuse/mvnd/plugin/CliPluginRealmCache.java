@@ -17,16 +17,19 @@ package org.jboss.fuse.mvnd.plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
+import java.security.DigestException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -47,6 +50,8 @@ import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.WorkspaceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default PluginCache implementation. Assumes cached data does not change.
@@ -142,64 +147,96 @@ public class CliPluginRealmCache
 
             CacheKey that = (CacheKey) o;
 
-            return parentRealm == that.parentRealm 
+            return parentRealm == that.parentRealm
                 && CliCacheUtils.pluginEquals( plugin, that.plugin )
                 && Objects.equals( workspace, that.workspace )
                 && Objects.equals( localRepo, that.localRepo )
-                && RepositoryUtils.repositoriesEquals( this.repositories, that.repositories ) 
+                && RepositoryUtils.repositoriesEquals( this.repositories, that.repositories )
                 && Objects.equals( filter, that.filter )
                 && Objects.equals( foreignImports, that.foreignImports );
         }
     }
 
-    protected static class TimestampedCacheRecord extends CacheRecord {
+    protected static class ChecksumCacheRecord extends CacheRecord {
 
-        static class ArtifactTimestamp {
-            final Path path;
-            final FileTime lastModifiedTime;
-            final Object fileKey;
-            ArtifactTimestamp(Path path) {
-                this.path = path;
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-                    this.lastModifiedTime = attrs.lastModifiedTime();
-                    this.fileKey = attrs.fileKey();
+        static class PathChecksum {
+            private static final int BUFFER_SIZE = 4096;
+
+            static byte[] checksum(Path path, MessageDigest digest) {
+                digest.reset();
+                try (InputStream in = Files.newInputStream(path)) {
+                    byte[] buf = new byte[BUFFER_SIZE];
+                    int len;
+                    while ((len = in.read(buf)) >= 0) {
+                        digest.update(buf, 0, len);
+                    }
+                    return digest.digest();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new RuntimeException("Could not read "+ path, e);
                 }
+            }
+
+            final Path path;
+            final byte[] checksum;
+            PathChecksum(Path path, byte[] checksum) {
+                this.path = path;
+                this.checksum = checksum;
             }
             @Override
             public boolean equals(Object o) {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
-                ArtifactTimestamp that = (ArtifactTimestamp) o;
-                return path.equals(that.path) &&
-                        Objects.equals(lastModifiedTime, that.lastModifiedTime) &&
-                        Objects.equals(fileKey, that.fileKey);
+                PathChecksum that = (PathChecksum) o;
+                return path.equals(that.path) && Arrays.equals(this.checksum, that.checksum);
             }
             @Override
             public int hashCode() {
-                return Objects.hash(path, lastModifiedTime, fileKey);
+                return Objects.hash(path, Arrays.hashCode(checksum));
+            }
+            public static MessageDigest newDigest() {
+                try {
+                    return MessageDigest.getInstance("MD5");
+                } catch (NoSuchAlgorithmException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
-        Set<ArtifactTimestamp> timestamp;
-        public TimestampedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
+
+        final List<PathChecksum> checksums;
+        public ChecksumCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
-            timestamp = current();
+            final MessageDigest digest = PathChecksum.newDigest();
+            this.checksums = getArtifacts().stream()
+                    .map(Artifact::getFile)
+                    .map(File::toPath)
+                    .map(p -> new PathChecksum(p, PathChecksum.checksum(p, digest)))
+                    .collect(Collectors.toList());
         }
+
         public boolean isValid() {
-            try {
-                return Objects.equals(current(), timestamp);
-            } catch (Exception e) {
+            final List<Artifact> artifacts = getArtifacts();
+            if (this.checksums.size() != artifacts.size()) {
                 return false;
             }
+            final Iterator<Artifact> artifactIt = artifacts.iterator();
+            final Iterator<PathChecksum> checksumIt = checksums.iterator();
+            final MessageDigest digest = PathChecksum.newDigest();
+            while (artifactIt.hasNext() && checksumIt.hasNext()) {
+                final Path path = artifactIt.next().getFile().toPath();
+                if (!Files.exists(path)) {
+                    return false;
+                }
+                final PathChecksum checksum = checksumIt.next();
+                if (!path.equals(checksum.path)) {
+                    return false;
+                }
+                if (!Arrays.equals(PathChecksum.checksum(path, digest), checksum.checksum)) {
+                    return false;
+                }
+            }
+            return true;
         }
-        private Set<ArtifactTimestamp> current() {
-            return getArtifacts().stream().map(Artifact::getFile)
-                    .map(File::toPath)
-                    .map(ArtifactTimestamp::new)
-                    .collect(Collectors.toSet());
-        }
+
         public void dispose() {
             ClassRealm realm = getRealm();
             try
@@ -213,7 +250,7 @@ public class CliPluginRealmCache
         }
     }
 
-    protected final Map<Key, TimestampedCacheRecord> cache = new ConcurrentHashMap<>();
+    protected final Map<Key, ChecksumCacheRecord> cache = new ConcurrentHashMap<>();
 
     public Key createKey(Plugin plugin, ClassLoader parentRealm, Map<String, ClassLoader> foreignImports,
                          DependencyFilter dependencyFilter, List<RemoteRepository> repositories,
@@ -224,7 +261,7 @@ public class CliPluginRealmCache
 
     public CacheRecord get( Key key )
     {
-        TimestampedCacheRecord record = cache.get( key );
+        ChecksumCacheRecord record = cache.get( key );
         if (record != null && !record.isValid()) {
             record.dispose();
             record = null;
@@ -243,7 +280,7 @@ public class CliPluginRealmCache
             throw new IllegalStateException( "Duplicate plugin realm for plugin " + key );
         }
 
-        TimestampedCacheRecord record = new TimestampedCacheRecord( pluginRealm, pluginArtifacts );
+        ChecksumCacheRecord record = new ChecksumCacheRecord( pluginRealm, pluginArtifacts );
 
         cache.put( key, record );
 
@@ -252,7 +289,7 @@ public class CliPluginRealmCache
 
     public void flush()
     {
-        for ( TimestampedCacheRecord record : cache.values() )
+        for ( ChecksumCacheRecord record : cache.values() )
         {
             record.dispose();
         }
