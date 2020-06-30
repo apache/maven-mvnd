@@ -40,6 +40,13 @@ jobs:
     - name: mvn clean verify
       run: ./mvnw clean verify -Pnative -B -ntp -e
 
+    - name: Upload daemon test logs
+      if: ${{ success() || failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: daemon-test-logs-linux
+        path: daemon/target/maven-distro/daemon
+
     - name: Upload mvnd
       uses: actions/upload-artifact@v2
       with:
@@ -50,7 +57,6 @@ jobs:
       with:
         name: mvnd-dist.zip
         path: daemon/target/mvnd-dist-*.zip
-
 
   windows:
     runs-on: windows-2019
@@ -110,12 +116,18 @@ jobs:
         call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
         ./mvnw clean verify -Pnative -B -ntp -e
 
+    - name: Upload daemon test logs
+      if: ${{ success() || failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: daemon-test-logs-windows
+        path: daemon/target/maven-distro/daemon
+
     - name: Upload mvnd
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-windows-amd64.exe
         path: client/target/mvnd.exe
-
 
   darwin:
     runs-on: macos-10.15
@@ -134,12 +146,18 @@ jobs:
     - name: mvn clean verify
       run: ./mvnw clean verify -Pnative -B -ntp -e
 
+    - name: Upload daemon test logs
+      if: ${{ success() || failure() }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: daemon-test-logs-darwin
+        path: daemon/target/maven-distro/daemon
+
     - name: Upload mvnd
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-darwin-amd64
         path: client/target/mvnd
-
 
   deploy:
     runs-on: ubuntu-18.04
