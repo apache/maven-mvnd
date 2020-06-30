@@ -69,6 +69,7 @@ import org.apache.maven.extension.internal.CoreExports;
 import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
+import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.properties.internal.EnvironmentUtils;
 import org.apache.maven.properties.internal.SystemProperties;
@@ -90,6 +91,7 @@ import org.codehaus.plexus.logging.LoggerManager;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
+import org.jboss.fuse.mvnd.plugin.CliPluginRealmCache;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -484,6 +486,7 @@ public class DaemonMavenCli
             {
                 bind( ILoggerFactory.class ).toInstance( slf4jLoggerFactory );
                 bind( CoreExports.class ).toInstance( exports );
+                bind( PluginRealmCache.class ).toInstance(new CliPluginRealmCache());
             }
         } );
 

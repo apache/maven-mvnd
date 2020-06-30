@@ -17,17 +17,25 @@ package org.jboss.fuse.mvnd.plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchEvent.Kind;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.enterprise.inject.Default;
@@ -47,6 +55,8 @@ import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.WorkspaceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Default PluginCache implementation. Assumes cached data does not change.
@@ -142,17 +152,54 @@ public class CliPluginRealmCache
 
             CacheKey that = (CacheKey) o;
 
-            return parentRealm == that.parentRealm 
+            return parentRealm == that.parentRealm
                 && CliCacheUtils.pluginEquals( plugin, that.plugin )
                 && Objects.equals( workspace, that.workspace )
                 && Objects.equals( localRepo, that.localRepo )
-                && RepositoryUtils.repositoriesEquals( this.repositories, that.repositories ) 
+                && RepositoryUtils.repositoriesEquals( this.repositories, that.repositories )
                 && Objects.equals( filter, that.filter )
                 && Objects.equals( foreignImports, that.foreignImports );
         }
     }
 
-    protected static class TimestampedCacheRecord extends CacheRecord {
+    interface RecordValidator {
+        void validateRecords();
+        ValidableCacheRecord newRecord(ClassRealm pluginRealm, List<Artifact> pluginArtifacts);
+    }
+
+    static abstract class ValidableCacheRecord extends CacheRecord {
+    
+        public ValidableCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
+            super(realm, artifacts);
+        }
+        public abstract boolean isValid();
+        public void dispose() {
+            ClassRealm realm = getRealm();
+            try
+            {
+                realm.getWorld().disposeRealm( realm.getId() );
+            }
+            catch ( NoSuchRealmException e )
+            {
+                // ignore
+            }
+        }
+    }
+
+    static class TimestampedRecordValidator implements RecordValidator {
+
+        @Override
+        public void validateRecords() {
+        }
+
+        @Override
+        public ValidableCacheRecord newRecord(ClassRealm realm, List<Artifact> artifacts) {
+            return new TimestampedCacheRecord(realm, artifacts);
+        }
+
+    }
+
+    static class TimestampedCacheRecord extends ValidableCacheRecord {
 
         static class ArtifactTimestamp {
             final Path path;
@@ -200,20 +247,189 @@ public class CliPluginRealmCache
                     .map(ArtifactTimestamp::new)
                     .collect(Collectors.toSet());
         }
-        public void dispose() {
-            ClassRealm realm = getRealm();
-            try
-            {
-                realm.getWorld().disposeRealm( realm.getId() );
-            }
-            catch ( NoSuchRealmException e )
-            {
-                // ignore
+    }
+    /**
+     * A {@link WatchService} with some methods to watch JARs associated with {@link WatchedCacheRecord}.
+     */
+    static class MultiWatcher implements RecordValidator {
+        private final WatchService watchService;
+
+        /**
+         * Records that have no been invalidated so far. From watched JAR paths to records (because one JAR can be
+         * present in multiple records)
+         */
+        private final Map<Path, List<ValidableCacheRecord>> validRecordsByPath = new ConcurrentHashMap<>();
+
+        /**
+         * {@link WatchService} can watch only directories but we actually want to watch files. So here we store
+         * for the given parent directory the count of its child files we watch.
+         */
+        private final Map<Path, Registration> registrationsByDir = new ConcurrentHashMap<>();
+
+        public MultiWatcher() {
+            try {
+                this.watchService = FileSystems.getDefault().newWatchService();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
+
+        /**
+         * Watch the JARs associated with the given {@code record} for deletions and modifications.
+         *
+         * @param record the {@link WatchedCacheRecord} to watch
+         */
+        void add(ValidableCacheRecord record) {
+            record.getArtifacts().stream()
+                    .map(Artifact::getFile)
+                    .map(File::toPath)
+                    .forEach(p -> {
+                        validRecordsByPath.compute(p, (key, value) -> {
+                            if (value == null) {
+                                value = new ArrayList<>();
+                            }
+                            value.add(record);
+                            return value;
+                        });
+                        final Path dir = p.getParent();
+                        registrationsByDir.compute(dir, (key, value) -> {
+                            if (value == null) {
+                                log.debug("Starting to watch path {}", key);
+                                try {
+                                    final WatchKey watchKey = dir.register(watchService, StandardWatchEventKinds.ENTRY_DELETE,
+                                            StandardWatchEventKinds.ENTRY_MODIFY);
+                                    return new Registration(watchKey);
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            } else {
+                                int cnt = value.count.incrementAndGet();
+                                log.debug("Already {} watchers for path {}", cnt, key);
+                                return value;
+                            }
+                        });
+                    });
+        }
+
+        /**
+         * Stopn watching the JARs associated with the given {@code record} for deletions and modifications.
+         *
+         * @param record the {@link WatchedCacheRecord} to stop watching
+         */
+        void remove(ValidableCacheRecord record) {
+            record.getArtifacts().stream()
+            .map(Artifact::getFile)
+            .map(File::toPath)
+            .forEach(p -> {
+                final Path dir = p.getParent();
+                registrationsByDir.compute(dir, (key, value) -> {
+                    if (value == null) {
+                        log.debug("Already unwatchers for path {}", key);
+                        return null;
+                    } else {
+                        final int cnt = value.count.decrementAndGet();
+                        if (cnt <= 0) {
+                            log.debug("Unwatching path {}", key);
+                            value.watchKey.cancel();
+                            return null;
+                        } else {
+                            log.debug("Still {} watchers for path {}", cnt, key);
+                            return value;
+                        }
+                    }
+                });
+            });
+        }
+
+        /**
+         * Poll for events and process them.
+         */
+        public void validateRecords() {
+            for (Entry<Path, Registration> entry : registrationsByDir.entrySet()) {
+                final Path dir = entry.getKey();
+                final WatchKey watchKey = entry.getValue().watchKey;
+                for (WatchEvent<?> event : watchKey.pollEvents()) {
+                    Kind<?> kind = event.kind();
+                    log.debug("Got watcher event {}", kind.name());
+                    if (kind == StandardWatchEventKinds.ENTRY_DELETE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
+                        final Path path = dir.resolve((Path) event.context());
+                        final List<ValidableCacheRecord> records = validRecordsByPath.get(path);
+                        log.debug("Records for path {}: {}", path, records);
+                        if (records != null) {
+                            synchronized(records) {
+                                for (ValidableCacheRecord record : records) {
+                                    log.debug("Invalidating recorder of path {}", path);
+                                    ((WatchedCacheRecord) record).valid = false;
+                                    remove(record);
+                                }
+                                records.clear();
+                            }
+                        }
+                    } else if (kind == StandardWatchEventKinds.OVERFLOW) {
+                        /* Invalidate all records under the given dir */
+                        for (Entry<Path, List<ValidableCacheRecord>> en : validRecordsByPath.entrySet()) {
+                            final Path entryParent = en.getKey().getParent();
+                            if (entryParent.equals(dir)) {
+                                final List<ValidableCacheRecord> records = en.getValue();
+                                if (records  != null) {
+                                    synchronized(records) {
+                                        for (ValidableCacheRecord record : records) {
+                                            ((WatchedCacheRecord) record).valid = false;
+                                            remove(record);
+                                        }
+                                        records.clear();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * A watcher registration for a directory storing the {@link WatchKey} and the count of watchers to be able to
+         * tell when the {@link #watchKey} should be cancelled.
+         */
+        static class Registration {
+            final AtomicInteger count = new AtomicInteger(1);
+            final WatchKey watchKey;
+            public Registration(WatchKey watchKey) {
+                this.watchKey = watchKey;
+            }
+        }
+
+        @Override
+        public ValidableCacheRecord newRecord(ClassRealm pluginRealm, List<Artifact> pluginArtifacts) {
+            final ValidableCacheRecord result = new WatchedCacheRecord( pluginRealm, pluginArtifacts );
+            add(result);
+            return result ;
+        }
+
     }
 
-    protected final Map<Key, TimestampedCacheRecord> cache = new ConcurrentHashMap<>();
+    static class WatchedCacheRecord extends ValidableCacheRecord {
+    
+        private volatile boolean valid = true;
+        public WatchedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
+            super(realm, artifacts);
+        }
+    
+        public boolean isValid() {
+            return valid;
+        }
+    
+    }
+
+    private static final Logger log = LoggerFactory.getLogger(CliPluginRealmCache.class);
+    protected final Map<Key, ValidableCacheRecord> cache = new ConcurrentHashMap<>();
+    private final RecordValidator watcher;
+
+    public CliPluginRealmCache() {
+        this.watcher = System.getProperty("os.name").toLowerCase().contains("mac")
+                ? new TimestampedRecordValidator()
+                        : new MultiWatcher();
+    }
 
     public Key createKey(Plugin plugin, ClassLoader parentRealm, Map<String, ClassLoader> foreignImports,
                          DependencyFilter dependencyFilter, List<RemoteRepository> repositories,
@@ -224,7 +440,8 @@ public class CliPluginRealmCache
 
     public CacheRecord get( Key key )
     {
-        TimestampedCacheRecord record = cache.get( key );
+        watcher.validateRecords();
+        ValidableCacheRecord record = cache.get( key );
         if (record != null && !record.isValid()) {
             record.dispose();
             record = null;
@@ -243,8 +460,7 @@ public class CliPluginRealmCache
             throw new IllegalStateException( "Duplicate plugin realm for plugin " + key );
         }
 
-        TimestampedCacheRecord record = new TimestampedCacheRecord( pluginRealm, pluginArtifacts );
-
+        ValidableCacheRecord record = watcher.newRecord(pluginRealm, pluginArtifacts);
         cache.put( key, record );
 
         return record;
@@ -252,7 +468,7 @@ public class CliPluginRealmCache
 
     public void flush()
     {
-        for ( TimestampedCacheRecord record : cache.values() )
+        for ( ValidableCacheRecord record : cache.values() )
         {
             record.dispose();
         }
