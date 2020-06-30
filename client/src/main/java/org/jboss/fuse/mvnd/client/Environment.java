@@ -132,6 +132,15 @@ public enum Environment {
                 .toAbsolutePath().normalize();
     }
 
+    public static Path findLogbackConfigurationPath(Supplier<Properties> mvndProperties, Path mvndPropertiesPath, Path mvndHome) {
+        return LOGBACK_CONFIGURATION_FILE
+                .systemProperty()
+                .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                .orDefault(() -> mvndHome.resolve("conf/logging/logback.xml").toString())
+                .orFail()
+                .asPath();
+    }
+
     public static boolean isNative() {
         return "executable".equals(System.getProperty("org.graalvm.nativeimage.kind"));
     }
