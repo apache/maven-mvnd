@@ -15,10 +15,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.fuse.mvnd</groupId>
             <artifactId>mvnd-client</artifactId>
             <exclusions>

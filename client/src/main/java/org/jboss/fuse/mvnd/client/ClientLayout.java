@@ -31,6 +31,7 @@ public class ClientLayout extends Layout {
     private final Path localMavenRepository;
     private final Path settings;
     private final Path javaHome;
+    private final Path logbackConfigurationPath;
 
     public static ClientLayout getEnvInstance() {
         if (ENV_INSTANCE == null) {
@@ -45,17 +46,19 @@ public class ClientLayout extends Layout {
                     Environment.findMultiModuleProjectDirectory(pwd),
                     Environment.findJavaHome(mvndProperties, mvndPropertiesPath),
                     findLocalRepo(),
-                    null);
+                    null,
+                    Environment.findLogbackConfigurationPath(mvndProperties, mvndPropertiesPath, mvndHome));
         }
         return ENV_INSTANCE;
     }
 
     public ClientLayout(Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory, Path javaHome,
-            Path localMavenRepository, Path settings) {
+            Path localMavenRepository, Path settings, Path logbackConfigurationPath) {
         super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory);
         this.localMavenRepository = localMavenRepository;
         this.settings = settings;
         this.javaHome = Objects.requireNonNull(javaHome, "javaHome");
+        this.logbackConfigurationPath = logbackConfigurationPath;
     }
 
     /**
@@ -76,19 +79,12 @@ public class ClientLayout extends Layout {
         return javaHome;
     }
 
-    static Path findLocalRepo() {
-        return Environment.MAVEN_REPO_LOCAL.systemProperty().asPath();
+    public Path getLogbackConfigurationPath() {
+        return logbackConfigurationPath;
     }
 
-    static Path findLogbackConfigurationFile(Supplier<Properties> mvndProperties, Path mvndPropertiesPath, Path mvndHome) {
-        final String rawValue = Environment.LOGBACK_CONFIGURATION_FILE
-                .systemProperty()
-                .orLocalProperty(mvndProperties, mvndPropertiesPath)
-                .asString();
-        if (rawValue != null) {
-            return Paths.get(rawValue).toAbsolutePath().normalize();
-        }
-        return mvndHome.resolve("conf/logging/logback.xml");
+    static Path findLocalRepo() {
+        return Environment.MAVEN_REPO_LOCAL.systemProperty().asPath();
     }
 
     @Override
