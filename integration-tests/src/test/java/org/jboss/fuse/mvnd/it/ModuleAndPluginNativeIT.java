@@ -59,7 +59,7 @@ public class ModuleAndPluginNativeIT {
         /* Build #1: with "Hello" output to target/hello.txt */
         {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
-            client.execute(output, "clean", "install", "-e").assertSuccess();
+            client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
 
             Assertions.assertThat(helloPath).exists();
             Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello");
@@ -74,7 +74,9 @@ public class ModuleAndPluginNativeIT {
             Files.write(mojoPath, mojoSource.getBytes(StandardCharsets.UTF_8));
 
             final ClientOutput output = Mockito.mock(ClientOutput.class);
-            client.execute(output, "clean", "install", "-e").assertSuccess();
+            client.execute(output,
+                    // "clean", workaround for https://github.com/mvndaemon/mvnd/issues/40
+                    "install", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
 
             Assertions.assertThat(helloPath).exists();
             Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hi");
