@@ -23,9 +23,9 @@ public class TestLayout extends ClientLayout {
     private final Path testDir;
 
     public TestLayout(Path testDir, Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory,
-            Path javaHome,
-            Path localMavenRepository, Path settings) {
-        super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory, javaHome, localMavenRepository, settings);
+            Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath) {
+        super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory, javaHome, localMavenRepository,
+                settings, logbackConfigurationPath);
         this.testDir = testDir;
     }
 

@@ -164,7 +164,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     testExecutionDir,
                     testExecutionDir,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
-                    localMavenRepository, settingsPath);
+                    localMavenRepository, settingsPath,
+                    mvndHome.resolve("conf/logging/logback.xml"));
             final DaemonRegistry registry = new DaemonRegistry(layout.registry());
 
             return new MvndResource(layout, registry, isNative, timeoutMs);

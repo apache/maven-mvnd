@@ -243,7 +243,7 @@ public class DaemonConnector {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
             args.add("-Dmaven.home=\"" + mavenHome + "\"");
-            args.add("-Dlogback.configurationFile=logback.xml");
+            args.add("-Dlogback.configurationFile=\""+ layout.getLogbackConfigurationPath() +"\"");
             args.add("-Ddaemon.uid=" + uid);
             args.add("-Xmx4g");
             final String timeout = Environment.DAEMON_IDLE_TIMEOUT.systemProperty().asString();
