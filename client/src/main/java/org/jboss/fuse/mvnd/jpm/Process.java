@@ -22,6 +22,8 @@ import java.io.Serializable;
 
 /**
  * Interface representing a process
+ *
+ * File origin: https://github.com/apache/karaf/blob/karaf-4.2.6/util/src/main/java/org/apache/karaf/jpm/Process.java
  */
 public interface Process extends Serializable {
 

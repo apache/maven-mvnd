@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,9 @@ import org.slf4j.LoggerFactory;
 import static java.lang.Thread.sleep;
 import static org.jboss.fuse.mvnd.client.DaemonState.Canceled;
 
+/**
+ * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DefaultDaemonConnector.java
+ */
 public class DaemonConnector {
 
     public static final int DEFAULT_CONNECT_TIMEOUT = 30000;

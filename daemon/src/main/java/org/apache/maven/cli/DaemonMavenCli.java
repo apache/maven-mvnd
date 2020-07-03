@@ -1,5 +1,3 @@
-package org.apache.maven.cli;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.cli;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.cli;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -103,6 +102,8 @@ import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 // TODO push all common bits back to plexus cli and prepare for transition to Guice. We don't need 50 ways to make CLIs
 
 /**
+ * File origin: https://github.com/apache/maven/blob/maven-3.6.2/maven-embedder/src/main/java/org/apache/maven/cli/MavenCli.java
+ *
  * @author Jason van Zyl
  */
 public class DaemonMavenCli

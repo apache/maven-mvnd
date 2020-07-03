@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.jboss.fuse.mvnd.plugin;
 
@@ -60,6 +63,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Default PluginCache implementation. Assumes cached data does not change.
+ *
+ * File origin: https://github.com/apache/maven/blob/maven-3.6.2/maven-core/src/main/java/org/apache/maven/plugin/DefaultPluginRealmCache.java
  */
 @Singleton
 @Named
@@ -168,7 +173,7 @@ public class CliPluginRealmCache
     }
 
     static abstract class ValidableCacheRecord extends CacheRecord {
-    
+
         public ValidableCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
         }
@@ -409,16 +414,16 @@ public class CliPluginRealmCache
     }
 
     static class WatchedCacheRecord extends ValidableCacheRecord {
-    
+
         private volatile boolean valid = true;
         public WatchedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
         }
-    
+
         public boolean isValid() {
             return valid;
         }
-    
+
     }
 
     private static final Logger log = LoggerFactory.getLogger(CliPluginRealmCache.class);

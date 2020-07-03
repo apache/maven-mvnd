@@ -48,6 +48,8 @@ import sun.nio.ch.DirectBuffer;
 
 /**
  * Access to daemon registry files. Useful also for testing.
+ *
+ * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonRegistry.java
  */
 public class DaemonRegistry implements AutoCloseable {
 
