@@ -1,3 +1,20 @@
+<!--
+
+    Copyright 2019 the original author or authors.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
@@ -9,6 +26,7 @@
 
     <packaging>pom</packaging>
     <name>Maven Daemon - Parent</name>
+    <inceptionYear>2019</inceptionYear>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,6 +49,7 @@
 
         <!-- plugin versions a..z -->
         <compiler.version>3.8.1</compiler.version>
+        <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <mrm.version>1.2.0</mrm.version>
         <surefire.version>3.0.0-M4</surefire.version>
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
@@ -177,6 +196,44 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${license-maven-plugin.version}</version>
+                    <configuration>
+                        <inlineHeader>Copyright ${project.inceptionYear} the original author or authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</inlineHeader>
+                        <excludes>
+                            <exclude>**/*.adoc</exclude>
+                            <exclude>**/README.*</exclude>
+                            <exclude>**/.gitkeep</exclude>
+                            <exclude>.gitattributes/</exclude>
+                            <exclude>.mvn/maven.config</exclude>
+                            <exclude>.mvn/wrapper/</exclude>
+                            <exclude>LICENSE.txt</exclude>
+                            <exclude>NOTICE.txt</exclude>
+                            <exclude>mvnw</exclude>
+                            <exclude>mvnw.cmd</exclude>
+                            <exclude>pom.xml.versionsBackup</exclude>
+                        </excludes>
+                        <mapping>
+                            <groovy>SLASHSTAR_STYLE</groovy>
+                            <java>SLASHSTAR_STYLE</java>
+                        </mapping>
+                        <skipExistingHeaders>true</skipExistingHeaders><!-- we want to keep third party license headers -->
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>io.takari.maven.plugins</groupId>
                     <artifactId>provisio-maven-plugin</artifactId>
                     <version>${takari-provisio.version}</version>
@@ -213,6 +270,21 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>
