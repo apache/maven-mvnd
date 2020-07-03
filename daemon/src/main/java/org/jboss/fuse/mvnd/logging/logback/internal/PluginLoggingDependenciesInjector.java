@@ -19,6 +19,8 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 
 /**
  * Replaces plugin logging dependencies with corresponding libraries used by the core.
+ *
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logback/internal/PluginLoggingDependenciesInjector.java
  */
 @Named
 public class PluginLoggingDependenciesInjector implements ClassRealmManagerDelegate {

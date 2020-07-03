@@ -1,5 +1,3 @@
-package org.apache.maven.project;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -18,6 +16,7 @@ package org.apache.maven.project;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.project;
 
 import java.io.File;
 import java.io.IOException;
@@ -79,6 +78,8 @@ import org.eclipse.aether.resolution.ArtifactResult;
 
 /**
  * DefaultProjectBuilder
+ *
+ * File origin: https://github.com/apache/maven/blob/maven-3.6.2/maven-core/src/main/java/org/apache/maven/project/DefaultProjectBuilder.java
  */
 @Component( role = ProjectBuilder.class )
 public class CachingProjectBuilder

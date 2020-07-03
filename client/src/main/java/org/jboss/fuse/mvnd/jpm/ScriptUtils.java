@@ -29,6 +29,9 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * File origin: https://github.com/apache/karaf/blob/karaf-4.2.6/util/src/main/java/org/apache/karaf/jpm/impl/ScriptUtils.java
+ */
 public class ScriptUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(ScriptUtils.class);

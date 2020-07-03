@@ -16,6 +16,9 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.DefaultLifecycles;
 import org.apache.maven.lifecycle.Lifecycle;
 
+/**
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logging/internal/MavenExecutionListener.java
+ */
 @Named
 public class MavenExecutionListener implements EventSpy {
 

@@ -24,6 +24,8 @@ import org.jboss.fuse.mvnd.logging.internal.SLF4JPrintStream;
  * of project build. The implementation guarantees that messages from one project are grouped
  * together. This is useful when using multi threaded build, where several projects are built
  * concurrently.
+ *
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logback/ProjectConsoleAppender.java
  */
 public class ProjectConsoleAppender extends ch.qos.logback.core.ConsoleAppender<ILoggingEvent>
         implements SLF4J.LifecycleListener {

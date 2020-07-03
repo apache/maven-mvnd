@@ -36,6 +36,10 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/messaging/src/main/java/org/gradle/internal/remote/internal/inet/SocketConnection.java
+ *
+ */
 public class DaemonConnection<T> implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnection.class);

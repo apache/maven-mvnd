@@ -58,6 +58,8 @@ import org.jboss.fuse.mvnd.logging.internal.SLF4J;
  * </configuration>
  * }
  * </pre>
+ *
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logback/ProjectBuildLogAppender.java
  */
 public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent>
         implements SLF4J.LifecycleListener {

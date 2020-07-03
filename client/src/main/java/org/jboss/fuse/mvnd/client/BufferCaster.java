@@ -18,6 +18,9 @@ package org.jboss.fuse.mvnd.client;
 
 import java.nio.Buffer;
 
+/**
+ * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/base-services/src/main/java/org/gradle/internal/io/BufferCaster.java
+ */
 public class BufferCaster {
     /**
      * Without this cast, when the code compiled by Java 9+ is executed on Java 8, it will throw

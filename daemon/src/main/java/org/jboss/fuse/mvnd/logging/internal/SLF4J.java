@@ -16,6 +16,9 @@ import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.slf4j.MDC;
 
+/**
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logging/internal/SLF4J.java
+ */
 public final class SLF4J {
     public static final String KEY_PROJECT_ID = "maven.project.id";
     public static final String KEY_PROJECT_GROUPID = "maven.project.groupId";

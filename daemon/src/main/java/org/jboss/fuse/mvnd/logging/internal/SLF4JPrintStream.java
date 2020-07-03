@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
  * The implementation attempts to correlate multiple related calls to PrintStream. For example, if
  * the caller uses multiple {@code #print} calls to produce a complex console message, each message
  * line will be treated as single logging event.
+ *
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logging/internal/SLF4JPrintStream.java
  */
 public class SLF4JPrintStream extends PrintStream {
 

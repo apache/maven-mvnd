@@ -10,6 +10,9 @@ package org.jboss.fuse.mvnd.logging.logback.internal;
 import org.apache.maven.cli.logging.Slf4jConfiguration;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+/**
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logback/internal/InadequateSlf4jConfiguration.java
+ */
 public class InadequateSlf4jConfiguration implements Slf4jConfiguration {
     /*
      * Maven Slf4jConfiguration API does not provide access to required execution request parameters

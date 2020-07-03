@@ -13,6 +13,8 @@ import org.jboss.fuse.mvnd.logging.internal.SLF4JPrintStream;
 /**
  * Custom ConsoleAppender that integrates with SLF4JPrintStream System out/err bridge for better
  * console logging performance.
+ *
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logback/ConsoleAppender.java
  */
 public class ConsoleAppender extends ch.qos.logback.core.ConsoleAppender<ILoggingEvent> {
     @Override

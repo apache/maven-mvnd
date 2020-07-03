@@ -23,6 +23,8 @@ import org.jboss.fuse.mvnd.logging.internal.SLF4J;
  * <p>
  * {@code onMatch} parameter takes {@code ACCEPT} or {@code DENY} values and controls whether the
  * filter will reject message with or without associated per-project MDC values.
+ *
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logback/ProjectBuildLogFilter.java
  */
 public class ProjectBuildLogFilter extends Filter<ILoggingEvent> {
 

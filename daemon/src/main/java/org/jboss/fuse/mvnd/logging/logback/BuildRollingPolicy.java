@@ -26,6 +26,8 @@ import ch.qos.logback.core.rolling.TriggeringPolicy;
  * </encoder>
  * </appender>
  * }
+ *
+ * File origin: https://github.com/takari/concurrent-build-logger/blob/concurrent-build-logger-0.1.0/src/main/java/io/takari/maven/logback/BuildRollingPolicy.java
  */
 public class BuildRollingPolicy<E> extends FixedWindowRollingPolicy implements TriggeringPolicy<E> {
 

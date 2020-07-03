@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@ import static org.jboss.fuse.mvnd.client.DaemonState.Idle;
 import java.nio.file.Path;
 import java.util.List;
 
+/**
+ * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonInfo.java
+ */
 public class DaemonInfo {
 
     private final String uid;

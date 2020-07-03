@@ -3,7 +3,10 @@ licensed under the Apache Software License 2.0:
 
  - Apache Maven project (https://maven.apache.org)
  - Takari Smart Builder (https://github.com/takari/takari-smart-builder)
- - Takari Better Maven multithreaded build logging (https://github.com/takari/concurrent-build-logger)
  - maven-buildtime-extension (https://github.com/timgifford/maven-buildtime-extension)
  - Apache Karaf (https://karaf.apache.org)
  - Gradle Launcher (https://github.com/gradle/gradle/tree/master/subprojects/launcher)
+
+and licensed under Eclipse Public License v1.0:
+
+ - Takari Better Maven multithreaded build logging (https://github.com/takari/concurrent-build-logger)

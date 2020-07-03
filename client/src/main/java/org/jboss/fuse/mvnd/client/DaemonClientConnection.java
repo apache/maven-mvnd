@@ -21,6 +21,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DaemonClientConnection.java
+ */
 public class DaemonClientConnection {
 
     private final static Logger LOG = LoggerFactory.getLogger(DaemonClientConnection.class);

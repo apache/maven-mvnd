@@ -217,6 +217,7 @@ limitations under the License.</inlineHeader>
                             <exclude>**/*.adoc</exclude>
                             <exclude>**/README.*</exclude>
                             <exclude>**/.gitkeep</exclude>
+                            <exclude>**/conf/logging/logback.xml</exclude>
                             <exclude>.gitattributes/</exclude>
                             <exclude>.mvn/maven.config</exclude>
                             <exclude>.mvn/wrapper/</exclude>
