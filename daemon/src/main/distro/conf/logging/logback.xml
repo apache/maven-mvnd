@@ -32,11 +32,6 @@
     <pattern>[%level] %msg%n</pattern>
   </appender>
 
-  <appender name="FILE" class="org.jboss.fuse.mvnd.logging.logback.ProjectBuildLogAppender">
-    <file>build.log</file>
-    <pattern>%d{HH:mm:ss.SSS} %.-1level %msg%n</pattern>
-  </appender>
-
   <appender name="DAEMON" class="ch.qos.logback.core.FileAppender">
     <file>${maven.home}/daemon/daemon-${daemon.uid}.log</file>
     <encoder>
@@ -56,6 +51,5 @@
 
   <root level="${consoleLevel:-info}">
     <appender-ref ref="MEM" />
-    <appender-ref ref="FILE" />
   </root>
 </configuration>
