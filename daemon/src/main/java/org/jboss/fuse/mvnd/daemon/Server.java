@@ -72,6 +72,7 @@ public class Server implements AutoCloseable, Runnable {
     public static final int CANCEL_TIMEOUT = 10 * 1000;
 
     private final String uid;
+    private final boolean noDaemon;
     private final ServerSocketChannel socket;
     private final DaemonMavenCli cli;
     private volatile DaemonInfo info;
@@ -86,6 +87,7 @@ public class Server implements AutoCloseable, Runnable {
 
     public Server() throws IOException {
         this.uid = Environment.DAEMON_UID.asString();
+        this.noDaemon = Environment.MVND_NO_DAEMON.asBoolean();
         try {
             cli = new DaemonMavenCli();
             registry = new DaemonRegistry(Environment.DAEMON_REGISTRY.asPath());
@@ -136,8 +138,10 @@ public class Server implements AutoCloseable, Runnable {
                         try {
                             socket.close();
                         } finally {
-                            clearCache("sun.net.www.protocol.jar.JarFileFactory", "urlCache");
-                            clearCache("sun.net.www.protocol.jar.JarFileFactory", "fileCache");
+                            if (!noDaemon) {
+                                clearCache("sun.net.www.protocol.jar.JarFileFactory", "urlCache");
+                                clearCache("sun.net.www.protocol.jar.JarFileFactory", "fileCache");
+                            }
                         }
                     }
                 }
@@ -165,8 +169,14 @@ public class Server implements AutoCloseable, Runnable {
             executor.scheduleAtFixedRate(this::expirationCheck,
                     expirationCheckDelayMs, expirationCheckDelayMs, TimeUnit.MILLISECONDS);
             LOGGER.info("Daemon started");
-            new DaemonThread(this::accept).start();
-            awaitStop();
+            if (noDaemon) {
+                try (SocketChannel socket = this.socket.accept()) {
+                    client(socket);
+                }
+            } else {
+                new DaemonThread(this::accept).start();
+                awaitStop();
+            }
         } catch (Throwable t) {
             LOGGER.error("Error running daemon loop", t);
         } finally {
@@ -516,9 +526,11 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);
         } finally {
-            LOGGER.info("Daemon back to idle");
-            updateState(DaemonState.Idle);
-            System.gc();
+            if (!noDaemon) {
+                LOGGER.info("Daemon back to idle");
+                updateState(DaemonState.Idle);
+                System.gc();
+            }
         }
     }
 

@@ -27,8 +27,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
@@ -84,6 +86,10 @@ public class DaemonConnector {
     }
 
     public DaemonClientConnection connect(ClientOutput output) {
+        if (parameters.noDaemon()) {
+            return connectNoDaemon();
+        }
+
         final DaemonCompatibilitySpec constraint = new DaemonCompatibilitySpec(
                 parameters.javaHome(), parameters.getDaemonOpts());
         output.accept(Message.buildStatus("Looking up daemon..."));
@@ -108,6 +114,49 @@ public class DaemonConnector {
         String message = handleStopEvents(idleDaemons, busyDaemons);
         output.accept(Message.buildStatus(message));
         return startDaemon();
+    }
+
+    private DaemonClientConnection connectNoDaemon() {
+        if (Environment.isNative()) {
+            throw new UnsupportedOperationException(
+                    "The " + Environment.MVND_NO_DAEMON.getProperty() + " property is not supported in native mode.");
+        }
+        String daemon = ProcessHandle.current().pid() + "-" + System.currentTimeMillis();
+        Properties properties = new Properties();
+        properties.put(Environment.JAVA_HOME.getProperty(), parameters.javaHome().toString());
+        properties.put(Environment.USER_DIR.getProperty(), parameters.userDir().toString());
+        properties.put(Environment.USER_HOME.getProperty(), parameters.userHome().toString());
+        properties.put(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
+        properties.put(Environment.DAEMON_UID.getProperty(), daemon);
+        properties.put(Environment.MVND_DAEMON_STORAGE.getProperty(), parameters.daemonStorage().toString());
+        properties.put(Environment.DAEMON_REGISTRY.getProperty(), parameters.registry().toString());
+        properties.putAll(parameters.getDaemonOptsMap());
+        Environment.setProperties(properties);
+        AtomicReference<Throwable> throwable = new AtomicReference<>();
+        Thread serverThread = new Thread(() -> {
+            try {
+                Class<?> clazz = getClass().getClassLoader().loadClass("org.jboss.fuse.mvnd.daemon.Server");
+                try (AutoCloseable server = (AutoCloseable) clazz.getConstructor().newInstance()) {
+                    ((Runnable) server).run();
+                }
+            } catch (Throwable t) {
+                throwable.set(t);
+            }
+        });
+        serverThread.start();
+        long start = System.currentTimeMillis();
+        do {
+            DaemonClientConnection daemonConnection = connectToDaemonWithId(daemon, true);
+            if (daemonConnection != null) {
+                return daemonConnection;
+            }
+            try {
+                sleep(50L);
+            } catch (InterruptedException e) {
+                throw new DaemonException.InterruptedException(e);
+            }
+        } while (serverThread.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
+        throw new RuntimeException("Unable to connect to internal daemon", throwable.get());
     }
 
     private String handleStopEvents(Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {

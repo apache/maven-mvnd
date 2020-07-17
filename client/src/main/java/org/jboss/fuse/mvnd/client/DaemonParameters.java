@@ -73,6 +73,13 @@ public class DaemonParameters {
                 .collect(Collectors.toList());
     }
 
+    public Map<String, String> getDaemonOptsMap() {
+        return Arrays.stream(Environment.values())
+                .filter(Environment::isDiscriminating)
+                .collect(Collectors.toMap(Environment::getProperty,
+                        v -> property(v).orFail().asString()));
+    }
+
     public List<String> getDaemonCommandLineProperties() {
         return Arrays.stream(Environment.values())
                 .filter(Environment::isDiscriminating)
@@ -237,6 +244,17 @@ public class DaemonParameters {
      */
     public Path mavenRepoLocal() {
         return property(Environment.MAVEN_REPO_LOCAL).asPath();
+    }
+
+    /**
+     * @return <code>true</code> if maven should be executed within this process instead of spawning a daemon.
+     */
+    public boolean noDaemon() {
+        return value(Environment.MVND_NO_DAEMON)
+                .orSystemProperty()
+                .orEnvironmentVariable()
+                .orDefault()
+                .asBoolean();
     }
 
     /**
