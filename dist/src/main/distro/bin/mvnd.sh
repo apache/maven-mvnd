@@ -102,7 +102,7 @@ if [ ! -x "$JAVACMD" ] ; then
   exit 1
 fi
 
-DAEMON_JAR=`echo "${MVND_HOME}"/mvn/lib/ext/*.jar "${MVND_HOME}"/mvn/lib/*.jar`
+DAEMON_JAR=`echo "${MVND_HOME}"/mvn/boot/*.jar "${MVND_HOME}"/mvn/lib/ext/*.jar "${MVND_HOME}"/mvn/lib/*.jar`
 DAEMON_JAR=$(echo $DAEMON_JAR | sed -e 's/ /:/g')
 DAEMON_LAUNCHER=org.jboss.fuse.mvnd.client.DefaultClient
 

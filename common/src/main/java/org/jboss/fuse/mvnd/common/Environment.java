@@ -68,6 +68,7 @@ public enum Environment {
      * The path to the daemon registry
      */
     DAEMON_REGISTRY("daemon.registry", null, null, false),
+    MVND_NO_DAEMON("mvnd.noDaemon", "MVND_NO_DAEMON", "false", true),
     DAEMON_DEBUG("daemon.debug", null, false, true),
     DAEMON_IDLE_TIMEOUT_MS("daemon.idleTimeoutMs", null, TimeUnit.HOURS.toMillis(3), true),
     DAEMON_KEEP_ALIVE_MS("daemon.keepAliveMs", null, TimeUnit.SECONDS.toMillis(1), true),
