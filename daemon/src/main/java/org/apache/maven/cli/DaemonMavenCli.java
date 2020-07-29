@@ -416,13 +416,14 @@ public class DaemonMavenCli {
         //        }
 
         final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);
+        final CliPluginRealmCache realmCache = new CliPluginRealmCache();
 
         container = new DefaultPlexusContainer(cc, new AbstractModule() {
             @Override
             protected void configure() {
                 bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
                 bind(CoreExports.class).toInstance(exports);
-                bind(PluginRealmCache.class).toInstance(new CliPluginRealmCache());
+                bind(PluginRealmCache.class).toInstance(realmCache);
             }
         });
 
@@ -440,6 +441,7 @@ public class DaemonMavenCli {
         //        container.getLoggerManager().setThresholds( cliRequest.request.getLoggingLevel() );
 
         eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
+        eventSpyDispatcher.getEventSpies().add(realmCache.asEventSpy());
 
         maven = container.lookup(Maven.class);
 
