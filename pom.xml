@@ -49,6 +49,8 @@
 
         <!-- plugin versions a..z -->
         <compiler.version>3.8.1</compiler.version>
+        <formatter-maven-plugin.version>2.12.1</formatter-maven-plugin.version>
+        <impsort-maven-plugin.version>1.4.1</impsort-maven-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <mrm.version>1.2.0</mrm.version>
         <surefire.version>3.0.0-M4</surefire.version>
@@ -245,6 +247,26 @@ limitations under the License.</inlineHeader>
                     <version>${takari-lifecycle.version}</version>
                 </plugin>
                 <plugin>
+                    <groupId>net.revelc.code.formatter</groupId>
+                    <artifactId>formatter-maven-plugin</artifactId>
+                    <version>${formatter-maven-plugin.version}</version>
+                    <configuration>
+                        <configFile>${maven.multiModuleProjectDirectory}/build/eclipse-formatter-config.xml</configFile>
+                        <skip>${format.skip}</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>net.revelc.code</groupId>
+                    <artifactId>impsort-maven-plugin</artifactId>
+                    <version>${impsort-maven-plugin.version}</version>
+                    <configuration>
+                        <removeUnused>true</removeUnused>
+                        <staticAfter>true</staticAfter>
+                        <lineEnding>KEEP</lineEnding>
+                        <skip>${format.skip}</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${compiler.version}</version>
@@ -282,6 +304,32 @@ limitations under the License.</inlineHeader>
                         <goals>
                             <goal>format</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>format</id>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sort-imports</id>
+                        <goals>
+                            <goal>sort</goal>
+                        </goals>
+                        <phase>process-sources</phase>
                     </execution>
                 </executions>
             </plugin>

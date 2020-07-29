@@ -25,3 +25,6 @@ nb-configuration.xml
 
 # VS Code
 .vscode/
+
+# formatter-maven-plugin
+.cache/
