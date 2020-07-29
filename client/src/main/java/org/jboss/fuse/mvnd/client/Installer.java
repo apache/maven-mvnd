@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.slf4j.Logger;
@@ -132,7 +131,8 @@ public class Installer {
                 final Path dest = destinationDir.resolve(entry.getName()).normalize();
                 if (!dest.startsWith(destinationDir)) {
                     /* Avoid writing to paths outside of mvndHome */
-                    throw new IllegalStateException("Possibly tainted ZIP entry name " + entry.getName() + " would have to be unpacked outside of " + destinationDir);
+                    throw new IllegalStateException("Possibly tainted ZIP entry name " + entry.getName()
+                            + " would have to be unpacked outside of " + destinationDir);
                 }
                 if (entry.isDirectory()) {
                     Files.createDirectories(dest);

@@ -16,9 +16,7 @@
 package org.jboss.fuse.mvnd.it;
 
 import java.io.IOException;
-
 import javax.inject.Inject;
-
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;

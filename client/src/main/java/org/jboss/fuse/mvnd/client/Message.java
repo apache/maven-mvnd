@@ -113,6 +113,7 @@ public abstract class Message {
         public enum Type {
             BuildStarted, BuildStopped, ProjectStarted, ProjectStopped, MojoStarted, MojoStopped
         }
+
         final Type type;
         final String projectId;
         final String display;
@@ -177,14 +178,14 @@ public abstract class Message {
                 return null;
             }
             switch (type) {
-                case BUILD_REQUEST:
-                    return readBuildRequest(input);
-                case BUILD_EVENT:
-                    return readBuildEvent(input);
-                case BUILD_MESSAGE:
-                    return readBuildMessage(input);
-                case BUILD_EXCEPTION:
-                    return readBuildException(input);
+            case BUILD_REQUEST:
+                return readBuildRequest(input);
+            case BUILD_EVENT:
+                return readBuildEvent(input);
+            case BUILD_MESSAGE:
+                return readBuildMessage(input);
+            case BUILD_EXCEPTION:
+                return readBuildException(input);
             }
             throw new IllegalStateException("Unexpected message type: " + type);
         }

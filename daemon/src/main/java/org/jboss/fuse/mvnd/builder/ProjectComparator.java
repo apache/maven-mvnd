@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.ToLongFunction;
-
 import org.apache.maven.project.MavenProject;
 
 /**
@@ -47,7 +46,8 @@ import org.apache.maven.project.MavenProject;
  * <code>${session.request/baseDirectory}/.mvn/timing.properties</code> file. The timings file is
  * written only if <code>${session.request/baseDirectory}/.mvn</code> directory is already present.
  *
- * File origin: https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ProjectComparator.java
+ * File origin:
+ * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ProjectComparator.java
  */
 class ProjectComparator {
 
@@ -56,8 +56,8 @@ class ProjectComparator {
     }
 
     static <K> Comparator<K> create0(DependencyGraph<K> dependencyGraph,
-                                     Map<String, AtomicLong> historicalServiceTimes,
-                                     Function<K, String> toKey) {
+            Map<String, AtomicLong> historicalServiceTimes,
+            Function<K, String> toKey) {
         final long defaultServiceTime = average(historicalServiceTimes.values());
 
         final Map<K, Long> serviceTimes = new HashMap<>();
@@ -71,8 +71,7 @@ class ProjectComparator {
             }
         });
 
-        final Map<K, Long> projectWeights =
-                calculateWeights(dependencyGraph, serviceTimes, rootProjects);
+        final Map<K, Long> projectWeights = calculateWeights(dependencyGraph, serviceTimes, rootProjects);
 
         return Comparator.comparingLong((ToLongFunction<K>) projectWeights::get)
                 .thenComparing(toKey, String::compareTo)
@@ -85,13 +84,13 @@ class ProjectComparator {
     }
 
     private static <K> long getServiceTime(Map<String, AtomicLong> serviceTimes, K project,
-                                           long defaultServiceTime, Function<K, String> toKey) {
+            long defaultServiceTime, Function<K, String> toKey) {
         AtomicLong serviceTime = serviceTimes.get(toKey.apply(project));
         return serviceTime != null ? serviceTime.longValue() : defaultServiceTime;
     }
 
     private static <K> Map<K, Long> calculateWeights(DependencyGraph<K> dependencyGraph,
-                                                     Map<K, Long> serviceTimes, Collection<K> rootProjects) {
+            Map<K, Long> serviceTimes, Collection<K> rootProjects) {
         Map<K, Long> weights = new HashMap<>();
         for (K rootProject : rootProjects) {
             calculateWeights(dependencyGraph, serviceTimes, rootProject, weights);
@@ -104,19 +103,19 @@ class ProjectComparator {
      * "exit project" is a project without downstream dependencies.
      */
     private static <K> long calculateWeights(DependencyGraph<K> dependencyGraph,
-                                             Map<K, Long> serviceTimes, K project, Map<K, Long> weights) {
+            Map<K, Long> serviceTimes, K project, Map<K, Long> weights) {
         long weight = serviceTimes.get(project)
                 + dependencyGraph.getDownstreamProjects(project)
-                .mapToLong(successor -> {
-                    long successorWeight;
-                    if (weights.containsKey(successor)) {
-                        successorWeight = weights.get(successor);
-                    } else {
-                        successorWeight = calculateWeights(dependencyGraph, serviceTimes, successor, weights);
-                    }
-                    return successorWeight;
-                })
-                .max().orElse(0);
+                        .mapToLong(successor -> {
+                            long successorWeight;
+                            if (weights.containsKey(successor)) {
+                                successorWeight = weights.get(successor);
+                            } else {
+                                successorWeight = calculateWeights(dependencyGraph, serviceTimes, successor, weights);
+                            }
+                            return successorWeight;
+                        })
+                        .max().orElse(0);
         weights.put(project, weight);
         return weight;
     }

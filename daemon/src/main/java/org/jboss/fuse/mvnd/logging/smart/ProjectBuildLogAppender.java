@@ -15,14 +15,12 @@
  */
 package org.jboss.fuse.mvnd.logging.smart;
 
-
-import java.util.Map;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import java.util.Map;
 import org.apache.maven.shared.utils.logging.LoggerLevelRenderer;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 
@@ -69,14 +67,14 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
             LoggerLevelRenderer llr = MessageUtils.level();
             Level level = event.getLevel();
             switch (level.toInt()) {
-                case Level.ERROR_INT:
-                    return llr.error(level.toString());
-                case Level.WARN_INT:
-                    return llr.warning(level.toString());
-                case Level.INFO_INT:
-                    return llr.info(level.toString());
-                default:
-                    return llr.debug(level.toString());
+            case Level.ERROR_INT:
+                return llr.error(level.toString());
+            case Level.WARN_INT:
+                return llr.warning(level.toString());
+            case Level.INFO_INT:
+                return llr.info(level.toString());
+            default:
+                return llr.debug(level.toString());
             }
         }
     }

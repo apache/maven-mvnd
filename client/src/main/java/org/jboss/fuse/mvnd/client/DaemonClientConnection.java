@@ -17,12 +17,12 @@ package org.jboss.fuse.mvnd.client;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DaemonClientConnection.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DaemonClientConnection.java
  */
 public class DaemonClientConnection {
 
@@ -34,7 +34,8 @@ public class DaemonClientConnection {
     private boolean hasReceived;
     private final Lock dispatchLock = new ReentrantLock();
 
-    public DaemonClientConnection(DaemonConnection<Message> connection, DaemonInfo daemon, StaleAddressDetector staleAddressDetector) {
+    public DaemonClientConnection(DaemonConnection<Message> connection, DaemonInfo daemon,
+            StaleAddressDetector staleAddressDetector) {
         this.connection = connection;
         this.daemon = daemon;
         this.staleAddressDetector = staleAddressDetector;

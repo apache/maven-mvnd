@@ -18,7 +18,6 @@ package org.jboss.fuse.mvnd.logging.smart;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;

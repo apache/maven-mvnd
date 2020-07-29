@@ -25,12 +25,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
-import org.jboss.fuse.mvnd.client.DefaultClient;
 import org.jboss.fuse.mvnd.client.BuildProperties;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonInfo;
 import org.jboss.fuse.mvnd.client.DaemonRegistry;
+import org.jboss.fuse.mvnd.client.DefaultClient;
 import org.jboss.fuse.mvnd.client.Layout;
 import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -59,7 +58,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             } else {
                 final MvndNativeTest mvndNativeTest = testClass.getAnnotation(MvndNativeTest.class);
                 store.put(MvndResource.class.getName(),
-                        MvndResource.create(context.getRequiredTestClass().getSimpleName(), mvndNativeTest.projectDir(), true, mvndNativeTest.timeoutSec() * 1000L));
+                        MvndResource.create(context.getRequiredTestClass().getSimpleName(), mvndNativeTest.projectDir(), true,
+                                mvndNativeTest.timeoutSec() * 1000L));
             }
         } catch (Exception e) {
             this.bootException = e;
@@ -87,11 +87,13 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                         f.set(testInstance, resource.layout);
                     } else if (f.getType() == Client.class) {
                         if (resource.isNative) {
-                            final Path mvndNativeExecutablePath = Paths.get(System.getProperty("mvnd.native.executable")).toAbsolutePath().normalize();
+                            final Path mvndNativeExecutablePath = Paths.get(System.getProperty("mvnd.native.executable"))
+                                    .toAbsolutePath().normalize();
                             if (!Files.isRegularFile(mvndNativeExecutablePath)) {
                                 throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
                             }
-                            f.set(testInstance, new NativeTestClient(resource.layout, mvndNativeExecutablePath, resource.timeoutMs));
+                            f.set(testInstance,
+                                    new NativeTestClient(resource.layout, mvndNativeExecutablePath, resource.timeoutMs));
                         } else {
                             f.set(testInstance, new DefaultClient(() -> resource.layout, BuildProperties.getInstance()));
                         }
@@ -119,7 +121,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         private final boolean isNative;
         private final long timeoutMs;
 
-        public static MvndResource create(String className, String rawProjectDir, boolean isNative, long timeoutMs) throws IOException {
+        public static MvndResource create(String className, String rawProjectDir, boolean isNative, long timeoutMs)
+                throws IOException {
             if (rawProjectDir == null) {
                 throw new IllegalStateException("rawProjectDir of @MvndTest must be set");
             }

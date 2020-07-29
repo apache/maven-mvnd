@@ -19,9 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-
 import javax.inject.Inject;
-
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.EqualsInOrderAmongOthers;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
@@ -58,9 +56,12 @@ public class MultiModuleTest {
 
         final Path localMavenRepo = layout.getLocalMavenRepository();
         final Path[] installedJars = {
-                localMavenRepo.resolve("org/jboss/fuse/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
-                localMavenRepo.resolve("org/jboss/fuse/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar"),
-                localMavenRepo.resolve("org/jboss/fuse/mvnd/test/multi-module/multi-module-hi/0.0.1-SNAPSHOT/multi-module-hi-0.0.1-SNAPSHOT.jar")
+                localMavenRepo.resolve(
+                        "org/jboss/fuse/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
+                localMavenRepo.resolve(
+                        "org/jboss/fuse/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar"),
+                localMavenRepo.resolve(
+                        "org/jboss/fuse/mvnd/test/multi-module/multi-module-hi/0.0.1-SNAPSHOT/multi-module-hi-0.0.1-SNAPSHOT.jar")
         };
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 

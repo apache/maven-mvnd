@@ -23,10 +23,8 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
-
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
@@ -73,28 +71,28 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
 
     private void onEvent(ExecutionEvent event) throws Exception {
         switch (event.getType()) {
-            case SessionStarted:
-                logger.info("BuildTimeEventSpy is registered.");
-                session = new Session();
-                break;
+        case SessionStarted:
+            logger.info("BuildTimeEventSpy is registered.");
+            session = new Session();
+            break;
 
-            case MojoStarted:
-                session.mojoTimer(event).start();
-                break;
+        case MojoStarted:
+            session.mojoTimer(event).start();
+            break;
 
-            case MojoFailed:
-            case MojoSucceeded:
-                session.mojoTimer(event).end();
-                break;
+        case MojoFailed:
+        case MojoSucceeded:
+            session.mojoTimer(event).end();
+            break;
 
-            case SessionEnded:
-                String prop = getExecutionProperty(event, BUILDTIME_OUTPUT_LOG_PROPERTY, "false");
-                boolean output = Boolean.parseBoolean(prop);
-                doReport(output);
-                break;
+        case SessionEnded:
+            String prop = getExecutionProperty(event, BUILDTIME_OUTPUT_LOG_PROPERTY, "false");
+            boolean output = Boolean.parseBoolean(prop);
+            doReport(output);
+            break;
 
-            default:
-                //Ignore other events
+        default:
+            //Ignore other events
         }
     }
 
@@ -110,8 +108,7 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
         log.accept(DIVIDER);
         session.projects().forEach(p -> {
             log.accept(String.format("%s [%.3fs]", p.name(), p.duration() / 1000d));
-            p.mojos().forEach(m ->
-                    log.accept(String.format("  %s [%.3fs]", m.name(), m.duration() / 1000d)));
+            p.mojos().forEach(m -> log.accept(String.format("  %s [%.3fs]", m.name(), m.duration() / 1000d)));
         });
     }
 
@@ -176,8 +173,8 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
 
         public String name() {
             String name = mojo.getKey();
-            String truncatedName = name.length() >= MAX_NAME_LENGTH ?
-                    StringUtils.substring(name, 0, MAX_NAME_LENGTH) : name + " ";
+            String truncatedName = name.length() >= MAX_NAME_LENGTH ? StringUtils.substring(name, 0, MAX_NAME_LENGTH)
+                    : name + " ";
             return StringUtils.rightPad(truncatedName, MAX_NAME_LENGTH, ".");
         }
 

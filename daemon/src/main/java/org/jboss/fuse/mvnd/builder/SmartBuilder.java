@@ -15,6 +15,8 @@
  */
 package org.jboss.fuse.mvnd.builder;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -29,14 +31,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.lifecycle.internal.LifecycleModuleBuilder;
 import org.apache.maven.lifecycle.internal.ProjectBuildList;
@@ -52,7 +50,8 @@ import org.slf4j.LoggerFactory;
  * Trivial Maven {@link Builder} implementation. All interesting stuff happens in
  * {@link SmartBuilderImpl} .
  *
- * File origin: https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/SmartBuilder.java
+ * File origin:
+ * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/SmartBuilder.java
  */
 @Singleton
 @Named("smart")
@@ -69,7 +68,6 @@ public class SmartBuilder implements Builder {
 
     private final LifecycleModuleBuilder moduleBuilder;
 
-
     @Inject
     public SmartBuilder(LifecycleModuleBuilder moduleBuilder) {
         this.moduleBuilder = moduleBuilder;
@@ -77,8 +75,8 @@ public class SmartBuilder implements Builder {
 
     @Override
     public void build(final MavenSession session, final ReactorContext reactorContext,
-                      ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
-                      ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
+            ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
+            ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
 
         List<String> list = new ArrayList<>();
 
@@ -132,7 +130,6 @@ public class SmartBuilder implements Builder {
             list.add(result.toString());
         }
 
-
         String topRule = session.getTopLevelProject().getProperties()
                 .getProperty(MVND_BUILDER_RULES);
         if (topRule != null) {
@@ -162,9 +159,8 @@ public class SmartBuilder implements Builder {
         List<Map.Entry<TaskSegment, ReactorBuildStats>> allstats = new ArrayList<>();
         for (TaskSegment taskSegment : taskSegments) {
             Set<MavenProject> projects = projectBuilds.getByTaskSegment(taskSegment).getProjects();
-            ReactorBuildStats stats =
-                    new SmartBuilderImpl(moduleBuilder, session, reactorContext, taskSegment, projects, graph)
-                            .build();
+            ReactorBuildStats stats = new SmartBuilderImpl(moduleBuilder, session, reactorContext, taskSegment, projects, graph)
+                    .build();
             allstats.add(new AbstractMap.SimpleEntry<>(taskSegment, stats));
         }
 
@@ -183,8 +179,7 @@ public class SmartBuilder implements Builder {
 
             final long walltimeReactor = stats.walltimeTime(TimeUnit.NANOSECONDS);
             final long walltimeService = stats.totalServiceTime(TimeUnit.NANOSECONDS);
-            final String effectiveConcurrency =
-                    String.format("%2.2f", ((double) walltimeService) / walltimeReactor);
+            final String effectiveConcurrency = String.format("%2.2f", ((double) walltimeService) / walltimeReactor);
             logger.info(
                     "Segment walltime {} s, segment projects service time {} s, effective/maximum degree of concurrency {}/{}",
                     TimeUnit.NANOSECONDS.toSeconds(walltimeReactor),

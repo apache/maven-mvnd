@@ -30,7 +30,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
 import org.jboss.fuse.mvnd.jpm.Process;
 import org.jboss.fuse.mvnd.jpm.ScriptUtils;
@@ -41,7 +40,8 @@ import static java.lang.Thread.sleep;
 import static org.jboss.fuse.mvnd.client.DaemonState.Canceled;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DefaultDaemonConnector.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DefaultDaemonConnector.java
  */
 public class DaemonConnector {
 
@@ -56,7 +56,8 @@ public class DaemonConnector {
     private final Serializer<Message> serializer;
     private final BuildProperties buildProperties;
 
-    public DaemonConnector(ClientLayout layout, DaemonRegistry registry, BuildProperties buildProperties, Serializer<Message> serializer) {
+    public DaemonConnector(ClientLayout layout, DaemonRegistry registry, BuildProperties buildProperties,
+            Serializer<Message> serializer) {
         this.layout = layout;
         this.registry = registry;
         this.buildProperties = buildProperties;
@@ -164,7 +165,8 @@ public class DaemonConnector {
         return findConnection(compatibleIdleDaemons);
     }
 
-    private DaemonClientConnection connectToCanceledDaemon(Collection<DaemonInfo> busyDaemons, DaemonCompatibilitySpec constraint) {
+    private DaemonClientConnection connectToCanceledDaemon(Collection<DaemonInfo> busyDaemons,
+            DaemonCompatibilitySpec constraint) {
         DaemonClientConnection connection = null;
         Map<Boolean, List<DaemonInfo>> canceledBusy = busyDaemons.stream()
                 .collect(Collectors.groupingBy(di -> di.getState() == Canceled));
@@ -246,7 +248,7 @@ public class DaemonConnector {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
             args.add("-Dmaven.home=\"" + mavenHome + "\"");
-            args.add("-Dlogback.configurationFile=\""+ layout.getLogbackConfigurationPath() +"\"");
+            args.add("-Dlogback.configurationFile=\"" + layout.getLogbackConfigurationPath() + "\"");
             args.add("-Ddaemon.uid=" + uid);
             args.add("-Xmx4g");
             final String timeout = Environment.DAEMON_IDLE_TIMEOUT.systemProperty().asString();
@@ -277,7 +279,6 @@ public class DaemonConnector {
         return result;
     }
 
-
     private DaemonClientConnection connectToDaemonWithId(String daemon) throws DaemonException.ConnectException {
         // Look for 'our' daemon among the busy daemons - a daemon will start in busy state so that nobody else will grab it.
         DaemonInfo daemonInfo = registry.get(daemon);
@@ -292,7 +293,8 @@ public class DaemonConnector {
         return null;
     }
 
-    private DaemonClientConnection connectToDaemon(DaemonInfo daemon, DaemonClientConnection.StaleAddressDetector staleAddressDetector) throws DaemonException.ConnectException {
+    private DaemonClientConnection connectToDaemon(DaemonInfo daemon,
+            DaemonClientConnection.StaleAddressDetector staleAddressDetector) throws DaemonException.ConnectException {
         LOGGER.debug("Connecting to Daemon");
         try {
             DaemonConnection<Message> connection = connect(daemon.getAddress());
@@ -318,7 +320,8 @@ public class DaemonConnector {
         public boolean maybeStaleAddress(Exception failure) {
             LOGGER.info("Removing daemon from the registry due to communication failure. Daemon information: {}", daemon);
             final long timestamp = System.currentTimeMillis();
-            final DaemonStopEvent stopEvent = new DaemonStopEvent(daemon.getUid(), timestamp, null, "by user or operating system");
+            final DaemonStopEvent stopEvent = new DaemonStopEvent(daemon.getUid(), timestamp, null,
+                    "by user or operating system");
             registry.storeStopEvent(stopEvent);
             registry.remove(daemon.getUid());
             return exposeAsStale;

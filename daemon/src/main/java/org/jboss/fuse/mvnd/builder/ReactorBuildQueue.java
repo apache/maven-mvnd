@@ -19,14 +19,14 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
-
 import org.apache.maven.project.MavenProject;
 
 /**
  * Reactor build queue manages reactor modules that are waiting for their upstream dependencies
  * build to finish.
  *
- * File origin: https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ReactorBuildQueue.java
+ * File origin:
+ * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ReactorBuildQueue.java
  */
 class ReactorBuildQueue {
 
@@ -44,7 +44,7 @@ class ReactorBuildQueue {
     private final Set<MavenProject> finishedProjects;
 
     public ReactorBuildQueue(Collection<MavenProject> projects,
-                             DependencyGraph<MavenProject> graph) {
+            DependencyGraph<MavenProject> graph) {
         this.graph = graph;
         this.projects = new HashSet<>();
         this.rootProjects = new HashSet<>();

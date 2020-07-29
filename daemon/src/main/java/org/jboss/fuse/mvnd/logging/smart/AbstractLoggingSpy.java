@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.plugin.MojoExecution;
@@ -61,30 +60,30 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
         if (event instanceof ExecutionEvent) {
             ExecutionEvent executionEvent = (ExecutionEvent) event;
             switch (executionEvent.getType()) {
-                case SessionStarted:
-                    notifySessionStart(executionEvent);
-                    break;
-                case SessionEnded:
-                    notifySessionFinish(executionEvent);
-                    break;
-                case ProjectStarted:
-                    notifyProjectBuildStart(executionEvent);
-                    break;
-                case ProjectSucceeded:
-                case ProjectFailed:
-                case ProjectSkipped:
-                    notifyProjectBuildFinish(executionEvent);
-                    break;
-                case MojoStarted:
-                    notifyMojoExecutionStart(executionEvent);
-                    break;
-                case MojoSucceeded:
-                case MojoSkipped:
-                case MojoFailed:
-                    notifyMojoExecutionFinish(executionEvent);
-                    break;
-                default:
-                    break;
+            case SessionStarted:
+                notifySessionStart(executionEvent);
+                break;
+            case SessionEnded:
+                notifySessionFinish(executionEvent);
+                break;
+            case ProjectStarted:
+                notifyProjectBuildStart(executionEvent);
+                break;
+            case ProjectSucceeded:
+            case ProjectFailed:
+            case ProjectSkipped:
+                notifyProjectBuildFinish(executionEvent);
+                break;
+            case MojoStarted:
+                notifyMojoExecutionStart(executionEvent);
+                break;
+            case MojoSucceeded:
+            case MojoSkipped:
+            case MojoFailed:
+                notifyMojoExecutionFinish(executionEvent);
+                break;
+            default:
+                break;
             }
         }
     }

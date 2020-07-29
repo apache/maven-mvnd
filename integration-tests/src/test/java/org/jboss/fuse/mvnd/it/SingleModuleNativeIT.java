@@ -19,9 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
-
 import javax.inject.Inject;
-
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
@@ -47,7 +45,8 @@ public class SingleModuleNativeIT {
             Files.delete(helloFilePath);
         }
 
-        final Path installedJar = layout.getLocalMavenRepository().resolve("org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
+        final Path installedJar = layout.getLocalMavenRepository().resolve(
+                "org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
         Assertions.assertThat(installedJar).doesNotExist();
 
         final ClientOutput o = Mockito.mock(ClientOutput.class);
@@ -61,7 +60,8 @@ public class SingleModuleNativeIT {
         inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":testCompile"));
         inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-surefire-plugin") + ":test"));
         inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-install-plugin") + ":install"));
-        inOrder.verify(o).accept(Mockito.contains("SUCCESS build of project org.jboss.fuse.mvnd.test.single-module:single-module"));
+        inOrder.verify(o)
+                .accept(Mockito.contains("SUCCESS build of project org.jboss.fuse.mvnd.test.single-module:single-module"));
 
         assertJVM(o, props);
 

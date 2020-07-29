@@ -22,12 +22,12 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
 
 /**
- * File origin: https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/DependencyGraph.java
+ * File origin:
+ * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/DependencyGraph.java
  */
 interface DependencyGraph<K> {
 
@@ -47,17 +47,16 @@ interface DependencyGraph<K> {
                 if (parts.length != 2) {
                     throw new IllegalArgumentException("Invalid rule: " + rule);
                 }
-                List<Set<MavenProject>> deps = Stream.of(parts).map(s ->
-                        Pattern.compile(
-                            Arrays.stream(s.split("\\s*,\\s*|\\s+and\\s+"))
-                            .map(String::trim)
-                            .map(r -> r.contains(":") ? r : "*:" + r)
-                            .map(r -> r.replaceAll("\\.", "\\.")
-                                .replaceAll("\\*", ".*"))
-                            .collect(Collectors.joining("|"))))
+                List<Set<MavenProject>> deps = Stream.of(parts).map(s -> Pattern.compile(
+                        Arrays.stream(s.split("\\s*,\\s*|\\s+and\\s+"))
+                                .map(String::trim)
+                                .map(r -> r.contains(":") ? r : "*:" + r)
+                                .map(r -> r.replaceAll("\\.", "\\.")
+                                        .replaceAll("\\*", ".*"))
+                                .collect(Collectors.joining("|"))))
                         .map(t -> projects.stream()
-                            .filter(p -> t.matcher(p.getGroupId() + ":" + p.getArtifactId()).matches())
-                            .collect(Collectors.toSet()))
+                                .filter(p -> t.matcher(p.getGroupId() + ":" + p.getArtifactId()).matches())
+                                .collect(Collectors.toSet()))
                         .collect(Collectors.toList());
 
                 Set<MavenProject> common = deps.get(0).stream().filter(deps.get(1)::contains).collect(Collectors.toSet());
@@ -65,13 +64,15 @@ interface DependencyGraph<K> {
                     boolean leftWildcard = parts[0].contains("*");
                     boolean rightWildcard = parts[1].contains("*");
                     if (leftWildcard && rightWildcard) {
-                        throw new IllegalArgumentException("Invalid rule: " + rule + ".  Both left and right parts have wildcards and match the same project.");
+                        throw new IllegalArgumentException("Invalid rule: " + rule
+                                + ".  Both left and right parts have wildcards and match the same project.");
                     } else if (leftWildcard) {
                         deps.get(0).removeAll(common);
                     } else if (rightWildcard) {
                         deps.get(1).removeAll(common);
                     } else {
-                        throw new IllegalArgumentException("Invalid rule: " + rule + ". Both left and right parts match the same project.");
+                        throw new IllegalArgumentException(
+                                "Invalid rule: " + rule + ". Both left and right parts match the same project.");
                     }
                 }
 

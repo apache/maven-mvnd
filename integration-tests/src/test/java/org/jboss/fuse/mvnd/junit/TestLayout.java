@@ -16,7 +16,6 @@
 package org.jboss.fuse.mvnd.junit;
 
 import java.nio.file.Path;
-
 import org.jboss.fuse.mvnd.client.ClientLayout;
 
 public class TestLayout extends ClientLayout {

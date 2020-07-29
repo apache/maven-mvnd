@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;

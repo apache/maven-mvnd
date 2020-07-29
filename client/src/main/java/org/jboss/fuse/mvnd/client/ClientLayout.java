@@ -62,7 +62,8 @@ public class ClientLayout extends Layout {
     }
 
     /**
-     * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the default
+     * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the
+     *         default
      */
     public Path getLocalMavenRepository() {
         return localMavenRepository;

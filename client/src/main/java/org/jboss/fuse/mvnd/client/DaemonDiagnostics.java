@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.stream.Collector;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/diagnostics/DaemonDiagnostics.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/diagnostics/DaemonDiagnostics.java
  */
 public class DaemonDiagnostics {
 
@@ -58,9 +59,9 @@ public class DaemonDiagnostics {
     }
 
     /**
-     * @param path to read from tail
-     * @param maxLines max lines to read
-     * @return tail content
+     * @param  path        to read from tail
+     * @param  maxLines    max lines to read
+     * @return             tail content
      * @throws IOException when reading failed
      */
     static String tail(Path path, int maxLines) throws IOException {
@@ -70,7 +71,7 @@ public class DaemonDiagnostics {
     }
 
     static <T> Collector<T, ?, List<T>> lastN(int n) {
-        return Collector.<T, Deque<T>, List<T>>of(ArrayDeque::new, (acc, t) -> {
+        return Collector.<T, Deque<T>, List<T>> of(ArrayDeque::new, (acc, t) -> {
             if (acc.size() == n)
                 acc.pollFirst();
             acc.add(t);

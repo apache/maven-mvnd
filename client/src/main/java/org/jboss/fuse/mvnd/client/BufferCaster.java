@@ -19,7 +19,8 @@ package org.jboss.fuse.mvnd.client;
 import java.nio.Buffer;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/base-services/src/main/java/org/gradle/internal/io/BufferCaster.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/base-services/src/main/java/org/gradle/internal/io/BufferCaster.java
  */
 public class BufferCaster {
     /**

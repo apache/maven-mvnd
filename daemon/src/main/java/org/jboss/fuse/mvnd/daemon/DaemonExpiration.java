@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
-
 import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec;
 import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
 import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
@@ -36,7 +35,8 @@ import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.QUIET_EXPIRE;
 import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/server/MasterExpirationStrategy.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/server/MasterExpirationStrategy.java
  */
 public class DaemonExpiration {
 
@@ -49,13 +49,12 @@ public class DaemonExpiration {
     }
 
     public static DaemonExpirationStrategy master() {
-        return any (
-                any( gcTrashing(), lowHeapSpace(), lowNonHeap() ),
-                all( compatible(), duplicateGracePeriod(), notMostRecentlyUsed() ),
-                idleTimeout( Server::getIdleTimeout ),
-                all( duplicateGracePeriod(), notMostRecentlyUsed(), lowMemory(0.05) ),
-                registryUnavailable()
-        );
+        return any(
+                any(gcTrashing(), lowHeapSpace(), lowNonHeap()),
+                all(compatible(), duplicateGracePeriod(), notMostRecentlyUsed()),
+                idleTimeout(Server::getIdleTimeout),
+                all(duplicateGracePeriod(), notMostRecentlyUsed(), lowMemory(0.05)),
+                registryUnavailable());
     }
 
     static DaemonExpirationStrategy gcTrashing() {
@@ -79,7 +78,7 @@ public class DaemonExpiration {
     }
 
     static DaemonExpirationStrategy duplicateGracePeriod() {
-        return idleTimeout( daemon -> DUPLICATE_DAEMON_GRACE_PERIOD_MS );
+        return idleTimeout(daemon -> DUPLICATE_DAEMON_GRACE_PERIOD_MS);
     }
 
     private static final long HOUR = 60 * 60 * 1000;
@@ -108,11 +107,11 @@ public class DaemonExpiration {
 
     static DaemonExpirationStrategy notMostRecentlyUsed() {
         return daemon -> daemon.getRegistry().getIdle().stream()
-                    .max(Comparator.comparingLong(DaemonInfo::getLastBusy))
-                    .map(d -> Objects.equals(d.getUid(), daemon.getUid()))
-                    .orElse(false)
-                    ? new DaemonExpirationResult(GRACEFUL_EXPIRE, "not recently used")
-                    : NOT_TRIGGERED;
+                .max(Comparator.comparingLong(DaemonInfo::getLastBusy))
+                .map(d -> Objects.equals(d.getUid(), daemon.getUid()))
+                .orElse(false)
+                        ? new DaemonExpirationResult(GRACEFUL_EXPIRE, "not recently used")
+                        : NOT_TRIGGERED;
     }
 
     static DaemonExpirationStrategy registryUnavailable() {
@@ -121,7 +120,8 @@ public class DaemonExpiration {
                 if (!Files.isReadable(daemon.getRegistry().getRegistryFile())) {
                     return new DaemonExpirationResult(GRACEFUL_EXPIRE, "after the daemon registry became unreadable");
                 } else if (daemon.getRegistry().get(daemon.getUid()) == null) {
-                    return new DaemonExpirationResult(GRACEFUL_EXPIRE, "after the daemon was no longer found in the daemon registry");
+                    return new DaemonExpirationResult(GRACEFUL_EXPIRE,
+                            "after the daemon was no longer found in the daemon registry");
                 } else {
                     return NOT_TRIGGERED;
                 }

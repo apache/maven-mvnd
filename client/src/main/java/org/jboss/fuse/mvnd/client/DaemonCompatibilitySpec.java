@@ -15,7 +15,6 @@
  */
 package org.jboss.fuse.mvnd.client;
 
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -23,7 +22,8 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/context/DaemonCompatibilitySpec.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/context/DaemonCompatibilitySpec.java
  */
 public class DaemonCompatibilitySpec {
 
@@ -32,7 +32,7 @@ public class DaemonCompatibilitySpec {
 
     /**
      * @param javaHome make sure the Path is a result of {@link Path#toRealPath(java.nio.file.LinkOption...)}
-     * @param options the options
+     * @param options  the options
      */
     public DaemonCompatibilitySpec(Path javaHome, List<String> options) {
         this.javaHome = Objects.requireNonNull(javaHome, "javaHome");
@@ -46,7 +46,9 @@ public class DaemonCompatibilitySpec {
         if (!daemonOptsMatch(daemon)) {
             return new Result(false, () -> "At least one daemon option is different.\n" + diff(daemon));
         }
-        return new Result(true, () -> {throw new RuntimeException("No reason if DaemonCompatibilityResult.compatible == true");});
+        return new Result(true, () -> {
+            throw new RuntimeException("No reason if DaemonCompatibilityResult.compatible == true");
+        });
     }
 
     private String diff(DaemonInfo context) {
@@ -59,7 +61,7 @@ public class DaemonCompatibilitySpec {
 
     private boolean daemonOptsMatch(DaemonInfo daemon) {
         return daemon.getOptions().containsAll(options)
-            && daemon.getOptions().size() == options.size();
+                && daemon.getOptions().size() == options.size();
     }
 
     private boolean javaHomeMatches(DaemonInfo daemon) {

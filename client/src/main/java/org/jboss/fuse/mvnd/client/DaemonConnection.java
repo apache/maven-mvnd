@@ -32,12 +32,12 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/messaging/src/main/java/org/gradle/internal/remote/internal/inet/SocketConnection.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/messaging/src/main/java/org/gradle/internal/remote/internal/inet/SocketConnection.java
  *
  */
 public class DaemonConnection<T> implements AutoCloseable {
@@ -81,7 +81,8 @@ public class DaemonConnection<T> implements AutoCloseable {
             }
             return null;
         } catch (ClassNotFoundException | IOException e) {
-            throw new DaemonException.RecoverableMessageIOException(String.format("Could not read message from '%s'.", remoteAddress), e);
+            throw new DaemonException.RecoverableMessageIOException(
+                    String.format("Could not read message from '%s'.", remoteAddress), e);
         } catch (Throwable e) {
             throw new DaemonException.MessageIOException(String.format("Could not read message from '%s'.", remoteAddress), e);
         }
@@ -113,9 +114,11 @@ public class DaemonConnection<T> implements AutoCloseable {
             serializer.write(outstr, message);
             outstr.flush();
         } catch (ClassNotFoundException | IOException e) {
-            throw new DaemonException.RecoverableMessageIOException(String.format("Could not write message %s to '%s'.", message, remoteAddress), e);
+            throw new DaemonException.RecoverableMessageIOException(
+                    String.format("Could not write message %s to '%s'.", message, remoteAddress), e);
         } catch (Throwable e) {
-            throw new DaemonException.MessageIOException(String.format("Could not write message %s to '%s'.", message, remoteAddress), e);
+            throw new DaemonException.MessageIOException(
+                    String.format("Could not write message %s to '%s'.", message, remoteAddress), e);
         }
     }
 

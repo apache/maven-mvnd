@@ -18,12 +18,11 @@ package org.apache.maven.cli;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
-
 import org.codehaus.plexus.classworlds.ClassWorld;
 
 public class CliRequestBuilder {
 
-    CliRequest request = new CliRequest( null, null );
+    CliRequest request = new CliRequest(null, null);
 
     public CliRequestBuilder arguments(List<String> arguments) {
         request.args = arguments.toArray(new String[0]);
