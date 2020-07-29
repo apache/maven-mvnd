@@ -27,23 +27,22 @@ public class ServerMain {
     public static void main(String[] args) throws Exception {
         final String uidStr = Environment.DAEMON_UID.systemProperty().orFail().asString();
         final Path mavenHome = Environment.MAVEN_HOME.systemProperty().orFail().asPath();
-        URL[] classpath =
-                Stream.concat(
-                        Stream.concat(Files.list(mavenHome.resolve("lib/ext")),
-                                Files.list(mavenHome.resolve("lib")))
-                                .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                                .filter(Files::isRegularFile),
-                        Stream.of(mavenHome.resolve("conf"), mavenHome.resolve("conf/logging")))
-                        .map(Path::normalize)
-                        .map(Path::toUri)
-                        .map(uri -> {
-                            try {
-                                return uri.toURL();
-                            } catch (MalformedURLException e) {
-                                throw new RuntimeException(e);
-                            }
-                        })
-                        .toArray(URL[]::new);
+        URL[] classpath = Stream.concat(
+                Stream.concat(Files.list(mavenHome.resolve("lib/ext")),
+                        Files.list(mavenHome.resolve("lib")))
+                        .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                        .filter(Files::isRegularFile),
+                Stream.of(mavenHome.resolve("conf"), mavenHome.resolve("conf/logging")))
+                .map(Path::normalize)
+                .map(Path::toUri)
+                .map(uri -> {
+                    try {
+                        return uri.toURL();
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toArray(URL[]::new);
         ClassLoader loader = new URLClassLoader(classpath, null) {
             @Override
             protected Class<?> findClass(String name) throws ClassNotFoundException {

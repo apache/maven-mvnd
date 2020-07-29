@@ -25,12 +25,12 @@ import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * File origin: https://github.com/apache/karaf/blob/karaf-4.2.6/util/src/main/java/org/apache/karaf/jpm/impl/ProcessImpl.java
+ * File origin:
+ * https://github.com/apache/karaf/blob/karaf-4.2.6/util/src/main/java/org/apache/karaf/jpm/impl/ProcessImpl.java
  */
 public class ProcessImpl implements Process {
 
@@ -96,11 +96,11 @@ public class ProcessImpl implements Process {
     public OutputStream getInputStream() throws FileNotFoundException {
         return new FileOutputStream(input);
     }
-
+    
     public InputStream getOutputStream() throws FileNotFoundException {
         return new FileInputStream(output);
     }
-
+    
     public InputStream getErrorStream() throws FileNotFoundException {
         return new FileInputStream(error);
     }

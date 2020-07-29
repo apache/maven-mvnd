@@ -18,7 +18,6 @@ package org.jboss.fuse.mvnd.builder;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Collectors;
-
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

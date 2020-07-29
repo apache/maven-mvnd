@@ -40,11 +40,9 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
 import javax.enterprise.inject.Default;
 import javax.inject.Named;
 import javax.inject.Singleton;
-
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Plugin;
@@ -64,20 +62,19 @@ import org.slf4j.LoggerFactory;
 /**
  * Default PluginCache implementation. Assumes cached data does not change.
  *
- * File origin: https://github.com/apache/maven/blob/maven-3.6.2/maven-core/src/main/java/org/apache/maven/plugin/DefaultPluginRealmCache.java
+ * File origin:
+ * https://github.com/apache/maven/blob/maven-3.6.2/maven-core/src/main/java/org/apache/maven/plugin/DefaultPluginRealmCache.java
  */
 @Singleton
 @Named
 @Default
 public class CliPluginRealmCache
-    implements PluginRealmCache, Disposable
-{
+        implements PluginRealmCache, Disposable {
     /**
      * CacheKey
      */
     protected static class CacheKey
-        implements Key
-    {
+            implements Key {
 
         private final Plugin plugin;
 
@@ -96,79 +93,69 @@ public class CliPluginRealmCache
         private final int hashCode;
 
         public CacheKey(Plugin plugin, ClassLoader parentRealm, Map<String, ClassLoader> foreignImports,
-                        DependencyFilter dependencyFilter, List<RemoteRepository> repositories,
-                        RepositorySystemSession session )
-        {
+                DependencyFilter dependencyFilter, List<RemoteRepository> repositories,
+                RepositorySystemSession session) {
             this.plugin = plugin.clone();
-            this.workspace = RepositoryUtils.getWorkspace( session );
+            this.workspace = RepositoryUtils.getWorkspace(session);
             this.localRepo = session.getLocalRepository();
-            this.repositories = new ArrayList<>( repositories.size() );
-            for ( RemoteRepository repository : repositories )
-            {
-                if ( repository.isRepositoryManager() )
-                {
-                    this.repositories.addAll( repository.getMirroredRepositories() );
-                }
-                else
-                {
-                    this.repositories.add( repository );
+            this.repositories = new ArrayList<>(repositories.size());
+            for (RemoteRepository repository : repositories) {
+                if (repository.isRepositoryManager()) {
+                    this.repositories.addAll(repository.getMirroredRepositories());
+                } else {
+                    this.repositories.add(repository);
                 }
             }
             this.parentRealm = parentRealm;
-            this.foreignImports =
-                ( foreignImports != null ) ? foreignImports : Collections.<String, ClassLoader>emptyMap();
+            this.foreignImports = (foreignImports != null) ? foreignImports : Collections.<String, ClassLoader> emptyMap();
             this.filter = dependencyFilter;
 
             int hash = 17;
-            hash = hash * 31 + CliCacheUtils.pluginHashCode( plugin );
-            hash = hash * 31 + Objects.hashCode( workspace );
-            hash = hash * 31 + Objects.hashCode( localRepo );
-            hash = hash * 31 + RepositoryUtils.repositoriesHashCode( repositories );
-            hash = hash * 31 + Objects.hashCode( parentRealm );
+            hash = hash * 31 + CliCacheUtils.pluginHashCode(plugin);
+            hash = hash * 31 + Objects.hashCode(workspace);
+            hash = hash * 31 + Objects.hashCode(localRepo);
+            hash = hash * 31 + RepositoryUtils.repositoriesHashCode(repositories);
+            hash = hash * 31 + Objects.hashCode(parentRealm);
             hash = hash * 31 + this.foreignImports.hashCode();
-            hash = hash * 31 + Objects.hashCode( dependencyFilter );
+            hash = hash * 31 + Objects.hashCode(dependencyFilter);
             this.hashCode = hash;
         }
 
         @Override
-        public String toString()
-        {
+        public String toString() {
             return plugin.getId();
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return hashCode;
         }
 
         @Override
-        public boolean equals( Object o )
-        {
-            if ( o == this )
-            {
+        public boolean equals(Object o) {
+            if (o == this) {
                 return true;
             }
 
-            if ( !( o instanceof CacheKey ) )
-            {
+            if (!(o instanceof CacheKey)) {
                 return false;
             }
 
             CacheKey that = (CacheKey) o;
 
             return parentRealm == that.parentRealm
-                && CliCacheUtils.pluginEquals( plugin, that.plugin )
-                && Objects.equals( workspace, that.workspace )
-                && Objects.equals( localRepo, that.localRepo )
-                && RepositoryUtils.repositoriesEquals( this.repositories, that.repositories )
-                && Objects.equals( filter, that.filter )
-                && Objects.equals( foreignImports, that.foreignImports );
+                    && CliCacheUtils.pluginEquals(plugin, that.plugin)
+                    && Objects.equals(workspace, that.workspace)
+                    && Objects.equals(localRepo, that.localRepo)
+                    && RepositoryUtils.repositoriesEquals(this.repositories, that.repositories)
+                    && Objects.equals(filter, that.filter)
+                    && Objects.equals(foreignImports, that.foreignImports);
         }
     }
 
     interface RecordValidator {
         void validateRecords();
+
         ValidableCacheRecord newRecord(ClassRealm pluginRealm, List<Artifact> pluginArtifacts);
     }
 
@@ -177,15 +164,14 @@ public class CliPluginRealmCache
         public ValidableCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
         }
+
         public abstract boolean isValid();
+
         public void dispose() {
             ClassRealm realm = getRealm();
-            try
-            {
-                realm.getWorld().disposeRealm( realm.getId() );
-            }
-            catch ( NoSuchRealmException e )
-            {
+            try {
+                realm.getWorld().disposeRealm(realm.getId());
+            } catch (NoSuchRealmException e) {
                 // ignore
             }
         }
@@ -210,6 +196,7 @@ public class CliPluginRealmCache
             final Path path;
             final FileTime lastModifiedTime;
             final Object fileKey;
+
             ArtifactTimestamp(Path path) {
                 this.path = path;
                 try {
@@ -220,25 +207,32 @@ public class CliPluginRealmCache
                     throw new RuntimeException(e);
                 }
             }
+
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
+                if (this == o)
+                    return true;
+                if (o == null || getClass() != o.getClass())
+                    return false;
                 ArtifactTimestamp that = (ArtifactTimestamp) o;
                 return path.equals(that.path) &&
                         Objects.equals(lastModifiedTime, that.lastModifiedTime) &&
                         Objects.equals(fileKey, that.fileKey);
             }
+
             @Override
             public int hashCode() {
                 return Objects.hash(path, lastModifiedTime, fileKey);
             }
         }
+
         Set<ArtifactTimestamp> timestamp;
+
         public TimestampedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
             timestamp = current();
         }
+
         public boolean isValid() {
             try {
                 return Objects.equals(current(), timestamp);
@@ -246,6 +240,7 @@ public class CliPluginRealmCache
                 return false;
             }
         }
+
         private Set<ArtifactTimestamp> current() {
             return getArtifacts().stream().map(Artifact::getFile)
                     .map(File::toPath)
@@ -253,6 +248,7 @@ public class CliPluginRealmCache
                     .collect(Collectors.toSet());
         }
     }
+
     /**
      * A {@link WatchService} with some methods to watch JARs associated with {@link WatchedCacheRecord}.
      */
@@ -323,27 +319,27 @@ public class CliPluginRealmCache
          */
         void remove(ValidableCacheRecord record) {
             record.getArtifacts().stream()
-            .map(Artifact::getFile)
-            .map(File::toPath)
-            .forEach(p -> {
-                final Path dir = p.getParent();
-                registrationsByDir.compute(dir, (key, value) -> {
-                    if (value == null) {
-                        log.debug("Already unwatchers for path {}", key);
-                        return null;
-                    } else {
-                        final int cnt = value.count.decrementAndGet();
-                        if (cnt <= 0) {
-                            log.debug("Unwatching path {}", key);
-                            value.watchKey.cancel();
-                            return null;
-                        } else {
-                            log.debug("Still {} watchers for path {}", cnt, key);
-                            return value;
-                        }
-                    }
-                });
-            });
+                    .map(Artifact::getFile)
+                    .map(File::toPath)
+                    .forEach(p -> {
+                        final Path dir = p.getParent();
+                        registrationsByDir.compute(dir, (key, value) -> {
+                            if (value == null) {
+                                log.debug("Already unwatchers for path {}", key);
+                                return null;
+                            } else {
+                                final int cnt = value.count.decrementAndGet();
+                                if (cnt <= 0) {
+                                    log.debug("Unwatching path {}", key);
+                                    value.watchKey.cancel();
+                                    return null;
+                                } else {
+                                    log.debug("Still {} watchers for path {}", cnt, key);
+                                    return value;
+                                }
+                            }
+                        });
+                    });
         }
 
         /**
@@ -361,7 +357,7 @@ public class CliPluginRealmCache
                         final List<ValidableCacheRecord> records = validRecordsByPath.get(path);
                         log.debug("Records for path {}: {}", path, records);
                         if (records != null) {
-                            synchronized(records) {
+                            synchronized (records) {
                                 for (ValidableCacheRecord record : records) {
                                     log.debug("Invalidating recorder of path {}", path);
                                     ((WatchedCacheRecord) record).valid = false;
@@ -376,8 +372,8 @@ public class CliPluginRealmCache
                             final Path entryParent = en.getKey().getParent();
                             if (entryParent.equals(dir)) {
                                 final List<ValidableCacheRecord> records = en.getValue();
-                                if (records  != null) {
-                                    synchronized(records) {
+                                if (records != null) {
+                                    synchronized (records) {
                                         for (ValidableCacheRecord record : records) {
                                             ((WatchedCacheRecord) record).valid = false;
                                             remove(record);
@@ -399,6 +395,7 @@ public class CliPluginRealmCache
         static class Registration {
             final AtomicInteger count = new AtomicInteger(1);
             final WatchKey watchKey;
+
             public Registration(WatchKey watchKey) {
                 this.watchKey = watchKey;
             }
@@ -406,9 +403,9 @@ public class CliPluginRealmCache
 
         @Override
         public ValidableCacheRecord newRecord(ClassRealm pluginRealm, List<Artifact> pluginArtifacts) {
-            final ValidableCacheRecord result = new WatchedCacheRecord( pluginRealm, pluginArtifacts );
+            final ValidableCacheRecord result = new WatchedCacheRecord(pluginRealm, pluginArtifacts);
             add(result);
-            return result ;
+            return result;
         }
 
     }
@@ -416,6 +413,7 @@ public class CliPluginRealmCache
     static class WatchedCacheRecord extends ValidableCacheRecord {
 
         private volatile boolean valid = true;
+
         public WatchedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
         }
@@ -433,72 +431,60 @@ public class CliPluginRealmCache
     public CliPluginRealmCache() {
         this.watcher = System.getProperty("os.name").toLowerCase().contains("mac")
                 ? new TimestampedRecordValidator()
-                        : new MultiWatcher();
+                : new MultiWatcher();
     }
 
     public Key createKey(Plugin plugin, ClassLoader parentRealm, Map<String, ClassLoader> foreignImports,
-                         DependencyFilter dependencyFilter, List<RemoteRepository> repositories,
-                         RepositorySystemSession session )
-    {
-        return new CacheKey( plugin, parentRealm, foreignImports, dependencyFilter, repositories, session );
+            DependencyFilter dependencyFilter, List<RemoteRepository> repositories,
+            RepositorySystemSession session) {
+        return new CacheKey(plugin, parentRealm, foreignImports, dependencyFilter, repositories, session);
     }
 
-    public CacheRecord get( Key key )
-    {
+    public CacheRecord get(Key key) {
         watcher.validateRecords();
-        ValidableCacheRecord record = cache.get( key );
+        ValidableCacheRecord record = cache.get(key);
         if (record != null && !record.isValid()) {
             record.dispose();
             record = null;
-            cache.remove( key );
+            cache.remove(key);
         }
         return record;
     }
 
-    public CacheRecord put( Key key, ClassRealm pluginRealm, List<Artifact> pluginArtifacts )
-    {
-        Objects.requireNonNull( pluginRealm, "pluginRealm cannot be null" );
-        Objects.requireNonNull( pluginArtifacts, "pluginArtifacts cannot be null" );
+    public CacheRecord put(Key key, ClassRealm pluginRealm, List<Artifact> pluginArtifacts) {
+        Objects.requireNonNull(pluginRealm, "pluginRealm cannot be null");
+        Objects.requireNonNull(pluginArtifacts, "pluginArtifacts cannot be null");
 
-        if ( cache.containsKey( key ) )
-        {
-            throw new IllegalStateException( "Duplicate plugin realm for plugin " + key );
+        if (cache.containsKey(key)) {
+            throw new IllegalStateException("Duplicate plugin realm for plugin " + key);
         }
 
         ValidableCacheRecord record = watcher.newRecord(pluginRealm, pluginArtifacts);
-        cache.put( key, record );
+        cache.put(key, record);
 
         return record;
     }
 
-    public void flush()
-    {
-        for ( ValidableCacheRecord record : cache.values() )
-        {
+    public void flush() {
+        for (ValidableCacheRecord record : cache.values()) {
             record.dispose();
         }
         cache.clear();
     }
 
-
-
-    protected static int pluginHashCode( Plugin plugin )
-    {
-        return CliCacheUtils.pluginHashCode( plugin );
+    protected static int pluginHashCode(Plugin plugin) {
+        return CliCacheUtils.pluginHashCode(plugin);
     }
 
-    protected static boolean pluginEquals( Plugin a, Plugin b )
-    {
-        return CliCacheUtils.pluginEquals( a, b );
+    protected static boolean pluginEquals(Plugin a, Plugin b) {
+        return CliCacheUtils.pluginEquals(a, b);
     }
 
-    public void register( MavenProject project, Key key, CacheRecord record )
-    {
+    public void register(MavenProject project, Key key, CacheRecord record) {
         // default cache does not track plugin usage
     }
 
-    public void dispose()
-    {
+    public void dispose() {
         flush();
     }
 

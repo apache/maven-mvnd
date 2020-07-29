@@ -20,15 +20,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
-
 import javax.inject.Inject;
-
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
-import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -52,7 +49,8 @@ public class ModuleAndPluginNativeIT {
 
         final Path localMavenRepo = layout.getLocalMavenRepository();
         final Path[] installedJars = {
-                localMavenRepo.resolve("org/jboss/fuse/mvnd/test/module-and-plugin/module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar"),
+                localMavenRepo.resolve(
+                        "org/jboss/fuse/mvnd/test/module-and-plugin/module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar"),
         };
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
@@ -68,7 +66,8 @@ public class ModuleAndPluginNativeIT {
 
         /* Build #2: with the mojo source changed to output "Hi" to target/hello.txt */
         {
-            final Path mojoPath = layout.multiModuleProjectDirectory().resolve("plugin/src/main/java/org/jboss/fuse/mvnd/test/module/plugin/mojo/HelloMojo.java");
+            final Path mojoPath = layout.multiModuleProjectDirectory()
+                    .resolve("plugin/src/main/java/org/jboss/fuse/mvnd/test/module/plugin/mojo/HelloMojo.java");
             String mojoSource = new String(Files.readAllBytes(mojoPath), StandardCharsets.UTF_8);
             mojoSource = mojoSource.replace("\"Hello\".getBytes", "\"Hi\".getBytes");
             Files.write(mojoPath, mojoSource.getBytes(StandardCharsets.UTF_8));

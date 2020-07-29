@@ -132,7 +132,8 @@ public enum Environment {
                 .toAbsolutePath().normalize();
     }
 
-    public static Path findLogbackConfigurationPath(Supplier<Properties> mvndProperties, Path mvndPropertiesPath, Path mvndHome) {
+    public static Path findLogbackConfigurationPath(Supplier<Properties> mvndProperties, Path mvndPropertiesPath,
+            Path mvndHome) {
         return LOGBACK_CONFIGURATION_FILE
                 .systemProperty()
                 .orLocalProperty(mvndProperties, mvndPropertiesPath)
@@ -157,7 +158,7 @@ public enum Environment {
     private Environment.ValueSource environmentVariableSource() {
         if (environmentVariable == null) {
             throw new IllegalStateException(
-                    "Cannot use " + Environment.class.getName() + "."+ name() +" for getting an environment variable");
+                    "Cannot use " + Environment.class.getName() + "." + name() + " for getting an environment variable");
         }
         return new ValueSource(
                 description -> description.append("environment variable ").append(environmentVariable),

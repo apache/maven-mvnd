@@ -18,6 +18,7 @@
  */
 package org.apache.maven.cli;
 
+import com.google.inject.AbstractModule;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -37,8 +38,6 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.google.inject.AbstractModule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -102,24 +101,23 @@ import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 // TODO push all common bits back to plexus cli and prepare for transition to Guice. We don't need 50 ways to make CLIs
 
 /**
- * File origin: https://github.com/apache/maven/blob/maven-3.6.2/maven-embedder/src/main/java/org/apache/maven/cli/MavenCli.java
+ * File origin:
+ * https://github.com/apache/maven/blob/maven-3.6.2/maven-embedder/src/main/java/org/apache/maven/cli/MavenCli.java
  *
  * @author Jason van Zyl
  */
-public class DaemonMavenCli
-{
+public class DaemonMavenCli {
     public static final String LOCAL_REPO_PROPERTY = "maven.repo.local";
 
     public static final String MULTIMODULE_PROJECT_DIRECTORY = "maven.multiModuleProjectDirectory";
 
-    public static final String USER_HOME = System.getProperty( "user.home" );
+    public static final String USER_HOME = System.getProperty("user.home");
 
-    public static final File USER_MAVEN_CONFIGURATION_HOME = new File( USER_HOME, ".m2" );
+    public static final File USER_MAVEN_CONFIGURATION_HOME = new File(USER_HOME, ".m2");
 
-    public static final File DEFAULT_USER_TOOLCHAINS_FILE = new File( USER_MAVEN_CONFIGURATION_HOME, "toolchains.xml" );
+    public static final File DEFAULT_USER_TOOLCHAINS_FILE = new File(USER_MAVEN_CONFIGURATION_HOME, "toolchains.xml");
 
-    public static final File DEFAULT_GLOBAL_TOOLCHAINS_FILE =
-        new File( System.getProperty( "maven.conf" ), "toolchains.xml" );
+    public static final File DEFAULT_GLOBAL_TOOLCHAINS_FILE = new File(System.getProperty("maven.conf"), "toolchains.xml");
 
     private static final String MVN_MAVEN_CONFIG = ".mvn/maven.config";
 
@@ -151,7 +149,7 @@ public class DaemonMavenCli
 
     public DaemonMavenCli() throws Exception {
         slf4jLoggerFactory = LoggerFactory.getILoggerFactory();
-        slf4jLogger = slf4jLoggerFactory.getLogger( this.getClass().getName() );
+        slf4jLogger = slf4jLoggerFactory.getLogger(this.getClass().getName());
         plexusLoggerManager = new Slf4jLoggerManager();
 
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -161,8 +159,7 @@ public class DaemonMavenCli
     }
 
     // TODO need to externalize CliRequest
-    public int doMain(CliRequest cliRequest) throws Exception
-    {
+    public int doMain(CliRequest cliRequest) throws Exception {
         Properties props = (Properties) System.getProperties().clone();
         try {
             initialize(cliRequest);
@@ -170,151 +167,119 @@ public class DaemonMavenCli
             properties(cliRequest);
             logging(cliRequest);
             configure(cliRequest);
-            version( cliRequest );
+            version(cliRequest);
             toolchains(cliRequest);
-            populateRequest( cliRequest );
-            encryption( cliRequest );
-            repository( cliRequest );
-            return execute( cliRequest);
-        }
-        catch ( ExitException e )
-        {
+            populateRequest(cliRequest);
+            encryption(cliRequest);
+            repository(cliRequest);
+            return execute(cliRequest);
+        } catch (ExitException e) {
             return e.exitCode;
-        }
-        finally
-        {
+        } finally {
             System.setProperties(props);
             eventSpyDispatcher.close();
         }
     }
 
-    void initialize( CliRequest cliRequest )
-        throws ExitException
-    {
+    void initialize(CliRequest cliRequest)
+            throws ExitException {
         cliRequest.classWorld = classWorld;
 
-        if ( cliRequest.workingDirectory == null )
-        {
-            cliRequest.workingDirectory = System.getProperty( "user.dir" );
+        if (cliRequest.workingDirectory == null) {
+            cliRequest.workingDirectory = System.getProperty("user.dir");
         }
 
-        if ( cliRequest.multiModuleProjectDirectory == null )
-        {
+        if (cliRequest.multiModuleProjectDirectory == null) {
             System.err.format(
-                "-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY );
-            throw new ExitException( 1 );
+                    "-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY);
+            throw new ExitException(1);
         }
-        System.setProperty( "maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString() );
+        System.setProperty("maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString());
 
         //
         // Make sure the Maven home directory is an absolute path to save us from confusion with say drive-relative
         // Windows paths.
         //
-        String mavenHome = System.getProperty( "maven.home" );
+        String mavenHome = System.getProperty("maven.home");
 
-        if ( mavenHome != null )
-        {
-            System.setProperty( "maven.home", new File( mavenHome ).getAbsolutePath() );
+        if (mavenHome != null) {
+            System.setProperty("maven.home", new File(mavenHome).getAbsolutePath());
         }
     }
 
-    void cli( CliRequest cliRequest )
-        throws Exception
-    {
+    void cli(CliRequest cliRequest)
+            throws Exception {
         CLIManager cliManager = new CLIManager();
 
         List<String> args = new ArrayList<>();
         CommandLine mavenConfig = null;
-        try
-        {
-            File configFile = new File( cliRequest.multiModuleProjectDirectory, MVN_MAVEN_CONFIG );
+        try {
+            File configFile = new File(cliRequest.multiModuleProjectDirectory, MVN_MAVEN_CONFIG);
 
-            if ( configFile.isFile() )
-            {
-                for ( String arg : new String( Files.readAllBytes( configFile.toPath() ) ).split( "\\s+" ) )
-                {
-                    if ( !arg.isEmpty() )
-                    {
-                        args.add( arg );
+            if (configFile.isFile()) {
+                for (String arg : new String(Files.readAllBytes(configFile.toPath())).split("\\s+")) {
+                    if (!arg.isEmpty()) {
+                        args.add(arg);
                     }
                 }
 
-                mavenConfig = cliManager.parse( args.toArray( new String[0] ) );
+                mavenConfig = cliManager.parse(args.toArray(new String[0]));
                 List<?> unrecongized = mavenConfig.getArgList();
-                if ( !unrecongized.isEmpty() )
-                {
-                    throw new ParseException( "Unrecognized maven.config entries: " + unrecongized );
+                if (!unrecongized.isEmpty()) {
+                    throw new ParseException("Unrecognized maven.config entries: " + unrecongized);
                 }
             }
-        }
-        catch ( ParseException e )
-        {
-            System.err.println( "Unable to parse maven.config: " + e.getMessage() );
-            cliManager.displayHelp( System.out );
+        } catch (ParseException e) {
+            System.err.println("Unable to parse maven.config: " + e.getMessage());
+            cliManager.displayHelp(System.out);
             throw e;
         }
 
-        try
-        {
-            if ( mavenConfig == null )
-            {
-                cliRequest.commandLine = cliManager.parse( cliRequest.args );
+        try {
+            if (mavenConfig == null) {
+                cliRequest.commandLine = cliManager.parse(cliRequest.args);
+            } else {
+                cliRequest.commandLine = cliMerge(cliManager.parse(cliRequest.args), mavenConfig);
             }
-            else
-            {
-                cliRequest.commandLine = cliMerge( cliManager.parse( cliRequest.args ), mavenConfig );
-            }
-        }
-        catch ( ParseException e )
-        {
-            System.err.println( "Unable to parse command line options: " + e.getMessage() );
-            cliManager.displayHelp( System.out );
+        } catch (ParseException e) {
+            System.err.println("Unable to parse command line options: " + e.getMessage());
+            cliManager.displayHelp(System.out);
             throw e;
         }
 
-        if ( cliRequest.commandLine.hasOption( CLIManager.HELP ) )
-        {
-            cliManager.displayHelp( System.out );
-            throw new ExitException( 0 );
+        if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
+            cliManager.displayHelp(System.out);
+            throw new ExitException(0);
         }
 
     }
 
-    private CommandLine cliMerge( CommandLine mavenArgs, CommandLine mavenConfig )
-    {
+    private CommandLine cliMerge(CommandLine mavenArgs, CommandLine mavenConfig) {
         CommandLine.Builder commandLineBuilder = new CommandLine.Builder();
 
         // the args are easy, cli first then config file
-        for ( String arg : mavenArgs.getArgs() )
-        {
-            commandLineBuilder.addArg( arg );
+        for (String arg : mavenArgs.getArgs()) {
+            commandLineBuilder.addArg(arg);
         }
-        for ( String arg : mavenConfig.getArgs() )
-        {
-            commandLineBuilder.addArg( arg );
+        for (String arg : mavenConfig.getArgs()) {
+            commandLineBuilder.addArg(arg);
         }
 
         // now add all options, except for -D with cli first then config file
         List<Option> setPropertyOptions = new ArrayList<>();
-        for ( Option opt : mavenArgs.getOptions() )
-        {
-            if ( String.valueOf( CLIManager.SET_SYSTEM_PROPERTY ).equals( opt.getOpt() ) )
-            {
-                setPropertyOptions.add( opt );
-            }
-            else
-            {
-                commandLineBuilder.addOption( opt );
+        for (Option opt : mavenArgs.getOptions()) {
+            if (String.valueOf(CLIManager.SET_SYSTEM_PROPERTY).equals(opt.getOpt())) {
+                setPropertyOptions.add(opt);
+            } else {
+                commandLineBuilder.addOption(opt);
             }
         }
-        for ( Option opt : mavenConfig.getOptions() )
-        {
-            commandLineBuilder.addOption( opt );
+        for (Option opt : mavenConfig.getOptions()) {
+            commandLineBuilder.addOption(opt);
         }
         // finally add the CLI system properties
-        for ( Option opt : setPropertyOptions )
-        {
-            commandLineBuilder.addOption( opt );
+        for (Option opt : setPropertyOptions) {
+            commandLineBuilder.addOption(opt);
         }
         return commandLineBuilder.build();
     }
@@ -322,66 +287,49 @@ public class DaemonMavenCli
     /**
      * configure logging
      */
-    void logging( CliRequest cliRequest )
-    {
+    void logging(CliRequest cliRequest) {
         // LOG LEVEL
-        cliRequest.debug = cliRequest.commandLine.hasOption( CLIManager.DEBUG );
-        cliRequest.quiet = !cliRequest.debug && cliRequest.commandLine.hasOption( CLIManager.QUIET );
-        cliRequest.showErrors = cliRequest.debug || cliRequest.commandLine.hasOption( CLIManager.ERRORS );
+        cliRequest.debug = cliRequest.commandLine.hasOption(CLIManager.DEBUG);
+        cliRequest.quiet = !cliRequest.debug && cliRequest.commandLine.hasOption(CLIManager.QUIET);
+        cliRequest.showErrors = cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.ERRORS);
 
         java.util.logging.Level level;
-        if ( cliRequest.debug )
-        {
-            cliRequest.request.setLoggingLevel( MavenExecutionRequest.LOGGING_LEVEL_DEBUG );
+        if (cliRequest.debug) {
+            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_DEBUG);
             level = Level.FINER;
-        }
-        else if ( cliRequest.quiet )
-        {
-            cliRequest.request.setLoggingLevel( MavenExecutionRequest.LOGGING_LEVEL_ERROR );
+        } else if (cliRequest.quiet) {
+            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_ERROR);
             level = Level.SEVERE;
-        }
-        else
-        {
-            cliRequest.request.setLoggingLevel( MavenExecutionRequest.LOGGING_LEVEL_INFO );
+        } else {
+            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_INFO);
             level = Level.INFO;
         }
 
         // LOG COLOR
-        String styleColor = cliRequest.getUserProperties().getProperty( STYLE_COLOR_PROPERTY, "auto" );
-        if ( "always".equals( styleColor ) )
-        {
-            MessageUtils.setColorEnabled( true );
-        }
-        else if ( "never".equals( styleColor ) )
-        {
-            MessageUtils.setColorEnabled( false );
-        }
-        else if ( !"auto".equals( styleColor ) )
-        {
-            throw new IllegalArgumentException( "Invalid color configuration option [" + styleColor
-                + "]. Supported values are (auto|always|never)." );
-        }
-        else if ( cliRequest.commandLine.hasOption( CLIManager.BATCH_MODE )
-            || cliRequest.commandLine.hasOption( CLIManager.LOG_FILE ) )
-        {
-            MessageUtils.setColorEnabled( false );
+        String styleColor = cliRequest.getUserProperties().getProperty(STYLE_COLOR_PROPERTY, "auto");
+        if ("always".equals(styleColor)) {
+            MessageUtils.setColorEnabled(true);
+        } else if ("never".equals(styleColor)) {
+            MessageUtils.setColorEnabled(false);
+        } else if (!"auto".equals(styleColor)) {
+            throw new IllegalArgumentException("Invalid color configuration option [" + styleColor
+                    + "]. Supported values are (auto|always|never).");
+        } else if (cliRequest.commandLine.hasOption(CLIManager.BATCH_MODE)
+                || cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
+            MessageUtils.setColorEnabled(false);
         }
 
         // LOG STREAMS
-        if ( cliRequest.commandLine.hasOption( CLIManager.LOG_FILE ) )
-        {
-            File logFile = new File( cliRequest.commandLine.getOptionValue( CLIManager.LOG_FILE ) );
-            logFile = resolveFile( logFile, cliRequest.workingDirectory );
+        if (cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
+            File logFile = new File(cliRequest.commandLine.getOptionValue(CLIManager.LOG_FILE));
+            logFile = resolveFile(logFile, cliRequest.workingDirectory);
 
             // redirect stdout and stderr to file
-            try
-            {
-                PrintStream ps = new PrintStream( new FileOutputStream( logFile ) );
-                System.setOut( ps );
-                System.setErr( ps );
-            }
-            catch ( FileNotFoundException e )
-            {
+            try {
+                PrintStream ps = new PrintStream(new FileOutputStream(logFile));
+                System.setOut(ps);
+                System.setErr(ps);
+            } catch (FileNotFoundException e) {
                 //
                 // Ignore
                 //
@@ -389,243 +337,209 @@ public class DaemonMavenCli
         }
 
         // Workaround for https://github.com/mvndaemon/mvnd/issues/39
-        ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("org.jboss.fuse.mvnd");
+        ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
+                .getLogger("org.jboss.fuse.mvnd");
         mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level", "INFO")));
     }
 
-    private void version( CliRequest cliRequest ) throws ExitException
-    {
-        if ( cliRequest.debug || cliRequest.commandLine.hasOption( CLIManager.VERSION ) )
-        {
+    private void version(CliRequest cliRequest) throws ExitException {
+        if (cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
             AbstractLoggingSpy.instance().append(null, CLIReportingUtils.showVersion());
-            if (cliRequest.commandLine.hasOption( CLIManager.VERSION )) {
-                throw new ExitException( 0 );
+            if (cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
+                throw new ExitException(0);
             }
         }
     }
 
-    private void commands( CliRequest cliRequest )
-    {
-        if ( cliRequest.showErrors )
-        {
-            slf4jLogger.info( "Error stacktraces are turned on." );
+    private void commands(CliRequest cliRequest) {
+        if (cliRequest.showErrors) {
+            slf4jLogger.info("Error stacktraces are turned on.");
         }
 
-        if ( MavenExecutionRequest.CHECKSUM_POLICY_WARN.equals( cliRequest.request.getGlobalChecksumPolicy() ) )
-        {
-            slf4jLogger.info( "Disabling strict checksum verification on all artifact downloads." );
-        }
-        else if ( MavenExecutionRequest.CHECKSUM_POLICY_FAIL.equals( cliRequest.request.getGlobalChecksumPolicy() ) )
-        {
-            slf4jLogger.info( "Enabling strict checksum verification on all artifact downloads." );
+        if (MavenExecutionRequest.CHECKSUM_POLICY_WARN.equals(cliRequest.request.getGlobalChecksumPolicy())) {
+            slf4jLogger.info("Disabling strict checksum verification on all artifact downloads.");
+        } else if (MavenExecutionRequest.CHECKSUM_POLICY_FAIL.equals(cliRequest.request.getGlobalChecksumPolicy())) {
+            slf4jLogger.info("Enabling strict checksum verification on all artifact downloads.");
         }
 
-        if ( slf4jLogger.isDebugEnabled() )
-        {
-            slf4jLogger.debug( "Message scheme: {}", ( MessageUtils.isColorEnabled() ? "color" : "plain" ) );
-            if ( MessageUtils.isColorEnabled() )
-            {
+        if (slf4jLogger.isDebugEnabled()) {
+            slf4jLogger.debug("Message scheme: {}", (MessageUtils.isColorEnabled() ? "color" : "plain"));
+            if (MessageUtils.isColorEnabled()) {
                 MessageBuilder buff = MessageUtils.buffer();
-                buff.a( "Message styles: " );
-                buff.a( MessageUtils.level().debug( "debug" ) ).a( ' ' );
-                buff.a( MessageUtils.level().info( "info" ) ).a( ' ' );
-                buff.a( MessageUtils.level().warning( "warning" ) ).a( ' ' );
-                buff.a( MessageUtils.level().error( "error" ) ).a( ' ' );
+                buff.a("Message styles: ");
+                buff.a(MessageUtils.level().debug("debug")).a(' ');
+                buff.a(MessageUtils.level().info("info")).a(' ');
+                buff.a(MessageUtils.level().warning("warning")).a(' ');
+                buff.a(MessageUtils.level().error("error")).a(' ');
 
-                buff.success( "success" ).a( ' ' );
-                buff.failure( "failure" ).a( ' ' );
-                buff.strong( "strong" ).a( ' ' );
-                buff.mojo( "mojo" ).a( ' ' );
-                buff.project( "project" );
-                slf4jLogger.debug( buff.toString() );
+                buff.success("success").a(' ');
+                buff.failure("failure").a(' ');
+                buff.strong("strong").a(' ');
+                buff.mojo("mojo").a(' ');
+                buff.project("project");
+                slf4jLogger.debug(buff.toString());
             }
         }
     }
 
     //Needed to make this method package visible to make writing a unit test possible
     //Maybe it's better to move some of those methods to separate class (SoC).
-    void properties( CliRequest cliRequest )
-    {
-        populateProperties( cliRequest.commandLine, cliRequest.systemProperties, cliRequest.userProperties );
+    void properties(CliRequest cliRequest) {
+        populateProperties(cliRequest.commandLine, cliRequest.systemProperties, cliRequest.userProperties);
     }
 
     void container()
-        throws Exception
-    {
-        ClassRealm coreRealm = classWorld.getClassRealm( "plexus.core" );
-        if ( coreRealm == null )
-        {
+            throws Exception {
+        ClassRealm coreRealm = classWorld.getClassRealm("plexus.core");
+        if (coreRealm == null) {
             coreRealm = classWorld.getRealms().iterator().next();
         }
 
-//        List<File> extClassPath = parseExtClasspath( cliRequest );
+        //        List<File> extClassPath = parseExtClasspath( cliRequest );
 
-        CoreExtensionEntry coreEntry = CoreExtensionEntry.discoverFrom( coreRealm );
+        CoreExtensionEntry coreEntry = CoreExtensionEntry.discoverFrom(coreRealm);
         List<CoreExtensionEntry> extensions = Collections.emptyList();
-//            loadCoreExtensions( cliRequest, coreRealm, coreEntry.getExportedArtifacts() );
+        //            loadCoreExtensions( cliRequest, coreRealm, coreEntry.getExportedArtifacts() );
 
         ClassRealm containerRealm = coreRealm;
 
-        ContainerConfiguration cc = new DefaultContainerConfiguration().setClassWorld( classWorld )
-            .setRealm( containerRealm ).setClassPathScanning( PlexusConstants.SCANNING_INDEX ).setAutoWiring( true )
-            .setJSR250Lifecycle( true ).setName( "maven" );
+        ContainerConfiguration cc = new DefaultContainerConfiguration().setClassWorld(classWorld)
+                .setRealm(containerRealm).setClassPathScanning(PlexusConstants.SCANNING_INDEX).setAutoWiring(true)
+                .setJSR250Lifecycle(true).setName("maven");
 
-        Set<String> exportedArtifacts = new HashSet<>( coreEntry.getExportedArtifacts() );
-        Set<String> exportedPackages = new HashSet<>( coreEntry.getExportedPackages() );
-//        for ( CoreExtensionEntry extension : extensions )
-//        {
-//            exportedArtifacts.addAll( extension.getExportedArtifacts() );
-//            exportedPackages.addAll( extension.getExportedPackages() );
-//        }
+        Set<String> exportedArtifacts = new HashSet<>(coreEntry.getExportedArtifacts());
+        Set<String> exportedPackages = new HashSet<>(coreEntry.getExportedPackages());
+        //        for ( CoreExtensionEntry extension : extensions )
+        //        {
+        //            exportedArtifacts.addAll( extension.getExportedArtifacts() );
+        //            exportedPackages.addAll( extension.getExportedPackages() );
+        //        }
 
-        final CoreExports exports = new CoreExports( containerRealm, exportedArtifacts, exportedPackages );
+        final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);
 
-        container = new DefaultPlexusContainer( cc, new AbstractModule()
-        {
+        container = new DefaultPlexusContainer(cc, new AbstractModule() {
             @Override
-            protected void configure()
-            {
-                bind( ILoggerFactory.class ).toInstance( slf4jLoggerFactory );
-                bind( CoreExports.class ).toInstance( exports );
-                bind( PluginRealmCache.class ).toInstance(new CliPluginRealmCache());
+            protected void configure() {
+                bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
+                bind(CoreExports.class).toInstance(exports);
+                bind(PluginRealmCache.class).toInstance(new CliPluginRealmCache());
             }
-        } );
+        });
 
         // NOTE: To avoid inconsistencies, we'll use the TCCL exclusively for lookups
-        container.setLookupRealm( null );
-        Thread.currentThread().setContextClassLoader( container.getContainerRealm() );
+        container.setLookupRealm(null);
+        Thread.currentThread().setContextClassLoader(container.getContainerRealm());
 
-        container.setLoggerManager( plexusLoggerManager );
+        container.setLoggerManager(plexusLoggerManager);
 
-        for ( CoreExtensionEntry extension : extensions )
-        {
-            container.discoverComponents( extension.getClassRealm(), new SessionScopeModule( container ),
-                                          new MojoExecutionScopeModule( container ) );
+        for (CoreExtensionEntry extension : extensions) {
+            container.discoverComponents(extension.getClassRealm(), new SessionScopeModule(container),
+                    new MojoExecutionScopeModule(container));
         }
 
-//        container.getLoggerManager().setThresholds( cliRequest.request.getLoggingLevel() );
+        //        container.getLoggerManager().setThresholds( cliRequest.request.getLoggingLevel() );
 
-        eventSpyDispatcher = container.lookup( EventSpyDispatcher.class );
+        eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
 
-        maven = container.lookup( Maven.class );
+        maven = container.lookup(Maven.class);
 
-        executionRequestPopulator = container.lookup( MavenExecutionRequestPopulator.class );
+        executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
 
-        modelProcessor = createModelProcessor( container );
+        modelProcessor = createModelProcessor(container);
 
-        configurationProcessors = container.lookupMap( ConfigurationProcessor.class );
+        configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
 
-        toolchainsBuilder = container.lookup( ToolchainsBuilder.class );
+        toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
 
-        dispatcher = (DefaultSecDispatcher) container.lookup( SecDispatcher.class, "maven" );
+        dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
 
     }
 
     //
     // This should probably be a separate tool and not be baked into Maven.
     //
-    private void encryption( CliRequest cliRequest )
-        throws Exception
-    {
-        if ( cliRequest.commandLine.hasOption( CLIManager.ENCRYPT_MASTER_PASSWORD ) )
-        {
-            throw new UnsupportedOperationException( "Unsupported option: " + CLIManager.ENCRYPT_MASTER_PASSWORD );
-        }
-        else if ( cliRequest.commandLine.hasOption( CLIManager.ENCRYPT_PASSWORD ) )
-        {
-            throw new UnsupportedOperationException( "Unsupported option: " + CLIManager.ENCRYPT_PASSWORD );
+    private void encryption(CliRequest cliRequest)
+            throws Exception {
+        if (cliRequest.commandLine.hasOption(CLIManager.ENCRYPT_MASTER_PASSWORD)) {
+            throw new UnsupportedOperationException("Unsupported option: " + CLIManager.ENCRYPT_MASTER_PASSWORD);
+        } else if (cliRequest.commandLine.hasOption(CLIManager.ENCRYPT_PASSWORD)) {
+            throw new UnsupportedOperationException("Unsupported option: " + CLIManager.ENCRYPT_PASSWORD);
         }
     }
 
-    private void repository( CliRequest cliRequest )
-        throws Exception
-    {
-        if ( cliRequest.commandLine.hasOption( CLIManager.LEGACY_LOCAL_REPOSITORY ) || Boolean.getBoolean(
-            "maven.legacyLocalRepo" ) )
-        {
-            cliRequest.request.setUseLegacyLocalRepository( true );
+    private void repository(CliRequest cliRequest)
+            throws Exception {
+        if (cliRequest.commandLine.hasOption(CLIManager.LEGACY_LOCAL_REPOSITORY) || Boolean.getBoolean(
+                "maven.legacyLocalRepo")) {
+            cliRequest.request.setUseLegacyLocalRepository(true);
         }
     }
 
     private int execute(CliRequest cliRequest)
-        throws MavenExecutionRequestPopulationException
-    {
+            throws MavenExecutionRequestPopulationException {
         commands(cliRequest);
 
-        MavenExecutionRequest request = executionRequestPopulator.populateDefaults( cliRequest.request );
+        MavenExecutionRequest request = executionRequestPopulator.populateDefaults(cliRequest.request);
 
-        eventSpyDispatcher.onEvent( request );
+        eventSpyDispatcher.onEvent(request);
 
-        MavenExecutionResult result = maven.execute( request );
+        MavenExecutionResult result = maven.execute(request);
 
-        eventSpyDispatcher.onEvent( result );
+        eventSpyDispatcher.onEvent(result);
 
-        if ( result.hasExceptions() )
-        {
+        if (result.hasExceptions()) {
             ExceptionHandler handler = new DefaultExceptionHandler();
 
             Map<String, String> references = new LinkedHashMap<>();
 
             MavenProject project = null;
 
-            for ( Throwable exception : result.getExceptions() )
-            {
-                ExceptionSummary summary = handler.handleException( exception );
+            for (Throwable exception : result.getExceptions()) {
+                ExceptionSummary summary = handler.handleException(exception);
 
-                logSummary( summary, references, "", cliRequest.showErrors );
+                logSummary(summary, references, "", cliRequest.showErrors);
 
-                if ( project == null && exception instanceof LifecycleExecutionException )
-                {
-                    project = ( (LifecycleExecutionException) exception ).getProject();
+                if (project == null && exception instanceof LifecycleExecutionException) {
+                    project = ((LifecycleExecutionException) exception).getProject();
                 }
             }
 
-            slf4jLogger.error( "" );
+            slf4jLogger.error("");
 
-            if ( !cliRequest.showErrors )
-            {
-                slf4jLogger.error( "To see the full stack trace of the errors, re-run Maven with the {} switch.",
-                        buffer().strong( "-e" ) );
+            if (!cliRequest.showErrors) {
+                slf4jLogger.error("To see the full stack trace of the errors, re-run Maven with the {} switch.",
+                        buffer().strong("-e"));
             }
-            if ( !slf4jLogger.isDebugEnabled() )
-            {
-                slf4jLogger.error( "Re-run Maven using the {} switch to enable full debug logging.",
-                        buffer().strong( "-X" ) );
+            if (!slf4jLogger.isDebugEnabled()) {
+                slf4jLogger.error("Re-run Maven using the {} switch to enable full debug logging.",
+                        buffer().strong("-X"));
             }
 
-            if ( !references.isEmpty() )
-            {
-                slf4jLogger.error( "" );
-                slf4jLogger.error( "For more information about the errors and possible solutions"
-                                       + ", please read the following articles:" );
+            if (!references.isEmpty()) {
+                slf4jLogger.error("");
+                slf4jLogger.error("For more information about the errors and possible solutions"
+                        + ", please read the following articles:");
 
-                for ( Entry<String, String> entry : references.entrySet() )
-                {
-                    slf4jLogger.error( "{} {}", buffer().strong( entry.getValue() ), entry.getKey() );
+                for (Entry<String, String> entry : references.entrySet()) {
+                    slf4jLogger.error("{} {}", buffer().strong(entry.getValue()), entry.getKey());
                 }
             }
 
-            if ( project != null && !project.equals( result.getTopologicallySortedProjects().get( 0 ) ) )
-            {
-                slf4jLogger.error( "" );
-                slf4jLogger.error( "After correcting the problems, you can resume the build with the command" );
-                slf4jLogger.error( buffer().a( "  " ).strong( "mvn <args> -rf "
-                    + getResumeFrom( result.getTopologicallySortedProjects(), project ) ).toString() );
+            if (project != null && !project.equals(result.getTopologicallySortedProjects().get(0))) {
+                slf4jLogger.error("");
+                slf4jLogger.error("After correcting the problems, you can resume the build with the command");
+                slf4jLogger.error(buffer().a("  ").strong("mvn <args> -rf "
+                        + getResumeFrom(result.getTopologicallySortedProjects(), project)).toString());
             }
 
-            if ( MavenExecutionRequest.REACTOR_FAIL_NEVER.equals( cliRequest.request.getReactorFailureBehavior() ) )
-            {
-                slf4jLogger.info( "Build failures were ignored." );
+            if (MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(cliRequest.request.getReactorFailureBehavior())) {
+                slf4jLogger.info("Build failures were ignored.");
 
                 return 0;
-            }
-            else
-            {
+            } else {
                 return 1;
             }
-        }
-        else
-        {
+        } else {
             return 0;
         }
     }
@@ -638,21 +552,19 @@ public class DaemonMavenCli
      * reactor have the same artifactId, effective failed module might be later in build reactor.
      * This means that developer will either have to type groupId or wait for build execution of all modules
      * which were fine, but they are still before one which reported errors.
-     * <p>Then the returned value is {@code groupId:artifactId} when there is a name clash and
+     * <p>
+     * Then the returned value is {@code groupId:artifactId} when there is a name clash and
      * {@code :artifactId} if there is no conflict.
      *
-     * @param mavenProjects Maven projects which are part of build execution.
-     * @param failedProject Project which has failed.
-     * @return Value for -rf flag to resume build exactly from place where it failed ({@code :artifactId} in
-     *    general and {@code groupId:artifactId} when there is a name clash).
+     * @param  mavenProjects Maven projects which are part of build execution.
+     * @param  failedProject Project which has failed.
+     * @return               Value for -rf flag to resume build exactly from place where it failed ({@code :artifactId} in
+     *                       general and {@code groupId:artifactId} when there is a name clash).
      */
-    private String getResumeFrom(List<MavenProject> mavenProjects, MavenProject failedProject )
-    {
-        for ( MavenProject buildProject : mavenProjects )
-        {
-            if ( failedProject.getArtifactId().equals( buildProject.getArtifactId() ) && !failedProject.equals(
-                    buildProject ) )
-            {
+    private String getResumeFrom(List<MavenProject> mavenProjects, MavenProject failedProject) {
+        for (MavenProject buildProject : mavenProjects) {
+            if (failedProject.getArtifactId().equals(buildProject.getArtifactId()) && !failedProject.equals(
+                    buildProject)) {
                 return failedProject.getGroupId() + ":" + failedProject.getArtifactId();
             }
         }
@@ -660,66 +572,53 @@ public class DaemonMavenCli
     }
 
     private void logSummary(ExceptionSummary summary, Map<String, String> references, String indent,
-                            boolean showErrors )
-    {
+            boolean showErrors) {
         String referenceKey = "";
 
-        if ( StringUtils.isNotEmpty( summary.getReference() ) )
-        {
-            referenceKey = references.get( summary.getReference() );
-            if ( referenceKey == null )
-            {
-                referenceKey = "[Help " + ( references.size() + 1 ) + "]";
-                references.put( summary.getReference(), referenceKey );
+        if (StringUtils.isNotEmpty(summary.getReference())) {
+            referenceKey = references.get(summary.getReference());
+            if (referenceKey == null) {
+                referenceKey = "[Help " + (references.size() + 1) + "]";
+                references.put(summary.getReference(), referenceKey);
             }
         }
 
         String msg = summary.getMessage();
 
-        if ( StringUtils.isNotEmpty( referenceKey ) )
-        {
-            if ( msg.indexOf( '\n' ) < 0 )
-            {
-                msg += " -> " + buffer().strong( referenceKey );
-            }
-            else
-            {
-                msg += "\n-> " + buffer().strong( referenceKey );
+        if (StringUtils.isNotEmpty(referenceKey)) {
+            if (msg.indexOf('\n') < 0) {
+                msg += " -> " + buffer().strong(referenceKey);
+            } else {
+                msg += "\n-> " + buffer().strong(referenceKey);
             }
         }
 
-        String[] lines = msg.split( "(\r\n)|(\r)|(\n)" );
+        String[] lines = msg.split("(\r\n)|(\r)|(\n)");
         String currentColor = "";
 
-        for ( int i = 0; i < lines.length; i++ )
-        {
+        for (int i = 0; i < lines.length; i++) {
             // add eventual current color inherited from previous line
             String line = currentColor + lines[i];
 
             // look for last ANSI escape sequence to check if nextColor
-            Matcher matcher = LAST_ANSI_SEQUENCE.matcher( line );
+            Matcher matcher = LAST_ANSI_SEQUENCE.matcher(line);
             String nextColor = "";
-            if ( matcher.find() )
-            {
-                nextColor = matcher.group( 1 );
-                if ( ANSI_RESET.equals( nextColor ) )
-                {
+            if (matcher.find()) {
+                nextColor = matcher.group(1);
+                if (ANSI_RESET.equals(nextColor)) {
                     // last ANSI escape code is reset: no next color
                     nextColor = "";
                 }
             }
 
             // effective line, with indent and reset if end is colored
-            line = indent + line + ( "".equals( nextColor ) ? "" : ANSI_RESET );
+            line = indent + line + ("".equals(nextColor) ? "" : ANSI_RESET);
 
-            if ( ( i == lines.length - 1 ) && ( showErrors
-                || ( summary.getException() instanceof InternalErrorException ) ) )
-            {
-                slf4jLogger.error( line, summary.getException() );
-            }
-            else
-            {
-                slf4jLogger.error( line );
+            if ((i == lines.length - 1) && (showErrors
+                    || (summary.getException() instanceof InternalErrorException))) {
+                slf4jLogger.error(line, summary.getException());
+            } else {
+                slf4jLogger.error(line);
             }
 
             currentColor = nextColor;
@@ -727,34 +626,32 @@ public class DaemonMavenCli
 
         indent += "  ";
 
-        for ( ExceptionSummary child : summary.getChildren() )
-        {
-            logSummary( child, references, indent, showErrors );
+        for (ExceptionSummary child : summary.getChildren()) {
+            logSummary(child, references, indent, showErrors);
         }
     }
 
-    private static final Pattern LAST_ANSI_SEQUENCE = Pattern.compile( "(\u001B\\[[;\\d]*[ -/]*[@-~])[^\u001B]*$" );
+    private static final Pattern LAST_ANSI_SEQUENCE = Pattern.compile("(\u001B\\[[;\\d]*[ -/]*[@-~])[^\u001B]*$");
 
     private static final String ANSI_RESET = "\u001B\u005Bm";
 
     private void configure(CliRequest cliRequest)
-        throws Exception
-    {
+            throws Exception {
         //
         // This is not ideal but there are events specifically for configuration from the CLI which I don't
         // believe are really valid but there are ITs which assert the right events are published so this
         // needs to be supported so the EventSpyDispatcher needs to be put in the CliRequest so that
         // it can be accessed by configuration processors.
         //
-        cliRequest.request.setEventSpyDispatcher( eventSpyDispatcher );
+        cliRequest.request.setEventSpyDispatcher(eventSpyDispatcher);
 
         Map<String, Object> data = new HashMap<>();
-        data.put( "plexus", container );
-        data.put( "workingDirectory", cliRequest.workingDirectory );
-        data.put( "systemProperties", cliRequest.systemProperties );
-        data.put( "userProperties", cliRequest.userProperties );
-        data.put( "versionProperties", CLIReportingUtils.getBuildProperties() );
-        eventSpyDispatcher.init( () -> data );
+        data.put("plexus", container);
+        data.put("workingDirectory", cliRequest.workingDirectory);
+        data.put("systemProperties", cliRequest.systemProperties);
+        data.put("userProperties", cliRequest.userProperties);
+        data.put("versionProperties", CLIReportingUtils.getBuildProperties());
+        eventSpyDispatcher.init(() -> data);
 
         //
         // We expect at most 2 implementations to be available. The SettingsXmlConfigurationProcessor implementation
@@ -765,144 +662,117 @@ public class DaemonMavenCli
         //
         int userSuppliedConfigurationProcessorCount = configurationProcessors.size() - 1;
 
-        if ( userSuppliedConfigurationProcessorCount == 0 )
-        {
+        if (userSuppliedConfigurationProcessorCount == 0) {
             //
             // Our settings.xml source is historically how we have configured Maven from the CLI so we are going to
             // have to honour its existence forever. So let's run it.
             //
-            configurationProcessors.get( SettingsXmlConfigurationProcessor.HINT ).process( cliRequest );
-        }
-        else if ( userSuppliedConfigurationProcessorCount == 1 )
-        {
+            configurationProcessors.get(SettingsXmlConfigurationProcessor.HINT).process(cliRequest);
+        } else if (userSuppliedConfigurationProcessorCount == 1) {
             //
             // Run the user supplied ConfigurationProcessor
             //
-            for ( Entry<String, ConfigurationProcessor> entry : configurationProcessors.entrySet() )
-            {
+            for (Entry<String, ConfigurationProcessor> entry : configurationProcessors.entrySet()) {
                 String hint = entry.getKey();
-                if ( !hint.equals( SettingsXmlConfigurationProcessor.HINT ) )
-                {
+                if (!hint.equals(SettingsXmlConfigurationProcessor.HINT)) {
                     ConfigurationProcessor configurationProcessor = entry.getValue();
-                    configurationProcessor.process( cliRequest );
+                    configurationProcessor.process(cliRequest);
                 }
             }
-        }
-        else if ( userSuppliedConfigurationProcessorCount > 1 )
-        {
+        } else if (userSuppliedConfigurationProcessorCount > 1) {
             //
             // There are too many ConfigurationProcessors so we don't know which one to run so report the error.
             //
             StringBuilder sb = new StringBuilder(
-                String.format( "\nThere can only be one user supplied ConfigurationProcessor, there are %s:\n\n",
-                               userSuppliedConfigurationProcessorCount ) );
-            for ( Entry<String, ConfigurationProcessor> entry : configurationProcessors.entrySet() )
-            {
+                    String.format("\nThere can only be one user supplied ConfigurationProcessor, there are %s:\n\n",
+                            userSuppliedConfigurationProcessorCount));
+            for (Entry<String, ConfigurationProcessor> entry : configurationProcessors.entrySet()) {
                 String hint = entry.getKey();
-                if ( !hint.equals( SettingsXmlConfigurationProcessor.HINT ) )
-                {
+                if (!hint.equals(SettingsXmlConfigurationProcessor.HINT)) {
                     ConfigurationProcessor configurationProcessor = entry.getValue();
-                    sb.append( String.format( "%s\n", configurationProcessor.getClass().getName() ) );
+                    sb.append(String.format("%s\n", configurationProcessor.getClass().getName()));
                 }
             }
-            sb.append( "\n" );
-            throw new Exception( sb.toString() );
+            sb.append("\n");
+            throw new Exception(sb.toString());
         }
     }
 
-    void toolchains( CliRequest cliRequest )
-        throws Exception
-    {
+    void toolchains(CliRequest cliRequest)
+            throws Exception {
         File userToolchainsFile;
 
-        if ( cliRequest.commandLine.hasOption( CLIManager.ALTERNATE_USER_TOOLCHAINS ) )
-        {
-            userToolchainsFile =
-                new File( cliRequest.commandLine.getOptionValue( CLIManager.ALTERNATE_USER_TOOLCHAINS ) );
-            userToolchainsFile = resolveFile( userToolchainsFile, cliRequest.workingDirectory );
+        if (cliRequest.commandLine.hasOption(CLIManager.ALTERNATE_USER_TOOLCHAINS)) {
+            userToolchainsFile = new File(cliRequest.commandLine.getOptionValue(CLIManager.ALTERNATE_USER_TOOLCHAINS));
+            userToolchainsFile = resolveFile(userToolchainsFile, cliRequest.workingDirectory);
 
-            if ( !userToolchainsFile.isFile() )
-            {
+            if (!userToolchainsFile.isFile()) {
                 throw new FileNotFoundException(
-                    "The specified user toolchains file does not exist: " + userToolchainsFile );
+                        "The specified user toolchains file does not exist: " + userToolchainsFile);
             }
-        }
-        else
-        {
+        } else {
             userToolchainsFile = DEFAULT_USER_TOOLCHAINS_FILE;
         }
 
         File globalToolchainsFile;
 
-        if ( cliRequest.commandLine.hasOption( CLIManager.ALTERNATE_GLOBAL_TOOLCHAINS ) )
-        {
-            globalToolchainsFile =
-                new File( cliRequest.commandLine.getOptionValue( CLIManager.ALTERNATE_GLOBAL_TOOLCHAINS ) );
-            globalToolchainsFile = resolveFile( globalToolchainsFile, cliRequest.workingDirectory );
+        if (cliRequest.commandLine.hasOption(CLIManager.ALTERNATE_GLOBAL_TOOLCHAINS)) {
+            globalToolchainsFile = new File(cliRequest.commandLine.getOptionValue(CLIManager.ALTERNATE_GLOBAL_TOOLCHAINS));
+            globalToolchainsFile = resolveFile(globalToolchainsFile, cliRequest.workingDirectory);
 
-            if ( !globalToolchainsFile.isFile() )
-            {
+            if (!globalToolchainsFile.isFile()) {
                 throw new FileNotFoundException(
-                    "The specified global toolchains file does not exist: " + globalToolchainsFile );
+                        "The specified global toolchains file does not exist: " + globalToolchainsFile);
             }
-        }
-        else
-        {
+        } else {
             globalToolchainsFile = DEFAULT_GLOBAL_TOOLCHAINS_FILE;
         }
 
-        cliRequest.request.setGlobalToolchainsFile( globalToolchainsFile );
-        cliRequest.request.setUserToolchainsFile( userToolchainsFile );
+        cliRequest.request.setGlobalToolchainsFile(globalToolchainsFile);
+        cliRequest.request.setUserToolchainsFile(userToolchainsFile);
 
         DefaultToolchainsBuildingRequest toolchainsRequest = new DefaultToolchainsBuildingRequest();
-        if ( globalToolchainsFile.isFile() )
-        {
-            toolchainsRequest.setGlobalToolchainsSource( new FileSource( globalToolchainsFile ) );
+        if (globalToolchainsFile.isFile()) {
+            toolchainsRequest.setGlobalToolchainsSource(new FileSource(globalToolchainsFile));
         }
-        if ( userToolchainsFile.isFile() )
-        {
-            toolchainsRequest.setUserToolchainsSource( new FileSource( userToolchainsFile ) );
+        if (userToolchainsFile.isFile()) {
+            toolchainsRequest.setUserToolchainsSource(new FileSource(userToolchainsFile));
         }
 
-        eventSpyDispatcher.onEvent( toolchainsRequest );
+        eventSpyDispatcher.onEvent(toolchainsRequest);
 
-        slf4jLogger.debug( "Reading global toolchains from {}",
-                getLocation( toolchainsRequest.getGlobalToolchainsSource(), globalToolchainsFile ) );
-        slf4jLogger.debug( "Reading user toolchains from {}",
-                getLocation( toolchainsRequest.getUserToolchainsSource(), userToolchainsFile ) );
+        slf4jLogger.debug("Reading global toolchains from {}",
+                getLocation(toolchainsRequest.getGlobalToolchainsSource(), globalToolchainsFile));
+        slf4jLogger.debug("Reading user toolchains from {}",
+                getLocation(toolchainsRequest.getUserToolchainsSource(), userToolchainsFile));
 
-        ToolchainsBuildingResult toolchainsResult = toolchainsBuilder.build( toolchainsRequest );
+        ToolchainsBuildingResult toolchainsResult = toolchainsBuilder.build(toolchainsRequest);
 
-        eventSpyDispatcher.onEvent( toolchainsResult );
+        eventSpyDispatcher.onEvent(toolchainsResult);
 
-        executionRequestPopulator.populateFromToolchains( cliRequest.request,
-                                                          toolchainsResult.getEffectiveToolchains() );
+        executionRequestPopulator.populateFromToolchains(cliRequest.request,
+                toolchainsResult.getEffectiveToolchains());
 
-        if ( !toolchainsResult.getProblems().isEmpty() && slf4jLogger.isWarnEnabled() )
-        {
-            slf4jLogger.warn( "" );
-            slf4jLogger.warn( "Some problems were encountered while building the effective toolchains" );
+        if (!toolchainsResult.getProblems().isEmpty() && slf4jLogger.isWarnEnabled()) {
+            slf4jLogger.warn("");
+            slf4jLogger.warn("Some problems were encountered while building the effective toolchains");
 
-            for ( Problem problem : toolchainsResult.getProblems() )
-            {
-                slf4jLogger.warn( "{} @ {}", problem.getMessage(), problem.getLocation() );
+            for (Problem problem : toolchainsResult.getProblems()) {
+                slf4jLogger.warn("{} @ {}", problem.getMessage(), problem.getLocation());
             }
 
-            slf4jLogger.warn( "" );
+            slf4jLogger.warn("");
         }
     }
 
-    private Object getLocation(Source source, File defaultLocation )
-    {
-        if ( source != null )
-        {
+    private Object getLocation(Source source, File defaultLocation) {
+        if (source != null) {
             return source.getLocation();
         }
         return defaultLocation;
     }
 
-    private void populateRequest( CliRequest cliRequest )
-    {
+    private void populateRequest(CliRequest cliRequest) {
         MavenExecutionRequest request = cliRequest.request;
         CommandLine commandLine = cliRequest.commandLine;
         String workingDirectory = cliRequest.workingDirectory;
@@ -910,12 +780,10 @@ public class DaemonMavenCli
         boolean showErrors = cliRequest.showErrors;
 
         String[] deprecatedOptions = { "up", "npu", "cpu", "npr" };
-        for ( String deprecatedOption : deprecatedOptions )
-        {
-            if ( commandLine.hasOption( deprecatedOption ) )
-            {
-                slf4jLogger.warn( "Command line option -{} is deprecated and will be removed in future Maven versions.",
-                        deprecatedOption );
+        for (String deprecatedOption : deprecatedOptions) {
+            if (commandLine.hasOption(deprecatedOption)) {
+                slf4jLogger.warn("Command line option -{} is deprecated and will be removed in future Maven versions.",
+                        deprecatedOption);
             }
         }
 
@@ -924,14 +792,12 @@ public class DaemonMavenCli
         // bring the maven component to life for use.
         // ----------------------------------------------------------------------
 
-        if ( commandLine.hasOption( CLIManager.BATCH_MODE ) )
-        {
-            request.setInteractiveMode( false );
+        if (commandLine.hasOption(CLIManager.BATCH_MODE)) {
+            request.setInteractiveMode(false);
         }
 
         boolean noSnapshotUpdates = false;
-        if ( commandLine.hasOption( CLIManager.SUPRESS_SNAPSHOT_UPDATES ) )
-        {
+        if (commandLine.hasOption(CLIManager.SUPRESS_SNAPSHOT_UPDATES)) {
             noSnapshotUpdates = true;
         }
 
@@ -946,48 +812,37 @@ public class DaemonMavenCli
         // this is the default behavior.
         String reactorFailureBehaviour = MavenExecutionRequest.REACTOR_FAIL_FAST;
 
-        if ( commandLine.hasOption( CLIManager.NON_RECURSIVE ) )
-        {
+        if (commandLine.hasOption(CLIManager.NON_RECURSIVE)) {
             recursive = false;
         }
 
-        if ( commandLine.hasOption( CLIManager.FAIL_FAST ) )
-        {
+        if (commandLine.hasOption(CLIManager.FAIL_FAST)) {
             reactorFailureBehaviour = MavenExecutionRequest.REACTOR_FAIL_FAST;
-        }
-        else if ( commandLine.hasOption( CLIManager.FAIL_AT_END ) )
-        {
+        } else if (commandLine.hasOption(CLIManager.FAIL_AT_END)) {
             reactorFailureBehaviour = MavenExecutionRequest.REACTOR_FAIL_AT_END;
-        }
-        else if ( commandLine.hasOption( CLIManager.FAIL_NEVER ) )
-        {
+        } else if (commandLine.hasOption(CLIManager.FAIL_NEVER)) {
             reactorFailureBehaviour = MavenExecutionRequest.REACTOR_FAIL_NEVER;
         }
 
-        if ( commandLine.hasOption( CLIManager.OFFLINE ) )
-        {
-            request.setOffline( true );
+        if (commandLine.hasOption(CLIManager.OFFLINE)) {
+            request.setOffline(true);
         }
 
         boolean updateSnapshots = false;
 
-        if ( commandLine.hasOption( CLIManager.UPDATE_SNAPSHOTS ) )
-        {
+        if (commandLine.hasOption(CLIManager.UPDATE_SNAPSHOTS)) {
             updateSnapshots = true;
         }
 
         String globalChecksumPolicy = null;
 
-        if ( commandLine.hasOption( CLIManager.CHECKSUM_FAILURE_POLICY ) )
-        {
+        if (commandLine.hasOption(CLIManager.CHECKSUM_FAILURE_POLICY)) {
             globalChecksumPolicy = MavenExecutionRequest.CHECKSUM_POLICY_FAIL;
-        }
-        else if ( commandLine.hasOption( CLIManager.CHECKSUM_WARNING_POLICY ) )
-        {
+        } else if (commandLine.hasOption(CLIManager.CHECKSUM_WARNING_POLICY)) {
             globalChecksumPolicy = MavenExecutionRequest.CHECKSUM_POLICY_WARN;
         }
 
-        File baseDirectory = new File( workingDirectory, "" ).getAbsoluteFile();
+        File baseDirectory = new File(workingDirectory, "").getAbsoluteFile();
 
         // ----------------------------------------------------------------------
         // Profile Activation
@@ -997,30 +852,21 @@ public class DaemonMavenCli
 
         List<String> inactiveProfiles = new ArrayList<>();
 
-        if ( commandLine.hasOption( CLIManager.ACTIVATE_PROFILES ) )
-        {
-            String[] profileOptionValues = commandLine.getOptionValues( CLIManager.ACTIVATE_PROFILES );
-            if ( profileOptionValues != null )
-            {
-                for ( String profileOptionValue : profileOptionValues )
-                {
-                    StringTokenizer profileTokens = new StringTokenizer( profileOptionValue, "," );
+        if (commandLine.hasOption(CLIManager.ACTIVATE_PROFILES)) {
+            String[] profileOptionValues = commandLine.getOptionValues(CLIManager.ACTIVATE_PROFILES);
+            if (profileOptionValues != null) {
+                for (String profileOptionValue : profileOptionValues) {
+                    StringTokenizer profileTokens = new StringTokenizer(profileOptionValue, ",");
 
-                    while ( profileTokens.hasMoreTokens() )
-                    {
+                    while (profileTokens.hasMoreTokens()) {
                         String profileAction = profileTokens.nextToken().trim();
 
-                        if ( profileAction.startsWith( "-" ) || profileAction.startsWith( "!" ) )
-                        {
-                            inactiveProfiles.add( profileAction.substring( 1 ) );
-                        }
-                        else if ( profileAction.startsWith( "+" ) )
-                        {
-                            activeProfiles.add( profileAction.substring( 1 ) );
-                        }
-                        else
-                        {
-                            activeProfiles.add( profileAction );
+                        if (profileAction.startsWith("-") || profileAction.startsWith("!")) {
+                            inactiveProfiles.add(profileAction.substring(1));
+                        } else if (profileAction.startsWith("+")) {
+                            activeProfiles.add(profileAction.substring(1));
+                        } else {
+                            activeProfiles.add(profileAction);
                         }
                     }
                 }
@@ -1029,146 +875,116 @@ public class DaemonMavenCli
 
         TransferListener transferListener;
 
-        if ( quiet || cliRequest.commandLine.hasOption( CLIManager.NO_TRANSFER_PROGRESS ) )
-        {
+        if (quiet || cliRequest.commandLine.hasOption(CLIManager.NO_TRANSFER_PROGRESS)) {
             transferListener = new QuietMavenTransferListener();
-        }
-        else if ( request.isInteractiveMode() && !cliRequest.commandLine.hasOption( CLIManager.LOG_FILE ) )
-        {
+        } else if (request.isInteractiveMode() && !cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
             //
             // If we're logging to a file then we don't want the console transfer listener as it will spew
             // download progress all over the place
             //
-            transferListener = getConsoleTransferListener( cliRequest.commandLine.hasOption( CLIManager.DEBUG ) );
-        }
-        else
-        {
+            transferListener = getConsoleTransferListener(cliRequest.commandLine.hasOption(CLIManager.DEBUG));
+        } else {
             transferListener = getBatchTransferListener();
         }
 
         ExecutionListener executionListener = new ExecutionEventLogger();
-        if ( eventSpyDispatcher != null )
-        {
-            executionListener = eventSpyDispatcher.chainListener( executionListener );
+        if (eventSpyDispatcher != null) {
+            executionListener = eventSpyDispatcher.chainListener(executionListener);
         }
 
         String alternatePomFile = null;
-        if ( commandLine.hasOption( CLIManager.ALTERNATE_POM_FILE ) )
-        {
-            alternatePomFile = commandLine.getOptionValue( CLIManager.ALTERNATE_POM_FILE );
+        if (commandLine.hasOption(CLIManager.ALTERNATE_POM_FILE)) {
+            alternatePomFile = commandLine.getOptionValue(CLIManager.ALTERNATE_POM_FILE);
         }
 
-        request.setBaseDirectory( baseDirectory ).setGoals( goals ).setSystemProperties(
-            cliRequest.systemProperties ).setUserProperties( cliRequest.userProperties ).setReactorFailureBehavior(
-            reactorFailureBehaviour ) // default: fail fast
-            .setRecursive( recursive ) // default: true
-            .setShowErrors( showErrors ) // default: false
-            .addActiveProfiles( activeProfiles ) // optional
-            .addInactiveProfiles( inactiveProfiles ) // optional
-            .setExecutionListener( executionListener ).setTransferListener(
-            transferListener ) // default: batch mode which goes along with interactive
-            .setUpdateSnapshots( updateSnapshots ) // default: false
-            .setNoSnapshotUpdates( noSnapshotUpdates ) // default: false
-            .setGlobalChecksumPolicy( globalChecksumPolicy ) // default: warn
-            .setMultiModuleProjectDirectory( cliRequest.getMultiModuleProjectDirectory() );
+        request.setBaseDirectory(baseDirectory).setGoals(goals).setSystemProperties(
+                cliRequest.systemProperties).setUserProperties(cliRequest.userProperties).setReactorFailureBehavior(
+                        reactorFailureBehaviour) // default: fail fast
+                .setRecursive(recursive) // default: true
+                .setShowErrors(showErrors) // default: false
+                .addActiveProfiles(activeProfiles) // optional
+                .addInactiveProfiles(inactiveProfiles) // optional
+                .setExecutionListener(executionListener).setTransferListener(
+                        transferListener) // default: batch mode which goes along with interactive
+                .setUpdateSnapshots(updateSnapshots) // default: false
+                .setNoSnapshotUpdates(noSnapshotUpdates) // default: false
+                .setGlobalChecksumPolicy(globalChecksumPolicy) // default: warn
+                .setMultiModuleProjectDirectory(cliRequest.getMultiModuleProjectDirectory());
 
-        if ( alternatePomFile != null )
-        {
-            File pom = resolveFile( new File( alternatePomFile ), workingDirectory );
-            if ( pom.isDirectory() )
-            {
-                pom = new File( pom, "pom.xml" );
+        if (alternatePomFile != null) {
+            File pom = resolveFile(new File(alternatePomFile), workingDirectory);
+            if (pom.isDirectory()) {
+                pom = new File(pom, "pom.xml");
             }
 
-            request.setPom( pom );
-        }
-        else if ( modelProcessor != null )
-        {
-            File pom = modelProcessor.locatePom( baseDirectory );
+            request.setPom(pom);
+        } else if (modelProcessor != null) {
+            File pom = modelProcessor.locatePom(baseDirectory);
 
-            if ( pom.isFile() )
-            {
-                request.setPom( pom );
+            if (pom.isFile()) {
+                request.setPom(pom);
             }
         }
 
-        if ( ( request.getPom() != null ) && ( request.getPom().getParentFile() != null ) )
-        {
-            request.setBaseDirectory( request.getPom().getParentFile() );
+        if ((request.getPom() != null) && (request.getPom().getParentFile() != null)) {
+            request.setBaseDirectory(request.getPom().getParentFile());
         }
 
-        if ( commandLine.hasOption( CLIManager.RESUME_FROM ) )
-        {
-            request.setResumeFrom( commandLine.getOptionValue( CLIManager.RESUME_FROM ) );
+        if (commandLine.hasOption(CLIManager.RESUME_FROM)) {
+            request.setResumeFrom(commandLine.getOptionValue(CLIManager.RESUME_FROM));
         }
 
-        if ( commandLine.hasOption( CLIManager.PROJECT_LIST ) )
-        {
-            String[] projectOptionValues = commandLine.getOptionValues( CLIManager.PROJECT_LIST );
+        if (commandLine.hasOption(CLIManager.PROJECT_LIST)) {
+            String[] projectOptionValues = commandLine.getOptionValues(CLIManager.PROJECT_LIST);
 
             List<String> inclProjects = new ArrayList<>();
             List<String> exclProjects = new ArrayList<>();
 
-            if ( projectOptionValues != null )
-            {
-                for ( String projectOptionValue : projectOptionValues )
-                {
-                    StringTokenizer projectTokens = new StringTokenizer( projectOptionValue, "," );
+            if (projectOptionValues != null) {
+                for (String projectOptionValue : projectOptionValues) {
+                    StringTokenizer projectTokens = new StringTokenizer(projectOptionValue, ",");
 
-                    while ( projectTokens.hasMoreTokens() )
-                    {
+                    while (projectTokens.hasMoreTokens()) {
                         String projectAction = projectTokens.nextToken().trim();
 
-                        if ( projectAction.startsWith( "-" ) || projectAction.startsWith( "!" ) )
-                        {
-                            exclProjects.add( projectAction.substring( 1 ) );
-                        }
-                        else if ( projectAction.startsWith( "+" ) )
-                        {
-                            inclProjects.add( projectAction.substring( 1 ) );
-                        }
-                        else
-                        {
-                            inclProjects.add( projectAction );
+                        if (projectAction.startsWith("-") || projectAction.startsWith("!")) {
+                            exclProjects.add(projectAction.substring(1));
+                        } else if (projectAction.startsWith("+")) {
+                            inclProjects.add(projectAction.substring(1));
+                        } else {
+                            inclProjects.add(projectAction);
                         }
                     }
                 }
             }
 
-            request.setSelectedProjects( inclProjects );
-            request.setExcludedProjects( exclProjects );
+            request.setSelectedProjects(inclProjects);
+            request.setExcludedProjects(exclProjects);
         }
 
-        if ( commandLine.hasOption( CLIManager.ALSO_MAKE ) && !commandLine.hasOption(
-            CLIManager.ALSO_MAKE_DEPENDENTS ) )
-        {
-            request.setMakeBehavior( MavenExecutionRequest.REACTOR_MAKE_UPSTREAM );
-        }
-        else if ( !commandLine.hasOption( CLIManager.ALSO_MAKE ) && commandLine.hasOption(
-            CLIManager.ALSO_MAKE_DEPENDENTS ) )
-        {
-            request.setMakeBehavior( MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM );
-        }
-        else if ( commandLine.hasOption( CLIManager.ALSO_MAKE ) && commandLine.hasOption(
-            CLIManager.ALSO_MAKE_DEPENDENTS ) )
-        {
-            request.setMakeBehavior( MavenExecutionRequest.REACTOR_MAKE_BOTH );
+        if (commandLine.hasOption(CLIManager.ALSO_MAKE) && !commandLine.hasOption(
+                CLIManager.ALSO_MAKE_DEPENDENTS)) {
+            request.setMakeBehavior(MavenExecutionRequest.REACTOR_MAKE_UPSTREAM);
+        } else if (!commandLine.hasOption(CLIManager.ALSO_MAKE) && commandLine.hasOption(
+                CLIManager.ALSO_MAKE_DEPENDENTS)) {
+            request.setMakeBehavior(MavenExecutionRequest.REACTOR_MAKE_DOWNSTREAM);
+        } else if (commandLine.hasOption(CLIManager.ALSO_MAKE) && commandLine.hasOption(
+                CLIManager.ALSO_MAKE_DEPENDENTS)) {
+            request.setMakeBehavior(MavenExecutionRequest.REACTOR_MAKE_BOTH);
         }
 
-        String localRepoProperty = request.getUserProperties().getProperty( MavenCli.LOCAL_REPO_PROPERTY );
+        String localRepoProperty = request.getUserProperties().getProperty(MavenCli.LOCAL_REPO_PROPERTY);
 
-        if ( localRepoProperty == null )
-        {
-            localRepoProperty = request.getSystemProperties().getProperty( MavenCli.LOCAL_REPO_PROPERTY );
+        if (localRepoProperty == null) {
+            localRepoProperty = request.getSystemProperties().getProperty(MavenCli.LOCAL_REPO_PROPERTY);
         }
 
-        if ( localRepoProperty != null )
-        {
-            request.setLocalRepositoryPath( localRepoProperty );
+        if (localRepoProperty != null) {
+            request.setLocalRepositoryPath(localRepoProperty);
         }
 
-        request.setCacheNotFound( true );
-        request.setCacheTransferError( false );
+        request.setCacheNotFound(true);
+        request.setCacheTransferError(false);
 
         //
         // Builder, concurrency and parallelism
@@ -1178,60 +994,46 @@ public class DaemonMavenCli
         // parameters but this is sufficient for now. Ultimately we want components like Builders to provide a way to
         // extend the command line to accept its own configuration parameters.
         //
-        final String threadConfiguration = commandLine.hasOption( CLIManager.THREADS )
-            ? commandLine.getOptionValue( CLIManager.THREADS )
-            : null;
+        final String threadConfiguration = commandLine.hasOption(CLIManager.THREADS)
+                ? commandLine.getOptionValue(CLIManager.THREADS)
+                : null;
 
-        if ( threadConfiguration != null )
-        {
+        if (threadConfiguration != null) {
             //
             // Default to the standard multithreaded builder
             //
-            request.setBuilderId( "multithreaded" );
+            request.setBuilderId("multithreaded");
 
-            if ( threadConfiguration.contains( "C" ) )
-            {
-                request.setDegreeOfConcurrency( calculateDegreeOfConcurrencyWithCoreMultiplier( threadConfiguration ) );
-            }
-            else
-            {
-                request.setDegreeOfConcurrency( Integer.valueOf( threadConfiguration ) );
+            if (threadConfiguration.contains("C")) {
+                request.setDegreeOfConcurrency(calculateDegreeOfConcurrencyWithCoreMultiplier(threadConfiguration));
+            } else {
+                request.setDegreeOfConcurrency(Integer.valueOf(threadConfiguration));
             }
         }
 
         //
         // Allow the builder to be overridden by the user if requested. The builders are now pluggable.
         //
-        if ( commandLine.hasOption( CLIManager.BUILDER ) )
-        {
-            request.setBuilderId( commandLine.getOptionValue( CLIManager.BUILDER ) );
+        if (commandLine.hasOption(CLIManager.BUILDER)) {
+            request.setBuilderId(commandLine.getOptionValue(CLIManager.BUILDER));
         }
     }
 
-    int calculateDegreeOfConcurrencyWithCoreMultiplier( String threadConfiguration )
-    {
+    int calculateDegreeOfConcurrencyWithCoreMultiplier(String threadConfiguration) {
         int procs = Runtime.getRuntime().availableProcessors();
-        return (int) ( Float.valueOf( threadConfiguration.replace( "C", "" ) ) * procs );
+        return (int) (Float.valueOf(threadConfiguration.replace("C", "")) * procs);
     }
 
-    static File resolveFile(File file, String workingDirectory )
-    {
-        if ( file == null )
-        {
+    static File resolveFile(File file, String workingDirectory) {
+        if (file == null) {
             return null;
-        }
-        else if ( file.isAbsolute() )
-        {
+        } else if (file.isAbsolute()) {
             return file;
-        }
-        else if ( file.getPath().startsWith( File.separator ) )
-        {
+        } else if (file.getPath().startsWith(File.separator)) {
             // drive-relative Windows path
             return file.getAbsoluteFile();
-        }
-        else
-        {
-            return new File( workingDirectory, file.getPath() ).getAbsoluteFile();
+        } else {
+            return new File(workingDirectory, file.getPath()).getAbsoluteFile();
         }
     }
 
@@ -1239,9 +1041,8 @@ public class DaemonMavenCli
     // System properties handling
     // ----------------------------------------------------------------------
 
-    static void populateProperties(CommandLine commandLine, Properties systemProperties, Properties userProperties )
-    {
-        EnvironmentUtils.addEnvVars( systemProperties );
+    static void populateProperties(CommandLine commandLine, Properties systemProperties, Properties userProperties) {
+        EnvironmentUtils.addEnvVars(systemProperties);
 
         // ----------------------------------------------------------------------
         // Options that are set on the command line become system properties
@@ -1249,20 +1050,17 @@ public class DaemonMavenCli
         // are most dominant.
         // ----------------------------------------------------------------------
 
-        if ( commandLine.hasOption( CLIManager.SET_SYSTEM_PROPERTY ) )
-        {
-            String[] defStrs = commandLine.getOptionValues( CLIManager.SET_SYSTEM_PROPERTY );
+        if (commandLine.hasOption(CLIManager.SET_SYSTEM_PROPERTY)) {
+            String[] defStrs = commandLine.getOptionValues(CLIManager.SET_SYSTEM_PROPERTY);
 
-            if ( defStrs != null )
-            {
-                for ( String defStr : defStrs )
-                {
-                    setCliProperty( defStr, userProperties );
+            if (defStrs != null) {
+                for (String defStr : defStrs) {
+                    setCliProperty(defStr, userProperties);
                 }
             }
         }
 
-        SystemProperties.addSystemProperties( systemProperties );
+        SystemProperties.addSystemProperties(systemProperties);
 
         // ----------------------------------------------------------------------
         // Properties containing info about the currently running version of Maven
@@ -1271,52 +1069,46 @@ public class DaemonMavenCli
 
         Properties buildProperties = CLIReportingUtils.getBuildProperties();
 
-        String mavenVersion = buildProperties.getProperty( CLIReportingUtils.BUILD_VERSION_PROPERTY );
-        systemProperties.setProperty( "maven.version", mavenVersion );
+        String mavenVersion = buildProperties.getProperty(CLIReportingUtils.BUILD_VERSION_PROPERTY);
+        systemProperties.setProperty("maven.version", mavenVersion);
 
-        String mavenBuildVersion = CLIReportingUtils.createMavenVersionString( buildProperties );
-        systemProperties.setProperty( "maven.build.version", mavenBuildVersion );
+        String mavenBuildVersion = CLIReportingUtils.createMavenVersionString(buildProperties);
+        systemProperties.setProperty("maven.build.version", mavenBuildVersion);
     }
 
-    private static void setCliProperty(String property, Properties properties )
-    {
+    private static void setCliProperty(String property, Properties properties) {
         String name;
 
         String value;
 
-        int i = property.indexOf( '=' );
+        int i = property.indexOf('=');
 
-        if ( i <= 0 )
-        {
+        if (i <= 0) {
             name = property.trim();
 
             value = "true";
-        }
-        else
-        {
-            name = property.substring( 0, i ).trim();
+        } else {
+            name = property.substring(0, i).trim();
 
-            value = property.substring( i + 1 );
+            value = property.substring(i + 1);
         }
 
-        properties.setProperty( name, value );
+        properties.setProperty(name, value);
 
         // ----------------------------------------------------------------------
         // I'm leaving the setting of system properties here as not to break
         // the SystemPropertyProfileActivator. This won't harm embedding. jvz.
         // ----------------------------------------------------------------------
 
-        System.setProperty( name, value );
+        System.setProperty(name, value);
     }
 
     static class ExitException
-        extends Exception
-    {
+            extends Exception {
         static final long serialVersionUID = 1L;
         int exitCode;
 
-        ExitException( int exitCode )
-        {
+        ExitException(int exitCode) {
             this.exitCode = exitCode;
         }
     }
@@ -1325,19 +1117,16 @@ public class DaemonMavenCli
     // Customizations available via the CLI
     //
 
-    protected TransferListener getConsoleTransferListener( boolean printResourceNames )
-    {
-        return new ConsoleMavenTransferListener( System.out, printResourceNames );
+    protected TransferListener getConsoleTransferListener(boolean printResourceNames) {
+        return new ConsoleMavenTransferListener(System.out, printResourceNames);
     }
 
-    protected TransferListener getBatchTransferListener()
-    {
+    protected TransferListener getBatchTransferListener() {
         return new Slf4jMavenTransferListener();
     }
 
-    protected ModelProcessor createModelProcessor( PlexusContainer container )
-        throws ComponentLookupException
-    {
-        return container.lookup( ModelProcessor.class );
+    protected ModelProcessor createModelProcessor(PlexusContainer container)
+            throws ComponentLookupException {
+        return container.lookup(ModelProcessor.class);
     }
 }

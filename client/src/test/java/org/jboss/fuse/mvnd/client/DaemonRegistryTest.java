@@ -21,10 +21,6 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
-
-import org.jboss.fuse.mvnd.client.DaemonInfo;
-import org.jboss.fuse.mvnd.client.DaemonRegistry;
-import org.jboss.fuse.mvnd.client.DaemonState;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -15,14 +15,14 @@
  */
 package org.jboss.fuse.mvnd.client;
 
+import java.util.List;
+
 import static org.jboss.fuse.mvnd.client.DaemonState.Busy;
 import static org.jboss.fuse.mvnd.client.DaemonState.Idle;
 
-import java.nio.file.Path;
-import java.util.List;
-
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonInfo.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonInfo.java
  */
 public class DaemonInfo {
 
@@ -39,9 +39,9 @@ public class DaemonInfo {
     private final long lastBusy;
 
     public DaemonInfo(String uid, String javaHome, String mavenHome,
-                      int pid, int address, int idleTimeout,
-                      String locale, List<String> options,
-                      DaemonState state, long lastIdle, long lastBusy) {
+            int pid, int address, int idleTimeout,
+            String locale, List<String> options,
+            DaemonState state, long lastIdle, long lastBusy) {
         this.uid = uid;
         this.javaHome = javaHome;
         this.mavenHome = mavenHome;
@@ -121,6 +121,7 @@ public class DaemonInfo {
         appendNonKeyFields(sb);
         return sb.append('}').toString();
     }
+
     public StringBuilder appendNonKeyFields(StringBuilder sb) {
         return sb.append("javaHome=").append(javaHome)
                 .append(", options=").append(options)

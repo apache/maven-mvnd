@@ -30,7 +30,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Consumer;
-
 import org.jboss.fuse.mvnd.client.Message.BuildException;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
@@ -62,6 +61,7 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
         private static final Logger LOGGER = LoggerFactory.getLogger(TerminalOutput.class);
         private final TerminalUpdater updater;
         private final BlockingQueue<Map.Entry<String, String>> queue;
+
         public TerminalOutput(Path logFile) throws IOException {
             this.queue = new LinkedBlockingDeque<>();
             this.updater = new TerminalUpdater(queue, logFile);

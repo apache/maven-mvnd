@@ -15,6 +15,7 @@
  */
 package org.jboss.fuse.mvnd.builder;
 
+import com.google.common.util.concurrent.Monitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,8 +23,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
-
-import com.google.common.util.concurrent.Monitor;
 import org.apache.maven.project.MavenProject;
 import org.jboss.fuse.mvnd.builder.ProjectExecutorService.ProjectRunnable;
 import org.junit.jupiter.api.Assertions;
@@ -108,7 +107,7 @@ public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest {
         };
 
         public PausibleProjectExecutorService(int degreeOfConcurrency,
-                                              Comparator<MavenProject> projectComparator) {
+                Comparator<MavenProject> projectComparator) {
             super(degreeOfConcurrency, projectComparator);
         }
 

@@ -16,7 +16,6 @@
 package org.jboss.fuse.mvnd.it;
 
 import java.util.Properties;
-
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.mockito.InOrder;

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.client.ClientOutput.TerminalOutput;
 import org.jboss.fuse.mvnd.client.Message.BuildEvent;
@@ -87,7 +86,7 @@ public class DefaultClient implements Client {
                 .toAbsolutePath().normalize();
         final Path javaHome = Environment.JAVA_HOME
                 .systemProperty() // only write java.home to mvnd.properties if it was explicitly set on command line
-                                  // via -Djava.home=...
+                // via -Djava.home=...
                 .asPath();
         final Path mvndPropertiesPath = Environment.MVND_PROPERTIES_PATH
                 .commandLineProperty(() -> commandLineProperties)
@@ -139,7 +138,7 @@ public class DefaultClient implements Client {
                 if (arg.startsWith("-D")) {
                     final int eqPos = arg.indexOf('=');
                     if (eqPos >= 0) {
-                        commandLineProperties.setProperty(arg.substring(2, eqPos), arg.substring(eqPos+1));
+                        commandLineProperties.setProperty(arg.substring(2, eqPos), arg.substring(eqPos + 1));
                     } else {
                         commandLineProperties.setProperty(arg.substring(2), "");
                     }
@@ -153,7 +152,6 @@ public class DefaultClient implements Client {
             install(false, commandLineProperties, buildProperties.getVersion());
             return new DefaultResult(argv, null);
         }
-
 
         // Print version if needed
         if (version || showVersion || debug) {
@@ -227,7 +225,8 @@ public class DefaultClient implements Client {
                 if (m instanceof BuildException) {
                     final BuildException e = (BuildException) m;
                     output.error(e);
-                    return new DefaultResult(argv, new Exception(e.getClassName() + ": "+ e.getMessage() + "\n" + e.getStackTrace()));
+                    return new DefaultResult(argv,
+                            new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
                 } else if (m instanceof BuildEvent) {
                     BuildEvent be = (BuildEvent) m;
                     switch (be.getType()) {

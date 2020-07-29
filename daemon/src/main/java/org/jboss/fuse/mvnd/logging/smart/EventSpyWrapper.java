@@ -17,7 +17,6 @@ package org.jboss.fuse.mvnd.logging.smart;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
-
 import org.apache.maven.eventspy.EventSpy;
 
 @Singleton

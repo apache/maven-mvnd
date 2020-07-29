@@ -23,14 +23,11 @@ import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Objects;
 import java.util.Set;
-
 import javax.inject.Inject;
-
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.BuildProperties;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientOutput;
-import org.jboss.fuse.mvnd.client.DefaultClient;
 import org.jboss.fuse.mvnd.client.Environment;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestLayout;

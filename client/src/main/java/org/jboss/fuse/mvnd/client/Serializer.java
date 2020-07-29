@@ -20,11 +20,13 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 
 /**
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/messaging/src/main/java/org/gradle/internal/serialize/Serializer.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/messaging/src/main/java/org/gradle/internal/serialize/Serializer.java
  */
 public interface Serializer<T> {
     /**
-     * Reads the next object from the given stream. The implementation must not perform any buffering, so that it reads only those bytes from the input stream that are
+     * Reads the next object from the given stream. The implementation must not perform any buffering, so that it reads only
+     * those bytes from the input stream that are
      * required to deserialize the next object.
      *
      * @throws EOFException When the next object cannot be fully read due to reaching the end of stream.

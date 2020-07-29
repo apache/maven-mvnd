@@ -26,7 +26,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.maven.lifecycle.internal.BuildThreadFactory;
 import org.apache.maven.project.MavenProject;
 
@@ -36,7 +35,8 @@ import org.apache.maven.project.MavenProject;
  * Uses {@link PriorityBlockingQueue} and provided {@link Comparator} to order queue
  * {@link ProjectRunnable} tasks.
  *
- * File origin: https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ProjectExecutorService.java
+ * File origin:
+ * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/ProjectExecutorService.java
  */
 class ProjectExecutorService {
 
@@ -45,13 +45,12 @@ class ProjectExecutorService {
     private final Comparator<Runnable> taskComparator;
 
     public ProjectExecutorService(final int degreeOfConcurrency,
-                                  final Comparator<MavenProject> projectComparator) {
+            final Comparator<MavenProject> projectComparator) {
 
         this.taskComparator = Comparator.comparing(
                 r -> ((ProjectRunnable) r).getProject(), projectComparator);
 
-        final BlockingQueue<Runnable> executorWorkQueue =
-                new PriorityBlockingQueue<>(degreeOfConcurrency, taskComparator);
+        final BlockingQueue<Runnable> executorWorkQueue = new PriorityBlockingQueue<>(degreeOfConcurrency, taskComparator);
 
         executor = new ThreadPoolExecutor(degreeOfConcurrency, // corePoolSize
                 degreeOfConcurrency, // maximumPoolSize
@@ -96,7 +95,8 @@ class ProjectExecutorService {
     // for testing purposes only
     public void awaitShutdown() throws InterruptedException {
         executor.shutdown();
-        while (!executor.awaitTermination(5, TimeUnit.SECONDS)) ;
+        while (!executor.awaitTermination(5, TimeUnit.SECONDS))
+            ;
     }
 
     static interface ProjectRunnable extends Runnable {

@@ -29,13 +29,15 @@ public interface Process extends Serializable {
 
     /**
      * Retrieves the PID of the process
+     * 
      * @return the pid
      */
     int getPid();
 
     /**
      * Check if this process is still running
-     * @return <code>true</code> if the process is running
+     * 
+     * @return             <code>true</code> if the process is running
      * @throws IOException if an error occurs
      */
     boolean isRunning() throws IOException;

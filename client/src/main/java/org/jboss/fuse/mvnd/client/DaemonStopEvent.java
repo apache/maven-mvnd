@@ -24,7 +24,8 @@ import java.util.Objects;
 /**
  * Information regarding when and why a daemon was stopped.
  *
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonStopEvent.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonStopEvent.java
  */
 public class DaemonStopEvent implements Serializable {
 
@@ -58,8 +59,10 @@ public class DaemonStopEvent implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         DaemonStopEvent that = (DaemonStopEvent) o;
         return Objects.equals(uid, that.uid)
                 && timestamp == that.timestamp

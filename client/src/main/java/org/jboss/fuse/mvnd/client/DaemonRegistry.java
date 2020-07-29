@@ -16,9 +16,6 @@
 
 package org.jboss.fuse.mvnd.client;
 
-import static org.jboss.fuse.mvnd.client.DaemonState.Canceled;
-import static org.jboss.fuse.mvnd.client.DaemonState.Idle;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -39,17 +36,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.misc.Unsafe;
 import sun.nio.ch.DirectBuffer;
 
+import static org.jboss.fuse.mvnd.client.DaemonState.Canceled;
+import static org.jboss.fuse.mvnd.client.DaemonState.Idle;
 
 /**
  * Access to daemon registry files. Useful also for testing.
  *
- * File origin: https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonRegistry.java
+ * File origin:
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonRegistry.java
  */
 public class DaemonRegistry implements AutoCloseable {
 
@@ -252,7 +251,8 @@ public class DaemonRegistry implements AutoCloseable {
                         DaemonState state = DaemonState.values()[buffer.get()];
                         long lastIdle = buffer.getLong();
                         long lastBusy = buffer.getLong();
-                        DaemonInfo di = new DaemonInfo(uid, javaHome, mavenHome, pid, address, idle, locale, opts, state, lastIdle, lastBusy);
+                        DaemonInfo di = new DaemonInfo(uid, javaHome, mavenHome, pid, address, idle, locale, opts, state,
+                                lastIdle, lastBusy);
                         infosMap.putIfAbsent(di.getUid(), di);
                     }
                     stopEvents.clear();
@@ -401,9 +401,8 @@ public class DaemonRegistry implements AutoCloseable {
                     long millis = (System.nanoTime() - start) / 1000000;
                     if (millis > 200) {
                         LOGGER.warn(currentThread().getName() +
-                                        ", to obtain a lock took " +
-                                        millis / 1e3 + " seconds"
-                        );
+                                ", to obtain a lock took " +
+                                millis / 1e3 + " seconds");
                     }
                     return true;
                 }
@@ -497,12 +496,14 @@ public class DaemonRegistry implements AutoCloseable {
     private AtomicBoolean barrier;
 
     private void readBarrier() {
-        if (barrier == null) barrier = new AtomicBoolean();
+        if (barrier == null)
+            barrier = new AtomicBoolean();
         barrier.get();
     }
 
     private void writeBarrier() {
-        if (barrier == null) barrier = new AtomicBoolean();
+        if (barrier == null)
+            barrier = new AtomicBoolean();
         barrier.lazySet(false);
     }
 
