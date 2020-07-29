@@ -225,6 +225,7 @@ limitations under the License.</inlineHeader>
                             <exclude>.mvn/wrapper/</exclude>
                             <exclude>LICENSE.txt</exclude>
                             <exclude>NOTICE.txt</exclude>
+                            <exclude>**/mvnd.properties.template</exclude>
                             <exclude>mvnw</exclude>
                             <exclude>mvnw.cmd</exclude>
                             <exclude>pom.xml.versionsBackup</exclude>
@@ -232,8 +233,12 @@ limitations under the License.</inlineHeader>
                         <mapping>
                             <groovy>SLASHSTAR_STYLE</groovy>
                             <java>SLASHSTAR_STYLE</java>
+                            <mvnd>SCRIPT_STYLE</mvnd>
+                            <mvns>SCRIPT_STYLE</mvns>
+                            <vbs>APOSTROPHE_STYLE</vbs>
                         </mapping>
                         <skipExistingHeaders>true</skipExistingHeaders><!-- we want to keep third party license headers -->
+                        <failIfUnknown>true</failIfUnknown>
                     </configuration>
                 </plugin>
                 <plugin>
