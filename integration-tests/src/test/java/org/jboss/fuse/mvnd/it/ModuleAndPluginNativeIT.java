@@ -74,7 +74,7 @@ public class ModuleAndPluginNativeIT {
 
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output,
-                    // "clean", workaround for https://github.com/mvndaemon/mvnd/issues/40
+                    "clean",
                     "install", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
 
             Assertions.assertThat(helloPath).exists();
