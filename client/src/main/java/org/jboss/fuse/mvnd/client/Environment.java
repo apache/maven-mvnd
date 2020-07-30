@@ -116,20 +116,23 @@ public enum Environment {
     public static Path findMultiModuleProjectDirectory(Path pwd) {
         return MAVEN_MULTIMODULE_PROJECT_DIRECTORY
                 .systemProperty()
-                .orDefault(() -> {
-                    Path dir = pwd;
-                    do {
-                        if (Files.isDirectory(dir.resolve(".mvn"))) {
-                            return dir.toString();
-                        }
-                        dir = dir.getParent();
-                    } while (dir != null);
-                    throw new IllegalStateException("Could not detect maven.multiModuleProjectDirectory by climbing up from ["
-                            + pwd
-                            + "] seeking a .mvn directory. You may want to create a .mvn directory in the root directory of your source tree.");
-                })
+                .orDefault(() -> findDefaultMultimoduleProjectDirectory(pwd))
                 .asPath()
                 .toAbsolutePath().normalize();
+    }
+
+    public static String findDefaultMultimoduleProjectDirectory(Path pwd) {
+        Path dir = pwd;
+        do {
+            if (Files.isDirectory(dir.resolve(".mvn"))) {
+                return dir.toString();
+            }
+            dir = dir.getParent();
+        } while (dir != null);
+        /* Return pwd if .mvn directory was not found in the hierarchy.
+         * Maven does the same thing in mvn shell script's find_maven_basedir()
+         * and find_file_argument_basedir() routines */
+        return pwd.toString();
     }
 
     public static Path findLogbackConfigurationPath(Supplier<Properties> mvndProperties, Path mvndPropertiesPath,

@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-@MvndNativeTest(projectDir = "src/test/projects/single-module")
+@MvndNativeTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
 public class VersionNativeIT {
 
     @Inject

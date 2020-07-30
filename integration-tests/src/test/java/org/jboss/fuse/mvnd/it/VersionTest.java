@@ -18,7 +18,7 @@ package org.jboss.fuse.mvnd.it;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.jboss.fuse.mvnd.junit.MvndTestExtension;
 
-@MvndTest(projectDir = "src/test/projects/single-module")
+@MvndTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
 public class VersionTest extends VersionNativeIT {
 
 }

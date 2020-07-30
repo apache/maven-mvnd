@@ -255,7 +255,6 @@ public class DaemonConnector {
             if (timeout != null) {
                 args.add(Environment.DAEMON_IDLE_TIMEOUT.asCommandLineProperty(timeout));
             }
-            args.add("\"-Dmaven.multiModuleProjectDirectory=" + layout.multiModuleProjectDirectory().toString() + "\"");
 
             args.add(ServerMain.class.getName());
             command = String.join(" ", args);

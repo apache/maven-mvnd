@@ -20,7 +20,6 @@ package org.jboss.fuse.mvnd.plugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;

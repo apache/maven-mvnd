@@ -30,6 +30,7 @@ import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonInfo;
 import org.jboss.fuse.mvnd.client.DaemonRegistry;
 import org.jboss.fuse.mvnd.client.DefaultClient;
+import org.jboss.fuse.mvnd.client.Environment;
 import org.jboss.fuse.mvnd.client.Layout;
 import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -167,6 +168,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     });
                 }
             }
+            final Path multiModuleProjectDirectory = Paths
+                    .get(Environment.findDefaultMultimoduleProjectDirectory(testExecutionDir));
 
             final Path mvndHome = Paths
                     .get(Objects.requireNonNull(System.getProperty("mvnd.home"), "System property mvnd.home must be set"))
@@ -183,7 +186,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     mvndPropertiesPath,
                     mvndHome,
                     testExecutionDir,
-                    testExecutionDir,
+                    multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository, settingsPath,
                     mvndHome.resolve("conf/logging/logback.xml"));
