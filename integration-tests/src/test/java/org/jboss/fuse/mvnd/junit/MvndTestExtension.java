@@ -30,6 +30,7 @@ import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonInfo;
 import org.jboss.fuse.mvnd.client.DaemonRegistry;
 import org.jboss.fuse.mvnd.client.DefaultClient;
+import org.jboss.fuse.mvnd.client.Environment;
 import org.jboss.fuse.mvnd.client.Layout;
 import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.junit.jupiter.api.extension.AfterAllCallback;
@@ -40,6 +41,8 @@ import org.junit.jupiter.api.extension.ExtensionContext.Store;
 
 public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
+    /** A placeholder to replace with a temporary directory outside of the current source tree */
+    public static final String TEMP_EXTERNAL = "${temp.external}";
     private volatile Exception bootException;
 
     public MvndTestExtension() {
@@ -54,11 +57,18 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final MvndTest mnvdTest = testClass.getAnnotation(MvndTest.class);
             if (mnvdTest != null) {
                 store.put(MvndResource.class.getName(),
-                        MvndResource.create(context.getRequiredTestClass().getSimpleName(), mnvdTest.projectDir(), false, -1L));
+                        MvndResource.create(
+                                context.getRequiredTestClass().getSimpleName(),
+                                mnvdTest.projectDir(),
+                                false,
+                                -1L));
             } else {
                 final MvndNativeTest mvndNativeTest = testClass.getAnnotation(MvndNativeTest.class);
                 store.put(MvndResource.class.getName(),
-                        MvndResource.create(context.getRequiredTestClass().getSimpleName(), mvndNativeTest.projectDir(), true,
+                        MvndResource.create(
+                                context.getRequiredTestClass().getSimpleName(),
+                                mvndNativeTest.projectDir(),
+                                true,
                                 mvndNativeTest.timeoutSec() * 1000L));
             }
         } catch (Exception e) {
@@ -126,29 +136,40 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             if (rawProjectDir == null) {
                 throw new IllegalStateException("rawProjectDir of @MvndTest must be set");
             }
-            final Path mvndTestSrcDir = Paths.get(rawProjectDir).toAbsolutePath().normalize();
-            if (!Files.exists(mvndTestSrcDir)) {
-                throw new IllegalStateException("@MvndTest(projectDir = \"" + rawProjectDir
-                        + "\") points at a path that does not exist: " + mvndTestSrcDir);
-            }
-
             final Path testDir = Paths.get("target/mvnd-tests/" + className).toAbsolutePath();
-            final Path testExecutionDir = testDir.resolve("project");
-            try (Stream<Path> files = Files.walk(mvndTestSrcDir)) {
-                files.forEach(source -> {
-                    final Path dest = testExecutionDir.resolve(mvndTestSrcDir.relativize(source));
-                    try {
-                        if (Files.isDirectory(source)) {
-                            Files.createDirectories(dest);
-                        } else {
-                            Files.createDirectories(dest.getParent());
-                            Files.copy(source, dest);
+            Files.createDirectories(testDir);
+            final Path testExecutionDir;
+            if (TEMP_EXTERNAL.equals(rawProjectDir)) {
+                try {
+                    testExecutionDir = Files.createTempDirectory(MvndTestExtension.class.getSimpleName());
+                } catch (IOException e) {
+                    throw new RuntimeException("Could not create temporary directory", e);
+                }
+            } else {
+                final Path mvndTestSrcDir = Paths.get(rawProjectDir).toAbsolutePath().normalize();
+                if (!Files.exists(mvndTestSrcDir)) {
+                    throw new IllegalStateException("@MvndTest(projectDir = \"" + mvndTestSrcDir
+                            + "\") points at a path that does not exist: " + mvndTestSrcDir);
+                }
+                testExecutionDir = testDir.resolve("project");
+                try (Stream<Path> files = Files.walk(mvndTestSrcDir)) {
+                    files.forEach(source -> {
+                        final Path dest = testExecutionDir.resolve(mvndTestSrcDir.relativize(source));
+                        try {
+                            if (Files.isDirectory(source)) {
+                                Files.createDirectories(dest);
+                            } else {
+                                Files.createDirectories(dest.getParent());
+                                Files.copy(source, dest);
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                    });
+                }
             }
+            final Path multiModuleProjectDirectory = Paths
+                    .get(Environment.findDefaultMultimoduleProjectDirectory(testExecutionDir));
 
             final Path mvndHome = Paths
                     .get(Objects.requireNonNull(System.getProperty("mvnd.home"), "System property mvnd.home must be set"))
@@ -165,7 +186,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     mvndPropertiesPath,
                     mvndHome,
                     testExecutionDir,
-                    testExecutionDir,
+                    multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository, settingsPath,
                     mvndHome.resolve("conf/logging/logback.xml"));
