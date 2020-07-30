@@ -1,0 +1,22 @@
+= How to release `mnvd`
+
+[source,shell]
+----
+export VERSION=... # e.g. 1.2.3
+export NEXT_VERSION=... # e.g. 1.2.4-SNAPSHOT
+
+git checkout master
+git fetch upstream
+git reset --hard upstream/master
+mvn versions:set -DnewVersion=$VERSION
+git add -A
+git commit -m "Release $VERSION"
+git tag $VERSION
+git push upstream $VERSION
+# Pushing a tag will trigger the CI to build the release and publish the artifacts on https://github.com/mvndaemon/mvnd/releases
+
+mvn versions:set -DnewVersion=$NEXT_VERSION
+git add -A
+git commit -m "Next is $NEXT_VERSION"
+git push upstream master
+----
