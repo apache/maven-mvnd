@@ -24,9 +24,13 @@ mvnd --install # <5>
 * Download `mvnd-dist.zip`
 * Unpack it to `~/.m2/mvnd/<version>`
 * Create `~/.m2/mvnd.properties`
++
+If your are on Windows and see a message that `VCRUNTIME140.dll was not found`, you need to install
+`vc_redist.x64.exe` from https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads.
+See https://github.com/oracle/graal/issues/1762 for more information.
 
 Optionally, you can open `~/.m2/mvnd.properties` and set the `java.home` property in case you do not want to bother with setting `JAVA_HOME` environment variable.
-
++
 Now you can test whether `mvnd` works:
 
 [source,shell]
