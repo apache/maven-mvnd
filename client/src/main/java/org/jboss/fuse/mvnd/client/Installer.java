@@ -93,13 +93,17 @@ public class Installer {
     static void writeMvndProperties(Path mvndPropsPath, Path mvndHome, Path javaHome) {
         LOG.info("Writing {}", mvndPropsPath);
         final String template = readTemplate();
-        final String javaHomeLine = javaHome == null ? "" : "java.home = " + javaHome.toString();
-        final String content = String.format(template, mvndHome.toString(), javaHomeLine);
+        final String javaHomeLine = javaHome == null ? "" : "java.home = " + escape(javaHome.toString());
+        final String content = String.format(template, escape(mvndHome.toString()), javaHomeLine);
         try {
             Files.write(mvndPropsPath, content.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException("Could not write to " + mvndPropsPath);
         }
+    }
+
+    static String escape(String string) {
+        return string.replace("\\", "\\\\");
     }
 
     static String readTemplate() {
