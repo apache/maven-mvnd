@@ -8,11 +8,11 @@ If you are on Linux or Mac, you can use the following shell commands. On Windows
 
 [source,shell]
 ----
-cd ~/bin <1>
-os=$(uname | tr '[:upper:]' '[:lower:]') <2>
-curl https://github.com/mvndaemon/mvnd/releases/latest/download/mvnd-${os}-amd64 -o mvnd <3>
-chmod +x mvnd <4>
-mvnd --install <5>
+cd ~/bin # <1>
+os=$(uname | tr '[:upper:]' '[:lower:]') # <2>
+curl https://github.com/mvndaemon/mvnd/releases/latest/download/mvnd-${os}-amd64 -o mvnd # <3>
+chmod +x mvnd # <4>
+mvnd --install # <5>
 ----
 <1> Change to `~/bin` or any other location already included in `PATH`; otherwise, you'll need to add `mvnd` to
   `PATH` manually
