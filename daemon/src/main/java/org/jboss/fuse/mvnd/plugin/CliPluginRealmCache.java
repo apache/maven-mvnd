@@ -452,8 +452,18 @@ public class CliPluginRealmCache
                         final ValidableCacheRecord record = entry.getValue();
                         for (URL url : record.getRealm().getURLs()) {
                             if (url.getProtocol().equals("file")) {
-                                final Path path = Paths.get(url.toURI()).toRealPath();
+                                final Path path = Paths.get(url.toURI());
+                                boolean remove = false;
                                 if (path.startsWith(multiModuleProjectDirectory)) {
+                                    remove = true;
+                                } else if (Files.exists(path)) {
+                                    /* Try to convert to real path only if the file exists */
+                                    final Path realPath = path.toRealPath();
+                                    if (realPath.startsWith(multiModuleProjectDirectory)) {
+                                        remove = true;
+                                    }
+                                }
+                                if (remove) {
                                     log.debug(
                                             "Removing PluginRealmCache entry {} because it refers to an artifact in the build tree {}",
                                             entry.getKey(), path);
