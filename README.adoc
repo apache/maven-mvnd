@@ -10,7 +10,7 @@ If you are on Linux or Mac, you can use the following shell commands. On Windows
 ----
 cd ~/bin # <1>
 os=$(uname | tr '[:upper:]' '[:lower:]') # <2>
-curl https://github.com/mvndaemon/mvnd/releases/latest/download/mvnd-${os}-amd64 -o mvnd # <3>
+curl -L https://github.com/mvndaemon/mvnd/releases/latest/download/mvnd-${os}-amd64 -o mvnd # <3>
 chmod +x mvnd # <4>
 mvnd --install # <5>
 ----
