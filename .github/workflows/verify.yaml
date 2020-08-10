@@ -52,6 +52,11 @@ jobs:
       with:
         name: mvnd-linux-amd64
         path: client/target/mvnd
+    - name: Upload mvnd zip
+      uses: actions/upload-artifact@v2
+      with:
+        name: mvnd-linux-amd64.zip
+        path: client/target/mvnd.zip
     - name: Upload mvnd-dist.zip
       uses: actions/upload-artifact@v2
       with:
@@ -128,6 +133,11 @@ jobs:
       with:
         name: mvnd-windows-amd64.exe
         path: client/target/mvnd.exe
+    - name: Upload mvnd zip
+      uses: actions/upload-artifact@v2
+      with:
+        name: mvnd-windows-amd64.zip
+        path: client/target/mvnd.zip
 
   darwin:
     runs-on: macos-10.15
@@ -158,6 +168,11 @@ jobs:
       with:
         name: mvnd-darwin-amd64
         path: client/target/mvnd
+    - name: Upload mvnd zip
+      uses: actions/upload-artifact@v2
+      with:
+        name: mvnd-darwin-amd64.zip
+        path: client/target/mvnd.zip
 
   deploy:
     runs-on: ubuntu-18.04
