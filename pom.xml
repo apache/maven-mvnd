@@ -244,11 +244,6 @@ limitations under the License.</inlineHeader>
                 </plugin>
                 <plugin>
                     <groupId>io.takari.maven.plugins</groupId>
-                    <artifactId>provisio-maven-plugin</artifactId>
-                    <version>${takari-provisio.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>io.takari.maven.plugins</groupId>
                     <artifactId>takari-lifecycle-plugin</artifactId>
                     <version>${takari-lifecycle.version}</version>
                 </plugin>
