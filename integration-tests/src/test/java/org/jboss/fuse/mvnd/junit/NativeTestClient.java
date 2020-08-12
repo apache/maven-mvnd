@@ -69,8 +69,8 @@ public class NativeTestClient implements Client {
                 .redirectErrorStream(true);
 
         final Map<String, String> env = builder.environment();
-        if (!Environment.MAVEN_HOME.hasCommandLineProperty(args)) {
-            env.put("MAVEN_HOME", System.getProperty("mvnd.home"));
+        if (!Environment.MVND_HOME.hasCommandLineProperty(args)) {
+            env.put("MVND_HOME", System.getProperty("mvnd.home"));
         }
         if (!Environment.JAVA_HOME.hasCommandLineProperty(args)) {
             env.put("JAVA_HOME", System.getProperty("java.home"));
