@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 public enum Environment {
     LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null),
     JAVA_HOME("java.home", "JAVA_HOME"),
-    MAVEN_HOME("maven.home", "MAVEN_HOME"),
+    MVND_HOME("mvnd.home", "MVND_HOME"),
     MAVEN_REPO_LOCAL("maven.repo.local", null),
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null),
     MVND_PROPERTIES_PATH("mvnd.properties.path", "MVND_PROPERTIES_PATH"),
@@ -108,7 +108,7 @@ public enum Environment {
     }
 
     public static EnvValue findBasicMavenHome() {
-        return MAVEN_HOME
+        return MVND_HOME
                 .environmentVariable()
                 .orSystemProperty();
     }

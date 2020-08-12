@@ -26,7 +26,7 @@ public class ServerMain {
 
     public static void main(String[] args) throws Exception {
         final String uidStr = Environment.DAEMON_UID.systemProperty().orFail().asString();
-        final Path mavenHome = Environment.MAVEN_HOME.systemProperty().orFail().asPath();
+        final Path mavenHome = Environment.MVND_HOME.systemProperty().orFail().asPath();
         URL[] classpath = Stream.concat(
                 Stream.concat(Files.list(mavenHome.resolve("lib/ext")),
                         Files.list(mavenHome.resolve("lib")))

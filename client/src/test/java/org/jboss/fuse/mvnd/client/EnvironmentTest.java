@@ -27,16 +27,16 @@ public class EnvironmentTest {
     @Test
     void prop() {
         try (EnvironmentResource env = new EnvironmentResource()) {
-            env.props("maven.home", "/maven/home/prop");
-            Assertions.assertEquals("/maven/home/prop", Environment.MAVEN_HOME.systemProperty().asString());
+            env.props("mvnd.home", "/maven/home/prop");
+            Assertions.assertEquals("/maven/home/prop", Environment.MVND_HOME.systemProperty().asString());
         }
     }
 
     @Test
     void env() {
         try (EnvironmentResource env = new EnvironmentResource()) {
-            env.env("MAVEN_HOME", "/maven/home/env");
-            Assertions.assertEquals("/maven/home/env", Environment.MAVEN_HOME.environmentVariable().asString());
+            env.env("MVND_HOME", "/maven/home/env");
+            Assertions.assertEquals("/maven/home/env", Environment.MVND_HOME.environmentVariable().asString());
         }
     }
 
@@ -44,9 +44,9 @@ public class EnvironmentTest {
     void localProps() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             final Properties localProps = new Properties();
-            localProps.put("maven.home", "/maven/home/local");
+            localProps.put("mvnd.home", "/maven/home/local");
             Assertions.assertEquals(Paths.get("/maven/home/local"),
-                    Environment.MAVEN_HOME
+                    Environment.MVND_HOME
                             .environmentVariable()
                             .orSystemProperty()
                             .orLocalProperty(() -> localProps, Paths.get("/local/properties"))
@@ -58,10 +58,10 @@ public class EnvironmentTest {
     @Test
     void envBeforeProp() {
         try (EnvironmentResource env = new EnvironmentResource()) {
-            env.props("maven.home", "/maven/home/prop");
-            env.env("MAVEN_HOME", "/maven/home/env");
+            env.props("mvnd.home", "/maven/home/prop");
+            env.env("MVND_HOME", "/maven/home/env");
             Assertions.assertEquals("/maven/home/env",
-                    Environment.MAVEN_HOME
+                    Environment.MVND_HOME
                             .environmentVariable()
                             .orSystemProperty()
                             .asString());
@@ -73,7 +73,7 @@ public class EnvironmentTest {
         try (EnvironmentResource env = new EnvironmentResource()) {
             try {
                 Assertions.assertEquals("/maven/home/env",
-                        Environment.MAVEN_HOME
+                        Environment.MVND_HOME
                                 .environmentVariable()
                                 .orSystemProperty()
                                 .orFail()
@@ -81,7 +81,7 @@ public class EnvironmentTest {
                 Assertions.fail("IllegalStateException expected");
             } catch (IllegalStateException e) {
                 Assertions.assertEquals(
-                        "Could not get value for Environment.MAVEN_HOME from any of the following sources: environment variable MAVEN_HOME, system property maven.home",
+                        "Could not get value for Environment.MVND_HOME from any of the following sources: environment variable MVND_HOME, system property mvnd.home",
                         e.getMessage());
             }
         }

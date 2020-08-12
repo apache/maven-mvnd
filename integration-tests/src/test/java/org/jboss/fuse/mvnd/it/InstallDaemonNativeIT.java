@@ -66,7 +66,7 @@ public class InstallDaemonNativeIT {
                 Environment.MVND_DIST_URI.asCommandLineProperty(mvndDistUri),
                 Environment.MVND_PROPERTIES_PATH.asCommandLineProperty(mvndPropertiesPath.toString()),
                 Environment.JAVA_HOME.asCommandLineProperty(layout.javaHome().toString()),
-                Environment.MAVEN_HOME.asCommandLineProperty(mavenHome.toString()))
+                Environment.MVND_HOME.asCommandLineProperty(mavenHome.toString()))
                 .assertSuccess();
 
         Assertions.assertThat(mvndPropertiesPath).exists();

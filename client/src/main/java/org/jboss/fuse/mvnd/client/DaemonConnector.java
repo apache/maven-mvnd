@@ -247,7 +247,7 @@ public class DaemonConnector {
             if (Environment.DAEMON_DEBUG.systemProperty().orDefault(() -> "false").asBoolean()) {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
-            args.add("-Dmaven.home=\"" + mavenHome + "\"");
+            args.add("-Dmvnd.home=\"" + mavenHome + "\"");
             args.add("-Dlogback.configurationFile=\"" + layout.getLogbackConfigurationPath() + "\"");
             args.add("-Ddaemon.uid=" + uid);
             args.add("-Xmx4g");

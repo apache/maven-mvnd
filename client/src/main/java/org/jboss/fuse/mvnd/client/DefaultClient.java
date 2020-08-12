@@ -77,7 +77,7 @@ public class DefaultClient implements Client {
                 .orDefault(() -> "https://github.com/mvndaemon/mvnd/releases/download/" + version + "/mvnd-dist.zip")
                 .asString();
         final URI zipUri = URI.create(rawZipUri);
-        final Path mvndHome = Environment.MAVEN_HOME
+        final Path mvndHome = Environment.MVND_HOME
                 .commandLineProperty(() -> commandLineProperties)
                 .orEnvironmentVariable()
                 .orSystemProperty()
