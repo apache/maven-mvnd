@@ -442,8 +442,7 @@ public class CliPluginRealmCache
             try {
                 if (event instanceof MavenExecutionRequest) {
                     /*  Store the multiModuleProjectDirectory path */
-                    multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath()
-                            .toRealPath();
+                    multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
                 } else if (event instanceof MavenExecutionResult) {
                     /* Evict the entries refering to jars under multiModuleProjectDirectory */
                     final Iterator<Entry<Key, ValidableCacheRecord>> i = cache.entrySet().iterator();
@@ -453,17 +452,7 @@ public class CliPluginRealmCache
                         for (URL url : record.getRealm().getURLs()) {
                             if (url.getProtocol().equals("file")) {
                                 final Path path = Paths.get(url.toURI());
-                                boolean remove = false;
                                 if (path.startsWith(multiModuleProjectDirectory)) {
-                                    remove = true;
-                                } else if (Files.exists(path)) {
-                                    /* Try to convert to real path only if the file exists */
-                                    final Path realPath = path.toRealPath();
-                                    if (realPath.startsWith(multiModuleProjectDirectory)) {
-                                        remove = true;
-                                    }
-                                }
-                                if (remove) {
                                     log.debug(
                                             "Removing PluginRealmCache entry {} because it refers to an artifact in the build tree {}",
                                             entry.getKey(), path);
