@@ -110,7 +110,8 @@ public enum Environment {
     public static EnvValue findBasicMavenHome() {
         return MVND_HOME
                 .environmentVariable()
-                .orSystemProperty();
+                .orSystemProperty()
+                .orRelativeMvndHome();
     }
 
     public static Path findMultiModuleProjectDirectory(Path pwd) {
@@ -129,9 +130,11 @@ public enum Environment {
             }
             dir = dir.getParent();
         } while (dir != null);
-        /* Return pwd if .mvn directory was not found in the hierarchy.
+        /*
+         * Return pwd if .mvn directory was not found in the hierarchy.
          * Maven does the same thing in mvn shell script's find_maven_basedir()
-         * and find_file_argument_basedir() routines */
+         * and find_file_argument_basedir() routines
+         */
         return pwd.toString();
     }
 
@@ -223,6 +226,29 @@ public enum Environment {
             return new EnvValue(this, envKey, envKey.environmentVariableSource());
         }
 
+        /**
+         * @return mvnd home autodetected from the location of the currently running mvnd native executable or nothing
+         *         if we do not run in native or if {@code ProcessHandle.current().info().command()} is not available.
+         */
+        public EnvValue orRelativeMvndHome() {
+            return new EnvValue(this, envKey, new ValueSource(
+                    description -> description.append("path relative to the mvnd executable"),
+                    () -> {
+                        Optional<String> cmd = ProcessHandle.current().info().command();
+                        if (isNative() && cmd.isPresent()) {
+                            final Path mvndHome = Paths.get(cmd.get()).getParent().getParent();
+                            if (mvndHome != null) {
+                                final Path mvndDaemonLib = mvndHome
+                                        .resolve("lib/ext/mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
+                                if (Files.exists(mvndDaemonLib)) {
+                                    return mvndHome.toString();
+                                }
+                            }
+                        }
+                        return null;
+                    }));
+        }
+
         public Environment.EnvValue orDefault(Supplier<String> defaultSupplier) {
             return new EnvValue(this, envKey,
                     new ValueSource(sb -> sb.append("default").append(defaultSupplier.get()), defaultSupplier));
@@ -234,7 +260,10 @@ public enum Environment {
                         .append(Environment.class.getSimpleName())
                         .append(".").append(envKey.name()).append(" from any of the following sources: ");
 
-                /* Compose the description functions to invert the order thus getting the resolution order in the message */
+                /*
+                 * Compose the description functions to invert the order thus getting the resolution order in the
+                 * message
+                 */
                 Function<StringBuilder, StringBuilder> description = (s -> s);
                 EnvValue val = this;
                 while (val != null) {

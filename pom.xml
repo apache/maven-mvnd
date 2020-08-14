@@ -30,8 +30,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
 
         <!-- dependency versions a..z -->
         <assertj.version>3.16.1</assertj.version>
@@ -277,6 +277,11 @@ limitations under the License.</inlineHeader>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${compiler.version}</version>
+                    <configuration>
+                        <compilerArgs>
+                            <arg>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</arg>
+                        </compilerArgs>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -357,6 +362,33 @@ limitations under the License.</inlineHeader>
                             <goal>sort</goal>
                         </goals>
                         <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>groovy-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>set-platform-properties</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <source>
+                                String osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+                                if (osName.startsWith('windows')) {
+                                    project.properties['os.detected.name'] = 'windows'
+                                } else if (osName.startsWith('linux')) {
+                                    project.properties['os.detected.name'] = 'linux'
+                                } else if (osName.startsWith('osx') || osName.startsWith('mac os x')) {
+                                    project.properties['os.detected.name'] = 'darwin'
+                                } else {
+                                    throw new IllegalStateException('Unknown OS ' + osName);
+                                }
+                            </source>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
