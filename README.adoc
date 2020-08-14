@@ -4,35 +4,13 @@ The mvnd project aims to provide a daemon infrastructure for maven based builds.
 
 == Install `mvnd`
 
-If you are on Linux or Mac, you can use the following shell commands. On Windows, you can perform the steps manually.
-
-[source,shell]
-----
-cd ~/bin # <1>
-os=$(uname | tr '[:upper:]' '[:lower:]') # <2>
-curl -L https://github.com/mvndaemon/mvnd/releases/latest/download/mvnd-${os}-amd64 -o mvnd # <3>
-chmod +x mvnd # <4>
-mvnd --install # <5>
-----
-<1> Change to `~/bin` or any other location already included in `PATH`; otherwise, you'll need to add `mvnd` to
-  `PATH` manually
-<2> Detect the name of the current operating system and turn it to lower case
-<3> Download the latest `mvnd` executable for the given OS from https://github.com/mvndaemon/mvnd/releases[`mvnd` releases page]; store the executable as `mvnd` (or `mvnd.exe` on Windows)
-<4> Make it executable (not required on Windows)
-<5> Run `mvnd --install` to download and install the server part. This will:
+* Download the latest ZIP suitable for your platform from https://github.com/mvndaemon/mvnd/releases
+* Unzip to a directory of your choice
+* Add the `bin` directory to `PATH`
+* Optionally, you can create `~/.m2/mvnd.properties` and set the `java.home` property in case you do not want to bother
+  with setting `JAVA_HOME` environment variable.
+* Test whether `mvnd` works:
 +
-* Download `mvnd-dist.zip`
-* Unpack it to `~/.m2/mvnd/<version>`
-* Create `~/.m2/mvnd.properties`
-+
-If your are on Windows and see a message that `VCRUNTIME140.dll was not found`, you need to install
-`vc_redist.x64.exe` from https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads.
-See https://github.com/oracle/graal/issues/1762 for more information.
-
-Optionally, you can open `~/.m2/mvnd.properties` and set the `java.home` property in case you do not want to bother with setting `JAVA_HOME` environment variable.
-+
-Now you can test whether `mvnd` works:
-
 [source,shell]
 ----
 $ mvnd --version
@@ -43,6 +21,10 @@ Java version: 11.0.1, vendor: AdoptOpenJDK, runtime: /home/data/jvm/adopt-openjd
 Default locale: en_IE, platform encoding: UTF-8
 OS name: "linux", version: "5.6.13-200.fc31.x86_64", arch: "amd64", family: "unix"
 ----
++
+If you are on Windows and see a message that `VCRUNTIME140.dll was not found`, you need to install
+`vc_redist.x64.exe` from https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads.
+See https://github.com/oracle/graal/issues/1762 for more information.
 
 
 == Usage
@@ -55,8 +37,6 @@ mvnd clean install
 ----
 
 == `mvnd` specific options
-
-`--install` installs the server part
 
 `--status` lists running daemons
 
