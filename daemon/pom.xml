@@ -30,6 +30,10 @@
     <packaging>jar</packaging>
     <name>Maven Daemon</name>
 
+    <properties>
+        <os.arch>${os.arch}</os.arch><!-- provisio plugin does not see system properties -->
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.fuse.mvnd</groupId>

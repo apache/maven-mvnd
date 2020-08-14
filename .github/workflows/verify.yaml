@@ -47,16 +47,11 @@ jobs:
         name: daemon-test-logs-linux
         path: daemon/target/maven-distro/daemon
 
-    - name: Upload mvnd
+    - name: Upload mvnd.zip
       uses: actions/upload-artifact@v2
       with:
-        name: mvnd-linux-amd64
-        path: client/target/mvnd
-    - name: Upload mvnd-dist.zip
-      uses: actions/upload-artifact@v2
-      with:
-        name: mvnd-dist.zip
-        path: daemon/target/mvnd-dist-*.zip
+        name: mvnd-linux-amd64.zip
+        path: daemon/target/mvnd-*.zip
 
   windows:
     runs-on: windows-2019
@@ -123,11 +118,11 @@ jobs:
         name: daemon-test-logs-windows
         path: daemon/target/maven-distro/daemon
 
-    - name: Upload mvnd
+    - name: Upload mvnd.zip
       uses: actions/upload-artifact@v2
       with:
-        name: mvnd-windows-amd64.exe
-        path: client/target/mvnd.exe
+        name: mvnd-windows-amd64.zip
+        path: daemon/target/mvnd-*.zip
 
   darwin:
     runs-on: macos-10.15
@@ -153,11 +148,11 @@ jobs:
         name: daemon-test-logs-darwin
         path: daemon/target/maven-distro/daemon
 
-    - name: Upload mvnd
+    - name: Upload mvnd.zip
       uses: actions/upload-artifact@v2
       with:
-        name: mvnd-darwin-amd64
-        path: client/target/mvnd
+        name: mvnd-darwin-amd64.zip
+        path: daemon/target/mvnd-*.zip
 
   deploy:
     runs-on: ubuntu-18.04
@@ -194,43 +189,34 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Deploy mvnd-linux-amd64
+    - name: Deploy mvnd-linux-amd64.zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-linux-amd64/mvnd
-        asset_name: mvnd-linux-amd64
-        asset_content_type: application/x-executable
-
-    - name: Deploy mvnd-dist.zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-dist.zip/mvnd-dist.zip
-        asset_name: mvnd-dist.zip
+        asset_path: mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip
+        asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip
         asset_content_type: application/zip
 
-    - name: Deploy mvnd-darwin-amd64
+    - name: Deploy mvnd-darwin-amd64.zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-darwin-amd64/mvnd
-        asset_name: mvnd-darwin-amd64
-        asset_content_type: application/x-executable
+        asset_path: mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip
+        asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip
+        asset_content_type: application/zip
 
-    - name: Deploy mvnd-windows-amd64.exe
+    - name: Deploy mvnd-windows-amd64.zip
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-windows-amd64.exe/mvnd.exe
-        asset_name: mvnd-windows-amd64.exe
-        asset_content_type: application/vnd.microsoft.portable-executable
+        asset_path: mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip
+        asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip
+        asset_content_type: application/zip
+
 

@@ -16,7 +16,6 @@
 package org.jboss.fuse.mvnd.client;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -69,35 +68,6 @@ public class DefaultClient implements Client {
         }
     }
 
-    private static void install(boolean overwrite, final Properties commandLineProperties, String version) {
-        final String rawZipUri = Environment.MVND_DIST_URI
-                .commandLineProperty(() -> commandLineProperties)
-                .orEnvironmentVariable()
-                .orSystemProperty()
-                .orDefault(() -> "https://github.com/mvndaemon/mvnd/releases/download/" + version + "/mvnd-dist.zip")
-                .asString();
-        final URI zipUri = URI.create(rawZipUri);
-        final Path mvndHome = Environment.MVND_HOME
-                .commandLineProperty(() -> commandLineProperties)
-                .orEnvironmentVariable()
-                .orSystemProperty()
-                .orDefault(() -> Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd/" + version).toString())
-                .asPath()
-                .toAbsolutePath().normalize();
-        final Path javaHome = Environment.JAVA_HOME
-                .systemProperty() // only write java.home to mvnd.properties if it was explicitly set on command line
-                // via -Djava.home=...
-                .asPath();
-        final Path mvndPropertiesPath = Environment.MVND_PROPERTIES_PATH
-                .commandLineProperty(() -> commandLineProperties)
-                .orEnvironmentVariable()
-                .orSystemProperty()
-                .orDefault(() -> Paths.get(System.getProperty("user.home")).resolve(".m2/mvnd.properties").toString())
-                .asPath()
-                .toAbsolutePath().normalize();
-        Installer.installServer(zipUri, mvndPropertiesPath, mvndHome, javaHome, overwrite);
-    }
-
     public DefaultClient(Supplier<ClientLayout> layout, BuildProperties buildProperties) {
         this.lazyLayout = layout;
         this.buildProperties = buildProperties;
@@ -111,7 +81,6 @@ public class DefaultClient implements Client {
         boolean version = false;
         boolean showVersion = false;
         boolean debug = false;
-        boolean install = false;
         final Properties commandLineProperties = new Properties();
         for (String arg : argv) {
             switch (arg) {
@@ -132,8 +101,7 @@ public class DefaultClient implements Client {
                 args.add(arg);
                 break;
             case "--install":
-                install = true;
-                break;
+                throw new IllegalStateException("The --install option was removed in mvnd 0.0.2");
             default:
                 if (arg.startsWith("-D")) {
                     final int eqPos = arg.indexOf('=');
@@ -146,11 +114,6 @@ public class DefaultClient implements Client {
                 args.add(arg);
                 break;
             }
-        }
-
-        if (install) {
-            install(false, commandLineProperties, buildProperties.getVersion());
-            return new DefaultResult(argv, null);
         }
 
         // Print version if needed

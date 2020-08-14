@@ -30,8 +30,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
 
         <!-- dependency versions a..z -->
         <assertj.version>3.16.1</assertj.version>
@@ -50,6 +50,8 @@
         <!-- plugin versions a..z -->
         <compiler.version>3.8.1</compiler.version>
         <formatter-maven-plugin.version>2.12.1</formatter-maven-plugin.version>
+        <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
+        <groovy.version>3.0.4</groovy.version>
         <impsort-maven-plugin.version>1.4.1</impsort-maven-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <mrm.version>1.2.0</mrm.version>
@@ -275,6 +277,11 @@ limitations under the License.</inlineHeader>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${compiler.version}</version>
+                    <configuration>
+                        <compilerArgs>
+                            <arg>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</arg>
+                        </compilerArgs>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -285,6 +292,26 @@ limitations under the License.</inlineHeader>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${surefire.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmaven</groupId>
+                    <artifactId>groovy-maven-plugin</artifactId>
+                    <version>${groovy-maven-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.groovy</groupId>
+                            <artifactId>groovy-all</artifactId>
+                            <version>${groovy.version}</version>
+                            <type>pom</type>
+                            <exclusions>
+                                <exclusion>
+                                    <!-- groovy-testng depends on testng 7.2.0 wich is not on maven central -->
+                                    <groupId>org.codehaus.groovy</groupId>
+                                    <artifactId>groovy-testng</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -335,6 +362,33 @@ limitations under the License.</inlineHeader>
                             <goal>sort</goal>
                         </goals>
                         <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.gmaven</groupId>
+                <artifactId>groovy-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>set-platform-properties</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <source>
+                                String osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+                                if (osName.startsWith('windows')) {
+                                    project.properties['os.detected.name'] = 'windows'
+                                } else if (osName.startsWith('linux')) {
+                                    project.properties['os.detected.name'] = 'linux'
+                                } else if (osName.startsWith('osx') || osName.startsWith('mac os x')) {
+                                    project.properties['os.detected.name'] = 'darwin'
+                                } else {
+                                    throw new IllegalStateException('Unknown OS ' + osName);
+                                }
+                            </source>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
