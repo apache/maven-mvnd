@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.jboss.fuse.mvnd</groupId>
         <artifactId>mvnd</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.0.2</version>
     </parent>
 
     <artifactId>mvnd-integration-tests</artifactId>
