@@ -125,10 +125,10 @@
                             <type>tar.gz</type>
                             <classifier>bin</classifier>
                             <outputDirectory>${project.build.directory}/apache-maven</outputDirectory>
-                            <excludes>lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*</excludes>
+                            <excludes>**/lib/slf4j*,**/conf/logging/*,**/+lib/maven-slf4j-provider*</excludes>
                             <fileMappers>
                                 <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
-                                    <pattern>^apache-maven-*/</pattern>
+                                    <pattern>^apache-maven-[^/]+/</pattern>
                                     <replacement>./</replacement>
                                 </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
                             </fileMappers>
