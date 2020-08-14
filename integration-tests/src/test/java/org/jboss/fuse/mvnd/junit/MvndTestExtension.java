@@ -97,7 +97,10 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                         f.set(testInstance, resource.layout);
                     } else if (f.getType() == Client.class) {
                         if (resource.isNative) {
-                            final Path mvndNativeExecutablePath = Paths.get(System.getProperty("mvnd.native.executable"))
+                            final Path mvndNativeExecutablePath = resource.layout.mavenHome().resolve(
+                                    System.getProperty("os.name").toLowerCase().contains("windows")
+                                            ? "bin/mvnd.exe"
+                                            : "bin/mvnd")
                                     .toAbsolutePath().normalize();
                             if (!Files.isRegularFile(mvndNativeExecutablePath)) {
                                 throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
@@ -176,7 +179,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     .normalize().toAbsolutePath();
             if (!Files.isDirectory(mvndHome)) {
                 throw new IllegalStateException(
-                        "The value of mvnd.home system property points at a path that does not exist or is not a directory");
+                        "The value of mvnd.home system property points at a path that does not exist or is not a directory: "
+                                + mvndHome);
             }
             final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));

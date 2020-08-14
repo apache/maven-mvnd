@@ -17,23 +17,28 @@
 -->
 <assembly>
 
-    <artifactSet to="/">
+    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
-                    excludes="lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*"/>
+                    excludes="lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*"/>
         </artifact>
     </artifactSet>
 
-    <artifactSet to="lib">
+    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}/lib">
         <artifact id="org.apache.maven:maven-embedder"/>
         <artifactSet to="ext" ref="runtime.classpath"/>
     </artifactSet>
 
-    <fileSet to="/">
+    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}">
         <directory path="${basedir}/src/main/distro"/>
     </fileSet>
+    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}/bin">
+        <directory path="${basedir}/../client/target">
+            <include>mvnd</include>
+            <include>mvnd.exe</include>
+        </directory>
+    </fileSet>
 
-    <archive name="mvnd-dist-${project.version}.zip"
-             executable="**/bin/mvn,**/bin/mvnd,**/bin/mvnDebug,**/bin/mvnyjp"/>
+    <archive name="mvnd-${project.version}-${os.detected.name}-${os.arch}.zip" executable="**/bin/mvnd"/>
 
 </assembly>

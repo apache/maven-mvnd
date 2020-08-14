@@ -30,7 +30,7 @@
     <name>Maven Daemon - Integration Tests</name>
 
     <properties>
-        <mvnd.native.executable>${project.basedir}/../client/target/mvnd</mvnd.native.executable>
+        <mvnd.home>${project.basedir}/../daemon/target/maven-distro/mvnd-${project.version}-${os.detected.name}-${os.arch}</mvnd.home>
     </properties>
 
     <dependencies>
@@ -74,8 +74,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <project.version>${project.version}</project.version>
-                        <mvnd.home>${project.basedir}/../daemon/target/maven-distro</mvnd.home>
-                        <mvnd.dist.path>${project.basedir}/../daemon/target/mvnd-dist-${project.version}.zip</mvnd.dist.path>
+                        <mvnd.home>${mvnd.home}</mvnd.home>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -83,17 +82,6 @@
     </build>
 
     <profiles>
-        <profile>
-            <id>windows</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                </os>
-            </activation>
-            <properties>
-                <mvnd.native.executable>${project.basedir}/../client/target/mvnd.exe</mvnd.native.executable>
-            </properties>
-        </profile>
         <profile>
             <id>native</id>
             <build>
@@ -110,9 +98,7 @@
                                 <configuration>
                                     <systemPropertyVariables>
                                         <project.version>${project.version}</project.version>
-                                        <mvnd.home>${project.basedir}/../daemon/target/maven-distro</mvnd.home>
-                                        <mvnd.native.executable>${mvnd.native.executable}</mvnd.native.executable>
-                                        <mvnd.dist.path>${project.basedir}/../daemon/target/mvnd-dist-${project.version}.zip</mvnd.dist.path>
+                                        <mvnd.home>${mvnd.home}</mvnd.home>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
