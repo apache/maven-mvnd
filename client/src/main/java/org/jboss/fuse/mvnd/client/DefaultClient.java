@@ -24,14 +24,19 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.client.ClientOutput.TerminalOutput;
-import org.jboss.fuse.mvnd.client.Message.BuildEvent;
-import org.jboss.fuse.mvnd.client.Message.BuildException;
-import org.jboss.fuse.mvnd.client.Message.BuildMessage;
-import org.jboss.fuse.mvnd.client.Message.MessageSerializer;
+import org.jboss.fuse.mvnd.common.BuildProperties;
+import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
+import org.jboss.fuse.mvnd.common.DaemonInfo;
+import org.jboss.fuse.mvnd.common.DaemonRegistry;
+import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Message.BuildEvent;
+import org.jboss.fuse.mvnd.common.Message.BuildException;
+import org.jboss.fuse.mvnd.common.Message.BuildMessage;
+import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
 import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +44,6 @@ import org.slf4j.LoggerFactory;
 public class DefaultClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
-    public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
     public static final int DEFAULT_PERIODIC_CHECK_INTERVAL_MILLIS = 10 * 1000;
     public static final int CANCEL_TIMEOUT = 10 * 1000;
     private final Supplier<ClientLayout> lazyLayout;
@@ -200,10 +204,10 @@ public class DefaultClient implements Client {
                     case ProjectStarted:
                     case MojoStarted:
                     case MojoStopped:
-                        output.projectStateChanged(be.projectId, be.display);
+                        output.projectStateChanged(be.getProjectId(), be.getDisplay());
                         break;
                     case ProjectStopped:
-                        output.projectFinished(be.projectId);
+                        output.projectFinished(be.getProjectId());
                     }
                 } else if (m instanceof BuildMessage) {
                     BuildMessage bm = (BuildMessage) m;

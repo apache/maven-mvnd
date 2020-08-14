@@ -34,7 +34,7 @@ public @interface MvndNativeTest {
     String projectDir();
 
     /**
-     * Timeout for {@link Client#execute(org.jboss.fuse.mvnd.client.ClientOutput, java.util.List)} in seconds
+     * Timeout for {@link Client#execute(org.jboss.fuse.mvnd.common.ClientOutput, java.util.List)} in seconds
      */
     long timeoutSec() default 300;
 }

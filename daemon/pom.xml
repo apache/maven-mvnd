@@ -37,7 +37,7 @@
     <dependencies>
         <dependency>
             <groupId>org.jboss.fuse.mvnd</groupId>
-            <artifactId>mvnd-client</artifactId>
+            <artifactId>mvnd-common</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>

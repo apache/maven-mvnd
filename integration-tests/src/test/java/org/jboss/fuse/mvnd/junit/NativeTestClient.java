@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
-import org.jboss.fuse.mvnd.client.Environment;
 import org.jboss.fuse.mvnd.client.ExecutionResult;
+import org.jboss.fuse.mvnd.common.Environment;
 
 /**
  * A wrapper around the native executable.

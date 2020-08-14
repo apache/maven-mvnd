@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Consumer;
-import org.jboss.fuse.mvnd.client.Message.BuildException;
+import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
