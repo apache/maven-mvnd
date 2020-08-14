@@ -15,11 +15,17 @@
  */
 package org.jboss.fuse.mvnd.client;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
+import org.jboss.fuse.mvnd.common.BuildProperties;
+import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.Environment.ValueSource;
+import org.jboss.fuse.mvnd.common.Layout;
 
 /**
  * Local paths relevant for the {@link DefaultClient}.
@@ -38,7 +44,28 @@ public class ClientLayout extends Layout {
             final Path mvndPropertiesPath = Environment.findMvndPropertiesPath();
             final Supplier<Properties> mvndProperties = lazyMvndProperties(mvndPropertiesPath);
             final Path pwd = Paths.get(".").toAbsolutePath().normalize();
-            final Path mvndHome = Environment.findMavenHome(mvndProperties, mvndPropertiesPath);
+            final Path mvndHome = Environment.findBasicMavenHome()
+                    .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                    .or(new ValueSource(
+                            description -> description.append("path relative to the mvnd executable"),
+                            () -> {
+                                Optional<String> cmd = ProcessHandle.current().info().command();
+                                if (Environment.isNative() && cmd.isPresent()) {
+                                    final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
+                                    if (mvndH != null) {
+                                        final Path mvndDaemonLib = mvndH
+                                                .resolve("lib/ext/mvnd-daemon-" + BuildProperties.getInstance().getVersion()
+                                                        + ".jar");
+                                        if (Files.exists(mvndDaemonLib)) {
+                                            return mvndH.toString();
+                                        }
+                                    }
+                                }
+                                return null;
+                            }))
+                    .orFail()
+                    .asPath()
+                    .toAbsolutePath().normalize();
             ENV_INSTANCE = new ClientLayout(
                     mvndPropertiesPath,
                     mvndHome,

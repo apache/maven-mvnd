@@ -37,36 +37,37 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.cli.CliRequestBuilder;
 import org.apache.maven.cli.DaemonMavenCli;
-import org.jboss.fuse.mvnd.client.DaemonConnection;
-import org.jboss.fuse.mvnd.client.DaemonException;
-import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
-import org.jboss.fuse.mvnd.client.DaemonInfo;
-import org.jboss.fuse.mvnd.client.DaemonRegistry;
-import org.jboss.fuse.mvnd.client.DaemonState;
-import org.jboss.fuse.mvnd.client.DaemonStopEvent;
-import org.jboss.fuse.mvnd.client.DefaultClient;
-import org.jboss.fuse.mvnd.client.Environment;
-import org.jboss.fuse.mvnd.client.Layout;
-import org.jboss.fuse.mvnd.client.Message;
-import org.jboss.fuse.mvnd.client.Message.BuildEvent;
-import org.jboss.fuse.mvnd.client.Message.BuildEvent.Type;
-import org.jboss.fuse.mvnd.client.Message.BuildException;
-import org.jboss.fuse.mvnd.client.Message.BuildMessage;
-import org.jboss.fuse.mvnd.client.Message.BuildRequest;
-import org.jboss.fuse.mvnd.client.Message.MessageSerializer;
+import org.jboss.fuse.mvnd.common.DaemonConnection;
+import org.jboss.fuse.mvnd.common.DaemonException;
+import org.jboss.fuse.mvnd.common.DaemonExpirationStatus;
+import org.jboss.fuse.mvnd.common.DaemonInfo;
+import org.jboss.fuse.mvnd.common.DaemonRegistry;
+import org.jboss.fuse.mvnd.common.DaemonState;
+import org.jboss.fuse.mvnd.common.DaemonStopEvent;
+import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.Layout;
+import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Message.BuildEvent;
+import org.jboss.fuse.mvnd.common.Message.BuildEvent.Type;
+import org.jboss.fuse.mvnd.common.Message.BuildException;
+import org.jboss.fuse.mvnd.common.Message.BuildMessage;
+import org.jboss.fuse.mvnd.common.Message.BuildRequest;
+import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.jboss.fuse.mvnd.client.DaemonState.Busy;
-import static org.jboss.fuse.mvnd.client.DaemonState.StopRequested;
-import static org.jboss.fuse.mvnd.client.DaemonState.Stopped;
+import static org.jboss.fuse.mvnd.common.DaemonState.Busy;
+import static org.jboss.fuse.mvnd.common.DaemonState.StopRequested;
+import static org.jboss.fuse.mvnd.common.DaemonState.Stopped;
 
 public class Server implements AutoCloseable, Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
+    public static final int CANCEL_TIMEOUT = 10 * 1000;
+    public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
 
     private String uid;
     private ServerSocketChannel socket;
@@ -92,7 +93,7 @@ public class Server implements AutoCloseable, Runnable {
 
             final int idleTimeout = Environment.DAEMON_IDLE_TIMEOUT
                     .systemProperty()
-                    .orDefault(() -> String.valueOf(DefaultClient.DEFAULT_IDLE_TIMEOUT))
+                    .orDefault(() -> String.valueOf(DEFAULT_IDLE_TIMEOUT))
                     .asInt();
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
@@ -336,7 +337,7 @@ public class Server implements AutoCloseable, Runnable {
     }
 
     private void cancelNow() {
-        long time = System.currentTimeMillis() + DefaultClient.CANCEL_TIMEOUT;
+        long time = System.currentTimeMillis() + CANCEL_TIMEOUT;
 
         //        LOGGER.debug("Cancel requested: will wait for daemon to become idle.");
         //        try {

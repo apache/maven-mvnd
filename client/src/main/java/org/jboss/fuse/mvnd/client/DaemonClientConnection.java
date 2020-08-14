@@ -17,6 +17,13 @@ package org.jboss.fuse.mvnd.client;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.jboss.fuse.mvnd.common.DaemonConnection;
+import org.jboss.fuse.mvnd.common.DaemonException;
+import org.jboss.fuse.mvnd.common.DaemonException.ConnectException;
+import org.jboss.fuse.mvnd.common.DaemonException.MessageIOException;
+import org.jboss.fuse.mvnd.common.DaemonException.StaleAddressException;
+import org.jboss.fuse.mvnd.common.DaemonInfo;
+import org.jboss.fuse.mvnd.common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,7 +90,7 @@ public class DaemonClientConnection {
         connection.close();
     }
 
-    interface StaleAddressDetector {
+    public interface StaleAddressDetector {
         /**
          * @return true if the failure should be considered due to a stale address.
          */

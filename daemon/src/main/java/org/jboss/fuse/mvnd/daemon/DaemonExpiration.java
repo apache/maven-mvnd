@@ -23,15 +23,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
-import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec;
-import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
-import org.jboss.fuse.mvnd.client.DaemonExpirationStatus;
-import org.jboss.fuse.mvnd.client.DaemonInfo;
-import org.jboss.fuse.mvnd.client.DaemonState;
+import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
+import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec.Result;
+import org.jboss.fuse.mvnd.common.DaemonExpirationStatus;
+import org.jboss.fuse.mvnd.common.DaemonInfo;
+import org.jboss.fuse.mvnd.common.DaemonState;
 
-import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.DO_NOT_EXPIRE;
-import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.GRACEFUL_EXPIRE;
-import static org.jboss.fuse.mvnd.client.DaemonExpirationStatus.QUIET_EXPIRE;
+import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
+import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
+import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.QUIET_EXPIRE;
 import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
 
 /**

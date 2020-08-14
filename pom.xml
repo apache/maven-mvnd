@@ -30,8 +30,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
 
         <!-- dependency versions a..z -->
         <assertj.version>3.16.1</assertj.version>
@@ -62,6 +62,7 @@
     </properties>
 
     <modules>
+        <module>common</module>
         <module>client</module>
         <module>daemon</module>
         <module>integration-tests</module>
@@ -152,6 +153,11 @@
             <dependency>
                 <groupId>org.jboss.fuse.mvnd</groupId>
                 <artifactId>mvnd-client</artifactId>
+                <version>0.1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.fuse.mvnd</groupId>
+                <artifactId>mvnd-common</artifactId>
                 <version>0.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
@@ -277,11 +283,6 @@ limitations under the License.</inlineHeader>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${compiler.version}</version>
-                    <configuration>
-                        <compilerArgs>
-                            <arg>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</arg>
-                        </compilerArgs>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

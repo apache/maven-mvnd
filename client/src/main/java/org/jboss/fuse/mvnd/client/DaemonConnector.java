@@ -30,14 +30,27 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.jboss.fuse.mvnd.client.DaemonCompatibilitySpec.Result;
+import org.jboss.fuse.mvnd.common.BuildProperties;
+import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
+import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec.Result;
+import org.jboss.fuse.mvnd.common.DaemonConnection;
+import org.jboss.fuse.mvnd.common.DaemonDiagnostics;
+import org.jboss.fuse.mvnd.common.DaemonException;
+import org.jboss.fuse.mvnd.common.DaemonInfo;
+import org.jboss.fuse.mvnd.common.DaemonRegistry;
+import org.jboss.fuse.mvnd.common.DaemonState;
+import org.jboss.fuse.mvnd.common.DaemonStopEvent;
+import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Serializer;
+import org.jboss.fuse.mvnd.common.ServerMain;
 import org.jboss.fuse.mvnd.jpm.Process;
 import org.jboss.fuse.mvnd.jpm.ScriptUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.lang.Thread.sleep;
-import static org.jboss.fuse.mvnd.client.DaemonState.Canceled;
+import static org.jboss.fuse.mvnd.common.DaemonState.Canceled;
 
 /**
  * File origin:
@@ -238,7 +251,7 @@ public class DaemonConnector {
         final Path workingDir = layout.userDir();
         String command = "";
         try {
-            String classpath = findClientJar(mavenHome).toString();
+            String classpath = findCommonJar(mavenHome).toString();
             final String java = ScriptUtils.isWindows() ? "bin\\java.exe" : "bin/java";
             List<String> args = new ArrayList<>();
             args.add("\"" + layout.javaHome().resolve(java) + "\"");
@@ -270,8 +283,8 @@ public class DaemonConnector {
         }
     }
 
-    private Path findClientJar(Path mavenHome) {
-        final Path result = mavenHome.resolve("lib/ext/mvnd-client-" + buildProperties.getVersion() + ".jar");
+    private Path findCommonJar(Path mavenHome) {
+        final Path result = mavenHome.resolve("lib/ext/mvnd-common-" + buildProperties.getVersion() + ".jar");
         if (!Files.isRegularFile(result)) {
             throw new RuntimeException("File must exist and must be a regular file: " + result);
         }
