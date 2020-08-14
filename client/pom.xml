@@ -106,7 +106,6 @@
                                 --allow-incomplete-classpath
                                 -H:IncludeResources=org/jboss/fuse/mvnd/.*
                                 -H:IncludeResources=org/jline/utils/.*
-                                -H:EnableURLProtocols=https
                             </buildArgs>
                         </configuration>
                     </plugin>

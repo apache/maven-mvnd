@@ -1,5 +1,0 @@
-# An absolute path to your Maven Daemon installation
-mvnd.home = %s
-
-# java.home is optional if you have JAVA_HOME environment variable set
-%s
