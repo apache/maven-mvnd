@@ -105,18 +105,52 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>io.takari.maven.plugins</groupId>
-                <artifactId>provisio-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.1.2</version>
                 <executions>
                     <execution>
-                        <id>maven-distro</id>
-                        <phase>package</phase>
+                        <id>unpack</id>
                         <goals>
-                            <goal>provision</goal>
+                            <goal>unpack</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/maven-distro</outputDirectory>
-                        </configuration>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>org.apache.maven</groupId>
+                            <artifactId>apache-maven</artifactId>
+                            <type>tar.gz</type>
+                            <classifier>bin</classifier>
+                            <outputDirectory>${project.build.directory}/apache-maven</outputDirectory>
+                            <excludes>lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*</excludes>
+                            <fileMappers>
+                                <org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                                    <pattern>^apache-maven-*/</pattern>
+                                    <replacement>./</replacement>
+                                </org.codehaus.plexus.components.io.filemappers.RegExpFileMapper>
+                            </fileMappers>
+                        </artifactItem>
+                    </artifactItems>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/mvnd-dist.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>mvnd-dist</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
                     </execution>
                 </executions>
             </plugin>

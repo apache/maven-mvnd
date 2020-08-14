@@ -97,10 +97,11 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                         f.set(testInstance, resource.layout);
                     } else if (f.getType() == Client.class) {
                         if (resource.isNative) {
-                            final Path mvndNativeExecutablePath = Paths.get(System.getProperty("mvnd.native.executable"))
+                            final Path mvndNativeExecutablePath = Paths.get(System.getProperty("mvnd.sh.native.executable"))
                                     .toAbsolutePath().normalize();
                             if (!Files.isRegularFile(mvndNativeExecutablePath)) {
-                                throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
+                                throw new IllegalStateException(
+                                        "mvnd.sh executable does not exist: " + mvndNativeExecutablePath);
                             }
                             f.set(testInstance,
                                     new NativeTestClient(resource.layout, mvndNativeExecutablePath, resource.timeoutMs));
@@ -136,7 +137,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             if (rawProjectDir == null) {
                 throw new IllegalStateException("rawProjectDir of @MvndTest must be set");
             }
-            final Path testDir = Paths.get("target/mvnd-tests/" + className).toAbsolutePath();
+            final Path testDir = Paths.get("target/mvnd.sh-tests/" + className).toAbsolutePath();
             Files.createDirectories(testDir);
             final Path testExecutionDir;
             if (TEMP_EXTERNAL.equals(rawProjectDir)) {
@@ -172,13 +173,13 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     .get(Environment.findDefaultMultimoduleProjectDirectory(testExecutionDir));
 
             final Path mvndHome = Paths
-                    .get(Objects.requireNonNull(System.getProperty("mvnd.home"), "System property mvnd.home must be set"))
+                    .get(Objects.requireNonNull(System.getProperty("mvnd.sh.home"), "System property mvnd.sh.home must be set"))
                     .normalize().toAbsolutePath();
             if (!Files.isDirectory(mvndHome)) {
                 throw new IllegalStateException(
-                        "The value of mvnd.home system property points at a path that does not exist or is not a directory");
+                        "The value of mvnd.sh.home system property points at a path that does not exist or is not a directory");
             }
-            final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
+            final Path mvndPropertiesPath = testDir.resolve("mvnd.sh.properties");
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
             final Path settingsPath = createSettings(testDir.resolve("settings.xml"));
             final TestLayout layout = new TestLayout(
@@ -255,7 +256,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     }
                 }
                 if (deadline < System.currentTimeMillis() && !registry.getAll().isEmpty()) {
-                    throw new RuntimeException("Could not stop all mvnd daemons within " + timeout + " ms");
+                    throw new RuntimeException("Could not stop all mvnd.sh daemons within " + timeout + " ms");
                 }
             }
         }

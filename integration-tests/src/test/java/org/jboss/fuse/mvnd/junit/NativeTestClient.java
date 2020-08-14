@@ -70,7 +70,7 @@ public class NativeTestClient implements Client {
 
         final Map<String, String> env = builder.environment();
         if (!Environment.MAVEN_HOME.hasCommandLineProperty(args)) {
-            env.put("MAVEN_HOME", System.getProperty("mvnd.home"));
+            env.put("MAVEN_HOME", System.getProperty("mvnd.sh.home"));
         }
         if (!Environment.JAVA_HOME.hasCommandLineProperty(args)) {
             env.put("JAVA_HOME", System.getProperty("java.home"));
@@ -108,14 +108,14 @@ public class NativeTestClient implements Client {
         public Result assertFailure() {
             if (exitCode == 0) {
                 throw new AssertionError(appendCommand(
-                        new StringBuilder("mvnd returned ").append(exitCode).append(" instead of non-zero exit code: ")));
+                        new StringBuilder("mvnd.sh returned ").append(exitCode).append(" instead of non-zero exit code: ")));
             }
             return this;
         }
 
         public Result assertSuccess() {
             if (exitCode != 0) {
-                final StringBuilder sb = appendCommand(new StringBuilder("mvnd returned ").append(exitCode));
+                final StringBuilder sb = appendCommand(new StringBuilder("mvnd.sh returned ").append(exitCode));
                 if (exitCode == TIMEOUT_EXIT_CODE) {
                     sb.append(" (timeout)");
                 }

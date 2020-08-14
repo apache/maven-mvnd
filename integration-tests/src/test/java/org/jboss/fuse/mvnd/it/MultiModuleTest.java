@@ -74,16 +74,16 @@ public class MultiModuleTest {
                 .satisfiesAnyOf( /* Two orderings are possible */
                         messages -> Assertions.assertThat(messages)
                                 .is(new MatchInOrderAmongOthers<>(
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module$",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-api",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hello",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hi")),
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module$",
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module-api",
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module-hello",
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module-hi")),
                         messages -> Assertions.assertThat(messages)
                                 .is(new MatchInOrderAmongOthers<>(
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module$",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-api",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hi",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hello"))
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module$",
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module-api",
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module-hi",
+                                        "SUCCESS build of project org.jboss.fuse.mvnd.sh.test.multi-module:multi-module-hello"))
 
                 );
 

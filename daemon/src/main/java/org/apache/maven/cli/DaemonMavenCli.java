@@ -338,8 +338,8 @@ public class DaemonMavenCli {
 
         // Workaround for https://github.com/mvndaemon/mvnd/issues/39
         ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
-                .getLogger("org.jboss.fuse.mvnd");
-        mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level", "INFO")));
+                .getLogger("org.jboss.fuse.mvnd.sh");
+        mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.sh.log.level", "INFO")));
     }
 
     private void version(CliRequest cliRequest) throws ExitException {

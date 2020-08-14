@@ -52,6 +52,7 @@
         <formatter-maven-plugin.version>2.12.1</formatter-maven-plugin.version>
         <impsort-maven-plugin.version>1.4.1</impsort-maven-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
+        <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
         <mrm.version>1.2.0</mrm.version>
         <surefire.version>3.0.0-M4</surefire.version>
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
@@ -243,11 +244,6 @@ limitations under the License.</inlineHeader>
                 </plugin>
                 <plugin>
                     <groupId>io.takari.maven.plugins</groupId>
-                    <artifactId>provisio-maven-plugin</artifactId>
-                    <version>${takari-provisio.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>io.takari.maven.plugins</groupId>
                     <artifactId>takari-lifecycle-plugin</artifactId>
                     <version>${takari-lifecycle.version}</version>
                 </plugin>
@@ -295,6 +291,11 @@ limitations under the License.</inlineHeader>
                     <groupId>org.graalvm.nativeimage</groupId>
                     <artifactId>native-image-maven-plugin</artifactId>
                     <version>${graalvm.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>${maven-assembly-plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>

@@ -47,14 +47,14 @@ public class InstallDaemonNativeIT {
     void installDaemon() throws IOException, InterruptedException {
 
         final Path testDir = layout.getTestDir();
-        final Path mvndPropertiesPath = testDir.resolve("installation-mvnd.properties");
+        final Path mvndPropertiesPath = testDir.resolve("installation-mvnd.sh.properties");
         final Path mavenHome = testDir.resolve("installation-maven-home");
 
         Assertions.assertThat(mvndPropertiesPath).doesNotExist();
         Assertions.assertThat(mavenHome).doesNotExist();
 
         final ClientOutput o = Mockito.mock(ClientOutput.class);
-        final Path mvndDistPath = Paths.get(Objects.requireNonNull(System.getProperty("mvnd.dist.path")))
+        final Path mvndDistPath = Paths.get(Objects.requireNonNull(System.getProperty("mvnd.sh.dist.path")))
                 .toAbsolutePath()
                 .normalize();
         Assertions.assertThat(mvndDistPath).exists();
@@ -71,7 +71,7 @@ public class InstallDaemonNativeIT {
 
         Assertions.assertThat(mvndPropertiesPath).exists();
         Assertions.assertThat(mavenHome).exists();
-        final Path mvndShPath = mavenHome.resolve("bin/mvnd");
+        final Path mvndShPath = mavenHome.resolve("bin/mvnd.sh");
         Assertions.assertThat(mvndShPath).exists();
         if (!System.getProperty("os.name").toLowerCase().contains("windows")) {
             final PosixFileAttributeView attributes = Files.getFileAttributeView(mvndShPath, PosixFileAttributeView.class);
@@ -82,8 +82,8 @@ public class InstallDaemonNativeIT {
         }
 
         final String version = BuildProperties.getInstance().getVersion();
-        Assertions.assertThat(mavenHome.resolve("lib/ext/mvnd-client-" + version + ".jar")).exists();
-        Assertions.assertThat(mavenHome.resolve("lib/ext/mvnd-daemon-" + version + ".jar")).exists();
+        Assertions.assertThat(mavenHome.resolve("lib/ext/mvnd.sh-client-" + version + ".jar")).exists();
+        Assertions.assertThat(mavenHome.resolve("lib/ext/mvnd.sh-daemon-" + version + ".jar")).exists();
     }
 
 }

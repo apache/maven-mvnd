@@ -67,7 +67,7 @@ public class ModuleAndPluginNativeIT {
         /* Build #2: with the mojo source changed to output "Hi" to target/hello.txt */
         {
             final Path mojoPath = layout.multiModuleProjectDirectory()
-                    .resolve("plugin/src/main/java/org/jboss/fuse/mvnd/test/module/plugin/mojo/HelloMojo.java");
+                    .resolve("plugin/src/main/java/org/jboss/fuse/mvnd.sh/test/module/plugin/mojo/HelloMojo.java");
             String mojoSource = new String(Files.readAllBytes(mojoPath), StandardCharsets.UTF_8);
             mojoSource = mojoSource.replace("\"Hello\".getBytes", "\"Hi\".getBytes");
             Files.write(mojoPath, mojoSource.getBytes(StandardCharsets.UTF_8));

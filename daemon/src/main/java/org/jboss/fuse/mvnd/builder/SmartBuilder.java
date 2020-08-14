@@ -59,10 +59,10 @@ import org.slf4j.LoggerFactory;
 public class SmartBuilder implements Builder {
 
     public static final String PROP_PROFILING = "smartbuilder.profiling";
-    public static final String MVND_BUILDER_RULES = "mvnd.builder.rules";
-    public static final String MVND_BUILDER_RULE = "mvnd.builder.rule";
-    public static final String MVND_BUILDER_RULES_PROVIDER_URL = "mvnd.builder.rules.provider.url";
-    public static final String MVND_BUILDER_RULES_PROVIDER_SCRIPT = "mvnd.builder.rules.provider.script";
+    public static final String MVND_BUILDER_RULES = "mvnd.sh.builder.rules";
+    public static final String MVND_BUILDER_RULE = "mvnd.sh.builder.rule";
+    public static final String MVND_BUILDER_RULES_PROVIDER_URL = "mvnd.sh.builder.rules.provider.url";
+    public static final String MVND_BUILDER_RULES_PROVIDER_SCRIPT = "mvnd.sh.builder.rules.provider.script";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
