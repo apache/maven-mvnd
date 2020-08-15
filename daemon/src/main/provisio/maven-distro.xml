@@ -17,28 +17,28 @@
 -->
 <assembly>
 
-    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}">
+    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
                     excludes="lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*"/>
         </artifact>
     </artifactSet>
 
-    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}/lib">
+    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/lib">
         <artifact id="org.apache.maven:maven-embedder"/>
         <artifactSet to="ext" ref="runtime.classpath"/>
     </artifactSet>
 
-    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}">
+    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}">
         <directory path="${basedir}/src/main/distro"/>
     </fileSet>
-    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.arch}/bin">
+    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/bin">
         <directory path="${basedir}/../client/target">
             <include>mvnd</include>
             <include>mvnd.exe</include>
         </directory>
     </fileSet>
 
-    <archive name="mvnd-${project.version}-${os.detected.name}-${os.arch}.zip" executable="**/bin/mvnd"/>
+    <archive name="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}.zip" executable="**/bin/mvnd"/>
 
 </assembly>
