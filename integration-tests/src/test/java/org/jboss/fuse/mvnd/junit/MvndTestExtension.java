@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.jboss.fuse.mvnd.client.Client;
@@ -98,7 +99,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     } else if (f.getType() == Client.class) {
                         if (resource.isNative) {
                             final Path mvndNativeExecutablePath = resource.layout.mavenHome().resolve(
-                                    System.getProperty("os.name").toLowerCase().contains("windows")
+                                    System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows")
                                             ? "bin/mvnd.exe"
                                             : "bin/mvnd")
                                     .toAbsolutePath().normalize();

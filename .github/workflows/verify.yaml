@@ -176,7 +176,6 @@ jobs:
         fi
         echo "Using VERSION=$VERSION"
         echo "::set-env name=VERSION::$VERSION"
-        mv ./mvnd-dist.zip/mvnd-dist-*.zip ./mvnd-dist.zip/mvnd-dist.zip
 
     - name: Create Release
       id: create_release

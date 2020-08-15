@@ -34,16 +34,31 @@ public class BuildProperties {
         } catch (IOException e) {
             throw new RuntimeException("Could not read build.properties");
         }
-        return new BuildProperties(buildProperties.getProperty("version"));
+        return new BuildProperties(
+                buildProperties.getProperty("version"),
+                buildProperties.getProperty("os.detected.name"),
+                buildProperties.getProperty("os.detected.arch"));
     }
 
     private final String version;
+    private final String osName;
+    private final String osArch;
 
-    public BuildProperties(String version) {
+    public BuildProperties(String version, String os, String arch) {
         this.version = version;
+        this.osName = os;
+        this.osArch = arch;
     }
 
     public String getVersion() {
         return version;
+    }
+
+    public String getOsName() {
+        return osName;
+    }
+
+    public String getOsArch() {
+        return osArch;
     }
 }
