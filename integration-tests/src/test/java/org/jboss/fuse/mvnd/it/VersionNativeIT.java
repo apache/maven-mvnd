@@ -48,7 +48,11 @@ public class VersionNativeIT {
 
         Assertions.assertThat(logMessage.getAllValues())
                 .is(new MatchInOrderAmongOthers<>(
-                        "\\QMaven Daemon " + System.getProperty("project.version") + "\\E",
+                        "\\QMaven Daemon "
+                                + System.getProperty("project.version")
+                                + "-" + System.getProperty("os.detected.name")
+                                + "-" + System.getProperty("os.detected.arch")
+                                + "\\E",
                         "\\QMaven home: " + layout.mavenHome() + "\\E"));
     }
 }

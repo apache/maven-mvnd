@@ -378,6 +378,8 @@ limitations under the License.</inlineHeader>
                         </goals>
                         <configuration>
                             <source>
+                                // Naming conventions coined by GraalVM
+                                // https://github.com/graalvm/graalvm-ce-builds/releases/
                                 String osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
                                 if (osName.startsWith('windows')) {
                                     project.properties['os.detected.name'] = 'windows'
@@ -386,7 +388,13 @@ limitations under the License.</inlineHeader>
                                 } else if (osName.startsWith('osx') || osName.startsWith('mac os x')) {
                                     project.properties['os.detected.name'] = 'darwin'
                                 } else {
-                                    throw new IllegalStateException('Unknown OS ' + osName);
+                                    project.properties['os.detected.name'] = osName
+                                }
+                                String osArch = System.getProperty('os.arch').toLowerCase(Locale.ROOT)
+                                if (osArch.equals('amd64') || osArch.equals('x86_64')) {
+                                    project.properties['os.detected.arch'] = 'amd64'
+                                } else {
+                                    project.properties['os.detected.arch'] = osArch
                                 }
                             </source>
                         </configuration>

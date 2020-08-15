@@ -123,7 +123,12 @@ public class DefaultClient implements Client {
         // Print version if needed
         if (version || showVersion || debug) {
             final String nativeSuffix = Environment.isNative() ? " (native)" : "";
-            final String v = Ansi.ansi().bold().a("Maven Daemon " + buildProperties.getVersion() + nativeSuffix)
+            final String v = Ansi.ansi().bold().a(
+                    "Maven Daemon "
+                            + buildProperties.getVersion()
+                            + "-" + buildProperties.getOsName()
+                            + "-" + buildProperties.getOsArch()
+                            + nativeSuffix)
                     .reset().toString();
             output.accept(v);
             /*

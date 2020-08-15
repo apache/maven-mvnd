@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -479,7 +480,8 @@ public class CliPluginRealmCache
     };
 
     public CliPluginRealmCache() {
-        this.watcher = System.getProperty("os.name").toLowerCase().contains("mac")
+        final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        this.watcher = osName.startsWith("osx") || osName.startsWith("mac os x")
                 ? new TimestampedRecordValidator()
                 : new MultiWatcher();
     }

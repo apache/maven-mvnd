@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 import org.slf4j.Logger;
@@ -127,7 +128,7 @@ public class ScriptUtils {
     private static final boolean windows;
 
     static {
-        windows = System.getProperty("os.name").toLowerCase().contains("windows");
+        windows = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows");
     }
 
     public static boolean isWindows() {

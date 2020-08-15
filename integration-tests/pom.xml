@@ -87,6 +87,8 @@
                     <systemPropertyVariables>
                         <project.version>${project.version}</project.version>
                         <mvnd.home>${mvnd.home}</mvnd.home>
+                        <os.detected.name>${os.detected.name}</os.detected.name>
+                        <os.detected.arch>${os.detected.arch}</os.detected.arch>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -111,6 +113,8 @@
                                     <systemPropertyVariables>
                                         <project.version>${project.version}</project.version>
                                         <mvnd.home>${mvnd.home}</mvnd.home>
+                                        <os.detected.name>${os.detected.name}</os.detected.name>
+                                        <os.detected.arch>${os.detected.arch}</os.detected.arch>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
