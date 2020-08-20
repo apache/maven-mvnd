@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
@@ -65,6 +66,7 @@ public class SmartBuilder implements Builder {
     public static final String MVND_BUILDER_RULES_PROVIDER_SCRIPT = "mvnd.builder.rules.provider.script";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    static final Pattern mvndRuleSanitizerPattern = Pattern.compile("[,\\s]+");
 
     private final LifecycleModuleBuilder moduleBuilder;
 
@@ -138,8 +140,12 @@ public class SmartBuilder implements Builder {
 
         session.getAllProjects().forEach(p -> {
             String rule = p.getProperties().getProperty(MVND_BUILDER_RULE);
-            if (rule != null && !rule.trim().isEmpty()) {
-                list.add(rule + " before " + p.getGroupId() + ":" + p.getArtifactId());
+            if (rule != null) {
+                rule = rule.trim();
+                if (!rule.isEmpty()) {
+                    rule = mvndRuleSanitizerPattern.matcher(rule).replaceAll(",");
+                    list.add(rule + " before " + p.getGroupId() + ":" + p.getArtifactId());
+                }
             }
         });
         String rules = null;
