@@ -100,7 +100,7 @@ public class Server implements AutoCloseable, Runnable {
 
             List<String> opts = new ArrayList<>();
             long cur = System.currentTimeMillis();
-            final Path javaHome = Paths.get(System.getProperty("java.home")).toRealPath();
+            final Path javaHome = Paths.get(System.getProperty("mvnd.java.home"));
             info = new DaemonInfo(uid, javaHome.toString(), layout.mavenHome().toString(),
                     DaemonRegistry.getProcessId(), socket.socket().getLocalPort(),
                     idleTimeout, Locale.getDefault().toLanguageTag(), opts,

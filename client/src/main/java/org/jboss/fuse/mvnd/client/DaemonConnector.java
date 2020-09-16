@@ -261,6 +261,7 @@ public class DaemonConnector {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
             args.add("-Dmvnd.home=\"" + mavenHome + "\"");
+            args.add("-Dmvnd.java.home=\"" + layout.javaHome().toString() + "\"");
             args.add("-Dlogback.configurationFile=\"" + layout.getLogbackConfigurationPath() + "\"");
             args.add("-Ddaemon.uid=" + uid);
             args.add("-Xmx4g");
