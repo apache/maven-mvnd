@@ -22,7 +22,7 @@ function publishRelease() {
         -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
         -H "Content-Type: application/json" \
         -H "Accept: application/json" \
-        -d '{"candidate": "mvnd", "version": "'${VERSION}'", "platform" : "LINUX_64", "url": "'${URL}'"}' \
+        -d '{"candidate": "mvnd", "version": "'${VERSION}'", "platform" : "'${SDKMAN_PLATFORM}'", "url": "'${URL}'"}' \
         https://vendors.sdkman.io/release)"
 
     node -pe "
