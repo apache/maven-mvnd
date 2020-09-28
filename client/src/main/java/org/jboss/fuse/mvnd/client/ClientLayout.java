@@ -89,6 +89,15 @@ public class ClientLayout extends Layout {
     }
 
     /**
+     * @param  newUserDir where to change the current directory to
+     * @return            a new {@link ClientLayout} with {@code userDir} set to the given {@code newUserDir}
+     */
+    public ClientLayout cd(Path newUserDir) {
+        return new ClientLayout(mvndPropertiesPath, mavenHome, newUserDir, multiModuleProjectDirectory, javaHome,
+                localMavenRepository, settings, logbackConfigurationPath);
+    }
+
+    /**
      * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the
      *         default
      */

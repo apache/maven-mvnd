@@ -27,10 +27,10 @@ public class Layout {
 
     private static Layout ENV_INSTANCE;
 
-    private final Path mavenHome;
-    private final Path userDir;
-    private final Path multiModuleProjectDirectory;
-    private final Path mvndPropertiesPath;
+    protected final Path mavenHome;
+    protected final Path userDir;
+    protected final Path multiModuleProjectDirectory;
+    protected final Path mvndPropertiesPath;
 
     public Layout(Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory) {
         super();

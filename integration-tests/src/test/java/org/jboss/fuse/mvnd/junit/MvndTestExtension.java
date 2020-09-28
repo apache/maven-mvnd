@@ -22,18 +22,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.jboss.fuse.mvnd.client.Client;
+import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.DefaultClient;
 import org.jboss.fuse.mvnd.common.BuildProperties;
-import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.Layout;
-import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -92,30 +90,35 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 javax.inject.Inject inject = f.getAnnotation(javax.inject.Inject.class);
                 if (inject != null) {
                     f.setAccessible(true);
-                    if (f.getType() == DaemonRegistry.class) {
+                    if (DaemonRegistry.class.isAssignableFrom(f.getType())) {
                         f.set(testInstance, resource.registry);
                     } else if (Layout.class.isAssignableFrom(f.getType())) {
                         f.set(testInstance, resource.layout);
                     } else if (f.getType() == Client.class) {
-                        if (resource.isNative) {
-                            final Path mvndNativeExecutablePath = resource.layout.mavenHome().resolve(
-                                    System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows")
-                                            ? "bin/mvnd.exe"
-                                            : "bin/mvnd")
-                                    .toAbsolutePath().normalize();
-                            if (!Files.isRegularFile(mvndNativeExecutablePath)) {
-                                throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
-                            }
-                            f.set(testInstance,
-                                    new NativeTestClient(resource.layout, mvndNativeExecutablePath, resource.timeoutMs));
-                        } else {
-                            f.set(testInstance, new DefaultClient(() -> resource.layout, BuildProperties.getInstance()));
-                        }
-                    } else if (f.getType() == NativeTestClient.class) {
+                        f.set(testInstance, newClient(resource.isNative, resource.layout, resource.timeoutMs));
+                    } else if (f.getType() == ClientFactory.class) {
+                        final ClientFactory cf = customLayout -> newClient(resource.isNative, customLayout, resource.timeoutMs);
+                        f.set(testInstance, cf);
                     }
                 }
             }
             c = c.getSuperclass();
+        }
+    }
+
+    Client newClient(boolean isNative, ClientLayout layout, long timeoutMs) {
+        if (isNative) {
+            final Path mvndNativeExecutablePath = layout.mavenHome().resolve(
+                    System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows")
+                            ? "bin/mvnd.exe"
+                            : "bin/mvnd")
+                    .toAbsolutePath().normalize();
+            if (!Files.isRegularFile(mvndNativeExecutablePath)) {
+                throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
+            }
+            return new NativeTestClient(layout, mvndNativeExecutablePath, timeoutMs);
+        } else {
+            return new DefaultClient(() -> layout, BuildProperties.getInstance());
         }
     }
 
@@ -131,7 +134,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
     static class MvndResource implements ExtensionContext.Store.CloseableResource {
 
         private final TestLayout layout;
-        private final DaemonRegistry registry;
+        private final TestRegistry registry;
         private final boolean isNative;
         private final long timeoutMs;
 
@@ -195,7 +198,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository, settingsPath,
                     mvndHome.resolve("conf/logging/logback.xml"));
-            final DaemonRegistry registry = new DaemonRegistry(layout.registry());
+            final TestRegistry registry = new TestRegistry(layout.registry());
 
             return new MvndResource(layout, registry, isNative, timeoutMs);
         }
@@ -234,7 +237,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             return settingsPath;
         }
 
-        public MvndResource(TestLayout layout, DaemonRegistry registry, boolean isNative, long timeoutMs) {
+        public MvndResource(TestLayout layout, TestRegistry registry, boolean isNative, long timeoutMs) {
             super();
             this.layout = layout;
             this.registry = registry;
@@ -244,25 +247,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
 
         @Override
         public void close() throws Exception {
-            List<DaemonInfo> daemons;
-            final int timeout = 5000;
-            final long deadline = System.currentTimeMillis() + timeout;
-            while (!(daemons = registry.getAll()).isEmpty()) {
-                for (DaemonInfo di : daemons) {
-                    try {
-                        new ProcessImpl(di.getPid()).destroy();
-                    } catch (IOException t) {
-                        System.out.println("Daemon " + di.getUid() + ": " + t.getMessage());
-                    } catch (Exception t) {
-                        System.out.println("Daemon " + di.getUid() + ": " + t);
-                    } finally {
-                        registry.remove(di.getUid());
-                    }
-                }
-                if (deadline < System.currentTimeMillis() && !registry.getAll().isEmpty()) {
-                    throw new RuntimeException("Could not stop all mvnd daemons within " + timeout + " ms");
-                }
-            }
+            registry.killAll();
         }
 
     }
