@@ -18,8 +18,10 @@ package org.jboss.fuse.mvnd.junit;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
+import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 
 public class TestRegistry extends DaemonRegistry {
@@ -28,6 +30,9 @@ public class TestRegistry extends DaemonRegistry {
         super(registryFile);
     }
 
+    /**
+     * Kill all daemons in the registry.
+     */
     public void killAll() {
         List<DaemonInfo> daemons;
         final int timeout = 5000;
@@ -47,6 +52,27 @@ public class TestRegistry extends DaemonRegistry {
             if (deadline < System.currentTimeMillis() && !getAll().isEmpty()) {
                 throw new RuntimeException("Could not stop all mvnd daemons within " + timeout + " ms");
             }
+        }
+    }
+
+    /**
+     * Poll the state of the daemon with the given {@code uid} until it becomes idle.
+     *
+     * @param  uid                   the uid of the daemon to poll
+     * @throws IllegalStateException if the daemon is not available in the registry
+     * @throws AssertionError        if the timeout is exceeded
+     */
+    public void awaitIdle(String uid) {
+        final int timeoutMs = 5000;
+        final long deadline = System.currentTimeMillis() + timeoutMs;
+        while (getAll().stream()
+                .filter(di -> di.getUid().equals(uid))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Daemon " + uid + " is not available in the registry"))
+                .getState() != DaemonState.Idle) {
+            Assertions.assertThat(deadline)
+                    .withFailMessage("Daemon %s should have become idle within %d", uid, timeoutMs)
+                    .isGreaterThan(System.currentTimeMillis());
         }
     }
 

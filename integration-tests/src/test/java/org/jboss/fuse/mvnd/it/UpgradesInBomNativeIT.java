@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientOutput;
+import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.junit.ClientFactory;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestLayout;
@@ -61,6 +62,10 @@ public class UpgradesInBomNativeIT {
             cl.execute(output, "clean", "install", "-e").assertSuccess();
         }
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+
+        final DaemonInfo d = registry.getAll().get(0);
+        /* Wait, till the instance becomes idle */
+        registry.awaitIdle(d.getUid());
 
         /* Upgrade the dependency  */
         final Path parentPomPath = parentDir.resolve("pom.xml");
