@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.0.6](https://github.com/mvndaemon/mvnd/tree/0.0.6) (2020-09-29)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.5...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.5...0.0.6)
 
 **Closed issues:**
 
@@ -12,6 +12,7 @@
 
 **Merged pull requests:**
 
+- Wait for the deamon to become idle before rebuilding in UpgradesInBom… [\#74](https://github.com/mvndaemon/mvnd/pull/74) ([ppalaga](https://github.com/ppalaga))
 -  CachingProjectBuilder ignored [\#73](https://github.com/mvndaemon/mvnd/pull/73) ([ppalaga](https://github.com/ppalaga))
 - Added a changelog automatic update gh action [\#70](https://github.com/mvndaemon/mvnd/pull/70) ([oscerd](https://github.com/oscerd))
 - Fixup publishing new versions via sdkman vendor API \#67 [\#69](https://github.com/mvndaemon/mvnd/pull/69) ([ppalaga](https://github.com/ppalaga))
