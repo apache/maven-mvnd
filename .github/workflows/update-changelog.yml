@@ -18,6 +18,7 @@
 name: Mvnd Changelog
 
 on:
+  workflow_dispatch:
   schedule:
     # Run at 3 during night
     - cron:  '0 3 * * *'
