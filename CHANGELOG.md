@@ -6,11 +6,13 @@
 
 **Closed issues:**
 
+- CachingProjectBuilder ignored [\#72](https://github.com/mvndaemon/mvnd/issues/72)
 - Goals of mvnd [\#71](https://github.com/mvndaemon/mvnd/issues/71)
 - Keep a changelog file [\#64](https://github.com/mvndaemon/mvnd/issues/64)
 
 **Merged pull requests:**
 
+-  CachingProjectBuilder ignored [\#73](https://github.com/mvndaemon/mvnd/pull/73) ([ppalaga](https://github.com/ppalaga))
 - Added a changelog automatic update gh action [\#70](https://github.com/mvndaemon/mvnd/pull/70) ([oscerd](https://github.com/oscerd))
 - Fixup publishing new versions via sdkman vendor API \#67 [\#69](https://github.com/mvndaemon/mvnd/pull/69) ([ppalaga](https://github.com/ppalaga))
 
