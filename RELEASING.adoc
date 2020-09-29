@@ -20,3 +20,8 @@ git add -A
 git commit -m "Next is $NEXT_VERSION"
 git push upstream master
 ----
+
+* Re-run the https://github.com/mvndaemon/mvnd/actions?query=workflow%3A%22Mvnd+Changelog%22[Changelog update] manually.
+* Find the anchor of the released tag in the https://github.com/mvndaemon/mvnd/blob/master/CHANGELOG.md[Changelog] by
+  clicking the chain link on the left.
+* Wait for the release job to finish, paste the link to changelog to the release.
