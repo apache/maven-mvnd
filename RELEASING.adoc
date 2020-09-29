@@ -6,6 +6,6 @@
 ----
 
 * Re-run the https://github.com/mvndaemon/mvnd/actions?query=workflow%3A%22Mvnd+Changelog%22[Changelog update] manually.
-* When it terminates, find the anchor of the released tag in the
-  https://github.com/mvndaemon/mvnd/blob/master/CHANGELOG.md[Changelog] by clicking the chain link on the left.
-* Wait for the release job to finish, paste the link to changelog to the release.
+* When it terminates, find the section about the current release
+  in the https://raw.githubusercontent.com/mvndaemon/mvnd/master/CHANGELOG.md[Changelog] and copy its MarkDown source
+  to the respective release page. The release page will appear once the release build is finished.

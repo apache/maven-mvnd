@@ -83,8 +83,8 @@ RESPONSE="$(curl -s -X POST \
     -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
-    -d '{"text": "mvnd '${VERSION}' released '${RELEASE_URL}'"}' \
-    https://vendors.sdkman.io/announce/freeform)"
+    -d '{"candidate": "mvnd", "version": "'${VERSION}'", "url": "'${RELEASE_URL}'"}' \
+    https://vendors.sdkman.io/announce/struct)"
 
 node -pe "
     var json = JSON.parse(process.argv[1]);
