@@ -28,11 +28,21 @@ public class ServerMain {
         final String uidStr = Environment.DAEMON_UID.systemProperty().orFail().asString();
         final Path mavenHome = Environment.MVND_HOME.systemProperty().orFail().asPath();
         URL[] classpath = Stream.concat(
-                Stream.concat(Files.list(mavenHome.resolve("lib/ext")),
-                        Files.list(mavenHome.resolve("lib")))
+                /* jars */
+                Stream.of("lib/ext", "lib", "boot")
+                        .map(mavenHome::resolve)
+                        .flatMap((Path p) -> {
+                            try {
+                                return Files.list(p);
+                            } catch (java.io.IOException e) {
+                                throw new RuntimeException("Could not list " + p, e);
+                            }
+                        })
                         .filter(p -> p.getFileName().toString().endsWith(".jar"))
                         .filter(Files::isRegularFile),
+                /* resources */
                 Stream.of(mavenHome.resolve("conf"), mavenHome.resolve("conf/logging")))
+
                 .map(Path::normalize)
                 .map(Path::toUri)
                 .map(uri -> {
@@ -56,6 +66,7 @@ public class ServerMain {
         Thread.currentThread().setContextClassLoader(loader);
         Class<?> clazz = loader.loadClass("org.jboss.fuse.mvnd.daemon.Server");
         try (AutoCloseable server = (AutoCloseable) clazz.getConstructor(String.class).newInstance(uidStr)) {
+            System.out.println("server = " + server);
             ((Runnable) server).run();
         }
     }

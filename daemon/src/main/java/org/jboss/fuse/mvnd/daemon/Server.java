@@ -69,15 +69,15 @@ public class Server implements AutoCloseable, Runnable {
     public static final int CANCEL_TIMEOUT = 10 * 1000;
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
 
-    private String uid;
-    private ServerSocketChannel socket;
-    private DaemonMavenCli cli;
-    private DaemonInfo info;
-    private DaemonRegistry registry;
+    private final String uid;
+    private final ServerSocketChannel socket;
+    private final DaemonMavenCli cli;
+    private volatile DaemonInfo info;
+    private final DaemonRegistry registry;
     private final Layout layout;
 
-    private ScheduledExecutorService executor;
-    private DaemonExpirationStrategy strategy;
+    private final ScheduledExecutorService executor;
+    private final DaemonExpirationStrategy strategy;
     private final Lock expirationLock = new ReentrantLock();
     private final Lock stateLock = new ReentrantLock();
     private final Condition condition = stateLock.newCondition();
@@ -106,8 +106,8 @@ public class Server implements AutoCloseable, Runnable {
                     idleTimeout, Locale.getDefault().toLanguageTag(), opts,
                     Busy, cur, cur);
             registry.store(info);
-        } catch (Throwable t) {
-            LOGGER.error("Error initializing daemon: " + t, t);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not initialize " + Server.class.getName(), e);
         }
     }
 
