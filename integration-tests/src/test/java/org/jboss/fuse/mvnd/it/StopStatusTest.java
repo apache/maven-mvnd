@@ -23,9 +23,8 @@ import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
-import org.jboss.fuse.mvnd.common.DaemonRegistry;
-import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.junit.MvndTest;
+import org.jboss.fuse.mvnd.junit.TestRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -37,7 +36,7 @@ public class StopStatusTest {
     Client client;
 
     @Inject
-    DaemonRegistry registry;
+    TestRegistry registry;
 
     @Test
     void stopStatus() throws IOException, InterruptedException {
@@ -62,16 +61,7 @@ public class StopStatusTest {
 
         }
         /* Wait, till the instance becomes idle */
-        final int timeoutMs = 5000;
-        final long deadline = System.currentTimeMillis() + timeoutMs;
-        while (!registry.getAll().stream()
-                .filter(di -> di.getUid().equals(d.getUid()) && di.getState() == DaemonState.Idle)
-                .findFirst()
-                .isPresent()) {
-            Assertions.assertThat(deadline)
-                    .withFailMessage("Daemon %s should have become idle within %d", d.getUid(), timeoutMs)
-                    .isGreaterThan(System.currentTimeMillis());
-        }
+        registry.awaitIdle(d.getUid());
 
         client.execute(Mockito.mock(ClientOutput.class), "clean").assertSuccess();
         /* There should still be exactly one item in the registry after the second build */
