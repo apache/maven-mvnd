@@ -1,8 +1,20 @@
-= mvnd: Maven Daemon
+= `mvnd` - the Maven Daemon
 
-The mvnd project aims to provide a daemon infrastructure for maven based builds.  It borrows techniques from Gradle and Takari to provide a simple and efficient system.
+The mvnd project aims to provide a daemon infrastructure for maven based builds.  It borrows techniques from Gradle and
+Takari to provide a simple and efficient system.
 
 == Install `mvnd`
+
+=== Install using https://sdkman.io/[SDKMAN!]
+
+[source,shell]
+----
+$ sdk install mvnd
+----
+
+if SDKMAN! supports your operating system.
+
+=== Install manually
 
 * Download the latest ZIP suitable for your platform from https://github.com/mvndaemon/mvnd/releases
 * Unzip to a directory of your choice
