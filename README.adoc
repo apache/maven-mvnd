@@ -1,18 +1,55 @@
 = `mvnd` - the Maven Daemon
 
-The mvnd project aims to provide a daemon infrastructure for maven based builds.  It borrows techniques from Gradle and
-Takari to provide a simple and efficient system.
+This project aims at providing faster https://maven.apache.org/[Maven] builds using techniques known from Gradle and
+Takari.
 
-== Install `mvnd`
+Architecture overview:
+
+* `mvnd` embeds Maven (so there is no need to install Maven separately).
+* The actual builds happen inside a long living background process, a.k.a. daemon.
+* One daemon instance can serve multiple consecutive requests from the `mvnd` client.
+* The `mvnd` client is a native executable built using https://www.graalvm.org/reference-manual/native-image/[GraalVM].
+  It starts faster and uses less memory compared to starting a traditional JVM.
+* Multiple daemons can be spawned in parallel if there is no idle daemon to serve a build request.
+
+This architecture brings the following advantages:
+
+* The JVM for running the actual builds does not need to get started anew for each build.
+* The classloaders holding classes of Maven plugins are cached over multiple builds. The plugin jars are thus read
+  and parsed just once. SNAPSHOT versions of Maven plugins are not cached.
+* The native code produced by the Just-In-Time (JIT) compiler inside the JVM is kept too. Compared to stock Maven,
+  less time is spent by the JIT compilation. During the repeated builds the JIT-optimized code is available
+  immediately. This applies not only to the code coming from Maven plugins and Maven Core, but also to all code coming
+  from the JDK itself.
+
+== Additional features
+
+`mvnd` brings the following features on top of the stock Maven:
+
+* `-T1C` is used by default. This means builing in parallel using as many threads as CPU cores on your machine. If your
+  source tree does not support parallel builds, pass `-T1` on the command line to make your build serial.
+* Improved console output: we believe that the output of a parallel build on a stock Maven is hard to follow. Therefore,
+we implemented a simplified a non-rolling view showing the status of each build thread on a separate line. This is
+what it looks like on a machine with 24 cores:
++
+image::src/main/images/console-output.png[]
++
+Once the build is finshed, the complete Maven output is forwarded to the console.
+
+== How to install `mvnd`
 
 === Install using https://sdkman.io/[SDKMAN!]
+
+If SDKMAN! supports your operating system, it is as easy as
 
 [source,shell]
 ----
 $ sdk install mvnd
 ----
 
-if SDKMAN! supports your operating system.
+If you used the manual install in the past, please make sure that the settings in `~/.m2/mvnd.properties` still make
+sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at all, because both `JAVA_HOME` and
+`MVND_HOME` are managed by SDKMAN!.
 
 === Install manually
 
