@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- The output of modules being built in parallel is interleaved [\#78](https://github.com/mvndaemon/mvnd/issues/78)
 - Explain project better in README [\#75](https://github.com/mvndaemon/mvnd/issues/75)
 
 **Merged pull requests:**
