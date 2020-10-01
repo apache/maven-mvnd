@@ -24,6 +24,9 @@ import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.jline.utils.AttributedString;
+import org.slf4j.MDC;
+
+import static org.jboss.fuse.mvnd.logging.smart.ProjectBuildLogAppender.KEY_PROJECT_ID;
 
 public abstract class AbstractLoggingSpy extends AbstractEventSpy {
 
@@ -104,6 +107,7 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
     }
 
     protected void onStartProject(ProjectBuild project) {
+        MDC.put(KEY_PROJECT_ID, project.project.getId());
         update();
     }
 
@@ -117,6 +121,7 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
 
     protected void onStopProject(ProjectBuild project) {
         update();
+        MDC.put(KEY_PROJECT_ID, project.project.getId());
     }
 
     protected synchronized void notifyMojoExecutionStart(ExecutionEvent event) {

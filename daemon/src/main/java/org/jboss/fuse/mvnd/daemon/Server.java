@@ -525,22 +525,26 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         protected void onStartProject(ProjectBuild project) {
+            super.onStartProject(project);
             sendEvent(Type.ProjectStarted, project);
         }
 
         @Override
         protected void onStopProject(ProjectBuild project) {
             sendEvent(Type.ProjectStopped, project);
+            super.onStopProject(project);
         }
 
         @Override
         protected void onStartMojo(ProjectBuild project) {
+            super.onStartMojo(project);
             sendEvent(Type.MojoStarted, project);
         }
 
         @Override
         protected void onStopMojo(ProjectBuild project) {
             sendEvent(Type.MojoStopped, project);
+            super.onStopMojo(project);
         }
 
         private void sendEvent(Type type, ProjectBuild project) {
