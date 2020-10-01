@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.6...HEAD)
+
+**Closed issues:**
+
+- Explain project better in README [\#75](https://github.com/mvndaemon/mvnd/issues/75)
+
+**Merged pull requests:**
+
+- Explain project better in README \#75 [\#76](https://github.com/mvndaemon/mvnd/pull/76) ([ppalaga](https://github.com/ppalaga))
+
 ## [0.0.6](https://github.com/mvndaemon/mvnd/tree/0.0.6) (2020-09-29)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.5...0.0.6)
