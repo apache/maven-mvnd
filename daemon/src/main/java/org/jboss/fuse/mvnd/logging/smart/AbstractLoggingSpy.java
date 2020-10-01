@@ -121,7 +121,7 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
 
     protected void onStopProject(ProjectBuild project) {
         update();
-        MDC.put(KEY_PROJECT_ID, project.project.getId());
+        MDC.remove(KEY_PROJECT_ID);
     }
 
     protected synchronized void notifyMojoExecutionStart(ExecutionEvent event) {
