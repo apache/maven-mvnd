@@ -15,14 +15,12 @@
  */
 package org.jboss.fuse.mvnd.junit;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.DaemonState;
-import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 
 public class TestRegistry extends DaemonRegistry {
 
@@ -40,9 +38,7 @@ public class TestRegistry extends DaemonRegistry {
         while (!(daemons = getAll()).isEmpty()) {
             for (DaemonInfo di : daemons) {
                 try {
-                    new ProcessImpl(di.getPid()).destroy();
-                } catch (IOException t) {
-                    System.out.println("Daemon " + di.getUid() + ": " + t.getMessage());
+                    ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
                 } catch (Exception t) {
                     System.out.println("Daemon " + di.getUid() + ": " + t);
                 } finally {

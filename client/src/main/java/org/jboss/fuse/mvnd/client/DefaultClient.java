@@ -15,7 +15,6 @@
  */
 package org.jboss.fuse.mvnd.client;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -37,7 +36,6 @@ import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
-import org.jboss.fuse.mvnd.jpm.ProcessImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -158,9 +156,7 @@ public class DefaultClient implements Client {
                     output.accept("Stopping " + dis.length + " running daemons");
                     for (DaemonInfo di : dis) {
                         try {
-                            new ProcessImpl(di.getPid()).destroy();
-                        } catch (IOException t) {
-                            System.out.println("Daemon " + di.getUid() + ": " + t.getMessage());
+                            ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
                         } catch (Exception t) {
                             System.out.println("Daemon " + di.getUid() + ": " + t);
                         } finally {
