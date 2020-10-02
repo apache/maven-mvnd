@@ -494,6 +494,11 @@ public class Server implements AutoCloseable, Runnable {
         return info.getLastBusy();
     }
 
+    @Override
+    public String toString() {
+        return info.toString();
+    }
+
     private static class DaemonLoggingSpy extends AbstractLoggingSpy {
         private final PriorityBlockingQueue<Message> queue;
 

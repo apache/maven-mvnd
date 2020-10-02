@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,8 +45,6 @@ import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Serializer;
 import org.jboss.fuse.mvnd.common.ServerMain;
-import org.jboss.fuse.mvnd.jpm.Process;
-import org.jboss.fuse.mvnd.jpm.ScriptUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +62,8 @@ public class DaemonConnector {
     private static final int CONNECT_TIMEOUT = 10000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnector.class);
+
+    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
 
     private final DaemonRegistry registry;
     private final ClientLayout layout;
@@ -252,17 +253,17 @@ public class DaemonConnector {
         String command = "";
         try {
             String classpath = findCommonJar(mavenHome).toString();
-            final String java = ScriptUtils.isWindows() ? "bin\\java.exe" : "bin/java";
+            final String java = IS_WINDOWS ? "bin\\java.exe" : "bin/java";
             List<String> args = new ArrayList<>();
-            args.add("\"" + layout.javaHome().resolve(java) + "\"");
+            args.add(layout.javaHome().resolve(java).toString());
             args.add("-classpath");
-            args.add("\"" + classpath + "\"");
+            args.add(classpath);
             if (Environment.DAEMON_DEBUG.systemProperty().orDefault(() -> "false").asBoolean()) {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
-            args.add("-Dmvnd.home=\"" + mavenHome + "\"");
-            args.add("-Dmvnd.java.home=\"" + layout.javaHome().toString() + "\"");
-            args.add("-Dlogback.configurationFile=\"" + layout.getLogbackConfigurationPath() + "\"");
+            args.add("-Dmvnd.home=" + mavenHome);
+            args.add("-Dmvnd.java.home=" + layout.javaHome().toString());
+            args.add("-Dlogback.configurationFile=" + layout.getLogbackConfigurationPath());
             args.add("-Ddaemon.uid=" + uid);
             args.add("-Xmx4g");
             final String timeout = Environment.DAEMON_IDLE_TIMEOUT.systemProperty().asString();
@@ -274,7 +275,13 @@ public class DaemonConnector {
             command = String.join(" ", args);
 
             LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
-            Process.create(workingDir.toFile(), command);
+            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(layout.daemonLog("output").toFile());
+            new ProcessBuilder()
+                    .directory(workingDir.toFile())
+                    .command(args)
+                    .redirectOutput(redirect)
+                    .redirectError(redirect)
+                    .start();
             return uid;
         } catch (Exception e) {
             throw new DaemonException.StartException(
