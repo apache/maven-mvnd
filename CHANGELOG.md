@@ -11,6 +11,7 @@
 
 **Merged pull requests:**
 
+- Replace the jpm library with the jdk ProcessHandle interface, \#36 [\#80](https://github.com/mvndaemon/mvnd/pull/80) ([gnodet](https://github.com/gnodet))
 - Explain project better in README \#75 [\#76](https://github.com/mvndaemon/mvnd/pull/76) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.6](https://github.com/mvndaemon/mvnd/tree/0.0.6) (2020-09-29)
