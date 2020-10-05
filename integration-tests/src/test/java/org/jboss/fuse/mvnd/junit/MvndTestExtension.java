@@ -144,6 +144,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 throw new IllegalStateException("rawProjectDir of @MvndTest must be set");
             }
             final Path testDir = Paths.get("target/mvnd-tests/" + className).toAbsolutePath();
+            deleteDir(testDir);
             Files.createDirectories(testDir);
             final Path testExecutionDir;
             if (TEMP_EXTERNAL.equals(rawProjectDir)) {
