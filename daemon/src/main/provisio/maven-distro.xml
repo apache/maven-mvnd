@@ -60,6 +60,9 @@
             <exclusion id="*:plexus-sec-dispatcher"/>
             <exclusion id="*:plexus-utils"/>
         </artifact>
+        <artifact id="org.jboss.fuse.mvnd:mvnd-client:${project.version}">
+            <exclusion id="*:slf4j-simple"/>
+        </artifact>
     </artifactSet>
 
     <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}">
