@@ -66,7 +66,7 @@ public class DefaultClient implements Client {
         }
 
         try (TerminalOutput output = new TerminalOutput(logFile)) {
-            new DefaultClient(() -> ClientLayout.getEnvInstance(), BuildProperties.getInstance()).execute(output, args);
+            new DefaultClient(ClientLayout::getEnvInstance, BuildProperties.getInstance()).execute(output, args);
         }
     }
 
@@ -169,7 +169,7 @@ public class DefaultClient implements Client {
 
             setDefaultArgs(args);
             final Path settings = layout.getSettings();
-            if (settings != null && !args.stream().anyMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
+            if (settings != null && args.stream().noneMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
                 args.add("-s");
                 args.add(settings.toString());
             }
@@ -220,15 +220,15 @@ public class DefaultClient implements Client {
     }
 
     static void setDefaultArgs(List<String> args) {
-        if (!args.stream().anyMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
+        if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
             args.add("-T1C");
         }
-        if (!args.stream().anyMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
+        if (args.stream().noneMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
             args.add("-bsmart");
         }
     }
 
-    private class DefaultResult implements ExecutionResult {
+    private static class DefaultResult implements ExecutionResult {
 
         private final Exception exception;
         private final List<String> args;
