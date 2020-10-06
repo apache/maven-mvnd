@@ -25,6 +25,7 @@ import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
+import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -47,6 +48,8 @@ public class SingleModuleNativeIT {
 
         final Path installedJar = layout.getLocalMavenRepository().resolve(
                 "org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
+        final Path localMavenRepo = layout.getLocalMavenRepository();
+        TestUtils.extractLocalMavenRepo(localMavenRepo);
         Assertions.assertThat(installedJar).doesNotExist();
 
         final ClientOutput o = Mockito.mock(ClientOutput.class);

@@ -19,12 +19,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 
 public class TestUtils {
 
     public static void replace(Path path, String find, String replacement) {
         try {
-            final String originalSrc = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+            final String originalSrc = Files.readString(path);
             final String newSrc = originalSrc.replace(find, replacement);
             if (originalSrc.equals(newSrc)) {
                 throw new IllegalStateException("[" + find + "] not found in " + path);
@@ -32,6 +37,41 @@ public class TestUtils {
             Files.write(path, newSrc.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException("Could not read or write " + path, e);
+        }
+    }
+
+    public static Path deleteDir(Path dir) {
+        if (Files.exists(dir)) {
+            try (Stream<Path> files = Files.walk(dir)) {
+                files.sorted(Comparator.reverseOrder())
+                        .forEach(f -> {
+                            try {
+                                Files.delete(f);
+                            } catch (IOException e) {
+                                throw new RuntimeException("Could not delete " + f);
+                            }
+                        });
+            } catch (IOException e1) {
+                throw new RuntimeException("Could not walk " + dir);
+            }
+        }
+        return dir;
+    }
+
+    public static void extractLocalMavenRepo(Path localMavenRepo) throws IOException {
+        deleteDir(localMavenRepo);
+        Files.createDirectories(localMavenRepo);
+        try (TarArchiveInputStream tis = new TarArchiveInputStream(
+                new GZIPInputStream(TestUtils.class.getResourceAsStream("/local-maven-repo.tar.gz"), 8192))) {
+            TarArchiveEntry te;
+            while ((te = tis.getNextTarEntry()) != null) {
+                Path path = localMavenRepo.resolve(te.getName());
+                if (te.isDirectory()) {
+                    Files.createDirectories(path);
+                } else {
+                    Files.copy(tis, path);
+                }
+            }
         }
     }
 }

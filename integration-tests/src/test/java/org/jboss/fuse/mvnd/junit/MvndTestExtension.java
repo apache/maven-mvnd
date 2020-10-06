@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -37,6 +36,8 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
+
+import static org.jboss.fuse.mvnd.junit.TestUtils.deleteDir;
 
 public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
@@ -202,24 +203,6 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final TestRegistry registry = new TestRegistry(layout.registry());
 
             return new MvndResource(layout, registry, isNative, timeoutMs);
-        }
-
-        static Path deleteDir(Path dir) {
-            if (Files.exists(dir)) {
-                try (Stream<Path> files = Files.walk(dir)) {
-                    files.sorted(Comparator.reverseOrder())
-                            .forEach(f -> {
-                                try {
-                                    Files.delete(f);
-                                } catch (IOException e) {
-                                    throw new RuntimeException("Could not delete " + f);
-                                }
-                            });
-                } catch (IOException e1) {
-                    throw new RuntimeException("Could not walk " + dir);
-                }
-            }
-            return dir;
         }
 
         static Path createSettings(Path settingsPath) {

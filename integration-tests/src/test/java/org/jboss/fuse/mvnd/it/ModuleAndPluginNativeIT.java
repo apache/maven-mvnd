@@ -49,10 +49,10 @@ public class ModuleAndPluginNativeIT {
         }
 
         final Path localMavenRepo = layout.getLocalMavenRepository();
-        final Path[] installedJars = {
-                localMavenRepo.resolve(
-                        "org/jboss/fuse/mvnd/test/module-and-plugin/module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar"),
-        };
+        TestUtils.extractLocalMavenRepo(localMavenRepo);
+        final Path repoDir = localMavenRepo.resolve("org/jboss/fuse/mvnd/test/module-and-plugin");
+        final Path[] installedJars = { repoDir
+                .resolve("module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar") };
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
         /* Build #1: with "Hello" output to target/hello.txt */
