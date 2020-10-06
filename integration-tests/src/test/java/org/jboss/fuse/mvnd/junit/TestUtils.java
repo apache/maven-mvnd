@@ -19,12 +19,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 public class TestUtils {
 
     public static void replace(Path path, String find, String replacement) {
         try {
-            final String originalSrc = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+            final String originalSrc = Files.readString(path);
             final String newSrc = originalSrc.replace(find, replacement);
             if (originalSrc.equals(newSrc)) {
                 throw new IllegalStateException("[" + find + "] not found in " + path);
@@ -34,4 +36,24 @@ public class TestUtils {
             throw new RuntimeException("Could not read or write " + path, e);
         }
     }
+
+    public static Path deleteDir(Path dir) {
+        if (Files.exists(dir)) {
+            try (Stream<Path> files = Files.walk(dir)) {
+                files.sorted(Comparator.reverseOrder()).forEach(TestUtils::deleteFile);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not walk " + dir, e);
+            }
+        }
+        return dir;
+    }
+
+    private static void deleteFile(Path f) {
+        try {
+            Files.delete(f);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not delete " + f, e);
+        }
+    }
+
 }

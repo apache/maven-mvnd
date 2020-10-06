@@ -49,6 +49,7 @@ public class ModuleAndPluginNativeIT {
         }
 
         final Path localMavenRepo = layout.getLocalMavenRepository();
+        TestUtils.deleteDir(localMavenRepo);
         final Path[] installedJars = {
                 localMavenRepo.resolve(
                         "org/jboss/fuse/mvnd/test/module-and-plugin/module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar"),
