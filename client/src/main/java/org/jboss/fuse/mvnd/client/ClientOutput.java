@@ -15,6 +15,7 @@
  */
 package org.jboss.fuse.mvnd.client;
 
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Writer;
@@ -49,6 +50,8 @@ import org.slf4j.LoggerFactory;
 public interface ClientOutput extends AutoCloseable {
 
     int CTRL_L = 'L' & 0x1f;
+
+    int CTRL_M = 'M' & 0x1f;
 
     public void projectStateChanged(String projectId, String display);
 
@@ -152,13 +155,14 @@ public interface ClientOutput extends AutoCloseable {
             private volatile Exception exception;
             private volatile boolean closing;
             private int linesPerProject = 0;
+            private boolean displayDone = false;
 
             public TerminalUpdater(BlockingQueue<Event> queue, Path logFile) throws IOException {
                 super();
                 this.terminal = TerminalBuilder.terminal();
                 terminal.enterRawMode();
                 this.display = new Display(terminal, false);
-                this.log = logFile == null ? new ClientOutput.Log.MessageCollector(terminal)
+                this.log = logFile == null ? new ClientOutput.Log.MessageCollector(terminal, this::clearDisplay)
                         : new ClientOutput.Log.FileLog(logFile);
                 this.queue = queue;
                 final Thread w = new Thread(this::run);
@@ -176,7 +180,7 @@ public interface ClientOutput extends AutoCloseable {
                         if (c == -1) {
                             break;
                         }
-                        if (c == '+' || c == '-' || c == CTRL_L) {
+                        if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M) {
                             queue.add(new Event(EventType.INPUT, null, Character.toString(c)));
                         }
                     }
@@ -194,11 +198,11 @@ public interface ClientOutput extends AutoCloseable {
                     try {
                         entries.add(queue.take());
                         queue.drainTo(entries);
-                        for (Event entry : entries) {
+                       for (Event entry : entries) {
                             switch (entry.type) {
                             case END_OF_STREAM: {
                                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                                display.update(Collections.emptyList(), 0);
+                                clearDisplay();
                                 LOGGER.debug("Done receiving, printing log");
                                 log.close();
                                 LOGGER.debug("Done !");
@@ -216,7 +220,7 @@ public interface ClientOutput extends AutoCloseable {
                             }
                             case ERROR: {
                                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                                display.update(Collections.emptyList(), 0);
+                                clearDisplay();
                                 final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
                                 terminal.writer().println(new AttributedString(entry.message, s).toAnsi());
                                 terminal.flush();
@@ -231,6 +235,7 @@ public interface ClientOutput extends AutoCloseable {
                                     if (prj != null) {
                                         prj.log.forEach(log);
                                     }
+                                    displayDone();
                                 }
                                 break;
                             case INPUT:
@@ -244,6 +249,10 @@ public interface ClientOutput extends AutoCloseable {
                                 case CTRL_L:
                                     display.reset();
                                     break;
+                                case CTRL_M:
+                                    displayDone = !displayDone;
+                                    displayDone();
+                                    break;
                                 }
                                 break;
                             }
@@ -255,6 +264,16 @@ public interface ClientOutput extends AutoCloseable {
                     } catch (Exception e) {
                         this.exception = e;
                     }
+                }
+            }
+
+            private void clearDisplay() {
+                display.update(Collections.emptyList(), 0);
+            }
+
+            private void displayDone() throws IOException {
+                if (displayDone) {
+                    log.flush();
                 }
             }
 
@@ -278,7 +297,7 @@ public interface ClientOutput extends AutoCloseable {
                 final int cols = size.getColumns();
                 display.resize(rows, size.getColumns());
                 if (rows <= 0) {
-                    display.update(Collections.emptyList(), 0);
+                    clearDisplay();
                     return;
                 }
                 final List<AttributedString> lines = new ArrayList<>(rows);
@@ -339,7 +358,7 @@ public interface ClientOutput extends AutoCloseable {
     /**
      * A closeable string message consumer.
      */
-    interface Log extends Consumer<String>, AutoCloseable {
+    interface Log extends Consumer<String>, Flushable, AutoCloseable {
 
         /**
          * A {@link Log} backed by a file.
@@ -366,6 +385,11 @@ public interface ClientOutput extends AutoCloseable {
             }
 
             @Override
+            public void flush() throws IOException {
+                out.flush();
+            }
+
+            @Override
             public void close() throws IOException {
                 out.close();
             }
@@ -380,10 +404,12 @@ public interface ClientOutput extends AutoCloseable {
 
             private final List<String> messages = new ArrayList<>();
             private final Terminal terminal;
+            private final Runnable clear;
 
-            public MessageCollector(Terminal terminal) {
+            public MessageCollector(Terminal terminal, Runnable clear) {
                 super();
                 this.terminal = terminal;
+                this.clear = clear;
             }
 
             @Override
@@ -392,9 +418,16 @@ public interface ClientOutput extends AutoCloseable {
             }
 
             @Override
-            public void close() {
+            public void flush() {
+                clear.run();
                 messages.forEach(terminal.writer()::println);
+                messages.clear();
                 terminal.flush();
+            }
+
+            @Override
+            public void close() {
+                flush();
             }
 
         }
