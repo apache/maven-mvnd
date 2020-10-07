@@ -25,6 +25,7 @@ import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
+import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -45,7 +46,9 @@ public class SingleModuleNativeIT {
             Files.delete(helloFilePath);
         }
 
-        final Path installedJar = layout.getLocalMavenRepository().resolve(
+        final Path localMavenRepo = layout.getLocalMavenRepository();
+        TestUtils.deleteDir(localMavenRepo);
+        final Path installedJar = localMavenRepo.resolve(
                 "org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
         Assertions.assertThat(installedJar).doesNotExist();
 

@@ -64,6 +64,12 @@ public class NativeTestClient implements Client {
         if (!Environment.MAVEN_REPO_LOCAL.hasCommandLineProperty(args)) {
             cmd.add(Environment.MAVEN_REPO_LOCAL.asCommandLineProperty(layout.getLocalMavenRepository().toString()));
         }
+        final Path settings = layout.getSettings();
+        if (settings != null && args.stream().noneMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
+            cmd.add("-s");
+            cmd.add(settings.toString());
+        }
+
         final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
                 .directory(layout.userDir().toFile()) //
                 .redirectErrorStream(true);

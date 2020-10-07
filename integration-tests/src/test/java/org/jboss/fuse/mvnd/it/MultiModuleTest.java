@@ -27,6 +27,7 @@ import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndTest;
+import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -55,6 +56,7 @@ public class MultiModuleTest {
         });
 
         final Path localMavenRepo = layout.getLocalMavenRepository();
+        TestUtils.deleteDir(localMavenRepo);
         final Path[] installedJars = {
                 localMavenRepo.resolve(
                         "org/jboss/fuse/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
