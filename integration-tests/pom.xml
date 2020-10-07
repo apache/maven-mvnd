@@ -94,12 +94,19 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>mrm-maven-plugin</artifactId>
-                <version>1.2.0</version>
                 <executions>
                     <execution>
+                        <id>mrm-start</id>
                         <phase>process-test-classes</phase>
                         <goals>
                             <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>mrm-stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
                         </goals>
                     </execution>
                 </executions>
