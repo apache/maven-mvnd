@@ -32,6 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.mockito.ArgumentMatchers.any;
+
 @MvndTest(projectDir = "src/test/projects/multi-module")
 public class MultiModuleTest {
 
@@ -71,7 +73,7 @@ public class MultiModuleTest {
         client.execute(output, "clean", "install", "-e").assertSuccess();
 
         final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
+        Mockito.verify(output, Mockito.atLeast(1)).accept(any(), logMessage.capture());
         Assertions.assertThat(logMessage.getAllValues())
                 .satisfiesAnyOf( /* Two orderings are possible */
                         messages -> Assertions.assertThat(messages)

@@ -30,6 +30,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+import static org.mockito.ArgumentMatchers.any;
+
 @MvndNativeTest(projectDir = "src/test/projects/single-module")
 public class SingleModuleNativeIT {
 
@@ -57,14 +59,14 @@ public class SingleModuleNativeIT {
         final Properties props = MvndTestUtil.properties(layout.multiModuleProjectDirectory().resolve("pom.xml"));
 
         final InOrder inOrder = Mockito.inOrder(o);
-        inOrder.verify(o).accept(Mockito.contains("Building single-module"));
-        inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-clean-plugin") + ":clean"));
-        inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":compile"));
-        inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":testCompile"));
-        inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-surefire-plugin") + ":test"));
-        inOrder.verify(o).accept(Mockito.contains(MvndTestUtil.plugin(props, "maven-install-plugin") + ":install"));
-        inOrder.verify(o)
-                .accept(Mockito.contains("SUCCESS build of project org.jboss.fuse.mvnd.test.single-module:single-module"));
+        inOrder.verify(o).accept(any(), Mockito.contains("Building single-module"));
+        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-clean-plugin") + ":clean"));
+        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":compile"));
+        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":testCompile"));
+        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-surefire-plugin") + ":test"));
+        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-install-plugin") + ":install"));
+        inOrder.verify(o).accept(any(),
+                Mockito.contains("SUCCESS build of project org.jboss.fuse.mvnd.test.single-module:single-module"));
 
         assertJVM(o, props);
 

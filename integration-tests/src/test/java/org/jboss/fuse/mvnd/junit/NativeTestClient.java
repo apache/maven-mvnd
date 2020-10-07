@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ClientOutput;
@@ -57,7 +56,7 @@ public class NativeTestClient implements Client {
     public ExecutionResult execute(ClientOutput output, List<String> args) throws InterruptedException {
         final List<String> cmd = new ArrayList<String>(args.size() + 1);
         cmd.add(mvndNativeExecutablePath.toString());
-        args.stream().forEach(cmd::add);
+        cmd.addAll(args);
         if (!Environment.MVND_PROPERTIES_PATH.hasCommandLineProperty(args)) {
             cmd.add(Environment.MVND_PROPERTIES_PATH.asCommandLineProperty(layout.getMvndPropertiesPath().toString()));
         }
@@ -81,9 +80,9 @@ public class NativeTestClient implements Client {
         if (!Environment.JAVA_HOME.hasCommandLineProperty(args)) {
             env.put("JAVA_HOME", System.getProperty("java.home"));
         }
-        final String cmdString = cmd.stream().collect(Collectors.joining(" "));
-        output.accept("Executing " + cmdString);
-        try (CommandProcess process = new CommandProcess(builder.start(), cmd, output)) {
+        final String cmdString = String.join(" ", cmd);
+        output.accept(null, "Executing " + cmdString);
+        try (CommandProcess process = new CommandProcess(builder.start(), cmd, s -> output.accept(null, s))) {
             return process.waitFor(timeoutMs);
         } catch (IOException e) {
             throw new RuntimeException("Could not execute: " + cmdString, e);
@@ -127,7 +126,7 @@ public class NativeTestClient implements Client {
                 }
                 sb.append("\n--- stderr+stdout start ---");
                 synchronized (log) {
-                    log.stream().forEach(s -> sb.append('\n').append(s));
+                    log.forEach(s -> sb.append('\n').append(s));
                 }
                 sb.append("\n--- stderr+stdout end ---");
                 throw new AssertionError(sb);

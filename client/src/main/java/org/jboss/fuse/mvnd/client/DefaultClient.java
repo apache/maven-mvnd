@@ -128,7 +128,7 @@ public class DefaultClient implements Client {
                             + "-" + buildProperties.getOsArch()
                             + nativeSuffix)
                     .reset().toString();
-            output.accept(v);
+            output.accept(null, v);
             /*
              * Do not return, rather pass -v to the server so that the client module does not need to depend on any
              * Maven artifacts
@@ -140,9 +140,9 @@ public class DefaultClient implements Client {
         try (DaemonRegistry registry = new DaemonRegistry(layout.registry())) {
             boolean status = args.remove("--status");
             if (status) {
-                output.accept(String.format("    %36s  %7s  %5s  %7s  %s",
+                output.accept(null, String.format("    %36s  %7s  %5s  %7s  %s",
                         "UUID", "PID", "Port", "Status", "Last activity"));
-                registry.getAll().forEach(d -> output.accept(String.format("    %36s  %7s  %5s  %7s  %s",
+                registry.getAll().forEach(d -> output.accept(null, String.format("    %36s  %7s  %5s  %7s  %s",
                         d.getUid(), d.getPid(), d.getAddress(), d.getState(),
                         LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
@@ -153,7 +153,7 @@ public class DefaultClient implements Client {
             if (stop) {
                 DaemonInfo[] dis = registry.getAll().toArray(new DaemonInfo[0]);
                 if (dis.length > 0) {
-                    output.accept("Stopping " + dis.length + " running daemons");
+                    output.accept(null, "Stopping " + dis.length + " running daemons");
                     for (DaemonInfo di : dis) {
                         try {
                             ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
@@ -204,15 +204,19 @@ public class DefaultClient implements Client {
                         return new DefaultResult(argv, null);
                     case ProjectStarted:
                     case MojoStarted:
+                        output.projectStateChanged(be.getProjectId(), be.getDisplay());
+                        break;
                     case MojoStopped:
                         output.projectStateChanged(be.getProjectId(), be.getDisplay());
+                        output.projectStateChanged(be.getProjectId(), ":" + be.getProjectId());
                         break;
                     case ProjectStopped:
                         output.projectFinished(be.getProjectId());
+                        break;
                     }
                 } else if (m instanceof BuildMessage) {
                     BuildMessage bm = (BuildMessage) m;
-                    output.accept(bm.getMessage());
+                    output.accept(bm.getProjectId(), bm.getMessage());
                 }
             }
         }

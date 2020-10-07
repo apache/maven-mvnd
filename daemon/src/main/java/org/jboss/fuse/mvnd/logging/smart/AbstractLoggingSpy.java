@@ -15,14 +15,13 @@
  */
 package org.jboss.fuse.mvnd.logging.smart;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
+import org.jboss.fuse.mvnd.common.Message;
 import org.jline.utils.AttributedString;
 import org.slf4j.MDC;
 
@@ -44,17 +43,14 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
     }
 
     protected Map<String, ProjectBuild> projects;
-    protected List<String> events;
+    protected List<Message.BuildMessage> events;
 
     @Override
     public synchronized void init(Context context) throws Exception {
-        projects = new LinkedHashMap<>();
-        events = new ArrayList<>();
     }
 
     @Override
     public synchronized void close() throws Exception {
-        events = null;
         projects = null;
     }
 
@@ -97,73 +93,67 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
     protected void notifySessionFinish(ExecutionEvent event) {
     }
 
-    protected synchronized void notifyProjectBuildStart(ExecutionEvent event) {
-        ProjectBuild pb = new ProjectBuild();
-        pb.project = event.getProject();
-        pb.execution = event.getMojoExecution();
-        pb.events = new ArrayList<>();
-        projects.putIfAbsent(event.getProject().getId(), pb);
-        onStartProject(pb);
+    protected void notifyProjectBuildStart(ExecutionEvent event) {
+        onStartProject(getProjectId(event), getProjectDisplay(event));
     }
 
-    protected void onStartProject(ProjectBuild project) {
-        MDC.put(KEY_PROJECT_ID, project.project.getId());
+    protected void notifyProjectBuildFinish(ExecutionEvent event) throws Exception {
+        onStopProject(getProjectId(event), getProjectDisplay(event));
+    }
+
+    protected void notifyMojoExecutionStart(ExecutionEvent event) {
+        onStartMojo(getProjectId(event), getProjectDisplay(event));
+    }
+
+    protected void notifyMojoExecutionFinish(ExecutionEvent event) {
+        onStopMojo(getProjectId(event), getProjectDisplay(event));
+    }
+
+    protected void onStartProject(String projectId, String display) {
+        MDC.put(KEY_PROJECT_ID, projectId);
         update();
     }
 
-    protected synchronized void notifyProjectBuildFinish(ExecutionEvent event) throws Exception {
-        ProjectBuild pb = projects.remove(event.getProject().getId());
-        if (pb != null) {
-            events.addAll(pb.events);
-            onStopProject(pb);
-        }
-    }
-
-    protected void onStopProject(ProjectBuild project) {
+    protected void onStopProject(String projectId, String display) {
         update();
         MDC.remove(KEY_PROJECT_ID);
     }
 
-    protected synchronized void notifyMojoExecutionStart(ExecutionEvent event) {
-        ProjectBuild pb = projects.get(event.getProject().getId());
-        if (pb != null) {
-            pb.execution = event.getMojoExecution();
-            onStartMojo(pb);
-        }
-    }
-
-    protected void onStartMojo(ProjectBuild project) {
+    protected void onStartMojo(String projectId, String display) {
         update();
     }
 
-    protected synchronized void notifyMojoExecutionFinish(ExecutionEvent event) {
-        ProjectBuild pb = projects.get(event.getProject().getId());
-        if (pb != null) {
-            pb.execution = null;
-            onStopMojo(pb);
-        }
+    protected void onStopMojo(String projectId, String display) {
+        update();
     }
 
-    protected void onStopMojo(ProjectBuild project) {
+    protected void onProjectLog(String projectId, String message) {
         update();
     }
 
     protected void update() {
     }
 
-    public synchronized void append(String projectId, String event) {
-        ProjectBuild project = projectId != null ? projects.get(projectId) : null;
-        if (project != null) {
-            project.events.add(event);
-        } else {
-            events.add(event);
-        }
+    private String getProjectId(ExecutionEvent event) {
+        return event.getProject().getArtifactId();
+    }
+
+    private String getProjectDisplay(ExecutionEvent event) {
+        String projectId = getProjectId(event);
+        String disp = event.getMojoExecution() != null
+                ? ":" + projectId + ":" + event.getMojoExecution().toString()
+                : ":" + projectId;
+        return disp;
+    }
+
+    public void append(String projectId, String event) {
+        String msg = event.endsWith("\n") ? event.substring(0, event.length() - 1) : event;
+        onProjectLog(projectId, msg);
     }
 
     protected static class ProjectBuild {
         MavenProject project;
         volatile MojoExecution execution;
-        List<String> events;
 
         @Override
         public String toString() {

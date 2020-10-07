@@ -17,7 +17,9 @@ package org.jboss.fuse.mvnd.logging.smart;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
@@ -26,6 +28,7 @@ import org.jline.utils.Display;
 
 public class MavenLoggingSpy extends AbstractLoggingSpy {
 
+    private Map<String, String> projects = new LinkedHashMap<>();
     private Terminal terminal;
     private Display display;
 
@@ -45,9 +48,6 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     @Override
     public void close() throws Exception {
         display.update(Collections.emptyList(), 0);
-        for (String event : events) {
-            terminal.writer().print(event);
-        }
         terminal.flush();
         terminal.close();
         terminal = null;
@@ -55,13 +55,42 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
         super.close();
     }
 
+    @Override
+    protected void onStartProject(String projectId, String display) {
+        projects.put(projectId, display);
+        super.onStartProject(projectId, display);
+    }
+
+    @Override
+    protected void onStopProject(String projectId, String display) {
+        projects.remove(projectId);
+        super.onStopProject(projectId, display);
+    }
+
+    @Override
+    protected void onStartMojo(String projectId, String display) {
+        projects.put(projectId, display);
+        super.onStartMojo(projectId, display);
+    }
+
+    @Override
+    protected void onStopMojo(String projectId, String display) {
+        projects.put(projectId, display);
+        super.onStopMojo(projectId, display);
+    }
+
+    @Override
+    protected void onProjectLog(String projectId, String message) {
+        super.onProjectLog(projectId, message);
+    }
+
     protected void update() {
         Size size = terminal.getSize();
         display.resize(size.getRows(), size.getColumns());
         List<AttributedString> lines = new ArrayList<>();
         lines.add(new AttributedString("Building..."));
-        for (ProjectBuild build : projects.values()) {
-            lines.add(build.toDisplay());
+        for (String build : projects.values()) {
+            lines.add(new AttributedString(build));
         }
         display.update(lines, -1);
     }
