@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 import org.fusesource.jansi.Ansi;
-import org.jboss.fuse.mvnd.client.ClientOutput.TerminalOutput;
 import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
@@ -192,7 +191,7 @@ public class DefaultClient implements Client {
                 Message m = daemon.receive();
                 if (m instanceof BuildException) {
                     final BuildException e = (BuildException) m;
-                    output.error(e);
+                    output.error(e.getMessage(), e.getClassName(), e.getStackTrace());
                     return new DefaultResult(argv,
                             new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
                 } else if (m instanceof BuildEvent) {
