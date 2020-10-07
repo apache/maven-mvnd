@@ -19,7 +19,7 @@ name: GitHub Actions
 on: [push, pull_request]
 
 env:
-  GRAALVM_VERSION: '20.1.0.java11'
+  GRAALVM_VERSION: '20.2.0.java11'
 
 jobs:
 
@@ -57,19 +57,6 @@ jobs:
     runs-on: windows-2019
     steps:
 
-    - name: Set CHOCO_CACHE_PATH
-      run: |
-        echo "::set-env name=CHOCO_CACHE_PATH::C:\Users\$env:UserName\AppData\Local\Temp\chocolatey"
-
-    - name: Cache chocolatey localCache
-      uses: actions/cache@v2
-      with:
-        path: ${{ env.CHOCO_CACHE_PATH }}
-        key: ${{ runner.os }}-choco-cache-2
-
-    - name: choco install visualstudio2017-workload-vctools
-      run: choco install visualstudio2017-workload-vctools --no-progress
-
     - name: setup-graalvm-ce
       uses: DeLaGuardo/setup-graalvm@3
       with:
@@ -94,7 +81,7 @@ jobs:
       if: ${{ steps.native_image_exe_exists.outputs.files_exists == 'false' }}
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         "%JAVA_HOME%\bin\native-image.cmd" -jar "%JAVA_HOME%\lib\graalvm\svm-driver.jar" native-image
 
     - name: move native-image.exe %JAVA_HOME%\bin\
@@ -108,7 +95,7 @@ jobs:
     - name: mvn clean verify
       shell: cmd
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         ./mvnw clean verify -Pnative -B -ntp -e
 
     - name: Upload daemon test logs
