@@ -15,7 +15,6 @@
  */
 package org.jboss.fuse.mvnd.client;
 
-import java.io.Flushable;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Writer;
@@ -40,8 +39,6 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.jline.utils.Display;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A terminal {@link ClientOutput} based on JLine.
@@ -51,8 +48,6 @@ public class TerminalOutput implements ClientOutput {
     public static final int CTRL_L = 'L' & 0x1f;
 
     public static final int CTRL_M = 'M' & 0x1f;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(TerminalOutput.class);
 
     private final BlockingQueue<Event> queue;
     private final Terminal terminal;
@@ -175,9 +170,7 @@ public class TerminalOutput implements ClientOutput {
                     case END_OF_STREAM: {
                         projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                         clearDisplay();
-                        LOGGER.debug("Done receiving, printing log");
                         log.close();
-                        LOGGER.debug("Done !");
                         terminal.flush();
                         return;
                     }
@@ -193,8 +186,9 @@ public class TerminalOutput implements ClientOutput {
                     case ERROR: {
                         projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                         clearDisplay();
+                        log.close();
                         final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
-                        terminal.writer().println(new AttributedString(entry.message, s).toAnsi());
+                        new AttributedString(entry.message, s).println(terminal);
                         terminal.flush();
                         return;
                     }
@@ -326,8 +320,13 @@ public class TerminalOutput implements ClientOutput {
     /**
      * A closeable string message consumer.
      */
-    interface ClientLog extends Consumer<String>, Flushable, AutoCloseable {
+    interface ClientLog extends Consumer<String> {
 
+        void accept(String message);
+
+        void flush() throws IOException;
+
+        void close() throws IOException;
     }
 
     /**
