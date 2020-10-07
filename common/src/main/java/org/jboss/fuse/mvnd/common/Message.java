@@ -146,14 +146,20 @@ public abstract class Message {
     }
 
     public static class BuildMessage extends Message {
+        final String projectId;
         final String message;
 
-        public BuildMessage(String message) {
+        public BuildMessage(String projectId, String message) {
+            this.projectId = projectId;
             this.message = message;
         }
 
         public String getMessage() {
             return message;
+        }
+
+        public String getProjectId() {
+            return projectId;
         }
 
         @Override
@@ -236,11 +242,13 @@ public abstract class Message {
         }
 
         private BuildMessage readBuildMessage(DataInputStream input) throws IOException {
+            String projectId = readUTF(input);
             String message = readUTF(input);
-            return new BuildMessage(message);
+            return new BuildMessage(projectId.isEmpty() ? null : projectId, message);
         }
 
         private void writeBuildMessage(DataOutputStream output, BuildMessage value) throws IOException {
+            writeUTF(output, value.projectId != null ? value.projectId : "");
             writeUTF(output, value.message);
         }
 

@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.mockito.ArgumentMatchers.any;
+
 @MvndTest(projectDir = "src/test/projects/single-module")
 public class StopStatusTest {
 
@@ -54,7 +56,7 @@ public class StopStatusTest {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output, "--status").assertSuccess();
             final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
+            Mockito.verify(output, Mockito.atLeast(1)).accept(any(), logMessage.capture());
             Assertions.assertThat(logMessage.getAllValues())
                     .is(new MatchInOrderAmongOthers<>(
                             d.getUid() + " +" + d.getPid() + " +" + d.getAddress()));
@@ -76,7 +78,7 @@ public class StopStatusTest {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output, "--status").assertSuccess();
             final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-            Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
+            Mockito.verify(output, Mockito.atLeast(1)).accept(any(), logMessage.capture());
             Assertions.assertThat(
                     logMessage.getAllValues().stream()
                             .filter(m -> m.contains(d.getUid()))

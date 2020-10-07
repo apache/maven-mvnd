@@ -17,6 +17,7 @@ package org.jboss.fuse.mvnd.assertj;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,7 +44,7 @@ public class MatchInOrderAmongOthers<T extends List<? extends String>> extends C
                                 .filter(pat -> pat.matcher(m).find())
                                 .findFirst()
                                 .orElse(null))
-                        .filter(pat -> pat != null) /* remove null patterns */
+                        .filter(Objects::nonNull) /* remove null patterns */
                         .collect(Collectors.toList())
                         /* if the mapped patterns equal the input patterns then each pattern matched exactly once */
                         .equals(patterns),

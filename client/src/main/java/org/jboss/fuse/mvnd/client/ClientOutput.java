@@ -16,25 +16,28 @@
 package org.jboss.fuse.mvnd.client;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.AbstractMap;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.jline.utils.Display;
 import org.slf4j.Logger;
@@ -43,16 +46,42 @@ import org.slf4j.LoggerFactory;
 /**
  * A sink for various kinds of events sent by the daemon.
  */
-public interface ClientOutput extends AutoCloseable, Consumer<String> {
+public interface ClientOutput extends AutoCloseable {
+
+    int CTRL_L = 'L' & 0x1f;
 
     public void projectStateChanged(String projectId, String display);
 
     public void projectFinished(String projectId);
 
-    /** Receive a log message */
-    public void accept(String message);
+    public void accept(String projectId, String message);
 
     public void error(BuildException m);
+
+    enum EventType {
+        PROJECT_STATUS,
+        LOG,
+        ERROR,
+        END_OF_STREAM,
+        INPUT
+    }
+
+    class Event {
+        public final EventType type;
+        public final String projectId;
+        public final String message;
+
+        public Event(EventType type, String projectId, String message) {
+            this.type = type;
+            this.projectId = projectId;
+            this.message = message;
+        }
+    }
+
+    class Project {
+        String status;
+        final List<String> log = new ArrayList<>();
+    }
 
     /**
      * A terminal {@link ClientOutput} based on JLine.
@@ -60,7 +89,7 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
     static class TerminalOutput implements ClientOutput {
         private static final Logger LOGGER = LoggerFactory.getLogger(TerminalOutput.class);
         private final TerminalUpdater updater;
-        private final BlockingQueue<Map.Entry<String, String>> queue;
+        private final BlockingQueue<Event> queue;
 
         public TerminalOutput(Path logFile) throws IOException {
             this.queue = new LinkedBlockingDeque<>();
@@ -69,7 +98,7 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
 
         public void projectStateChanged(String projectId, String task) {
             try {
-                queue.put(new AbstractMap.SimpleImmutableEntry<>(projectId, task));
+                queue.put(new Event(EventType.PROJECT_STATUS, projectId, task));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -77,16 +106,16 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
 
         public void projectFinished(String projectId) {
             try {
-                queue.put(new AbstractMap.SimpleImmutableEntry<>(projectId, null));
+                queue.put(new Event(EventType.PROJECT_STATUS, projectId, null));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
 
         @Override
-        public void accept(String message) {
+        public void accept(String projectId, String message) {
             try {
-                queue.put(new AbstractMap.SimpleImmutableEntry<>(TerminalUpdater.LOG, message));
+                queue.put(new Event(EventType.LOG, projectId, message));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -106,27 +135,28 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
                 msg = error.getClassName() + ": " + error.getMessage();
             }
             try {
-                queue.put(new AbstractMap.SimpleImmutableEntry<>(TerminalUpdater.ERROR, msg));
+                queue.put(new Event(EventType.ERROR, null, msg));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
 
         static class TerminalUpdater implements AutoCloseable {
-            private static final String LOG = "<log>";
-            private static final String ERROR = "<error>";
-            private static final String END_OF_STREAM = "<eos>";
-            private final BlockingQueue<Map.Entry<String, String>> queue;
+            private final BlockingQueue<Event> queue;
             private final Terminal terminal;
             private final Display display;
-            private final LinkedHashMap<String, String> projects = new LinkedHashMap<>();
+            private final LinkedHashMap<String, Project> projects = new LinkedHashMap<>();
             private final Log log;
             private final Thread worker;
+            private final Thread reader;
             private volatile Exception exception;
+            private volatile boolean closing;
+            private int linesPerProject = 0;
 
-            public TerminalUpdater(BlockingQueue<Entry<String, String>> queue, Path logFile) throws IOException {
+            public TerminalUpdater(BlockingQueue<Event> queue, Path logFile) throws IOException {
                 super();
                 this.terminal = TerminalBuilder.terminal();
+                terminal.enterRawMode();
                 this.display = new Display(terminal, false);
                 this.log = logFile == null ? new ClientOutput.Log.MessageCollector(terminal)
                         : new ClientOutput.Log.FileLog(logFile);
@@ -134,37 +164,88 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
                 final Thread w = new Thread(this::run);
                 w.start();
                 this.worker = w;
+                final Thread r = new Thread(this::read);
+                r.start();
+                this.reader = r;
+            }
+
+            void read() {
+                try {
+                    while (!closing) {
+                        int c = terminal.reader().read(10);
+                        if (c == -1) {
+                            break;
+                        }
+                        if (c == '+' || c == '-' || c == CTRL_L) {
+                            queue.add(new Event(EventType.INPUT, null, Character.toString(c)));
+                        }
+                    }
+                } catch (InterruptedIOException e) {
+                    Thread.currentThread().interrupt();
+                } catch (IOException e) {
+                    this.exception = e;
+                }
             }
 
             void run() {
-                final List<Entry<String, String>> entries = new ArrayList<>();
+                final List<Event> entries = new ArrayList<>();
 
                 while (true) {
                     try {
                         entries.add(queue.take());
                         queue.drainTo(entries);
-                        for (Entry<String, String> entry : entries) {
-                            final String key = entry.getKey();
-                            final String value = entry.getValue();
-                            if (key == END_OF_STREAM) {
+                        for (Event entry : entries) {
+                            switch (entry.type) {
+                            case END_OF_STREAM: {
+                                projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                                 display.update(Collections.emptyList(), 0);
                                 LOGGER.debug("Done receiving, printing log");
                                 log.close();
                                 LOGGER.debug("Done !");
                                 terminal.flush();
                                 return;
-                            } else if (key == LOG) {
-                                log.accept(value);
-                            } else if (key == ERROR) {
+                            }
+                            case LOG: {
+                                if (entry.projectId != null) {
+                                    Project prj = projects.computeIfAbsent(entry.projectId, p -> new Project());
+                                    prj.log.add(entry.message);
+                                } else {
+                                    log.accept(entry.message);
+                                }
+                                break;
+                            }
+                            case ERROR: {
+                                projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                                 display.update(Collections.emptyList(), 0);
                                 final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
-                                terminal.writer().println(new AttributedString(value, s).toAnsi());
+                                terminal.writer().println(new AttributedString(entry.message, s).toAnsi());
                                 terminal.flush();
                                 return;
-                            } else if (value == null) {
-                                projects.remove(key);
-                            } else {
-                                projects.put(key, value);
+                            }
+                            case PROJECT_STATUS:
+                                if (entry.message != null) {
+                                    Project prj = projects.computeIfAbsent(entry.projectId, p -> new Project());
+                                    prj.status = entry.message;
+                                } else {
+                                    Project prj = projects.remove(entry.projectId);
+                                    if (prj != null) {
+                                        prj.log.forEach(log);
+                                    }
+                                }
+                                break;
+                            case INPUT:
+                                switch (entry.message.charAt(0)) {
+                                case '+':
+                                    linesPerProject = Math.min(10, linesPerProject + 1);
+                                    break;
+                                case '-':
+                                    linesPerProject = Math.max(0, linesPerProject - 1);
+                                    break;
+                                case CTRL_L:
+                                    display.reset();
+                                    break;
+                                }
+                                break;
                             }
                         }
                         entries.clear();
@@ -179,8 +260,12 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
 
             @Override
             public void close() throws Exception {
-                queue.put(new AbstractMap.SimpleImmutableEntry<>(END_OF_STREAM, null));
+                closing = true;
+                reader.interrupt();
+                queue.put(new Event(EventType.END_OF_STREAM, null, null));
                 worker.join();
+                reader.join();
+                terminal.close();
                 if (exception != null) {
                     throw exception;
                 }
@@ -190,35 +275,61 @@ public interface ClientOutput extends AutoCloseable, Consumer<String> {
                 // no need to refresh the display at every single step
                 final Size size = terminal.getSize();
                 final int rows = size.getRows();
+                final int cols = size.getColumns();
                 display.resize(rows, size.getColumns());
                 if (rows <= 0) {
                     display.update(Collections.emptyList(), 0);
                     return;
                 }
-                final int displayableProjectCount = rows - 1;
-                final int skipRows = projects.size() > displayableProjectCount ? projects.size() - displayableProjectCount : 0;
-                final List<AttributedString> lines = new ArrayList<>(projects.size() - skipRows);
-                final int lineMaxLength = size.getColumns();
-                int i = 0;
-                lines.add(new AttributedString("Building..." + (skipRows > 0 ? " (" + skipRows + " more)" : "")));
-                for (String line : projects.values()) {
-                    if (i < skipRows) {
-                        i++;
-                    } else {
-                        lines.add(shortenIfNeeded(AttributedString.fromAnsi(line), lineMaxLength));
+                final List<AttributedString> lines = new ArrayList<>(rows);
+                final int dispLines = rows - 1;
+                if (projects.size() <= dispLines) {
+                    lines.add(new AttributedString("Building..."));
+                    int remLogLines = dispLines - projects.size();
+                    for (Project prj : projects.values()) {
+                        lines.add(AttributedString.fromAnsi(prj.status));
+                        // get the last lines of the project log, taking multi-line logs into account
+                        List<AttributedString> logs = lastN(prj.log, linesPerProject).stream()
+                                .flatMap(s -> AttributedString.fromAnsi(s).columnSplitLength(Integer.MAX_VALUE).stream())
+                                .map(s -> concat("   ", s))
+                                .collect(lastN(Math.min(remLogLines, linesPerProject)));
+                        lines.addAll(logs);
+                        remLogLines -= logs.size();
                     }
+                } else {
+                    lines.add(new AttributedString("Building... (" + (projects.size() - dispLines) + " more)"));
+                    lines.addAll(projects.values().stream()
+                            .map(prj -> AttributedString.fromAnsi(prj.status))
+                            .collect(lastN(dispLines)));
                 }
-                display.update(lines, -1);
+                List<AttributedString> trimmed = lines.stream()
+                        .map(s -> s.columnSubSequence(0, cols))
+                        .collect(Collectors.toList());
+                display.update(trimmed, -1);
             }
 
-            static AttributedString shortenIfNeeded(AttributedString s, int length) {
-                if (s == null) {
-                    return null;
-                }
-                if (s.length() > length) {
-                    return s.columnSubSequence(0, length - 1);
-                }
-                return s;
+            private static <T> List<T> lastN(List<T> list, int n) {
+                return list.subList(Math.max(0, list.size() - n), list.size());
+            }
+
+            private static <T> Collector<T, ?, List<T>> lastN(int n) {
+                return Collector.<T, Deque<T>, List<T>> of(ArrayDeque::new, (acc, t) -> {
+                    if (acc.size() == n)
+                        acc.pollFirst();
+                    acc.add(t);
+                }, (acc1, acc2) -> {
+                    while (acc2.size() < n && !acc1.isEmpty()) {
+                        acc2.addFirst(acc1.pollLast());
+                    }
+                    return acc2;
+                }, ArrayList::new);
+            }
+
+            private static AttributedString concat(String s1, AttributedString s2) {
+                AttributedStringBuilder asb = new AttributedStringBuilder();
+                asb.append(s1);
+                asb.append(s2);
+                return asb.toAttributedString();
             }
 
         }

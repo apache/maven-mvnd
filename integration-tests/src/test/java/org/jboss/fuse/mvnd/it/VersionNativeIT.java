@@ -28,6 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.mockito.ArgumentMatchers.any;
+
 @MvndNativeTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
 public class VersionNativeIT {
 
@@ -44,7 +46,7 @@ public class VersionNativeIT {
         client.execute(output, "-v").assertSuccess();
 
         final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).accept(logMessage.capture());
+        Mockito.verify(output, Mockito.atLeast(1)).accept(any(), logMessage.capture());
 
         Assertions.assertThat(logMessage.getAllValues())
                 .is(new MatchInOrderAmongOthers<>(

@@ -514,7 +514,6 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         public void close() throws Exception {
-            sendBuildMessages();
             super.close();
         }
 
@@ -529,43 +528,38 @@ public class Server implements AutoCloseable, Runnable {
         }
 
         @Override
-        protected void onStartProject(ProjectBuild project) {
-            super.onStartProject(project);
-            sendEvent(Type.ProjectStarted, project);
+        protected void onStartProject(String projectId, String display) {
+            super.onStartProject(projectId, display);
+            sendEvent(Type.ProjectStarted, projectId, display);
         }
 
         @Override
-        protected void onStopProject(ProjectBuild project) {
-            sendEvent(Type.ProjectStopped, project);
-            super.onStopProject(project);
+        protected void onStopProject(String projectId, String display) {
+            sendEvent(Type.ProjectStopped, projectId, display);
+            super.onStopProject(projectId, display);
         }
 
         @Override
-        protected void onStartMojo(ProjectBuild project) {
-            super.onStartMojo(project);
-            sendEvent(Type.MojoStarted, project);
+        protected void onStartMojo(String projectId, String display) {
+            super.onStartMojo(projectId, display);
+            sendEvent(Type.MojoStarted, projectId, display);
         }
 
         @Override
-        protected void onStopMojo(ProjectBuild project) {
-            sendEvent(Type.MojoStopped, project);
-            super.onStopMojo(project);
+        protected void onStopMojo(String projectId, String display) {
+            sendEvent(Type.MojoStopped, projectId, display);
+            super.onStopMojo(projectId, display);
         }
 
-        private void sendEvent(Type type, ProjectBuild project) {
-            String projectId = project.projectId();
-            String disp = project.toDisplay().toAnsi(256, false);
-            queue.add(new BuildEvent(type, projectId, disp));
-            sendBuildMessages();
+        @Override
+        protected void onProjectLog(String projectId, String message) {
+            queue.add(new BuildMessage(projectId, message));
+            super.onProjectLog(projectId, message);
         }
 
-        private synchronized void sendBuildMessages() {
-            if (events != null) {
-                events.stream()
-                        .map(s -> s.endsWith("\n") ? s.substring(0, s.length() - 1) : s)
-                        .map(BuildMessage::new).forEachOrdered(queue::add);
-                events.clear();
-            }
+        private void sendEvent(Type type, String projectId, String display) {
+            queue.add(new BuildEvent(type, projectId, display));
         }
+
     }
 }
