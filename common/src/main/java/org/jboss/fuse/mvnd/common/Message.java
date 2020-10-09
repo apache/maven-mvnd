@@ -139,7 +139,8 @@ public abstract class Message {
         @Override
         public String toString() {
             return "BuildEvent{" +
-                    "type=" + type +
+                    "projectId='" + projectId + '\'' +
+                    ", type=" + type +
                     ", display='" + display + '\'' +
                     '}';
         }
@@ -165,7 +166,8 @@ public abstract class Message {
         @Override
         public String toString() {
             return "BuildMessage{" +
-                    "message='" + message + '\'' +
+                    "projectId='" + projectId + '\'' +
+                    ", message='" + message + '\'' +
                     '}';
         }
     }

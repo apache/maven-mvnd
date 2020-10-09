@@ -439,11 +439,8 @@ public class Server implements AutoCloseable, Runnable {
     int getClassOrder(Message m) {
         if (m instanceof BuildRequest) {
             return 0;
-        } else if (m instanceof BuildEvent) {
-            BuildEvent be = (BuildEvent) m;
-            return be.getType() == Type.BuildStopped ? 98 : 1;
-        } else if (m instanceof BuildMessage) {
-            return 2;
+        } else if (m instanceof BuildEvent || m instanceof BuildMessage) {
+            return 1;
         } else if (m instanceof BuildException) {
             return 97;
         } else if (m == STOP) {

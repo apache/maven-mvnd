@@ -17,6 +17,7 @@ package org.jboss.fuse.mvnd.logging.smart;
 
 import java.util.List;
 import java.util.Map;
+import org.apache.maven.cli.logging.Slf4jLogger;
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.plugin.MojoExecution;
@@ -115,19 +116,24 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
     }
 
     protected void onStopProject(String projectId, String display) {
+        MDC.put(KEY_PROJECT_ID, projectId);
         update();
         MDC.remove(KEY_PROJECT_ID);
     }
 
     protected void onStartMojo(String projectId, String display) {
+        Slf4jLogger.setCurrentProject(projectId);
+        MDC.put(KEY_PROJECT_ID, projectId);
         update();
     }
 
     protected void onStopMojo(String projectId, String display) {
+        MDC.put(KEY_PROJECT_ID, projectId);
         update();
     }
 
     protected void onProjectLog(String projectId, String message) {
+        MDC.put(KEY_PROJECT_ID, projectId);
         update();
     }
 

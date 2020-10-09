@@ -176,8 +176,12 @@ public class TerminalOutput implements ClientOutput {
                     }
                     case LOG: {
                         if (entry.projectId != null) {
-                            Project prj = projects.computeIfAbsent(entry.projectId, p -> new Project());
-                            prj.log.add(entry.message);
+                            Project prj = projects.get(entry.projectId);
+                            if (prj != null) {
+                                prj.log.add(entry.message);
+                            } else {
+                                log.accept(entry.message);
+                            }
                         } else {
                             log.accept(entry.message);
                         }
@@ -213,7 +217,7 @@ public class TerminalOutput implements ClientOutput {
                             linesPerProject = Math.max(0, linesPerProject - 1);
                             break;
                         case CTRL_L:
-                            display.reset();
+                            display.update(List.of(), 0);
                             break;
                         case CTRL_M:
                             displayDone = !displayDone;
@@ -267,24 +271,26 @@ public class TerminalOutput implements ClientOutput {
             return;
         }
         final List<AttributedString> lines = new ArrayList<>(rows);
-        final int dispLines = rows - 1;
+        int dispLines = rows - 1; // for the "Building..." line
+        dispLines--; // there's a bug which sometimes make the cursor goes one line below, so keep one more line empty at the end
         if (projects.size() <= dispLines) {
             lines.add(new AttributedString("Building..."));
             int remLogLines = dispLines - projects.size();
             for (Project prj : projects.values()) {
-                lines.add(AttributedString.fromAnsi(prj.status));
+                lines.add(AttributedString.fromAnsi(prj.status != null ? prj.status : "<unknown>"));
                 // get the last lines of the project log, taking multi-line logs into account
-                List<AttributedString> logs = lastN(prj.log, linesPerProject).stream()
+                int nb = Math.min(remLogLines, linesPerProject);
+                List<AttributedString> logs = lastN(prj.log, nb).stream()
                         .flatMap(s -> AttributedString.fromAnsi(s).columnSplitLength(Integer.MAX_VALUE).stream())
                         .map(s -> concat("   ", s))
-                        .collect(lastN(Math.min(remLogLines, linesPerProject)));
+                        .collect(lastN(nb));
                 lines.addAll(logs);
                 remLogLines -= logs.size();
             }
         } else {
             lines.add(new AttributedString("Building... (" + (projects.size() - dispLines) + " more)"));
             lines.addAll(projects.values().stream()
-                    .map(prj -> AttributedString.fromAnsi(prj.status))
+                    .map(prj -> AttributedString.fromAnsi(prj.status != null ? prj.status : "<unknown>"))
                     .collect(lastN(dispLines)));
         }
         List<AttributedString> trimmed = lines.stream()
@@ -299,9 +305,11 @@ public class TerminalOutput implements ClientOutput {
 
     private static <T> Collector<T, ?, List<T>> lastN(int n) {
         return Collector.<T, Deque<T>, List<T>> of(ArrayDeque::new, (acc, t) -> {
-            if (acc.size() == n)
-                acc.pollFirst();
-            acc.add(t);
+            if (n > 0) {
+                if (acc.size() == n)
+                    acc.pollFirst();
+                acc.add(t);
+            }
         }, (acc1, acc2) -> {
             while (acc2.size() < n && !acc1.isEmpty()) {
                 acc2.addFirst(acc1.pollLast());
