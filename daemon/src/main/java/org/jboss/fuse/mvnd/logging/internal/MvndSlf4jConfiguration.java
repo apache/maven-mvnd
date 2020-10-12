@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.client;
+package org.jboss.fuse.mvnd.logging.internal;
 
-/**
- * A sink for various kinds of events sent by the daemon.
- */
-public interface ClientOutput extends AutoCloseable {
+import org.apache.maven.cli.logging.Slf4jConfiguration;
 
-    void projectStateChanged(String projectId, String display);
+public class MvndSlf4jConfiguration implements Slf4jConfiguration {
+    @Override
+    public void setRootLoggerLevel(Level level) {
+    }
 
-    void projectFinished(String projectId);
-
-    void accept(String projectId, String message);
-
-    void error(String message, String className, String stackTrace);
-
+    @Override
+    public void activate() {
+    }
 }

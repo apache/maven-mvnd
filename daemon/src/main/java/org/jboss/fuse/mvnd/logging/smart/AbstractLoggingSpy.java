@@ -34,7 +34,12 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
 
     public static AbstractLoggingSpy instance() {
         if (instance == null) {
-            instance = new MavenLoggingSpy();
+            if ("mvns".equals(System.getProperty("mvnd.logging", "mvn"))) {
+                instance = new MavenLoggingSpy();
+            } else {
+                instance = new AbstractLoggingSpy() {
+                };
+            }
         }
         return instance;
     }
@@ -112,32 +117,23 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
 
     protected void onStartProject(String projectId, String display) {
         MDC.put(KEY_PROJECT_ID, projectId);
-        update();
     }
 
     protected void onStopProject(String projectId, String display) {
-        MDC.put(KEY_PROJECT_ID, projectId);
-        update();
         MDC.remove(KEY_PROJECT_ID);
     }
 
     protected void onStartMojo(String projectId, String display) {
         Slf4jLogger.setCurrentProject(projectId);
         MDC.put(KEY_PROJECT_ID, projectId);
-        update();
     }
 
     protected void onStopMojo(String projectId, String display) {
         MDC.put(KEY_PROJECT_ID, projectId);
-        update();
     }
 
     protected void onProjectLog(String projectId, String message) {
         MDC.put(KEY_PROJECT_ID, projectId);
-        update();
-    }
-
-    protected void update() {
     }
 
     private String getProjectId(ExecutionEvent event) {

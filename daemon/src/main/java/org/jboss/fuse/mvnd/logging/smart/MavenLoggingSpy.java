@@ -15,22 +15,11 @@
  */
 package org.jboss.fuse.mvnd.logging.smart;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import org.jline.terminal.Size;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
-import org.jline.utils.AttributedString;
-import org.jline.utils.Display;
+import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 
 public class MavenLoggingSpy extends AbstractLoggingSpy {
 
-    private Map<String, String> projects = new LinkedHashMap<>();
-    private Terminal terminal;
-    private Display display;
+    private TerminalOutput output;
 
     public MavenLoggingSpy() {
     }
@@ -38,61 +27,43 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     @Override
     public void init(Context context) throws Exception {
         super.init(context);
-        terminal = (Terminal) context.getData().get("terminal");
-        if (terminal == null) {
-            terminal = TerminalBuilder.terminal();
-        }
-        display = new Display(terminal, false);
+        output = new TerminalOutput(null);
     }
 
     @Override
     public void close() throws Exception {
-        display.update(Collections.emptyList(), 0);
-        terminal.flush();
-        terminal.close();
-        terminal = null;
-        display = null;
+        output.close();
         super.close();
     }
 
     @Override
     protected void onStartProject(String projectId, String display) {
-        projects.put(projectId, display);
         super.onStartProject(projectId, display);
+        output.projectStateChanged(projectId, display);
     }
 
     @Override
     protected void onStopProject(String projectId, String display) {
-        projects.remove(projectId);
+        output.projectFinished(projectId);
         super.onStopProject(projectId, display);
     }
 
     @Override
     protected void onStartMojo(String projectId, String display) {
-        projects.put(projectId, display);
         super.onStartMojo(projectId, display);
+        output.projectStateChanged(projectId, display);
     }
 
     @Override
     protected void onStopMojo(String projectId, String display) {
-        projects.put(projectId, display);
+        output.projectStateChanged(projectId, ":" + projectId);
         super.onStopMojo(projectId, display);
     }
 
     @Override
     protected void onProjectLog(String projectId, String message) {
         super.onProjectLog(projectId, message);
-    }
-
-    protected void update() {
-        Size size = terminal.getSize();
-        display.resize(size.getRows(), size.getColumns());
-        List<AttributedString> lines = new ArrayList<>();
-        lines.add(new AttributedString("Building..."));
-        for (String build : projects.values()) {
-            lines.add(new AttributedString(build));
-        }
-        display.update(lines, -1);
+        output.accept(projectId, message);
     }
 
 }

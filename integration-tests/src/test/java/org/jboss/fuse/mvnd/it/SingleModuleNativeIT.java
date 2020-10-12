@@ -23,7 +23,7 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
-import org.jboss.fuse.mvnd.client.ClientOutput;
+import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;

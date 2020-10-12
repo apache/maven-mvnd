@@ -235,12 +235,14 @@ limitations under the License.</inlineHeader>
                             <exclude>**/README.*</exclude>
                             <exclude>**/.gitkeep</exclude>
                             <exclude>**/conf/logging/logback.xml</exclude>
+                            <exclude>**/mvnd.properties.template</exclude>
+                            <exclude>**/m2.conf</exclude>
+                            <exclude>**/mvnd</exclude>
                             <exclude>.gitattributes/</exclude>
                             <exclude>.mvn/maven.config</exclude>
                             <exclude>.mvn/wrapper/</exclude>
                             <exclude>LICENSE.txt</exclude>
                             <exclude>NOTICE.txt</exclude>
-                            <exclude>**/mvnd.properties.template</exclude>
                             <exclude>mvnw</exclude>
                             <exclude>mvnw.cmd</exclude>
                             <exclude>pom.xml.versionsBackup</exclude>
@@ -248,7 +250,8 @@ limitations under the License.</inlineHeader>
                         <mapping>
                             <groovy>SLASHSTAR_STYLE</groovy>
                             <java>SLASHSTAR_STYLE</java>
-                            <mvnd>SCRIPT_STYLE</mvnd>
+                            <mvn>SCRIPT_STYLE</mvn>
+                            <mvnd.sh>SCRIPT_STYLE</mvnd.sh>
                             <mvns>SCRIPT_STYLE</mvns>
                             <vbs>APOSTROPHE_STYLE</vbs>
                         </mapping>
