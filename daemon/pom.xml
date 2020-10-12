@@ -122,7 +122,7 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>io.takari.maven.plugins</groupId>
+                <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
                 <artifactId>provisio-maven-plugin</artifactId>
                 <executions>
                     <execution>
