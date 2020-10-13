@@ -294,17 +294,15 @@ public class DaemonMavenCli {
         cliRequest.quiet = !cliRequest.debug && cliRequest.commandLine.hasOption(CLIManager.QUIET);
         cliRequest.showErrors = cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.ERRORS);
 
-        java.util.logging.Level level;
+        ch.qos.logback.classic.Level level;
         if (cliRequest.debug) {
-            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_DEBUG);
-            level = Level.FINER;
+            level = ch.qos.logback.classic.Level.DEBUG;
         } else if (cliRequest.quiet) {
-            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_ERROR);
-            level = Level.SEVERE;
+            level = ch.qos.logback.classic.Level.WARN;
         } else {
-            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_INFO);
-            level = Level.INFO;
+            level = ch.qos.logback.classic.Level.INFO;
         }
+        ((ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(level);
 
         // LOG COLOR
         String styleColor = cliRequest.getUserProperties().getProperty(STYLE_COLOR_PROPERTY, "auto");
@@ -438,8 +436,6 @@ public class DaemonMavenCli {
             container.discoverComponents(extension.getClassRealm(), new SessionScopeModule(container),
                     new MojoExecutionScopeModule(container));
         }
-
-        //        container.getLoggerManager().setThresholds( cliRequest.request.getLoggingLevel() );
 
         eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
         eventSpyDispatcher.getEventSpies().add(realmCache.asEventSpy());
