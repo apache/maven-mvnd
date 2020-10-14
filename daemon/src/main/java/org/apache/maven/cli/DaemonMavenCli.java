@@ -896,15 +896,17 @@ public class DaemonMavenCli {
             alternatePomFile = commandLine.getOptionValue(CLIManager.ALTERNATE_POM_FILE);
         }
 
-        request.setBaseDirectory(baseDirectory).setGoals(goals).setSystemProperties(
-                cliRequest.systemProperties).setUserProperties(cliRequest.userProperties).setReactorFailureBehavior(
-                        reactorFailureBehaviour) // default: fail fast
+        request.setBaseDirectory(baseDirectory)
+                .setGoals(goals)
+                .setSystemProperties(cliRequest.systemProperties)
+                .setUserProperties(cliRequest.userProperties)
+                .setReactorFailureBehavior(reactorFailureBehaviour) // default: fail fast
                 .setRecursive(recursive) // default: true
                 .setShowErrors(showErrors) // default: false
                 .addActiveProfiles(activeProfiles) // optional
                 .addInactiveProfiles(inactiveProfiles) // optional
-                .setExecutionListener(executionListener).setTransferListener(
-                        transferListener) // default: batch mode which goes along with interactive
+                .setExecutionListener(executionListener)
+                .setTransferListener(transferListener) // default: batch mode which goes along with interactive
                 .setUpdateSnapshots(updateSnapshots) // default: false
                 .setNoSnapshotUpdates(noSnapshotUpdates) // default: false
                 .setGlobalChecksumPolicy(globalChecksumPolicy) // default: warn
