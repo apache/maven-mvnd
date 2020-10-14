@@ -181,7 +181,7 @@ public class SmartBuilder implements Builder {
             ReactorBuildStats stats = entry.getValue();
             Set<MavenProject> projects = projectBuilds.getByTaskSegment(taskSegment).getProjects();
 
-            logger.info("Task segment {}, number of projects {}", taskSegment, projects.size());
+            logger.debug("Task segment {}, number of projects {}", taskSegment, projects.size());
 
             final long walltimeReactor = stats.walltimeTime(TimeUnit.NANOSECONDS);
             final long walltimeService = stats.totalServiceTime(TimeUnit.NANOSECONDS);

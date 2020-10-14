@@ -135,7 +135,7 @@ class SmartBuilderImpl {
                     .map(SmartBuilderImpl::projectGA)
                     .collect(Collectors.joining(" ", "[", "]"));
         }
-        logger.info("Builder state: blocked={} finished={} ready-or-running={} {}", blockedCount,
+        logger.debug("Builder state: blocked={} finished={} ready-or-running={} {}", blockedCount,
                 finishedCount, readyCount, runningProjects);
     }
 
@@ -150,7 +150,7 @@ class SmartBuilderImpl {
             logger.warn("Unexpected project build summary class {}", buildSummary.getClass());
             message = "UNKNOWN";
         }
-        logger.info("{} build of project {}", message, projectGA(project));
+        logger.debug("{} build of project {}", message, projectGA(project));
     }
 
     private void shutdown() {
@@ -167,7 +167,7 @@ class SmartBuilderImpl {
     }
 
     /* package */void buildProject(MavenProject project) {
-        logger.info("STARTED build of project {}", projectGA(project));
+        logger.debug("STARTED build of project {}", projectGA(project));
 
         try {
             MavenSession copiedSession = rootSession.clone();

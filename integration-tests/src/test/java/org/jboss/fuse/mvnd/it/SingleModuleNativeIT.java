@@ -65,8 +65,7 @@ public class SingleModuleNativeIT {
         inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":testCompile"));
         inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-surefire-plugin") + ":test"));
         inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-install-plugin") + ":install"));
-        inOrder.verify(o).accept(any(),
-                Mockito.contains("SUCCESS build of project org.jboss.fuse.mvnd.test.single-module:single-module"));
+        inOrder.verify(o).accept(any(), Mockito.contains("BUILD SUCCESS"));
 
         assertJVM(o, props);
 
