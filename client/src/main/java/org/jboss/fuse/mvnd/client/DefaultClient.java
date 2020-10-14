@@ -207,10 +207,6 @@ public class DefaultClient implements Client {
                     case MojoStarted:
                         output.projectStateChanged(be.getProjectId(), be.getDisplay());
                         break;
-                    case MojoStopped:
-                        output.projectStateChanged(be.getProjectId(), be.getDisplay());
-                        output.projectStateChanged(be.getProjectId(), ":" + be.getProjectId());
-                        break;
                     case ProjectStopped:
                         output.projectFinished(be.getProjectId());
                         break;
