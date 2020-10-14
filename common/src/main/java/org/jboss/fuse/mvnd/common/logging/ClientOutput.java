@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.client;
+package org.jboss.fuse.mvnd.common.logging;
 
-import java.util.Arrays;
-import java.util.List;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
+/**
+ * A sink for various kinds of events sent by the daemon.
+ */
+public interface ClientOutput extends AutoCloseable {
 
-public interface Client {
+    void projectStateChanged(String projectId, String display);
 
-    ExecutionResult execute(ClientOutput output, List<String> args) throws InterruptedException;
+    void projectFinished(String projectId);
 
-    default ExecutionResult execute(ClientOutput output, String... args) throws InterruptedException {
-        return execute(output, Arrays.asList(args));
-    }
+    void accept(String projectId, String message);
+
+    void error(String message, String className, String stackTrace);
 
 }

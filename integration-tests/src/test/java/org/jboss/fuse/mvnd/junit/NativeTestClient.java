@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
-import org.jboss.fuse.mvnd.client.ClientOutput;
 import org.jboss.fuse.mvnd.client.ExecutionResult;
 import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 
 /**
  * A wrapper around the native executable.

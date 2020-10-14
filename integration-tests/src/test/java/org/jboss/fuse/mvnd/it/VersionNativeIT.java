@@ -21,7 +21,7 @@ import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
-import org.jboss.fuse.mvnd.client.ClientOutput;
+import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.MvndTestExtension;
 import org.junit.jupiter.api.Test;

@@ -35,6 +35,8 @@ import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
+import org.jboss.fuse.mvnd.common.logging.ClientOutput;
+import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

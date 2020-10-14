@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.client;
+package org.jboss.fuse.mvnd.common.logging;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
