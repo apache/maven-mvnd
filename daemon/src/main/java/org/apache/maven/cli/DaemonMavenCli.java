@@ -35,7 +35,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
@@ -85,7 +84,6 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.logging.LoggerManager;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
@@ -123,7 +121,7 @@ public class DaemonMavenCli {
 
     public static final String STYLE_COLOR_PROPERTY = "style.color";
 
-    private final LoggerManager plexusLoggerManager;
+    private final Slf4jLoggerManager plexusLoggerManager;
 
     private final ILoggerFactory slf4jLoggerFactory;
 

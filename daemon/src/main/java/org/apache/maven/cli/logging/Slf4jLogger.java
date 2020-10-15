@@ -35,18 +35,12 @@ import org.slf4j.MDC;
 public class Slf4jLogger
         implements Logger {
 
-    private static final ThreadLocal<String> PROJECT_ID = new ThreadLocal<>();
-
     private org.slf4j.Logger logger;
     private String projectId;
 
     public Slf4jLogger(org.slf4j.Logger logger) {
         this.logger = logger;
-        this.projectId = PROJECT_ID.get();
-    }
-
-    public static void setCurrentProject(String projectId) {
-        PROJECT_ID.set(projectId);
+        this.projectId = MDC.get(ProjectBuildLogAppender.KEY_PROJECT_ID);
     }
 
     public void debug(String message) {
@@ -144,7 +138,7 @@ public class Slf4jLogger
     }
 
     private void setMdc() {
-        if (projectId != null) {
+        if (projectId != null && MDC.get(ProjectBuildLogAppender.KEY_PROJECT_ID) == null) {
             MDC.put(ProjectBuildLogAppender.KEY_PROJECT_ID, projectId);
         }
     }

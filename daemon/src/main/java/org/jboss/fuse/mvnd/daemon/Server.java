@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -391,7 +392,7 @@ public class Server implements AutoCloseable, Runnable {
                     .projectDirectory(Paths.get(buildRequest.getProjectDir()))
                     .build();
 
-            PriorityBlockingQueue<Message> queue = new PriorityBlockingQueue<Message>(64,
+            BlockingQueue<Message> queue = new PriorityBlockingQueue<Message>(64,
                     Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
 
             DaemonLoggingSpy loggingSpy = new DaemonLoggingSpy(queue);
@@ -439,8 +440,20 @@ public class Server implements AutoCloseable, Runnable {
     int getClassOrder(Message m) {
         if (m instanceof BuildRequest) {
             return 0;
-        } else if (m instanceof BuildEvent || m instanceof BuildMessage) {
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.BuildStarted) {
             return 1;
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStarted) {
+            return 2;
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.MojoStarted) {
+            return 3;
+        } else if (m instanceof BuildMessage) {
+            return 50;
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.MojoStopped) {
+            return 94;
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStopped) {
+            return 95;
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.BuildStopped) {
+            return 96;
         } else if (m instanceof BuildException) {
             return 97;
         } else if (m == STOP) {
@@ -497,21 +510,10 @@ public class Server implements AutoCloseable, Runnable {
     }
 
     private static class DaemonLoggingSpy extends AbstractLoggingSpy {
-        private final PriorityBlockingQueue<Message> queue;
+        private final BlockingQueue<Message> queue;
 
-        public DaemonLoggingSpy(PriorityBlockingQueue<Message> queue) {
+        public DaemonLoggingSpy(BlockingQueue<Message> queue) {
             this.queue = queue;
-        }
-
-        @Override
-        public void init(Context context) throws Exception {
-            super.init(context);
-            queue.add(new BuildEvent(Type.BuildStarted, "", ""));
-        }
-
-        @Override
-        public void close() throws Exception {
-            super.close();
         }
 
         public void finish() throws Exception {
@@ -525,33 +527,33 @@ public class Server implements AutoCloseable, Runnable {
         }
 
         @Override
+        protected void onStartSession() {
+            queue.add(new BuildEvent(Type.BuildStarted, "", ""));
+        }
+
+        @Override
         protected void onStartProject(String projectId, String display) {
-            super.onStartProject(projectId, display);
             sendEvent(Type.ProjectStarted, projectId, display);
         }
 
         @Override
         protected void onStopProject(String projectId, String display) {
             sendEvent(Type.ProjectStopped, projectId, display);
-            super.onStopProject(projectId, display);
         }
 
         @Override
         protected void onStartMojo(String projectId, String display) {
-            super.onStartMojo(projectId, display);
             sendEvent(Type.MojoStarted, projectId, display);
         }
 
         @Override
         protected void onStopMojo(String projectId, String display) {
             sendEvent(Type.MojoStopped, projectId, display);
-            super.onStopMojo(projectId, display);
         }
 
         @Override
         protected void onProjectLog(String projectId, String message) {
             queue.add(new BuildMessage(projectId, message));
-            super.onProjectLog(projectId, message);
         }
 
         private void sendEvent(Type type, String projectId, String display) {

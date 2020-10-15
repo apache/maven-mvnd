@@ -191,6 +191,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
             final Path settingsPath = createSettings(testDir.resolve("settings.xml"));
+            final Path logback = Paths.get("src/test/resources/logback.xml").toAbsolutePath();
             final TestLayout layout = new TestLayout(
                     testDir,
                     mvndPropertiesPath,
@@ -199,7 +200,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository, settingsPath,
-                    mvndHome.resolve("conf/logging/logback.xml"));
+                    logback);
             final TestRegistry registry = new TestRegistry(layout.registry());
 
             return new MvndResource(layout, registry, isNative, timeoutMs);
