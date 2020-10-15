@@ -15,6 +15,7 @@
  */
 package org.jboss.fuse.mvnd.logging.smart;
 
+import java.io.IOError;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 
 public class MavenLoggingSpy extends AbstractLoggingSpy {
@@ -25,15 +26,21 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     }
 
     @Override
-    public void init(Context context) throws Exception {
-        super.init(context);
-        output = new TerminalOutput(null);
+    protected void onStartSession() {
+        try {
+            output = new TerminalOutput(null);
+        } catch (Exception e) {
+            throw new IOError(e);
+        }
     }
 
     @Override
-    public void close() throws Exception {
-        output.close();
-        super.close();
+    protected void onFinishSession() {
+        try {
+            output.close();
+        } catch (Exception e) {
+            throw new IOError(e);
+        }
     }
 
     @Override
@@ -45,7 +52,6 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     @Override
     protected void onStopProject(String projectId, String display) {
         output.projectFinished(projectId);
-        super.onStopProject(projectId, display);
     }
 
     @Override

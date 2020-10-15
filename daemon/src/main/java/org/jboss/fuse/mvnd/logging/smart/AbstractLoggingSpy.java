@@ -15,20 +15,9 @@
  */
 package org.jboss.fuse.mvnd.logging.smart;
 
-import java.util.List;
-import java.util.Map;
-import org.apache.maven.cli.logging.Slf4jLogger;
-import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
-import org.apache.maven.plugin.MojoExecution;
-import org.apache.maven.project.MavenProject;
-import org.jboss.fuse.mvnd.common.Message;
-import org.jline.utils.AttributedString;
-import org.slf4j.MDC;
 
-import static org.jboss.fuse.mvnd.logging.smart.ProjectBuildLogAppender.KEY_PROJECT_ID;
-
-public abstract class AbstractLoggingSpy extends AbstractEventSpy {
+public abstract class AbstractLoggingSpy {
 
     private static AbstractLoggingSpy instance;
 
@@ -48,62 +37,24 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
         AbstractLoggingSpy.instance = instance;
     }
 
-    protected Map<String, ProjectBuild> projects;
-    protected List<Message.BuildMessage> events;
-
-    @Override
-    public synchronized void init(Context context) throws Exception {
-    }
-
-    @Override
-    public synchronized void close() throws Exception {
-        projects = null;
-    }
-
-    @Override
-    public void onEvent(Object event) throws Exception {
-        if (event instanceof ExecutionEvent) {
-            ExecutionEvent executionEvent = (ExecutionEvent) event;
-            switch (executionEvent.getType()) {
-            case SessionStarted:
-                notifySessionStart(executionEvent);
-                break;
-            case SessionEnded:
-                notifySessionFinish(executionEvent);
-                break;
-            case ProjectStarted:
-                notifyProjectBuildStart(executionEvent);
-                break;
-            case ProjectSucceeded:
-            case ProjectFailed:
-            case ProjectSkipped:
-                notifyProjectBuildFinish(executionEvent);
-                break;
-            case MojoStarted:
-                notifyMojoExecutionStart(executionEvent);
-                break;
-            case MojoSucceeded:
-            case MojoSkipped:
-            case MojoFailed:
-                notifyMojoExecutionFinish(executionEvent);
-                break;
-            default:
-                break;
-            }
-        }
+    public void append(String projectId, String event) {
+        String msg = event.endsWith("\n") ? event.substring(0, event.length() - 1) : event;
+        onProjectLog(projectId, msg);
     }
 
     protected void notifySessionStart(ExecutionEvent event) {
+        onStartSession();
     }
 
     protected void notifySessionFinish(ExecutionEvent event) {
+        onFinishSession();
     }
 
     protected void notifyProjectBuildStart(ExecutionEvent event) {
         onStartProject(getProjectId(event), getProjectDisplay(event));
     }
 
-    protected void notifyProjectBuildFinish(ExecutionEvent event) throws Exception {
+    protected void notifyProjectBuildFinish(ExecutionEvent event) {
         onStopProject(getProjectId(event), getProjectDisplay(event));
     }
 
@@ -115,25 +66,25 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
         onStopMojo(getProjectId(event), getProjectDisplay(event));
     }
 
+    protected void onStartSession() {
+    }
+
+    protected void onFinishSession() {
+    }
+
     protected void onStartProject(String projectId, String display) {
-        MDC.put(KEY_PROJECT_ID, projectId);
     }
 
     protected void onStopProject(String projectId, String display) {
-        MDC.remove(KEY_PROJECT_ID);
     }
 
     protected void onStartMojo(String projectId, String display) {
-        Slf4jLogger.setCurrentProject(projectId);
-        MDC.put(KEY_PROJECT_ID, projectId);
     }
 
     protected void onStopMojo(String projectId, String display) {
-        MDC.put(KEY_PROJECT_ID, projectId);
     }
 
     protected void onProjectLog(String projectId, String message) {
-        MDC.put(KEY_PROJECT_ID, projectId);
     }
 
     private String getProjectId(ExecutionEvent event) {
@@ -142,34 +93,9 @@ public abstract class AbstractLoggingSpy extends AbstractEventSpy {
 
     private String getProjectDisplay(ExecutionEvent event) {
         String projectId = getProjectId(event);
-        String disp = event.getMojoExecution() != null
+        return event.getMojoExecution() != null
                 ? ":" + projectId + ":" + event.getMojoExecution().toString()
                 : ":" + projectId;
-        return disp;
-    }
-
-    public void append(String projectId, String event) {
-        String msg = event.endsWith("\n") ? event.substring(0, event.length() - 1) : event;
-        onProjectLog(projectId, msg);
-    }
-
-    protected static class ProjectBuild {
-        MavenProject project;
-        volatile MojoExecution execution;
-
-        @Override
-        public String toString() {
-            MojoExecution e = execution;
-            return e != null ? ":" + project.getArtifactId() + ":" + e.toString() : ":" + project.getArtifactId();
-        }
-
-        public AttributedString toDisplay() {
-            return new AttributedString(toString());
-        }
-
-        public String projectId() {
-            return project.getArtifactId();
-        }
     }
 
 }

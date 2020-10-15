@@ -35,35 +35,20 @@ public class SingleModuleTest extends SingleModuleNativeIT {
                         + ":clean {execution: default-clean}");
         inOrder.verify(output).projectStateChanged(
                 "single-module",
-                ":single-module");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
                 ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
                         + ":resources {execution: default-resources}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module");
         inOrder.verify(output).projectStateChanged(
                 "single-module",
                 ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
                         + ":compile {execution: default-compile}");
         inOrder.verify(output).projectStateChanged(
                 "single-module",
-                ":single-module");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
                 ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
                         + ":testResources {execution: default-testResources}");
         inOrder.verify(output).projectStateChanged(
                 "single-module",
-                ":single-module");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
                 ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
                         + ":testCompile {execution: default-testCompile}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module");
         inOrder.verify(output).projectStateChanged(
                 "single-module",
                 ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-surefire-plugin")
@@ -72,9 +57,6 @@ public class SingleModuleTest extends SingleModuleNativeIT {
                 "single-module",
                 ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-install-plugin")
                         + ":install {execution: default-install}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module");
 
         inOrder.verify(output).projectFinished("single-module");
     }

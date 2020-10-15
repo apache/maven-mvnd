@@ -28,6 +28,7 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
@@ -58,11 +59,13 @@ public class TerminalOutput implements ClientOutput {
     private final Thread reader;
     private volatile Exception exception;
     private volatile boolean closing;
+    private final CountDownLatch closed = new CountDownLatch(1);
     private int linesPerProject = 0;
     private boolean displayDone = false;
 
     enum EventType {
-        PROJECT_STATUS,
+        PROJECT_STATE,
+        PROJECT_FINISHED,
         LOG,
         ERROR,
         END_OF_STREAM,
@@ -82,8 +85,13 @@ public class TerminalOutput implements ClientOutput {
     }
 
     static class Project {
+        final String id;
         String status;
         final List<String> log = new ArrayList<>();
+
+        public Project(String id) {
+            this.id = id;
+        }
     }
 
     public TerminalOutput(Path logFile) throws IOException {
@@ -102,7 +110,7 @@ public class TerminalOutput implements ClientOutput {
 
     public void projectStateChanged(String projectId, String task) {
         try {
-            queue.put(new Event(EventType.PROJECT_STATUS, projectId, task));
+            queue.put(new Event(EventType.PROJECT_STATE, projectId, task));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -110,7 +118,7 @@ public class TerminalOutput implements ClientOutput {
 
     public void projectFinished(String projectId) {
         try {
-            queue.put(new Event(EventType.PROJECT_STATUS, projectId, null));
+            queue.put(new Event(EventType.PROJECT_FINISHED, projectId, null));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -119,7 +127,12 @@ public class TerminalOutput implements ClientOutput {
     @Override
     public void accept(String projectId, String message) {
         try {
-            queue.put(new Event(EventType.LOG, projectId, message));
+            if (closing) {
+                closed.await();
+                System.err.println(message);
+            } else {
+                queue.put(new Event(EventType.LOG, projectId, message));
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -176,12 +189,8 @@ public class TerminalOutput implements ClientOutput {
                     }
                     case LOG: {
                         if (entry.projectId != null) {
-                            Project prj = projects.get(entry.projectId);
-                            if (prj != null) {
-                                prj.log.add(entry.message);
-                            } else {
-                                log.accept(entry.message);
-                            }
+                            Project prj = projects.computeIfAbsent(entry.projectId, Project::new);
+                            prj.log.add(entry.message);
                         } else {
                             log.accept(entry.message);
                         }
@@ -196,18 +205,19 @@ public class TerminalOutput implements ClientOutput {
                         terminal.flush();
                         return;
                     }
-                    case PROJECT_STATUS:
-                        if (entry.message != null) {
-                            Project prj = projects.computeIfAbsent(entry.projectId, p -> new Project());
-                            prj.status = entry.message;
-                        } else {
-                            Project prj = projects.remove(entry.projectId);
-                            if (prj != null) {
-                                prj.log.forEach(log);
-                            }
-                            displayDone();
-                        }
+                    case PROJECT_STATE: {
+                        Project prj = projects.computeIfAbsent(entry.projectId, Project::new);
+                        prj.status = entry.message;
                         break;
+                    }
+                    case PROJECT_FINISHED: {
+                        Project prj = projects.remove(entry.projectId);
+                        if (prj != null) {
+                            prj.log.forEach(log);
+                        }
+                        displayDone();
+                        break;
+                    }
                     case INPUT:
                         switch (entry.message.charAt(0)) {
                         case '+':
@@ -255,6 +265,7 @@ public class TerminalOutput implements ClientOutput {
         worker.join();
         reader.join();
         terminal.close();
+        closed.countDown();
         if (exception != null) {
             throw exception;
         }
@@ -277,7 +288,7 @@ public class TerminalOutput implements ClientOutput {
             lines.add(new AttributedString("Building..."));
             int remLogLines = dispLines - projects.size();
             for (Project prj : projects.values()) {
-                lines.add(AttributedString.fromAnsi(prj.status != null ? prj.status : "<unknown>"));
+                lines.add(AttributedString.fromAnsi(prj.status != null ? prj.status : prj.id + ":<unknown>"));
                 // get the last lines of the project log, taking multi-line logs into account
                 int nb = Math.min(remLogLines, linesPerProject);
                 List<AttributedString> logs = lastN(prj.log, nb).stream()
