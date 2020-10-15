@@ -15,6 +15,7 @@
  */
 package org.jboss.fuse.mvnd.common;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -25,6 +26,10 @@ import java.util.stream.Stream;
 public class ServerMain {
 
     public static void main(String[] args) throws Exception {
+        // Disable URL caching so that  the JVM does not try to cache resources
+        // loaded from jars that are built by a previous run
+        new File("txt").toURI().toURL().openConnection().setDefaultUseCaches(false);
+
         final String uidStr = Environment.DAEMON_UID.systemProperty().orFail().asString();
         final Path mvndHome = Environment.MVND_HOME.systemProperty().orFail().asPath();
         URL[] classpath = Stream.concat(

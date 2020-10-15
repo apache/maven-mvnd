@@ -436,7 +436,6 @@ public class DaemonMavenCli {
         }
 
         eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
-        eventSpyDispatcher.getEventSpies().add(realmCache.asEventSpy());
 
         maven = container.lookup(Maven.class);
 
