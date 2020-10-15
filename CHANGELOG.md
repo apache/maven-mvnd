@@ -13,6 +13,7 @@
 **Merged pull requests:**
 
 - Honor the -X / --debug / --quiet arguments on the command line [\#90](https://github.com/mvndaemon/mvnd/pull/90) ([gnodet](https://github.com/gnodet))
+- Fix mvn [\#89](https://github.com/mvndaemon/mvnd/pull/89) ([gnodet](https://github.com/gnodet))
 - Fix display [\#88](https://github.com/mvndaemon/mvnd/pull/88) ([gnodet](https://github.com/gnodet))
 - Use Visual Studio 2019 pre-installed on Windows CI workers to save some [\#84](https://github.com/mvndaemon/mvnd/pull/84) ([ppalaga](https://github.com/ppalaga))
 - Use a maven proxy for integration tests to speed them up [\#83](https://github.com/mvndaemon/mvnd/pull/83) ([gnodet](https://github.com/gnodet))
