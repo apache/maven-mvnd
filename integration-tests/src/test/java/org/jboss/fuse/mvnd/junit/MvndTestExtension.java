@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
+import org.apache.log4j.Logger;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.DefaultClient;
@@ -40,6 +41,8 @@ import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import static org.jboss.fuse.mvnd.junit.TestUtils.deleteDir;
 
 public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
+
+    private static final Logger LOG = Logger.getLogger(MvndTestExtension.class);
 
     /** A placeholder to replace with a temporary directory outside of the current source tree */
     public static final String TEMP_EXTERNAL = "${temp.external}";
@@ -207,11 +210,16 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         }
 
         static Path createSettings(Path settingsPath) {
+            final String mrmRepoUrl = System.getProperty("mrm.repository.url");
+            if (mrmRepoUrl == null || mrmRepoUrl.isEmpty()) {
+                LOG.info("Building without mrm-maven-plugin");
+                return null;
+            }
+            LOG.info("Building with mrm-maven-plugin");
             final Path settingsTemplatePath = Paths.get("src/test/resources/settings-template.xml");
             try {
                 final String template = Files.readString(settingsTemplatePath);
-                final String content = template.replaceAll("@mrm.repository.url@",
-                        Objects.requireNonNull(System.getProperty("mrm.repository.url")));
+                final String content = template.replaceAll("@mrm.repository.url@", mrmRepoUrl);
                 try {
                     Files.write(settingsPath, content.getBytes(StandardCharsets.UTF_8));
                 } catch (Exception e) {
