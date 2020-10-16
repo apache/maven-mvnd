@@ -233,6 +233,7 @@ limitations under the License.</inlineHeader>
                         <excludes>
                             <exclude>**/*.adoc</exclude>
                             <exclude>**/README.*</exclude>
+                            <exclude>**/.cache/**</exclude>
                             <exclude>**/.gitkeep</exclude>
                             <exclude>**/conf/logging/logback.xml</exclude>
                             <exclude>**/mvnd.properties.template</exclude>

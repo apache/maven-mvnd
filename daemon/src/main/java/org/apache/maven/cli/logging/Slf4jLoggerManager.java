@@ -1,21 +1,4 @@
 /*
- * Copyright 2019 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package org.apache.maven.cli.logging;
-
-/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,6 +16,8 @@ package org.apache.maven.cli.logging;
  * specific language governing permissions and limitations
  * under the License.
  */
+package org.apache.maven.cli.logging;
+
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.LoggerManager;
 import org.slf4j.ILoggerFactory;
@@ -44,7 +29,8 @@ import org.slf4j.LoggerFactory;
  * ignoring Plexus logger API parts that are not classical and probably not really used.
  *
  * <p>
- * Adapted from https://github.com/apache/maven/blob/maven-3.6.3/maven-embedder/src/main/java/org/apache/maven/cli/logging/Slf4jLoggerManager.java
+ * Adapted from
+ * https://github.com/apache/maven/blob/maven-3.6.3/maven-embedder/src/main/java/org/apache/maven/cli/logging/Slf4jLoggerManager.java
  *
  * @author Jason van Zyl
  */
