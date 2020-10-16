@@ -196,7 +196,7 @@ exec "$JAVACMD" \
   -Dmvnd.logging=mvns \
   "-Dclassworlds.conf=${MAVEN_HOME}/bin/m2.conf" \
   "-Dmvnd.home=${MAVEN_HOME}" \
-  "-Dmaven.home=${MAVEN_HOME}" \
+  "-Dmaven.home=${MAVEN_HOME}/mvn" \
   "-Dlibrary.jansi.path=${MAVEN_HOME}/lib/jansi-native" \
   "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
   ${CLASSWORLDS_LAUNCHER} --builder smart --threads 0.5C "$@"

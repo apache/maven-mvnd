@@ -200,11 +200,11 @@ public class DaemonMavenCli {
         // Make sure the Maven home directory is an absolute path to save us from confusion with say drive-relative
         // Windows paths.
         //
-        String mavenHome = System.getProperty("mvnd.home");
+        String mvndHome = System.getProperty("mvnd.home");
 
-        if (mavenHome != null) {
-            System.setProperty("mvnd.home", new File(mavenHome).getAbsolutePath());
-            System.setProperty("maven.home", new File(mavenHome).getAbsolutePath());
+        if (mvndHome != null) {
+            System.setProperty("mvnd.home", new File(mvndHome).getAbsolutePath());
+            System.setProperty("maven.home", new File(mvndHome + "/mvn").getAbsolutePath());
         }
     }
 
