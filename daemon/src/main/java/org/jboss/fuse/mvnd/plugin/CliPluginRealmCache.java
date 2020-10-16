@@ -20,9 +20,11 @@ package org.jboss.fuse.mvnd.plugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
@@ -32,6 +34,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,6 +49,10 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.eventspy.AbstractEventSpy;
+import org.apache.maven.eventspy.EventSpy;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.project.MavenProject;
@@ -428,6 +435,42 @@ public class CliPluginRealmCache
     private static final Logger log = LoggerFactory.getLogger(CliPluginRealmCache.class);
     protected final Map<Key, ValidableCacheRecord> cache = new ConcurrentHashMap<>();
     private final RecordValidator watcher;
+    private final EventSpy eventSpy = new AbstractEventSpy() {
+
+        private Path multiModuleProjectDirectory;
+
+        @Override
+        public void onEvent(Object event) throws Exception {
+            try {
+                if (event instanceof MavenExecutionRequest) {
+                    /*  Store the multiModuleProjectDirectory path */
+                    multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
+                } else if (event instanceof MavenExecutionResult) {
+                    /* Evict the entries refering to jars under multiModuleProjectDirectory */
+                    final Iterator<Entry<Key, ValidableCacheRecord>> i = cache.entrySet().iterator();
+                    while (i.hasNext()) {
+                        final Entry<Key, ValidableCacheRecord> entry = i.next();
+                        final ValidableCacheRecord record = entry.getValue();
+                        for (URL url : record.getRealm().getURLs()) {
+                            if (url.getProtocol().equals("file")) {
+                                final Path path = Paths.get(url.toURI());
+                                if (path.startsWith(multiModuleProjectDirectory)) {
+                                    log.debug(
+                                            "Removing PluginRealmCache entry {} because it refers to an artifact in the build tree {}",
+                                            entry.getKey(), path);
+                                    record.dispose();
+                                    i.remove();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Could not notify CliPluginRealmCache", e);
+            }
+        }
+    };
 
     public CliPluginRealmCache() {
         final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
@@ -473,6 +516,10 @@ public class CliPluginRealmCache
 
     public void dispose() {
         flush();
+    }
+
+    public EventSpy asEventSpy() {
+        return eventSpy;
     }
 
 }
