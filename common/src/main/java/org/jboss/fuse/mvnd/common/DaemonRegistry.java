@@ -224,7 +224,7 @@ public class DaemonRegistry implements AutoCloseable {
     }
 
     private void doUpdate(Runnable updater) {
-        if (!Files.isReadable(getRegistryFile())) {
+        if (!Files.isReadable(registryFile)) {
             throw new DaemonException("Registry became unaccessible");
         }
         try {
@@ -350,7 +350,8 @@ public class DaemonRegistry implements AutoCloseable {
             if (currentThread().isInterrupted())
                 throw new InterruptedException();
             else
-                throw new IllegalStateException("Failed to acquire lock after " + BUSY_LOCK_LIMIT / 1e9 + " seconds.");
+                throw new IllegalStateException("Failed to lock offset " + offset + " of " + registryFile + " within "
+                        + BUSY_LOCK_LIMIT / 1e9 + " seconds.");
     }
 
     public void unlockLong(long offset) throws IllegalMonitorStateException {
