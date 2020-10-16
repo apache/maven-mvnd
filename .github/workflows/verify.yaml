@@ -38,7 +38,7 @@ jobs:
       run: gu install native-image
 
     - name: mvn clean verify
-      run: ./mvnw clean verify -Pnative -B -ntp -e
+      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
 
     - name: Upload daemon test logs
       if: ${{ success() || failure() }}
@@ -96,7 +96,7 @@ jobs:
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        ./mvnw clean verify -Pnative -B -ntp -e
+        ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
 
     - name: Upload daemon test logs
       if: ${{ success() || failure() }}
@@ -126,7 +126,7 @@ jobs:
       run: gu install native-image
 
     - name: mvn clean verify
-      run: ./mvnw clean verify -Pnative -B -ntp -e
+      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
 
     - name: Upload daemon test logs
       if: ${{ success() || failure() }}
