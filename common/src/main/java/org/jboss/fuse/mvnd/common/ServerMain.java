@@ -26,11 +26,11 @@ public class ServerMain {
 
     public static void main(String[] args) throws Exception {
         final String uidStr = Environment.DAEMON_UID.systemProperty().orFail().asString();
-        final Path mavenHome = Environment.MVND_HOME.systemProperty().orFail().asPath();
+        final Path mvndHome = Environment.MVND_HOME.systemProperty().orFail().asPath();
         URL[] classpath = Stream.concat(
                 /* jars */
-                Stream.of("lib/ext", "lib", "boot")
-                        .map(mavenHome::resolve)
+                Stream.of("mvn/lib/ext", "mvn/lib", "mvn/boot")
+                        .map(mvndHome::resolve)
                         .flatMap((Path p) -> {
                             try {
                                 return Files.list(p);
@@ -41,7 +41,7 @@ public class ServerMain {
                         .filter(p -> p.getFileName().toString().endsWith(".jar"))
                         .filter(Files::isRegularFile),
                 /* resources */
-                Stream.of(mavenHome.resolve("conf"), mavenHome.resolve("conf/logging")))
+                Stream.of(mvndHome.resolve("mvn/conf"), mvndHome.resolve("mvn/conf/logging")))
 
                 .map(Path::normalize)
                 .map(Path::toUri)

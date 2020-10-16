@@ -292,7 +292,7 @@ public class DaemonConnector {
     }
 
     private Path findCommonJar(Path mavenHome) {
-        final Path result = mavenHome.resolve("lib/ext/mvnd-common-" + buildProperties.getVersion() + ".jar");
+        final Path result = mavenHome.resolve("mvn/lib/ext/mvnd-common-" + buildProperties.getVersion() + ".jar");
         if (!Files.isRegularFile(result)) {
             throw new RuntimeException("File must exist and must be a regular file: " + result);
         }

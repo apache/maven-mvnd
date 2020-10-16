@@ -54,7 +54,7 @@ public class ClientLayout extends Layout {
                                     final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
                                     if (mvndH != null) {
                                         final Path mvndDaemonLib = mvndH
-                                                .resolve("lib/ext/mvnd-daemon-" + BuildProperties.getInstance().getVersion()
+                                                .resolve("mvn/lib/ext/mvnd-daemon-" + BuildProperties.getInstance().getVersion()
                                                         + ".jar");
                                         if (Files.exists(mvndDaemonLib)) {
                                             return mvndH.toString();

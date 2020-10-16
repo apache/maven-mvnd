@@ -17,14 +17,14 @@
 -->
 <assembly>
 
-    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}">
+    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
                     excludes="lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*"/>
         </artifact>
     </artifactSet>
 
-    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/lib/ext">
+    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/mvn/lib/ext">
         <artifact id="org.jboss.fuse.mvnd:mvnd-daemon:${project.version}">
             <exclusion id="org.codehaus.plexus:plexus-classworlds"/>
             <exclusion id="*:cdi-api"/>
