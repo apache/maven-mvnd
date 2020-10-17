@@ -44,9 +44,8 @@ public class ClientLayout extends Layout {
             final Path mvndPropertiesPath = Environment.findMvndPropertiesPath();
             final Supplier<Properties> mvndProperties = lazyMvndProperties(mvndPropertiesPath);
             final Path pwd = Paths.get(".").toAbsolutePath().normalize();
-            final Path mvndHome = Environment.findBasicMavenHome()
-                    .orLocalProperty(mvndProperties, mvndPropertiesPath)
-                    .or(new ValueSource(
+            final Path mvndHome = Environment.MVND_HOME
+                    .fromValueSource(new ValueSource(
                             description -> description.append("path relative to the mvnd executable"),
                             () -> {
                                 Optional<String> cmd = ProcessHandle.current().info().command();
@@ -63,6 +62,9 @@ public class ClientLayout extends Layout {
                                 }
                                 return null;
                             }))
+                    .orSystemProperty()
+                    .orEnvironmentVariable()
+                    .orLocalProperty(mvndProperties, mvndPropertiesPath)
                     .orFail()
                     .asPath()
                     .toAbsolutePath().normalize();

@@ -72,8 +72,8 @@ public class Layout {
 
             ENV_INSTANCE = new Layout(
                     mvndPropertiesPath,
-                    Environment.findBasicMavenHome()
-                            .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                    Environment.MVND_HOME
+                            .systemProperty()
                             .orFail()
                             .asPath()
                             .toAbsolutePath().normalize(),

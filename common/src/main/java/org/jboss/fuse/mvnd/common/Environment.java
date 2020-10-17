@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Collects system properties and environment variables used by mvnd client or server.
@@ -41,6 +43,7 @@ public enum Environment {
     DAEMON_IDLE_TIMEOUT("daemon.idleTimeout", null),
     DAEMON_UID("daemon.uid", null);
 
+    private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
     static Properties properties = System.getProperties();
     static Map<String, String> env = System.getenv();
 
@@ -64,6 +67,10 @@ public enum Environment {
 
     public Environment.EnvValue environmentVariable() {
         return new EnvValue(this, environmentVariableSource());
+    }
+
+    public EnvValue fromValueSource(ValueSource valueSource) {
+        return new EnvValue(this, valueSource);
     }
 
     public String asCommandLineProperty(String value) {
@@ -95,14 +102,6 @@ public enum Environment {
                 .environmentVariable()
                 .orSystemProperty()
                 .orDefault(() -> System.getProperty("user.home") + "/.m2/mvnd.properties")
-                .asPath()
-                .toAbsolutePath().normalize();
-    }
-
-    public static Path findMavenHome(Supplier<Properties> mvndProperties, Path mvndPropertiesPath) {
-        return findBasicMavenHome()
-                .orLocalProperty(mvndProperties, mvndPropertiesPath)
-                .orFail()
                 .asPath()
                 .toAbsolutePath().normalize();
     }
@@ -231,7 +230,7 @@ public enum Environment {
 
         public Environment.EnvValue orDefault(Supplier<String> defaultSupplier) {
             return new EnvValue(this, envKey,
-                    new ValueSource(sb -> sb.append("default").append(defaultSupplier.get()), defaultSupplier));
+                    new ValueSource(sb -> sb.append("default: ").append(defaultSupplier.get()), defaultSupplier));
         }
 
         public Environment.EnvValue orFail() {
@@ -265,7 +264,18 @@ public enum Environment {
                     return result;
                 }
             }
-            return valueSource.valueSupplier.get();
+            final String result = valueSource.valueSupplier.get();
+            if (result != null && LOG.isDebugEnabled()) {
+                StringBuilder sb = new StringBuilder("Loaded environment value for key [")
+                        .append(envKey.name())
+                        .append("] from ");
+                valueSource.descriptionFunction.apply(sb);
+                sb.append(": [")
+                        .append(result)
+                        .append(']');
+                LOG.debug(sb.toString());
+            }
+            return result;
         }
 
         public String asString() {
@@ -290,4 +300,5 @@ public enum Environment {
         }
 
     }
+
 }

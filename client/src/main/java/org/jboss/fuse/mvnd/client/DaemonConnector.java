@@ -15,6 +15,8 @@
  */
 package org.jboss.fuse.mvnd.client;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
@@ -30,7 +32,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec.Result;
@@ -252,7 +256,11 @@ public class DaemonConnector {
         final Path workingDir = layout.userDir();
         String command = "";
         try {
-            String classpath = findCommonJar(mavenHome).toString();
+            String classpath = findJars(
+                    mavenHome,
+                    p -> p.getFileName().toString().equals("mvnd-common-" + buildProperties.getVersion() + ".jar"),
+                    p -> p.getFileName().toString().startsWith("slf4j-api-"),
+                    p -> p.getFileName().toString().startsWith("logback-"));
             final String java = IS_WINDOWS ? "bin\\java.exe" : "bin/java";
             List<String> args = new ArrayList<>();
             args.add(layout.javaHome().resolve(java).toString());
@@ -275,7 +283,7 @@ public class DaemonConnector {
             command = String.join(" ", args);
 
             LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
-            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(layout.daemonLog("output").toFile());
+            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(layout.daemonLog(uid + ".out").toFile());
             new ProcessBuilder()
                     .directory(workingDir.toFile())
                     .command(args)
@@ -291,16 +299,21 @@ public class DaemonConnector {
         }
     }
 
-    private Path findCommonJar(Path mavenHome) {
-        final Path result = mavenHome.resolve("mvn/lib/ext/mvnd-common-" + buildProperties.getVersion() + ".jar");
-        if (!Files.isRegularFile(result)) {
-            throw new RuntimeException("File must exist and must be a regular file: " + result);
+    private String findJars(Path mavenHome, Predicate<Path>... filters) {
+        final Path libExtDir = mavenHome.resolve("mvn/lib/ext");
+        try (Stream<Path> jars = Files.list(libExtDir)) {
+            return jars
+                    .filter(Stream.of(filters).reduce((previous, current) -> previous.or(current)).get())
+                    .map(Path::toString)
+                    .collect(Collectors.joining(File.pathSeparator));
+        } catch (IOException e) {
+            throw new RuntimeException("Could not list " + libExtDir);
         }
-        return result;
     }
 
     private DaemonClientConnection connectToDaemonWithId(String daemon) throws DaemonException.ConnectException {
-        // Look for 'our' daemon among the busy daemons - a daemon will start in busy state so that nobody else will grab it.
+        // Look for 'our' daemon among the busy daemons - a daemon will start in busy state so that nobody else will
+        // grab it.
         DaemonInfo daemonInfo = registry.get(daemon);
         if (daemonInfo != null) {
             try {
