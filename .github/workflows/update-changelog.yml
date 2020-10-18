@@ -42,7 +42,7 @@ jobs:
         run: |
           git config --local user.email "$CI_EMAIL"
           git config --local user.name "$CI_USER"
-          git add CHANGELOG.md && git commit -m 'Updated CHANGELOG.md' && echo ::set-env name=push::1 || echo "No changes to CHANGELOG.md"
+          git add CHANGELOG.md && git commit -m 'Updated CHANGELOG.md' && $(echo "push=1" >> $GITHUB_ENV) || echo "No changes to CHANGELOG.md"
 
       - name: Push changes
         if: env.push == 1

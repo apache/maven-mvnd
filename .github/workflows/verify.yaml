@@ -162,7 +162,7 @@ jobs:
             VERSION=${GITHUB_REF##*/}
         fi
         echo "Using VERSION=$VERSION"
-        echo "::set-env name=VERSION::$VERSION"
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Create Release
       id: create_release
