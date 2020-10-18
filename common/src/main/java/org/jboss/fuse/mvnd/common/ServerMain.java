@@ -71,7 +71,6 @@ public class ServerMain {
         Thread.currentThread().setContextClassLoader(loader);
         Class<?> clazz = loader.loadClass("org.jboss.fuse.mvnd.daemon.Server");
         try (AutoCloseable server = (AutoCloseable) clazz.getConstructor(String.class).newInstance(uidStr)) {
-            System.out.println("server = " + server);
             ((Runnable) server).run();
         }
     }
