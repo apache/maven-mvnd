@@ -193,7 +193,7 @@ public class DaemonRegistry implements AutoCloseable {
 
     public void removeStopEvents(final Collection<DaemonStopEvent> events) {
         lock.lock();
-        LOGGER.info("Removing {} daemon stop events from registry", events.size());
+        LOGGER.debug("Removing {} daemon stop events from registry", events.size());
         try {
             update(() -> stopEvents.removeAll(events));
         } finally {
