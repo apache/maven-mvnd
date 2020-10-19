@@ -139,11 +139,11 @@ public class DaemonConnector {
                 .map(Optional::get)
                 .collect(Collectors.toList());
         for (DaemonStopEvent stopEvent : recentStopEvents) {
-            LOGGER.info("Previous Daemon ({}) stopped at {} {}",
+            LOGGER.debug("Previous Daemon ({}) stopped at {} {}",
                     stopEvent.getUid(), stopEvent.getTimestamp(), stopEvent.getReason());
         }
 
-        LOGGER.info(generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size()));
+        LOGGER.debug(generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size()));
     }
 
     public static String generate(final int numBusy, final int numIncompatible, final int numStopped) {
@@ -191,7 +191,7 @@ public class DaemonConnector {
         final Collection<DaemonInfo> compatibleCanceledDaemons = getCompatibleDaemons(
                 canceledBusy.getOrDefault(true, Collections.emptyList()), constraint);
         if (!compatibleCanceledDaemons.isEmpty()) {
-            LOGGER.info("Waiting for daemons with canceled builds to become available");
+            LOGGER.debug("Waiting for daemons with canceled builds to become available");
             long start = System.currentTimeMillis();
             while (connection == null && System.currentTimeMillis() - start < CANCELED_WAIT_TIMEOUT) {
                 try {
@@ -212,7 +212,7 @@ public class DaemonConnector {
             if (result.isCompatible()) {
                 compatibleDaemons.add(daemon);
             } else {
-                LOGGER.info("{} daemon {} does not match the desired criteria: "
+                LOGGER.debug("{} daemon {} does not match the desired criteria: "
                         + result.getWhy(), daemon.getState(), daemon.getUid());
             }
         }
@@ -351,7 +351,7 @@ public class DaemonConnector {
 
         @Override
         public boolean maybeStaleAddress(Exception failure) {
-            LOGGER.info("Removing daemon from the registry due to communication failure. Daemon information: {}", daemon);
+            LOGGER.debug("Removing daemon from the registry due to communication failure. Daemon information: {}", daemon);
             final long timestamp = System.currentTimeMillis();
             final DaemonStopEvent stopEvent = new DaemonStopEvent(daemon.getUid(), timestamp, null,
                     "by user or operating system");
