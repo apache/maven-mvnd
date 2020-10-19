@@ -208,4 +208,7 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Publish on sdkman.io
+      env:
+        SDKMAN_CONSUMER_KEY: ${{ secrets.SDKMAN_CONSUMER_KEY }}
+        SDKMAN_CONSUMER_TOKEN: ${{ secrets.SDKMAN_CONSUMER_TOKEN }}
       run: ./build/publish-on-sdkman.sh "${{ env.VERSION }}"
