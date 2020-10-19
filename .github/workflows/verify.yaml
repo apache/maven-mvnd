@@ -51,7 +51,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-linux-amd64.zip
-        path: daemon/target/mvnd-*.zip
+        path: daemon/target/maven-distro/mvnd-*.zip
 
   windows:
     runs-on: windows-2019
@@ -109,7 +109,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-windows-amd64.zip
-        path: daemon/target/mvnd-*.zip
+        path: daemon/target/maven-distro/mvnd-*.zip
 
   darwin:
     runs-on: macos-10.15
@@ -139,7 +139,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-darwin-amd64.zip
-        path: daemon/target/mvnd-*.zip
+        path: daemon/target/maven-distro/mvnd-*.zip
 
   deploy:
     runs-on: ubuntu-18.04
