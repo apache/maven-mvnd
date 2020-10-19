@@ -59,7 +59,7 @@ public class DefaultClient implements Client {
                 if (i < argv.length) {
                     logFile = Paths.get(argv[i++]);
                 } else {
-                    throw new IllegalArgumentException("-l and --log-file need to befollowed by a path");
+                    throw new IllegalArgumentException("-l and --log-file need to be followed by a path");
                 }
             } else {
                 args.add(arg);
