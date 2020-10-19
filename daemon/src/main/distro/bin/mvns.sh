@@ -63,17 +63,17 @@ done
 
 saveddir=`pwd`
 
-MAVEN_HOME=`dirname "$PRG"`/..
+MVND_HOME=`dirname "$PRG"`/..
 
 # make it fully qualified
-MAVEN_HOME=`cd "$MAVEN_HOME" && pwd`
+MVND_HOME=`cd "$MVND_HOME" && pwd`
 
 cd "$saveddir"
 
 # For Cygwin, ensure paths are in Unix format before anything is touched
 if $cygwin ; then
-  [ -n "$MAVEN_HOME" ] &&
-    MAVEN_HOME=`cygpath --unix "$MAVEN_HOME"`
+  [ -n "$MVND_HOME" ] &&
+    MVND_HOME=`cygpath --unix "$MVND_HOME"`
   [ -n "$JAVA_HOME" ] &&
     JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
   [ -n "$CLASSPATH" ] &&
@@ -82,8 +82,8 @@ fi
 
 # For MinGW, ensure paths are in Unix format before anything is touched
 if $mingw ; then
-  [ -n "$MAVEN_HOME" ] &&
-    MAVEN_HOME=`(cd "$MAVEN_HOME"; pwd)`
+  [ -n "$MVND_HOME" ] &&
+    MVND_HOME=`(cd "$MVND_HOME"; pwd)`
   [ -n "$JAVA_HOME" ] &&
     JAVA_HOME=`(cd "$JAVA_HOME"; pwd)`
   # TODO classpath?
@@ -102,13 +102,13 @@ if [ ! -x "$JAVACMD" ] ; then
   exit 1
 fi
 
-CLASSWORLDS_JAR=`echo "${MAVEN_HOME}"/boot/plexus-classworlds-*.jar`
+CLASSWORLDS_JAR=`echo "${MVND_HOME}"/mvn/boot/plexus-classworlds-*.jar`
 CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin ; then
-  [ -n "$MAVEN_HOME" ] &&
-    MAVEN_HOME=`cygpath --path --windows "$MAVEN_HOME"`
+  [ -n "$MVND_HOME" ] &&
+    MVND_HOME=`cygpath --path --windows "$MVND_HOME"`
   [ -n "$JAVA_HOME" ] &&
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
   [ -n "$CLASSPATH" ] &&
@@ -192,12 +192,12 @@ exec "$JAVACMD" \
   $MAVEN_OPTS \
   $MAVEN_DEBUG_OPTS \
   -classpath "${CLASSWORLDS_JAR}" \
-  "-Dlogback.configurationFile=${MAVEN_HOME}/conf/logging/logback.xml" \
+  "-Dlogback.configurationFile=${MVND_HOME}/mvn/conf/logging/logback.xml" \
   -Dmvnd.logging=mvns \
-  "-Dclassworlds.conf=${MAVEN_HOME}/bin/m2.conf" \
-  "-Dmvnd.home=${MAVEN_HOME}" \
-  "-Dmaven.home=${MAVEN_HOME}/mvn" \
-  "-Dlibrary.jansi.path=${MAVEN_HOME}/lib/jansi-native" \
+  "-Dclassworlds.conf=${MVND_HOME}/mvn/bin/m2.conf" \
+  "-Dmvnd.home=${MVND_HOME}" \
+  "-Dmaven.home=${MVND_HOME}/mvn" \
+  "-Dlibrary.jansi.path=${MVND_HOME}/mvn/lib/jansi-native" \
   "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
   ${CLASSWORLDS_LAUNCHER} --builder smart --threads 0.5C "$@"
 
