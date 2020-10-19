@@ -6,15 +6,19 @@
 
 **Closed issues:**
 
+- Isolate the integration tests from the local environment [\#97](https://github.com/mvndaemon/mvnd/issues/97)
 - Add mvn.cmd [\#93](https://github.com/mvndaemon/mvnd/issues/93)
 - Test a scenario using mvn [\#92](https://github.com/mvndaemon/mvnd/issues/92)
 - Re-layout the distro so that mvn is not in bin [\#91](https://github.com/mvndaemon/mvnd/issues/91)
+- Replace deprecated GitHub actions commands [\#85](https://github.com/mvndaemon/mvnd/issues/85)
 - The output of modules being built in parallel is interleaved [\#78](https://github.com/mvndaemon/mvnd/issues/78)
 - Show test output while running [\#77](https://github.com/mvndaemon/mvnd/issues/77)
 - Explain project better in README [\#75](https://github.com/mvndaemon/mvnd/issues/75)
 
 **Merged pull requests:**
 
+- Replace deprecated GitHub actions commands \#85 [\#104](https://github.com/mvndaemon/mvnd/pull/104) ([ppalaga](https://github.com/ppalaga))
+- Isolate the integration tests from the local environment [\#101](https://github.com/mvndaemon/mvnd/pull/101) ([ppalaga](https://github.com/ppalaga))
 - Partial revert to fix windows integration test [\#99](https://github.com/mvndaemon/mvnd/pull/99) ([gnodet](https://github.com/gnodet))
 - Add NOTICE LICENSE and README to the distro [\#98](https://github.com/mvndaemon/mvnd/pull/98) ([ppalaga](https://github.com/ppalaga))
 - Re-layout the distro so that mvn is not in bin [\#96](https://github.com/mvndaemon/mvnd/pull/96) ([ppalaga](https://github.com/ppalaga))
