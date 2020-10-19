@@ -17,14 +17,14 @@
 -->
 <assembly>
 
-    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/mvn">
+    <artifactSet to="/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
                     excludes="lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*"/>
         </artifact>
     </artifactSet>
 
-    <artifactSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/mvn/lib/ext">
+    <artifactSet to="/mvn/lib/ext">
         <artifact id="org.jboss.fuse.mvnd:mvnd-daemon:${project.version}">
             <exclusion id="org.codehaus.plexus:plexus-classworlds"/>
             <exclusion id="*:cdi-api"/>
@@ -65,7 +65,7 @@
         </artifact>
     </artifactSet>
 
-    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}">
+    <fileSet to="/">
         <directory path="${basedir}/src/main/distro"/>
         <directory path="${basedir}/..">
             <include>NOTICE.txt</include>
@@ -73,7 +73,7 @@
             <include>README.adoc</include>
         </directory>
     </fileSet>
-    <fileSet to="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}/bin">
+    <fileSet to="/bin">
         <directory path="${basedir}/../client/target">
             <include>mvnd</include>
             <include>mvnd.exe</include>
