@@ -37,8 +37,13 @@ jobs:
     - name: gu install native-image
       run: gu install native-image
 
+    - name: Skip tests when releasing from a tag
+      if: startsWith(github.ref, 'refs/tags')
+      shell: bash
+      run: echo "SKIP_TESTS_OPT=-DskipTests" >> $GITHUB_ENV
+
     - name: mvn clean verify
-      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
+      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e $SKIP_TESTS_OPT
 
     - name: Upload daemon test logs
       if: ${{ success() || failure() }}
@@ -71,7 +76,7 @@ jobs:
         path: ${{ env.JAVA_HOME }}\bin\native-image.exe
         key: ${{ runner.os }}-native-image-${{ env.GRAALVM_VERSION }}
 
-    - name:
+    - name: Check if native-image.exe exists
       id: native_image_exe_exists
       uses: andstor/file-existence-action@v1
       with:
@@ -92,11 +97,16 @@ jobs:
 
     - uses: actions/checkout@v1
 
+    - name: Skip tests when releasing from a tag
+      if: startsWith(github.ref, 'refs/tags')
+      shell: bash
+      run: echo "SKIP_TESTS_OPT=-DskipTests" >> $GITHUB_ENV
+
     - name: mvn clean verify
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
+        ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e %SKIP_TESTS_OPT%
 
     - name: Upload daemon test logs
       if: ${{ success() || failure() }}
@@ -125,8 +135,13 @@ jobs:
     - name: gu install native-image
       run: gu install native-image
 
+    - name: Skip tests when releasing from a tag
+      if: startsWith(github.ref, 'refs/tags')
+      shell: bash
+      run: echo "SKIP_TESTS_OPT=-DskipTests" >> $GITHUB_ENV
+
     - name: mvn clean verify
-      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
+      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e $SKIP_TESTS_OPT
 
     - name: Upload daemon test logs
       if: ${{ success() || failure() }}
