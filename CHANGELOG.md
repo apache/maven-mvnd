@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.8](https://github.com/mvndaemon/mvnd/tree/0.0.8) (2020-10-19)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.7...0.0.8)
+
+**Merged pull requests:**
+
+- Unnecessary directory in the 0.0.7 zip archive \#107 [\#108](https://github.com/mvndaemon/mvnd/pull/108) ([ppalaga](https://github.com/ppalaga))
+
 ## [0.0.7](https://github.com/mvndaemon/mvnd/tree/0.0.7) (2020-10-19)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.6...0.0.7)
@@ -109,6 +117,7 @@
 - Fix \#56 Require Java 8+ instead of Java 11+ at runtime [\#57](https://github.com/mvndaemon/mvnd/pull/57) ([ppalaga](https://github.com/ppalaga))
 - Include native clients in platform specific distros [\#55](https://github.com/mvndaemon/mvnd/pull/55) ([ppalaga](https://github.com/ppalaga))
 - Fix \#53 Using MAVEN\_HOME may clash with other tools [\#54](https://github.com/mvndaemon/mvnd/pull/54) ([ppalaga](https://github.com/ppalaga))
+- Add curl -L flag to cope with redirects [\#51](https://github.com/mvndaemon/mvnd/pull/51) ([fvaleri](https://github.com/fvaleri))
 - Fix \#49 Could not notify CliPluginRealmCache [\#50](https://github.com/mvndaemon/mvnd/pull/50) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.1](https://github.com/mvndaemon/mvnd/tree/0.0.1) (2020-07-30)
