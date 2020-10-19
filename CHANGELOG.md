@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Upload the artifacts from the correct directory [\#109](https://github.com/mvndaemon/mvnd/pull/109) ([ppalaga](https://github.com/ppalaga))
 - Unnecessary directory in the 0.0.7 zip archive \#107 [\#108](https://github.com/mvndaemon/mvnd/pull/108) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.7](https://github.com/mvndaemon/mvnd/tree/0.0.7) (2020-10-19)
@@ -103,6 +104,7 @@
 **Merged pull requests:**
 
 - Use amd64 arch label also on Mac [\#58](https://github.com/mvndaemon/mvnd/pull/58) ([ppalaga](https://github.com/ppalaga))
+- Fix \#33 Maven mojo change ignored [\#38](https://github.com/mvndaemon/mvnd/pull/38) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.2](https://github.com/mvndaemon/mvnd/tree/0.0.2) (2020-08-14)
 
