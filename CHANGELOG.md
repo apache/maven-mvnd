@@ -1,11 +1,12 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.0.7](https://github.com/mvndaemon/mvnd/tree/0.0.7) (2020-10-19)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.6...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.6...0.0.7)
 
 **Closed issues:**
 
+- The system streams should be captured and redirected to the client with a per-thread association to the module being build [\#100](https://github.com/mvndaemon/mvnd/issues/100)
 - Isolate the integration tests from the local environment [\#97](https://github.com/mvndaemon/mvnd/issues/97)
 - Add mvn.cmd [\#93](https://github.com/mvndaemon/mvnd/issues/93)
 - Test a scenario using mvn [\#92](https://github.com/mvndaemon/mvnd/issues/92)
@@ -17,6 +18,7 @@
 
 **Merged pull requests:**
 
+- Issue 100 [\#105](https://github.com/mvndaemon/mvnd/pull/105) ([gnodet](https://github.com/gnodet))
 - Replace deprecated GitHub actions commands \#85 [\#104](https://github.com/mvndaemon/mvnd/pull/104) ([ppalaga](https://github.com/ppalaga))
 - Isolate the integration tests from the local environment [\#101](https://github.com/mvndaemon/mvnd/pull/101) ([ppalaga](https://github.com/ppalaga))
 - Partial revert to fix windows integration test [\#99](https://github.com/mvndaemon/mvnd/pull/99) ([gnodet](https://github.com/gnodet))
@@ -107,7 +109,6 @@
 - Fix \#56 Require Java 8+ instead of Java 11+ at runtime [\#57](https://github.com/mvndaemon/mvnd/pull/57) ([ppalaga](https://github.com/ppalaga))
 - Include native clients in platform specific distros [\#55](https://github.com/mvndaemon/mvnd/pull/55) ([ppalaga](https://github.com/ppalaga))
 - Fix \#53 Using MAVEN\_HOME may clash with other tools [\#54](https://github.com/mvndaemon/mvnd/pull/54) ([ppalaga](https://github.com/ppalaga))
-- Add curl -L flag to cope with redirects [\#51](https://github.com/mvndaemon/mvnd/pull/51) ([fvaleri](https://github.com/fvaleri))
 - Fix \#49 Could not notify CliPluginRealmCache [\#50](https://github.com/mvndaemon/mvnd/pull/50) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.1](https://github.com/mvndaemon/mvnd/tree/0.0.1) (2020-07-30)
