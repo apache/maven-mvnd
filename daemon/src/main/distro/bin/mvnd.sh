@@ -102,7 +102,7 @@ if [ ! -x "$JAVACMD" ] ; then
   exit 1
 fi
 
-DAEMON_JAR=`echo "${MVND_HOME}"/lib/ext/*.jar "${MVND_HOME}"/lib/*.jar`
+DAEMON_JAR=`echo "${MVND_HOME}"/mvn/lib/ext/*.jar "${MVND_HOME}"/mvn/lib/*.jar`
 DAEMON_JAR=$(echo $DAEMON_JAR | sed -e 's/ /:/g')
 DAEMON_LAUNCHER=org.jboss.fuse.mvnd.client.DefaultClient
 
@@ -193,7 +193,7 @@ exec "$JAVACMD" \
   $MAVEN_OPTS \
   $MAVEN_DEBUG_OPTS \
   -classpath "${DAEMON_JAR}" \
-  "-Dlogback.configurationFile=${MVND_HOME}/conf/logging/logback.xml" \
+  "-Dlogback.configurationFile=${MVND_HOME}/mvn/conf/logging/logback.xml" \
   "-Dmvnd.home=${MVND_HOME}" \
   "-Dmaven.home=${MVND_HOME}/mvn" \
   "-Dlibrary.jansi.path=${MVND_HOME}/mvn/lib/jansi-native" \
