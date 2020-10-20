@@ -315,11 +315,34 @@ public class TerminalOutput implements ClientOutput {
                 pstr = "(progress: " + ((doneProjects * 100) / totalProjects) + "% - " + doneProjects + " out of "
                         + totalProjects + " projects)";
             }
-            lines.add(new AttributedString(
-                    "Building " + name + "... (cores: " + usedCores + ")" + dstr + pstr));
+            if (name != null) {
+                AttributedStringBuilder asb = new AttributedStringBuilder();
+                asb.append("Building ");
+                asb.style(AttributedStyle.BOLD);
+                asb.append(name);
+                asb.style(AttributedStyle.DEFAULT);
+                asb.append("... (cores: ").append(String.valueOf(usedCores)).append(")")
+                        .append(dstr).append(pstr);
+                lines.add(asb.toAttributedString());
+            } else {
+                lines.add(new AttributedString("Building..."));
+            }
             int remLogLines = dispLines - projects.size();
             for (Project prj : projects.values()) {
-                lines.add(AttributedString.fromAnsi(prj.status != null ? prj.status : prj.id + ":<unknown>"));
+                String str = prj.status != null ? prj.status : ":" + prj.id + ":<unknown>";
+                int cs = str.indexOf(':');
+                int ce = cs >= 0 ? str.indexOf(':', cs + 1) : -1;
+                if (ce > 0) {
+                    AttributedStringBuilder asb = new AttributedStringBuilder();
+                    asb.append(str, 0, cs);
+                    asb.style(AttributedStyle.BOLD);
+                    asb.append(str, cs, ce);
+                    asb.style(AttributedStyle.DEFAULT);
+                    asb.append(str, ce, str.length());
+                    lines.add(asb.toAttributedString());
+                } else {
+                    lines.add(AttributedString.fromAnsi(str));
+                }
                 // get the last lines of the project log, taking multi-line logs into account
                 int nb = Math.min(remLogLines, linesPerProject);
                 List<AttributedString> logs = lastN(prj.log, nb).stream()
