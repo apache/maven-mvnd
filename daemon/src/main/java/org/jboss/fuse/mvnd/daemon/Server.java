@@ -16,6 +16,7 @@
 package org.jboss.fuse.mvnd.daemon;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
@@ -27,6 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -38,6 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.cli.CliRequestBuilder;
 import org.apache.maven.cli.DaemonMavenCli;
+import org.apache.maven.execution.MavenSession;
 import org.jboss.fuse.mvnd.common.DaemonConnection;
 import org.jboss.fuse.mvnd.common.DaemonException;
 import org.jboss.fuse.mvnd.common.DaemonExpirationStatus;
@@ -527,8 +530,17 @@ public class Server implements AutoCloseable, Runnable {
         }
 
         @Override
-        protected void onStartSession() {
-            queue.add(new BuildEvent(Type.BuildStarted, "", ""));
+        protected void onStartSession(MavenSession session) {
+            Properties props = new Properties();
+            props.setProperty("projects", Integer.toString(session.getAllProjects().size()));
+            props.setProperty("cores", Integer.toString(session.getRequest().getDegreeOfConcurrency()));
+            StringWriter sw = new StringWriter();
+            try {
+                props.store(sw, null);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+            queue.add(new BuildEvent(Type.BuildStarted, session.getTopLevelProject().getName(), sw.toString()));
         }
 
         @Override

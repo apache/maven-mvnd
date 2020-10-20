@@ -20,6 +20,8 @@ package org.jboss.fuse.mvnd.common.logging;
  */
 public interface ClientOutput extends AutoCloseable {
 
+    void startBuild(String name, int projects, int cores);
+
     void projectStateChanged(String projectId, String display);
 
     void projectFinished(String projectId);

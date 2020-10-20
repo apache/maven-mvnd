@@ -16,6 +16,7 @@
 package org.jboss.fuse.mvnd.logging.smart;
 
 import org.apache.maven.execution.ExecutionEvent;
+import org.apache.maven.execution.MavenSession;
 
 public abstract class AbstractLoggingSpy {
 
@@ -43,7 +44,7 @@ public abstract class AbstractLoggingSpy {
     }
 
     protected void notifySessionStart(ExecutionEvent event) {
-        onStartSession();
+        onStartSession(event.getSession());
     }
 
     protected void notifySessionFinish(ExecutionEvent event) {
@@ -66,7 +67,7 @@ public abstract class AbstractLoggingSpy {
         onStopMojo(getProjectId(event), getProjectDisplay(event));
     }
 
-    protected void onStartSession() {
+    protected void onStartSession(MavenSession session) {
     }
 
     protected void onFinishSession() {
