@@ -15,6 +15,7 @@
  */
 package org.jboss.fuse.mvnd.client;
 
+import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -200,6 +201,17 @@ public class DefaultClient implements Client {
                     BuildEvent be = (BuildEvent) m;
                     switch (be.getType()) {
                     case BuildStarted:
+                        int projects = 0;
+                        int cores = 0;
+                        Properties props = new Properties();
+                        try {
+                            props.load(new StringReader(be.getDisplay()));
+                            projects = Integer.parseInt(props.getProperty("projects"));
+                            cores = Integer.parseInt(props.getProperty("cores"));
+                        } catch (Exception e) {
+                            // Ignore
+                        }
+                        output.startBuild(be.getProjectId(), projects, cores);
                         break;
                     case BuildStopped:
                         return new DefaultResult(argv, null);

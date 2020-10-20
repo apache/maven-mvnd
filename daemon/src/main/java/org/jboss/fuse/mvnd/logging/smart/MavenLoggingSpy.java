@@ -16,6 +16,7 @@
 package org.jboss.fuse.mvnd.logging.smart;
 
 import java.io.IOError;
+import org.apache.maven.execution.MavenSession;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 
 public class MavenLoggingSpy extends AbstractLoggingSpy {
@@ -26,9 +27,13 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     }
 
     @Override
-    protected void onStartSession() {
+    protected void onStartSession(MavenSession session) {
         try {
             output = new TerminalOutput(null);
+            output.startBuild(
+                    session.getTopLevelProject().getName(),
+                    session.getAllProjects().size(),
+                    session.getRequest().getDegreeOfConcurrency());
         } catch (Exception e) {
             throw new IOError(e);
         }

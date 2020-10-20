@@ -63,7 +63,14 @@ public class TerminalOutput implements ClientOutput {
     private int linesPerProject = 0;
     private boolean displayDone = false;
 
+    private long start;
+    private String name;
+    private int totalProjects;
+    private int doneProjects;
+    private int usedCores;
+
     enum EventType {
+        BUILD,
         PROJECT_STATE,
         PROJECT_FINISHED,
         LOG,
@@ -106,6 +113,14 @@ public class TerminalOutput implements ClientOutput {
         final Thread r = new Thread(this::readInputLoop);
         r.start();
         this.reader = r;
+    }
+
+    public void startBuild(String name, int projects, int cores) {
+        this.name = name;
+        this.start = System.currentTimeMillis();
+        this.totalProjects = projects;
+        this.doneProjects = 0;
+        this.usedCores = cores;
     }
 
     public void projectStateChanged(String projectId, String task) {
@@ -215,6 +230,7 @@ public class TerminalOutput implements ClientOutput {
                         if (prj != null) {
                             prj.log.forEach(log);
                         }
+                        doneProjects++;
                         displayDone();
                         break;
                     }
@@ -285,7 +301,22 @@ public class TerminalOutput implements ClientOutput {
         int dispLines = rows - 1; // for the "Building..." line
         dispLines--; // there's a bug which sometimes make the cursor goes one line below, so keep one more line empty at the end
         if (projects.size() <= dispLines) {
-            lines.add(new AttributedString("Building..."));
+            String dstr = "";
+            if (start > 0) {
+                long sec = (System.currentTimeMillis() - this.start) / 1000;
+                if (sec > 60) {
+                    dstr = "(time: " + (sec / 60) + "m" + (sec % 60) + "s)";
+                } else {
+                    dstr = "(time: " + sec + "s)";
+                }
+            }
+            String pstr = "";
+            if (totalProjects > 0) {
+                pstr = "(progress: " + ((doneProjects * 100) / totalProjects) + "% - " + doneProjects + " out of "
+                        + totalProjects + " projects)";
+            }
+            lines.add(new AttributedString(
+                    "Building " + name + "... (cores: " + usedCores + ")" + dstr + pstr));
             int remLogLines = dispLines - projects.size();
             for (Project prj : projects.values()) {
                 lines.add(AttributedString.fromAnsi(prj.status != null ? prj.status : prj.id + ":<unknown>"));
