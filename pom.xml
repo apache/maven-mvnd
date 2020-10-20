@@ -40,6 +40,7 @@
         <graalvm.version>20.2.0</graalvm.version>
         <groovy.version>3.0.0</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
+        <jansi.version>1.8</jansi.version>
         <jline.version>3.12.1</jline.version>
         <junit.jupiter.version>5.6.0</junit.jupiter.version>
         <logback.version>1.2.3</logback.version>
@@ -94,6 +95,27 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>${commons-compress.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.fusesource.jansi</groupId>
+                <artifactId>jansi</artifactId>
+                <version>${jansi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fusesource.jansi</groupId>
+                <artifactId>jansi-linux64</artifactId>
+                <version>${jansi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fusesource.jansi</groupId>
+                <artifactId>jansi-osx</artifactId>
+                <version>${jansi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fusesource.jansi</groupId>
+                <artifactId>jansi-windows64</artifactId>
+                <version>${jansi.version}</version>
             </dependency>
 
             <dependency>
@@ -432,5 +454,4 @@ limitations under the License.</inlineHeader>
             </plugin>
         </plugins>
     </build>
-
 </project>
