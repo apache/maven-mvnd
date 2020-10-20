@@ -150,7 +150,7 @@ class SmartBuilderImpl {
             logger.warn("Unexpected project build summary class {}", buildSummary.getClass());
             message = "UNKNOWN";
         }
-        logger.debug("{} build of project {}", message, projectGA(project));
+        logger.debug("{} build of project {}:{}", message, project.getGroupId(), project.getArtifactId());
     }
 
     private void shutdown() {
@@ -161,13 +161,13 @@ class SmartBuilderImpl {
         List<ProjectBuildTask> tasks = new ArrayList<>();
         for (MavenProject project : readyProjects) {
             tasks.add(new ProjectBuildTask(project));
-            logger.debug("Ready {}", projectGA(project));
+            logger.debug("Ready {}:{}", project.getGroupId(), project.getArtifactId());
         }
         executor.submitAll(tasks);
     }
 
     /* package */void buildProject(MavenProject project) {
-        logger.debug("STARTED build of project {}", projectGA(project));
+        logger.debug("STARTED build of project {}:{}", project.getGroupId(), project.getArtifactId());
 
         try {
             MavenSession copiedSession = rootSession.clone();
