@@ -1,8 +1,20 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.8...HEAD)
+
+**Merged pull requests:**
+
+- Skip tests when releasing [\#110](https://github.com/mvndaemon/mvnd/pull/110) ([ppalaga](https://github.com/ppalaga))
+
 ## [0.0.8](https://github.com/mvndaemon/mvnd/tree/0.0.8) (2020-10-19)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.7...0.0.8)
+
+**Closed issues:**
+
+- Unnecessary directory in the 0.0.7 zip archive [\#107](https://github.com/mvndaemon/mvnd/issues/107)
 
 **Merged pull requests:**
 
@@ -24,6 +36,7 @@
 - The output of modules being built in parallel is interleaved [\#78](https://github.com/mvndaemon/mvnd/issues/78)
 - Show test output while running [\#77](https://github.com/mvndaemon/mvnd/issues/77)
 - Explain project better in README [\#75](https://github.com/mvndaemon/mvnd/issues/75)
+- The test output is missing in the console [\#21](https://github.com/mvndaemon/mvnd/issues/21)
 
 **Merged pull requests:**
 
@@ -51,16 +64,16 @@
 
 **Closed issues:**
 
-- CachingProjectBuilder ignored [\#72](https://github.com/mvndaemon/mvnd/issues/72)
 - Goals of mvnd [\#71](https://github.com/mvndaemon/mvnd/issues/71)
+- CachingProjectBuilder ignored [\#72](https://github.com/mvndaemon/mvnd/issues/72)
 - Keep a changelog file [\#64](https://github.com/mvndaemon/mvnd/issues/64)
 
 **Merged pull requests:**
 
 - Wait for the deamon to become idle before rebuilding in UpgradesInBom… [\#74](https://github.com/mvndaemon/mvnd/pull/74) ([ppalaga](https://github.com/ppalaga))
--  CachingProjectBuilder ignored [\#73](https://github.com/mvndaemon/mvnd/pull/73) ([ppalaga](https://github.com/ppalaga))
 - Added a changelog automatic update gh action [\#70](https://github.com/mvndaemon/mvnd/pull/70) ([oscerd](https://github.com/oscerd))
 - Fixup publishing new versions via sdkman vendor API \#67 [\#69](https://github.com/mvndaemon/mvnd/pull/69) ([ppalaga](https://github.com/ppalaga))
+-  CachingProjectBuilder ignored [\#73](https://github.com/mvndaemon/mvnd/pull/73) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.5](https://github.com/mvndaemon/mvnd/tree/0.0.5) (2020-09-17)
 
@@ -104,15 +117,10 @@
 **Merged pull requests:**
 
 - Use amd64 arch label also on Mac [\#58](https://github.com/mvndaemon/mvnd/pull/58) ([ppalaga](https://github.com/ppalaga))
-- Fix \#33 Maven mojo change ignored [\#38](https://github.com/mvndaemon/mvnd/pull/38) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.2](https://github.com/mvndaemon/mvnd/tree/0.0.2) (2020-08-14)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.1...0.0.2)
-
-**Closed issues:**
-
-- differences between `mvn clean install` and `mvnd clean install` [\#25](https://github.com/mvndaemon/mvnd/issues/25)
 
 **Merged pull requests:**
 
@@ -150,6 +158,7 @@
 - mvnd fails if there is no .mvn/ dir in the user home [\#42](https://github.com/mvndaemon/mvnd/issues/42)
 - Cannot clean on Windows as long as mvnd keeps a plugin from the tree loaded [\#40](https://github.com/mvndaemon/mvnd/issues/40)
 - Maven mojo change ignored [\#33](https://github.com/mvndaemon/mvnd/issues/33)
+- differences between `mvn clean install` and `mvnd clean install` [\#25](https://github.com/mvndaemon/mvnd/issues/25)
 
 **Merged pull requests:**
 
