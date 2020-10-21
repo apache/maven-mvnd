@@ -26,8 +26,9 @@ This architecture brings the following advantages:
 
 `mvnd` brings the following features on top of the stock Maven:
 
-* `-T1C` is used by default. This means builing in parallel using as many threads as CPU cores on your machine. If your
-  source tree does not support parallel builds, pass `-T1` on the command line to make your build serial.
+* By default, `mvnd` is building your modules in parallel using multiple CPU cores. The number of utilized cores is
+  given by the formula `Math.max(Runtime.getRuntime().availableProcessors() - 1, 1)`. If your source tree does not
+  support parallel builds, pass `-T1` on the command line to make your build serial.
 * Improved console output: we believe that the output of a parallel build on a stock Maven is hard to follow. Therefore,
 we implemented a simplified a non-rolling view showing the status of each build thread on a separate line. This is
 what it looks like on a machine with 24 cores:
