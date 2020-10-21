@@ -4,8 +4,13 @@
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.8...HEAD)
 
+**Closed issues:**
+
+- Building... output detail of how many modules in total and left to build [\#112](https://github.com/mvndaemon/mvnd/issues/112)
+
 **Merged pull requests:**
 
+- Improve progress display [\#113](https://github.com/mvndaemon/mvnd/pull/113) ([gnodet](https://github.com/gnodet))
 - Skip tests when releasing [\#110](https://github.com/mvndaemon/mvnd/pull/110) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.8](https://github.com/mvndaemon/mvnd/tree/0.0.8) (2020-10-19)
