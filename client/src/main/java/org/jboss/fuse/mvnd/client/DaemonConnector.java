@@ -17,6 +17,7 @@ package org.jboss.fuse.mvnd.client;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
@@ -362,7 +363,7 @@ public class DaemonConnector {
     }
 
     public DaemonConnection<Message> connect(int port) throws DaemonException.ConnectException {
-        InetSocketAddress address = new InetSocketAddress(port);
+        InetSocketAddress address = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
         try {
             LOGGER.debug("Trying to connect to address {}.", address);
             SocketChannel socketChannel = SocketChannel.open();
