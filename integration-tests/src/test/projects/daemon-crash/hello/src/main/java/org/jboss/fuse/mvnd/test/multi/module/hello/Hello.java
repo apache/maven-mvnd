@@ -13,23 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.common.logging;
+package org.jboss.fuse.mvnd.test.multi.module.hello;
 
-/**
- * A sink for various kinds of events sent by the daemon.
- */
-public interface ClientOutput extends AutoCloseable {
+public class Hello {
 
-    void startBuild(String name, int projects, int cores);
-
-    void projectStateChanged(String projectId, String display);
-
-    void projectFinished(String projectId);
-
-    void accept(String projectId, String message);
-
-    void error(String message, String className, String stackTrace);
-
-    void keepAlive();
+    public String greet() {
+        return "Hello";
+    }
 
 }

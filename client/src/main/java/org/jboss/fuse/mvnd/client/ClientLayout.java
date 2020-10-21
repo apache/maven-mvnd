@@ -38,6 +38,9 @@ public class ClientLayout extends Layout {
     private final Path settings;
     private final Path javaHome;
     private final Path logbackConfigurationPath;
+    private final int idleTimeoutMs;
+    private final int keepAliveMs;
+    private final int maxLostKeepAlive;
 
     public static ClientLayout getEnvInstance() {
         if (ENV_INSTANCE == null) {
@@ -68,6 +71,21 @@ public class ClientLayout extends Layout {
                     .orFail()
                     .asPath()
                     .toAbsolutePath().normalize();
+            final int idleTimeoutMs = Environment.DAEMON_IDLE_TIMEOUT_MS
+                    .systemProperty()
+                    .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                    .orDefault(() -> Integer.toString(Environment.DEFAULT_IDLE_TIMEOUT))
+                    .asInt();
+            final int keepAliveMs = Environment.DAEMON_KEEP_ALIVE_MS
+                    .systemProperty()
+                    .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                    .orDefault(() -> Integer.toString(Environment.DEFAULT_KEEP_ALIVE))
+                    .asInt();
+            final int maxLostKeepAlive = Environment.DAEMON_MAX_LOST_KEEP_ALIVE
+                    .systemProperty()
+                    .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                    .orDefault(() -> Integer.toString(Environment.DEFAULT_MAX_LOST_KEEP_ALIVE))
+                    .asInt();
             ENV_INSTANCE = new ClientLayout(
                     mvndPropertiesPath,
                     mvndHome,
@@ -76,18 +94,23 @@ public class ClientLayout extends Layout {
                     Environment.findJavaHome(mvndProperties, mvndPropertiesPath),
                     findLocalRepo(),
                     null,
-                    Environment.findLogbackConfigurationPath(mvndProperties, mvndPropertiesPath, mvndHome));
+                    Environment.findLogbackConfigurationPath(mvndProperties, mvndPropertiesPath, mvndHome),
+                    idleTimeoutMs, keepAliveMs, maxLostKeepAlive);
         }
         return ENV_INSTANCE;
     }
 
     public ClientLayout(Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory, Path javaHome,
-            Path localMavenRepository, Path settings, Path logbackConfigurationPath) {
+            Path localMavenRepository, Path settings, Path logbackConfigurationPath, int idleTimeoutMs, int keepAliveMs,
+            int maxLostKeepAlive) {
         super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory);
         this.localMavenRepository = localMavenRepository;
         this.settings = settings;
         this.javaHome = Objects.requireNonNull(javaHome, "javaHome");
         this.logbackConfigurationPath = logbackConfigurationPath;
+        this.idleTimeoutMs = idleTimeoutMs;
+        this.keepAliveMs = keepAliveMs;
+        this.maxLostKeepAlive = maxLostKeepAlive;
     }
 
     /**
@@ -96,7 +119,7 @@ public class ClientLayout extends Layout {
      */
     public ClientLayout cd(Path newUserDir) {
         return new ClientLayout(mvndPropertiesPath, mavenHome, newUserDir, multiModuleProjectDirectory, javaHome,
-                localMavenRepository, settings, logbackConfigurationPath);
+                localMavenRepository, settings, logbackConfigurationPath, idleTimeoutMs, keepAliveMs, maxLostKeepAlive);
     }
 
     /**
@@ -120,6 +143,18 @@ public class ClientLayout extends Layout {
 
     public Path getLogbackConfigurationPath() {
         return logbackConfigurationPath;
+    }
+
+    public int getIdleTimeoutMs() {
+        return idleTimeoutMs;
+    }
+
+    public int getKeepAliveMs() {
+        return keepAliveMs;
+    }
+
+    public int getMaxLostKeepAlive() {
+        return maxLostKeepAlive;
     }
 
     static Path findLocalRepo() {

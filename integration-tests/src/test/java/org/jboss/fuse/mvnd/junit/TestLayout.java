@@ -22,9 +22,10 @@ public class TestLayout extends ClientLayout {
     private final Path testDir;
 
     public TestLayout(Path testDir, Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory,
-            Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath) {
+            Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath,
+            int idleTimeout, int keepAlive, int maxLostKeepAlive) {
         super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory, javaHome, localMavenRepository,
-                settings, logbackConfigurationPath);
+                settings, logbackConfigurationPath, idleTimeout, keepAlive, maxLostKeepAlive);
         this.testDir = testDir;
     }
 

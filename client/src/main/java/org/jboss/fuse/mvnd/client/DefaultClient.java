@@ -35,6 +35,7 @@ import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
+import org.jboss.fuse.mvnd.common.Message.KeepAliveMessage;
 import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
@@ -104,8 +105,6 @@ public class DefaultClient implements Client {
                 debug = true;
                 args.add(arg);
                 break;
-            case "--install":
-                throw new IllegalStateException("The --install option was removed in mvnd 0.0.2");
             default:
                 if (arg.startsWith("-D")) {
                     final int eqPos = arg.indexOf('=');
@@ -184,50 +183,54 @@ public class DefaultClient implements Client {
 
             final DaemonConnector connector = new DaemonConnector(layout, registry, buildProperties, new MessageSerializer());
             List<String> opts = new ArrayList<>();
-            DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts),
-                    s -> output.accept(null, s));
+            try (DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts),
+                    s -> output.accept(null, s))) {
 
-            daemon.dispatch(new Message.BuildRequest(
-                    args,
-                    layout.userDir().toString(),
-                    layout.multiModuleProjectDirectory().toString(), System.getenv()));
+                daemon.dispatch(new Message.BuildRequest(
+                        args,
+                        layout.userDir().toString(),
+                        layout.multiModuleProjectDirectory().toString(),
+                        System.getenv()));
 
-            while (true) {
-                Message m = daemon.receive();
-                if (m instanceof BuildException) {
-                    final BuildException e = (BuildException) m;
-                    output.error(e.getMessage(), e.getClassName(), e.getStackTrace());
-                    return new DefaultResult(argv,
-                            new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
-                } else if (m instanceof BuildEvent) {
-                    BuildEvent be = (BuildEvent) m;
-                    switch (be.getType()) {
-                    case BuildStarted:
-                        int projects = 0;
-                        int cores = 0;
-                        Properties props = new Properties();
-                        try {
-                            props.load(new StringReader(be.getDisplay()));
-                            projects = Integer.parseInt(props.getProperty("projects"));
-                            cores = Integer.parseInt(props.getProperty("cores"));
-                        } catch (Exception e) {
-                            // Ignore
+                while (true) {
+                    Message m = daemon.receive();
+                    if (m instanceof BuildException) {
+                        final BuildException e = (BuildException) m;
+                        output.error(e.getMessage(), e.getClassName(), e.getStackTrace());
+                        return new DefaultResult(argv,
+                                new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
+                    } else if (m instanceof BuildEvent) {
+                        BuildEvent be = (BuildEvent) m;
+                        switch (be.getType()) {
+                        case BuildStarted:
+                            int projects = 0;
+                            int cores = 0;
+                            Properties props = new Properties();
+                            try {
+                                props.load(new StringReader(be.getDisplay()));
+                                projects = Integer.parseInt(props.getProperty("projects"));
+                                cores = Integer.parseInt(props.getProperty("cores"));
+                            } catch (Exception e) {
+                                // Ignore
+                            }
+                            output.startBuild(be.getProjectId(), projects, cores);
+                            break;
+                        case BuildStopped:
+                            return new DefaultResult(argv, null);
+                        case ProjectStarted:
+                        case MojoStarted:
+                            output.projectStateChanged(be.getProjectId(), be.getDisplay());
+                            break;
+                        case ProjectStopped:
+                            output.projectFinished(be.getProjectId());
+                            break;
                         }
-                        output.startBuild(be.getProjectId(), projects, cores);
-                        break;
-                    case BuildStopped:
-                        return new DefaultResult(argv, null);
-                    case ProjectStarted:
-                    case MojoStarted:
-                        output.projectStateChanged(be.getProjectId(), be.getDisplay());
-                        break;
-                    case ProjectStopped:
-                        output.projectFinished(be.getProjectId());
-                        break;
+                    } else if (m instanceof BuildMessage) {
+                        BuildMessage bm = (BuildMessage) m;
+                        output.accept(bm.getProjectId(), bm.getMessage());
+                    } else if (m instanceof KeepAliveMessage) {
+                        output.keepAlive();
                     }
-                } else if (m instanceof BuildMessage) {
-                    BuildMessage bm = (BuildMessage) m;
-                    output.accept(bm.getProjectId(), bm.getMessage());
                 }
             }
         }
