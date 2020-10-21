@@ -38,7 +38,6 @@ public enum Environment {
     MAVEN_REPO_LOCAL("maven.repo.local", null),
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null),
     MVND_PROPERTIES_PATH("mvnd.properties.path", "MVND_PROPERTIES_PATH"),
-    MVND_DIST_URI("mvnd.dist.uri", "MVND_DIST_URI"),
     DAEMON_DEBUG("daemon.debug", null),
     DAEMON_IDLE_TIMEOUT("daemon.idleTimeout", null),
     DAEMON_UID("daemon.uid", null);
