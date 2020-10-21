@@ -140,7 +140,7 @@ public enum Environment {
         return LOGBACK_CONFIGURATION_FILE
                 .systemProperty()
                 .orLocalProperty(mvndProperties, mvndPropertiesPath)
-                .orDefault(() -> mvndHome.resolve("conf/logging/logback.xml").toString())
+                .orDefault(() -> mvndHome.resolve("mvn/conf/logging/logback.xml").toString())
                 .orFail()
                 .asPath();
     }
