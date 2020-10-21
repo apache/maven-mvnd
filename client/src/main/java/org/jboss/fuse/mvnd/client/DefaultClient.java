@@ -234,7 +234,7 @@ public class DefaultClient implements Client {
 
     static void setDefaultArgs(List<String> args) {
         if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
-            int procs = Runtime.getRuntime().availableProcessors() - 1;
+            final int procs = Math.max(Runtime.getRuntime().availableProcessors() - 1, 1);
             args.add("-T" + procs);
         }
         if (args.stream().noneMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
