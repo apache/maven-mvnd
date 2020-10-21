@@ -1006,7 +1006,7 @@ public class DaemonMavenCli {
             if (threadConfiguration.contains("C")) {
                 request.setDegreeOfConcurrency(calculateDegreeOfConcurrencyWithCoreMultiplier(threadConfiguration));
             } else {
-                request.setDegreeOfConcurrency(Integer.valueOf(threadConfiguration));
+                request.setDegreeOfConcurrency(Integer.parseInt(threadConfiguration));
             }
         }
 
@@ -1020,7 +1020,7 @@ public class DaemonMavenCli {
 
     int calculateDegreeOfConcurrencyWithCoreMultiplier(String threadConfiguration) {
         int procs = Runtime.getRuntime().availableProcessors();
-        return (int) (Float.valueOf(threadConfiguration.replace("C", "")) * procs);
+        return (int) (Float.parseFloat(threadConfiguration.replace("C", "")) * procs);
     }
 
     static File resolveFile(File file, String workingDirectory) {
