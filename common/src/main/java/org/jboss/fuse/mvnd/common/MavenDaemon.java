@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
-public class ServerMain {
+public class MavenDaemon {
 
     public static void main(String[] args) throws Exception {
         // Disable URL caching so that  the JVM does not try to cache resources
@@ -64,7 +64,7 @@ public class ServerMain {
                 try {
                     return super.findClass(name);
                 } catch (ClassNotFoundException e) {
-                    return ServerMain.class.getClassLoader().loadClass(name);
+                    return MavenDaemon.class.getClassLoader().loadClass(name);
                 }
             }
         };

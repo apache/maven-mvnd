@@ -48,7 +48,7 @@ import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Serializer;
-import org.jboss.fuse.mvnd.common.ServerMain;
+import org.jboss.fuse.mvnd.common.MavenDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -279,7 +279,7 @@ public class DaemonConnector {
                 args.add(Environment.DAEMON_IDLE_TIMEOUT.asCommandLineProperty(timeout));
             }
 
-            args.add(ServerMain.class.getName());
+            args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 
             LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
