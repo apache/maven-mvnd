@@ -47,9 +47,9 @@ import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.MavenDaemon;
 import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Serializer;
-import org.jboss.fuse.mvnd.common.MavenDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
