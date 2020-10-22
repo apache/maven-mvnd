@@ -324,8 +324,6 @@ public class TerminalOutput implements ClientOutput {
                 asb.append("... (cores: ").append(String.valueOf(usedCores)).append(")")
                         .append(dstr).append(pstr);
                 lines.add(asb.toAttributedString());
-            } else {
-                lines.add(new AttributedString("Building..."));
             }
             int remLogLines = dispLines - projects.size();
             for (Project prj : projects.values()) {

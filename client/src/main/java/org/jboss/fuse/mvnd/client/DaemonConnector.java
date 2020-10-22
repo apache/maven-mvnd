@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,9 +48,9 @@ import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.MavenDaemon;
 import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Serializer;
-import org.jboss.fuse.mvnd.common.MavenDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +97,7 @@ public class DaemonConnector {
         return null;
     }
 
-    public DaemonClientConnection connect(DaemonCompatibilitySpec constraint) {
+    public DaemonClientConnection connect(DaemonCompatibilitySpec constraint, Consumer<String> logger) {
         Map<Boolean, List<DaemonInfo>> idleBusy = registry.getAll().stream()
                 .collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
 
@@ -116,11 +117,12 @@ public class DaemonConnector {
         }
 
         // No compatible daemons available - start a new daemon
-        handleStopEvents(idleDaemons, busyDaemons);
+        String message = handleStopEvents(idleDaemons, busyDaemons);
+        logger.accept(message);
         return startDaemon(constraint);
     }
 
-    private void handleStopEvents(Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {
+    private String handleStopEvents(Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {
         final List<DaemonStopEvent> stopEvents = registry.getStopEvents();
 
         // Clean up old stop events
@@ -144,7 +146,7 @@ public class DaemonConnector {
                     stopEvent.getUid(), stopEvent.getTimestamp(), stopEvent.getReason());
         }
 
-        System.out.println(generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size()));
+        return generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size());
     }
 
     public static String generate(final int numBusy, final int numIncompatible, final int numStopped) {
