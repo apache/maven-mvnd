@@ -144,7 +144,7 @@ public class DaemonConnector {
                     stopEvent.getUid(), stopEvent.getTimestamp(), stopEvent.getReason());
         }
 
-        LOGGER.debug(generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size()));
+        System.out.println(generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size()));
     }
 
     public static String generate(final int numBusy, final int numIncompatible, final int numStopped) {
