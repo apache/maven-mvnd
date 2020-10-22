@@ -494,7 +494,8 @@ public class DaemonMavenCli {
                 String va = actual.get(key);
                 slf4jLogger.warn("   {} -> {} instead of {}", key, va, vr);
             });
-            slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and start a new daemon from the current environment by issuing any mvnd build command");
+            slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
+            slf4jLogger.warn("start a new daemon from the current environment by issuing any mvnd build command.");
         }
     }
 
