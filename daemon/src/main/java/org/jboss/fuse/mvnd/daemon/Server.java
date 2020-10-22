@@ -18,6 +18,7 @@ package org.jboss.fuse.mvnd.daemon;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -93,7 +94,7 @@ public class Server implements AutoCloseable, Runnable {
             cli = new DaemonMavenCli();
 
             registry = new DaemonRegistry(layout.registry());
-            socket = ServerSocketChannel.open().bind(new InetSocketAddress(0));
+            socket = ServerSocketChannel.open().bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
             final int idleTimeout = Environment.DAEMON_IDLE_TIMEOUT
                     .systemProperty()

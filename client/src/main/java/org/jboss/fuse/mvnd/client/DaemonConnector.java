@@ -17,6 +17,7 @@ package org.jboss.fuse.mvnd.client;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
@@ -143,7 +144,7 @@ public class DaemonConnector {
                     stopEvent.getUid(), stopEvent.getTimestamp(), stopEvent.getReason());
         }
 
-        LOGGER.debug(generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size()));
+        System.out.println(generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size()));
     }
 
     public static String generate(final int numBusy, final int numIncompatible, final int numStopped) {
@@ -362,7 +363,7 @@ public class DaemonConnector {
     }
 
     public DaemonConnection<Message> connect(int port) throws DaemonException.ConnectException {
-        InetSocketAddress address = new InetSocketAddress(port);
+        InetSocketAddress address = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
         try {
             LOGGER.debug("Trying to connect to address {}.", address);
             SocketChannel socketChannel = SocketChannel.open();
