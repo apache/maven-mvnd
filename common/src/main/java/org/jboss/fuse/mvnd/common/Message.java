@@ -23,7 +23,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UTFDataFormatException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class Message {
 
@@ -37,11 +39,13 @@ public abstract class Message {
         final List<String> args;
         final String workingDir;
         final String projectDir;
+        final Map<String, String> env;
 
-        public BuildRequest(List<String> args, String workingDir, String projectDir) {
+        public BuildRequest(List<String> args, String workingDir, String projectDir, Map<String, String> env) {
             this.args = args;
             this.workingDir = workingDir;
             this.projectDir = projectDir;
+            this.env = env;
         }
 
         public List<String> getArgs() {
@@ -54,6 +58,10 @@ public abstract class Message {
 
         public String getProjectDir() {
             return projectDir;
+        }
+
+        public Map<String, String> getEnv() {
+            return env;
         }
 
         @Override
@@ -221,13 +229,15 @@ public abstract class Message {
             List<String> args = readStringList(input);
             String workingDir = readUTF(input);
             String projectDir = readUTF(input);
-            return new BuildRequest(args, workingDir, projectDir);
+            Map<String, String> env = readStringMap(input);
+            return new BuildRequest(args, workingDir, projectDir, env);
         }
 
         private void writeBuildRequest(DataOutputStream output, BuildRequest value) throws IOException {
             writeStringList(output, value.args);
             writeUTF(output, value.workingDir);
             writeUTF(output, value.projectDir);
+            writeStringMap(output, value.env);
         }
 
         private BuildEvent readBuildEvent(DataInputStream input) throws IOException {
@@ -280,6 +290,25 @@ public abstract class Message {
             output.writeInt(value.size());
             for (String v : value) {
                 writeUTF(output, v);
+            }
+        }
+
+        private Map<String, String> readStringMap(DataInputStream input) throws IOException {
+            LinkedHashMap<String, String> m = new LinkedHashMap<>();
+            int nb = input.readInt();
+            for (int i = 0; i < nb; i++) {
+                String k = readUTF(input);
+                String v = readUTF(input);
+                m.put(k, v);
+            }
+            return m;
+        }
+
+        private void writeStringMap(DataOutputStream output, Map<String, String> value) throws IOException {
+            output.writeInt(value.size());
+            for (Map.Entry<String, String> e : value.entrySet()) {
+                writeUTF(output, e.getKey());
+                writeUTF(output, e.getValue());
             }
         }
 

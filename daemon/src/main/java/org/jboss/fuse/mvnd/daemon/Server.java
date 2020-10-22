@@ -423,7 +423,7 @@ public class Server implements AutoCloseable, Runnable {
             });
             pumper.start();
             try {
-                cli.doMain(req);
+                cli.doMain(req, buildRequest.getEnv());
                 LOGGER.info("Build finished, finishing message dispatch");
                 loggingSpy.finish();
             } catch (Throwable t) {

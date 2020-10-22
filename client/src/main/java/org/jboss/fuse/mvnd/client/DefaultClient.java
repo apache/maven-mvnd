@@ -190,7 +190,7 @@ public class DefaultClient implements Client {
             daemon.dispatch(new Message.BuildRequest(
                     args,
                     layout.userDir().toString(),
-                    layout.multiModuleProjectDirectory().toString()));
+                    layout.multiModuleProjectDirectory().toString(), System.getenv()));
 
             while (true) {
                 Message m = daemon.receive();

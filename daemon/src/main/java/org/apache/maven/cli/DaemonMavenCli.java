@@ -32,11 +32,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -157,7 +161,7 @@ public class DaemonMavenCli {
     }
 
     // TODO need to externalize CliRequest
-    public int doMain(CliRequest cliRequest) throws Exception {
+    public int doMain(CliRequest cliRequest, Map<String, String> clientEnv) throws Exception {
         Properties props = (Properties) System.getProperties().clone();
         try {
             initialize(cliRequest);
@@ -170,6 +174,7 @@ public class DaemonMavenCli {
             populateRequest(cliRequest);
             encryption(cliRequest);
             repository(cliRequest);
+            environment(clientEnv);
             return execute(cliRequest);
         } catch (ExitException e) {
             return e.exitCode;
@@ -469,6 +474,27 @@ public class DaemonMavenCli {
         if (cliRequest.commandLine.hasOption(CLIManager.LEGACY_LOCAL_REPOSITORY) || Boolean.getBoolean(
                 "maven.legacyLocalRepo")) {
             cliRequest.request.setUseLegacyLocalRepository(true);
+        }
+    }
+
+    private void environment(Map<String, String> clientEnv) {
+        Map<String, String> requested = new TreeMap<>(clientEnv);
+        Map<String, String> actual = new TreeMap<>(System.getenv());
+        List<String> diffs = Stream.concat(requested.keySet().stream(), actual.keySet().stream())
+                .sorted()
+                .distinct()
+                .filter(s -> !s.startsWith("JAVA_MAIN_CLASS_"))
+                .filter(key -> !Objects.equals(requested.get(key), actual.get(key)))
+                .collect(Collectors.toList());
+        if (!diffs.isEmpty()) {
+            slf4jLogger.warn("Environment mistmach !");
+            slf4jLogger.warn("A few environment mismatches have been detected between the client and the daemon.");
+            diffs.forEach(key -> {
+                String vr = requested.get(key);
+                String va = actual.get(key);
+                slf4jLogger.warn("   {} -> {} instead of {}", key, va, vr);
+            });
+            slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and start a new daemon from the current environment by issuing any mvnd build command");
         }
     }
 
