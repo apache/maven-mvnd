@@ -142,13 +142,14 @@ public class DefaultClient implements Client {
         try (DaemonRegistry registry = new DaemonRegistry(layout.registry())) {
             boolean status = args.remove("--status");
             if (status) {
-                output.accept(null, String.format("    %36s  %7s  %5s  %7s  %s",
-                        "UUID", "PID", "Port", "Status", "Last activity"));
-                registry.getAll().forEach(d -> output.accept(null, String.format("    %36s  %7s  %5s  %7s  %s",
+                output.accept(null, String.format("    %36s  %7s  %5s  %7s  %23s  %s",
+                        "UUID", "PID", "Port", "Status", "Last activity", "Java home"));
+                registry.getAll().forEach(d -> output.accept(null, String.format("    %36s  %7s  %5s  %7s  %23s  %s",
                         d.getUid(), d.getPid(), d.getAddress(), d.getState(),
                         LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
-                                ZoneId.systemDefault()))));
+                                ZoneId.systemDefault()),
+                        d.getJavaHome())));
                 return new DefaultResult(argv, null);
             }
             boolean stop = args.remove("--stop");
