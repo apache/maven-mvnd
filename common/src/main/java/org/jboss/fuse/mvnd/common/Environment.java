@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -39,8 +40,16 @@ public enum Environment {
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null),
     MVND_PROPERTIES_PATH("mvnd.properties.path", "MVND_PROPERTIES_PATH"),
     DAEMON_DEBUG("daemon.debug", null),
-    DAEMON_IDLE_TIMEOUT("daemon.idleTimeout", null),
+    DAEMON_IDLE_TIMEOUT_MS("daemon.idleTimeoutMs", null),
+    DAEMON_KEEP_ALIVE_MS("daemon.keepAliveMs", null),
+    DAEMON_MAX_LOST_KEEP_ALIVE("daemon.maxLostKeepAlive", null),
     DAEMON_UID("daemon.uid", null);
+
+    public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
+
+    public static final int DEFAULT_KEEP_ALIVE = (int) TimeUnit.SECONDS.toMillis(1);
+
+    public static final int DEFAULT_MAX_LOST_KEEP_ALIVE = 3;
 
     private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
     static Properties properties = System.getProperties();

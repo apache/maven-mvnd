@@ -203,7 +203,10 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository, settingsPath,
-                    logback);
+                    logback,
+                    Environment.DEFAULT_IDLE_TIMEOUT,
+                    Environment.DEFAULT_KEEP_ALIVE,
+                    Environment.DEFAULT_MAX_LOST_KEEP_ALIVE);
             final TestRegistry registry = new TestRegistry(layout.registry());
 
             return new MvndResource(layout, registry, isNative, timeoutMs);

@@ -90,7 +90,7 @@ public class DaemonConnector {
 
     public DaemonClientConnection maybeConnect(DaemonInfo daemon) {
         try {
-            return connectToDaemon(daemon, new CleanupOnStaleAddress(daemon, true));
+            return connectToDaemon(daemon, new CleanupOnStaleAddress(daemon), false);
         } catch (DaemonException.ConnectException e) {
             LOGGER.debug("Cannot connect to daemon {} due to {}. Ignoring.", daemon, e);
         }
@@ -225,7 +225,7 @@ public class DaemonConnector {
     private DaemonClientConnection findConnection(List<DaemonInfo> compatibleDaemons) {
         for (DaemonInfo daemon : compatibleDaemons) {
             try {
-                return connectToDaemon(daemon, new CleanupOnStaleAddress(daemon, true));
+                return connectToDaemon(daemon, new CleanupOnStaleAddress(daemon), false);
             } catch (DaemonException.ConnectException e) {
                 LOGGER.debug("Cannot connect to daemon {} due to {}. Trying a different daemon...", daemon, e);
             }
@@ -238,7 +238,7 @@ public class DaemonConnector {
         LOGGER.debug("Started Maven daemon {}", daemon);
         long start = System.currentTimeMillis();
         do {
-            DaemonClientConnection daemonConnection = connectToDaemonWithId(daemon);
+            DaemonClientConnection daemonConnection = connectToDaemonWithId(daemon, true);
             if (daemonConnection != null) {
                 return daemonConnection;
             }
@@ -277,11 +277,8 @@ public class DaemonConnector {
             args.add("-Dlogback.configurationFile=" + layout.getLogbackConfigurationPath());
             args.add("-Ddaemon.uid=" + uid);
             args.add("-Xmx4g");
-            final String timeout = Environment.DAEMON_IDLE_TIMEOUT.systemProperty().asString();
-            if (timeout != null) {
-                args.add(Environment.DAEMON_IDLE_TIMEOUT.asCommandLineProperty(timeout));
-            }
-
+            args.add(Environment.DAEMON_IDLE_TIMEOUT_MS.asCommandLineProperty(Integer.toString(layout.getIdleTimeoutMs())));
+            args.add(Environment.DAEMON_KEEP_ALIVE_MS.asCommandLineProperty(Integer.toString(layout.getKeepAliveMs())));
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 
@@ -314,13 +311,14 @@ public class DaemonConnector {
         }
     }
 
-    private DaemonClientConnection connectToDaemonWithId(String daemon) throws DaemonException.ConnectException {
+    private DaemonClientConnection connectToDaemonWithId(String daemon, boolean newDaemon)
+            throws DaemonException.ConnectException {
         // Look for 'our' daemon among the busy daemons - a daemon will start in busy state so that nobody else will
         // grab it.
         DaemonInfo daemonInfo = registry.get(daemon);
         if (daemonInfo != null) {
             try {
-                return connectToDaemon(daemonInfo, new CleanupOnStaleAddress(daemonInfo, false));
+                return connectToDaemon(daemonInfo, new CleanupOnStaleAddress(daemonInfo), newDaemon);
             } catch (DaemonException.ConnectException e) {
                 DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon));
                 throw new DaemonException.ConnectException("Could not connect to the Maven daemon.\n" + diag.describe(), e);
@@ -330,11 +328,13 @@ public class DaemonConnector {
     }
 
     private DaemonClientConnection connectToDaemon(DaemonInfo daemon,
-            DaemonClientConnection.StaleAddressDetector staleAddressDetector) throws DaemonException.ConnectException {
+            DaemonClientConnection.StaleAddressDetector staleAddressDetector, boolean newDaemon)
+            throws DaemonException.ConnectException {
         LOGGER.debug("Connecting to Daemon");
         try {
+            int maxKeepAliveMs = layout.getKeepAliveMs() * layout.getMaxLostKeepAlive();
             DaemonConnection<Message> connection = connect(daemon.getAddress());
-            return new DaemonClientConnection(connection, daemon, staleAddressDetector);
+            return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, maxKeepAliveMs);
         } catch (DaemonException.ConnectException e) {
             staleAddressDetector.maybeStaleAddress(e);
             throw e;
@@ -345,11 +345,9 @@ public class DaemonConnector {
 
     private class CleanupOnStaleAddress implements DaemonClientConnection.StaleAddressDetector {
         private final DaemonInfo daemon;
-        private final boolean exposeAsStale;
 
-        public CleanupOnStaleAddress(DaemonInfo daemon, boolean exposeAsStale) {
+        public CleanupOnStaleAddress(DaemonInfo daemon) {
             this.daemon = daemon;
-            this.exposeAsStale = exposeAsStale;
         }
 
         @Override
@@ -360,7 +358,7 @@ public class DaemonConnector {
                     "by user or operating system");
             registry.storeStopEvent(stopEvent);
             registry.remove(daemon.getUid());
-            return exposeAsStale;
+            return true;
         }
     }
 

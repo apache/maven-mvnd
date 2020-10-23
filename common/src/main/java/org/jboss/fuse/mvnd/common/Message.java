@@ -83,7 +83,7 @@ public abstract class Message {
             this(t.getMessage(), t.getClass().getName(), getStackTrace(t));
         }
 
-        static String getStackTrace(Throwable t) {
+        public static String getStackTrace(Throwable t) {
             StringWriter sw = new StringWriter();
             t.printStackTrace(new PrintWriter(sw, true));
             return sw.toString();
@@ -180,12 +180,20 @@ public abstract class Message {
         }
     }
 
+    public static class KeepAliveMessage extends Message {
+        @Override
+        public String toString() {
+            return "KeepAliveMessage{}";
+        }
+    }
+
     public static class MessageSerializer implements Serializer<Message> {
 
         final int BUILD_REQUEST = 0;
         final int BUILD_EVENT = 1;
         final int BUILD_MESSAGE = 2;
         final int BUILD_EXCEPTION = 3;
+        final int KEEP_ALIVE = 4;
 
         @Override
         public Message read(DataInputStream input) throws EOFException, Exception {
@@ -202,6 +210,8 @@ public abstract class Message {
                 return readBuildMessage(input);
             case BUILD_EXCEPTION:
                 return readBuildException(input);
+            case KEEP_ALIVE:
+                return new KeepAliveMessage();
             }
             throw new IllegalStateException("Unexpected message type: " + type);
         }
@@ -220,6 +230,8 @@ public abstract class Message {
             } else if (value instanceof BuildException) {
                 output.write(BUILD_EXCEPTION);
                 writeBuildException(output, (BuildException) value);
+            } else if (value instanceof KeepAliveMessage) {
+                output.write(KEEP_ALIVE);
             } else {
                 throw new IllegalStateException();
             }

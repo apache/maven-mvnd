@@ -76,7 +76,8 @@ public class TerminalOutput implements ClientOutput {
         LOG,
         ERROR,
         END_OF_STREAM,
-        INPUT
+        INPUT,
+        KEEP_ALIVE
     }
 
     static class Event {
@@ -163,6 +164,15 @@ public class TerminalOutput implements ClientOutput {
         }
         try {
             queue.put(new Event(EventType.ERROR, null, msg));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public void keepAlive() {
+        try {
+            queue.put(new Event(EventType.KEEP_ALIVE, null, null));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
