@@ -63,7 +63,7 @@ public class TerminalOutput implements ClientOutput {
     private int linesPerProject = 0;
     private boolean displayDone = false;
 
-    private long start;
+    private final long start;
     private String name;
     private int totalProjects;
     private int doneProjects;
@@ -103,6 +103,7 @@ public class TerminalOutput implements ClientOutput {
     }
 
     public TerminalOutput(Path logFile) throws IOException {
+        this.start = System.currentTimeMillis();
         this.queue = new LinkedBlockingDeque<>();
         this.terminal = TerminalBuilder.terminal();
         terminal.enterRawMode();
@@ -118,7 +119,6 @@ public class TerminalOutput implements ClientOutput {
 
     public void startBuild(String name, int projects, int cores) {
         this.name = name;
-        this.start = System.currentTimeMillis();
         this.totalProjects = projects;
         this.doneProjects = 0;
         this.usedCores = cores;
@@ -311,29 +311,29 @@ public class TerminalOutput implements ClientOutput {
         int dispLines = rows - 1; // for the "Building..." line
         dispLines--; // there's a bug which sometimes make the cursor goes one line below, so keep one more line empty at the end
         if (projects.size() <= dispLines) {
-            String dstr = "";
-            if (start > 0) {
-                long sec = (System.currentTimeMillis() - this.start) / 1000;
-                if (sec > 60) {
-                    dstr = "(time: " + (sec / 60) + "m" + (sec % 60) + "s)";
-                } else {
-                    dstr = "(time: " + sec + "s)";
-                }
-            }
-            String pstr = "";
-            if (totalProjects > 0) {
-                pstr = "(progress: " + ((doneProjects * 100) / totalProjects) + "% - " + doneProjects + " out of "
-                        + totalProjects + " projects)";
-            }
             if (name != null) {
                 AttributedStringBuilder asb = new AttributedStringBuilder();
                 asb.append("Building ");
                 asb.style(AttributedStyle.BOLD);
                 asb.append(name);
                 asb.style(AttributedStyle.DEFAULT);
-                asb.append("... (cores: ").append(String.valueOf(usedCores)).append(")")
-                        .append(dstr).append(pstr);
-                lines.add(asb.toAttributedString());
+
+                StringBuilder statusLine = new StringBuilder(64);
+                statusLine.append("  threads: ").append(usedCores);
+
+                statusLine.append("  time: ");
+                long sec = (System.currentTimeMillis() - this.start) / 1000;
+                if (sec > 60) {
+                    statusLine.append(sec / 60).append('m').append(String.valueOf(sec % 60)).append('s');
+                } else {
+                    statusLine.append(sec).append('s');
+                }
+
+                if (totalProjects > 0) {
+                    statusLine.append("  progress: ").append(doneProjects).append('/').append(totalProjects).append(' ')
+                            .append(doneProjects * 100 / totalProjects).append('%');
+                }
+                lines.add(asb.append(statusLine.toString()).toAttributedString());
             }
             int remLogLines = dispLines - projects.size();
             for (Project prj : projects.values()) {
