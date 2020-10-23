@@ -68,6 +68,10 @@ public class NativeTestClient implements Client {
             cmd.add("-s");
             cmd.add(settings.toString());
         }
+        if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
+            final int threads = Math.max(Runtime.getRuntime().availableProcessors() - 1, TestLayout.TEST_MIN_THREADS);
+            cmd.add("-T" + threads);
+        }
 
         final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
                 .directory(layout.userDir().toFile()) //
