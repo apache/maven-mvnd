@@ -292,6 +292,7 @@ limitations under the License.</inlineHeader>
                     <configuration>
                         <configFile>${maven.multiModuleProjectDirectory}/build/eclipse-formatter-config.xml</configFile>
                         <skip>${format.skip}</skip>
+                        <lineEnding>KEEP</lineEnding>
                     </configuration>
                 </plugin>
                 <plugin>
