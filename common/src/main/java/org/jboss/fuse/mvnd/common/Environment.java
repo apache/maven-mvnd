@@ -43,6 +43,7 @@ public enum Environment {
     DAEMON_IDLE_TIMEOUT_MS("daemon.idleTimeoutMs", null),
     DAEMON_KEEP_ALIVE_MS("daemon.keepAliveMs", null),
     DAEMON_MAX_LOST_KEEP_ALIVE("daemon.maxLostKeepAlive", null),
+    MVND_MIN_THREADS("mvnd.minThreads", null),
     DAEMON_UID("daemon.uid", null);
 
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
@@ -50,6 +51,8 @@ public enum Environment {
     public static final int DEFAULT_KEEP_ALIVE = (int) TimeUnit.SECONDS.toMillis(1);
 
     public static final int DEFAULT_MAX_LOST_KEEP_ALIVE = 3;
+
+    public static final int DEFAULT_MIN_THREADS = 1;
 
     private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
     static Properties properties = System.getProperties();

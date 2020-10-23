@@ -19,13 +19,14 @@ import java.nio.file.Path;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 
 public class TestLayout extends ClientLayout {
+    static final int TEST_MIN_THREADS = 2;
     private final Path testDir;
 
     public TestLayout(Path testDir, Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory,
             Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath,
             int idleTimeout, int keepAlive, int maxLostKeepAlive) {
         super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory, javaHome, localMavenRepository,
-                settings, logbackConfigurationPath, idleTimeout, keepAlive, maxLostKeepAlive);
+                settings, logbackConfigurationPath, idleTimeout, keepAlive, maxLostKeepAlive, TEST_MIN_THREADS);
         this.testDir = testDir;
     }
 

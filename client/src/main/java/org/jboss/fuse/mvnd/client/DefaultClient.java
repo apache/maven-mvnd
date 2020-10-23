@@ -169,7 +169,7 @@ public class DefaultClient implements Client {
                 return new DefaultResult(argv, null);
             }
 
-            setDefaultArgs(args);
+            setDefaultArgs(args, layout);
             final Path settings = layout.getSettings();
             if (settings != null && args.stream().noneMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
                 args.add("-s");
@@ -237,10 +237,10 @@ public class DefaultClient implements Client {
 
     }
 
-    static void setDefaultArgs(List<String> args) {
+    static void setDefaultArgs(List<String> args, ClientLayout layout) {
         if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
-            final int procs = Math.max(Runtime.getRuntime().availableProcessors() - 1, 1);
-            args.add("-T" + procs);
+            final int threads = Math.max(Runtime.getRuntime().availableProcessors() - 1, layout.getMinThreads());
+            args.add("-T" + threads);
         }
         if (args.stream().noneMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
             args.add("-bsmart");
