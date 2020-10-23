@@ -42,10 +42,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.jboss.fuse.mvnd</groupId>
-            <artifactId>mvnd-client</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-embedder</artifactId>
         </dependency>
@@ -97,23 +93,6 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <mvnd.home>${project.basedir}/target/maven-distro/mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</mvnd.home>
-                            </systemPropertyVariables>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>io.takari.maven.plugins</groupId>
                 <artifactId>takari-lifecycle-plugin</artifactId>
                 <executions>
@@ -122,22 +101,6 @@
                             <goal>sisu-index</goal>
                         </goals>
                         <phase>process-classes</phase>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
-                <artifactId>provisio-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>maven-distro</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/maven-distro/mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</outputDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

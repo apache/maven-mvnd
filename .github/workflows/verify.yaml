@@ -29,6 +29,9 @@ jobs:
 
     - uses: actions/checkout@v1
 
+    - name: Set VERSION env var
+      run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
     - name: setup-graalvm-ce
       uses: DeLaGuardo/setup-graalvm@3
       with:
@@ -50,13 +53,13 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: daemon-test-logs-linux
-        path: daemon/target/maven-distro/daemon
+        path: dist/target/mvnd-${{ env.VERSION }}-linux-amd64/daemon
 
     - name: Upload mvnd.zip
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-linux-amd64.zip
-        path: daemon/target/maven-distro/mvnd-*.zip
+        path: dist/target/mvnd-*.zip
 
   windows:
     runs-on: windows-2019
@@ -97,6 +100,10 @@ jobs:
 
     - uses: actions/checkout@v1
 
+    - name: Set VERSION env var
+      shell: bash
+      run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
     - name: Skip tests when releasing from a tag
       if: startsWith(github.ref, 'refs/tags')
       shell: bash
@@ -113,19 +120,22 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: daemon-test-logs-windows
-        path: daemon/target/maven-distro/daemon
+        path: dist/target/mvnd-${{ env.VERSION }}-windows-amd64/daemon
 
     - name: Upload mvnd.zip
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-windows-amd64.zip
-        path: daemon/target/maven-distro/mvnd-*.zip
+        path: dist/target/mvnd-*.zip
 
   darwin:
     runs-on: macos-10.15
     steps:
 
     - uses: actions/checkout@v1
+
+    - name: Set VERSION env var
+      run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
     - name: setup-graalvm-ce
       uses: DeLaGuardo/setup-graalvm@3
@@ -148,13 +158,13 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: daemon-test-logs-darwin
-        path: daemon/target/maven-distro/daemon
+        path: dist/target/mvnd-${{ env.VERSION }}-darwin-amd64/daemon
 
     - name: Upload mvnd.zip
       uses: actions/upload-artifact@v2
       with:
         name: mvnd-darwin-amd64.zip
-        path: daemon/target/maven-distro/mvnd-*.zip
+        path: dist/target/mvnd-*.zip
 
   deploy:
     runs-on: ubuntu-18.04

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.dist;
+package org.jboss.fuse.mvnd.it;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

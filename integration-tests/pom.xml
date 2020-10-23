@@ -32,7 +32,7 @@
     <properties>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
-        <mvnd.home>${project.basedir}/../daemon/target/maven-distro/mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</mvnd.home>
+        <mvnd.home>${project.basedir}/../dist/target/mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</mvnd.home>
     </properties>
 
     <dependencies>
@@ -48,17 +48,8 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.fuse.mvnd</groupId>
-            <artifactId>mvnd-daemon</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.fuse.mvnd</groupId>
-            <artifactId>mvnd-common</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.fuse.mvnd</groupId>
-            <artifactId>mvnd-client</artifactId>
+            <artifactId>mvnd-dist</artifactId>
+            <type>pom</type>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
