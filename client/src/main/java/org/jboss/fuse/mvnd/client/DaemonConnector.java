@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,6 +49,7 @@ import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.MavenDaemon;
 import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Os;
 import org.jboss.fuse.mvnd.common.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +68,6 @@ public class DaemonConnector {
     private static final int CONNECT_TIMEOUT = 10000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnector.class);
-
-    private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
 
     private final DaemonRegistry registry;
     private final ClientLayout layout;
@@ -264,7 +262,7 @@ public class DaemonConnector {
                     p -> p.getFileName().toString().equals("mvnd-common-" + buildProperties.getVersion() + ".jar"),
                     p -> p.getFileName().toString().startsWith("slf4j-api-"),
                     p -> p.getFileName().toString().startsWith("logback-"));
-            final String java = IS_WINDOWS ? "bin\\java.exe" : "bin/java";
+            final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
             List<String> args = new ArrayList<>();
             args.add(layout.javaHome().resolve(java).toString());
             args.add("-classpath");

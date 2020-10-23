@@ -15,29 +15,23 @@
  */
 package org.jboss.fuse.mvnd.junit;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.ClientLayout;
 import org.jboss.fuse.mvnd.client.ExecutionResult;
 import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.OsUtils.CommandProcess;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 
 /**
  * A wrapper around the native executable.
  */
 public class NativeTestClient implements Client {
-
-    public static final int TIMEOUT_EXIT_CODE = Integer.MIN_VALUE + 42;
 
     private final ClientLayout layout;
 
@@ -86,8 +80,17 @@ public class NativeTestClient implements Client {
         }
         final String cmdString = String.join(" ", cmd);
         output.accept(null, "Executing " + cmdString);
-        try (CommandProcess process = new CommandProcess(builder.start(), cmd, s -> output.accept(null, s))) {
-            return process.waitFor(timeoutMs);
+
+        final List<String> log = new ArrayList<>();
+        final Consumer<String> loggingConsumer = s -> {
+            synchronized (log) {
+                log.add(s);
+            }
+        };
+        try (CommandProcess process = new CommandProcess(builder.start(),
+                loggingConsumer.andThen(s -> output.accept(null, s)))) {
+            final int exitCode = process.waitFor(timeoutMs);
+            return new Result(args, exitCode, log);
         } catch (IOException e) {
             throw new RuntimeException("Could not execute: " + cmdString, e);
         }
@@ -125,7 +128,7 @@ public class NativeTestClient implements Client {
         public Result assertSuccess() {
             if (exitCode != 0) {
                 final StringBuilder sb = appendCommand(new StringBuilder("mvnd returned ").append(exitCode));
-                if (exitCode == TIMEOUT_EXIT_CODE) {
+                if (exitCode == CommandProcess.TIMEOUT_EXIT_CODE) {
                     sb.append(" (timeout)");
                 }
                 sb.append("\n--- stderr+stdout start ---");
@@ -146,98 +149,6 @@ public class NativeTestClient implements Client {
             return exitCode == 0;
         }
 
-    }
-
-    /**
-     * A simple wrapper over {@link Process} that manages its destroying and offers Java 8-like
-     * {@link #waitFor(long, TimeUnit, String[])} with timeout.
-     */
-    static class CommandProcess implements AutoCloseable {
-
-        private final Process process;
-        private final Thread shutDownHook;
-        private final StreamGobbler stdOut;
-        private final List<String> args;
-        private final List<String> log = new ArrayList<>();
-
-        public CommandProcess(Process process, List<String> args, Consumer<String> outputConsumer) {
-            super();
-            this.process = process;
-            this.args = args;
-            final Consumer<String> loggingConsumer = s -> {
-                synchronized (log) {
-                    log.add(s);
-                }
-            };
-            this.stdOut = new StreamGobbler(process.getInputStream(), loggingConsumer.andThen(outputConsumer));
-            stdOut.start();
-
-            this.shutDownHook = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    stdOut.cancel();
-                    CommandProcess.this.process.destroy();
-                }
-            });
-            Runtime.getRuntime().addShutdownHook(shutDownHook);
-        }
-
-        @Override
-        public void close() {
-            process.destroy();
-        }
-
-        public ExecutionResult waitFor(long timeoutMs) throws InterruptedException, IOException {
-            final long deadline = System.currentTimeMillis() + timeoutMs;
-            final boolean timeouted = !process.waitFor(timeoutMs, TimeUnit.MILLISECONDS);
-            timeoutMs = Math.max(0, deadline - System.currentTimeMillis());
-            stdOut.join(timeoutMs);
-            stdOut.assertSuccess();
-            try {
-                Runtime.getRuntime().removeShutdownHook(shutDownHook);
-            } catch (Exception ignored) {
-            }
-            final int exitCode = timeouted ? TIMEOUT_EXIT_CODE : process.exitValue();
-            return new Result(args, exitCode, log);
-        }
-
-    }
-
-    /**
-     * The usual friend of {@link Process#getInputStream()} / {@link Process#getErrorStream()}.
-     */
-    static class StreamGobbler extends Thread {
-        private volatile boolean cancelled;
-        private IOException exception;
-        private final InputStream in;
-        private final Consumer<String> out;
-
-        private StreamGobbler(InputStream in, Consumer<String> out) {
-            this.in = in;
-            this.out = out;
-        }
-
-        public void assertSuccess() throws IOException {
-            if (exception != null) {
-                throw exception;
-            }
-        }
-
-        public void cancel() {
-            this.cancelled = true;
-        }
-
-        @Override
-        public void run() {
-            try (BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-                String line;
-                while (!cancelled && (line = r.readLine()) != null) {
-                    out.accept(line);
-                }
-            } catch (IOException e) {
-                exception = e;
-            }
-        }
     }
 
 }
