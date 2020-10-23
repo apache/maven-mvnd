@@ -27,6 +27,6 @@ public class OsUtilsTest {
     @Test
     void findProcessRssInKb() {
         long rss = OsUtils.findProcessRssInKb(ProcessHandle.current().pid());
-        Assertions.assertThat(rss).isGreaterThanOrEqualTo(0);
+        Assertions.assertThat(rss).isGreaterThan(0);
     }
 }

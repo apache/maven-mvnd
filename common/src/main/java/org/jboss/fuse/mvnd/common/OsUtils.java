@@ -69,7 +69,7 @@ public class OsUtils {
             final List<String> nonEmptyLines = output.stream().filter(l -> !l.isEmpty()).collect(Collectors.toList());
             if (nonEmptyLines.size() >= 2) {
                 try {
-                    return Long.parseLong(nonEmptyLines.get(1).trim());
+                    return Long.parseLong(nonEmptyLines.get(1).trim()) / KB;
                 } catch (NumberFormatException e) {
                     LOGGER.warn("Could not parse the second line of " + Stream.of(cmd).collect(Collectors.joining(" "))
                             + " output as a long:\n"
