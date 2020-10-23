@@ -28,7 +28,7 @@
     <artifactId>mvnd-dist</artifactId>
 
     <packaging>pom</packaging>
-    <name>Maven Daemon Distribution</name>
+    <name>Maven Daemon - Distribution</name>
 
     <dependencies>
         <dependency>
