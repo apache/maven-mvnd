@@ -37,6 +37,7 @@ import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.KeepAliveMessage;
 import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
+import org.jboss.fuse.mvnd.common.OsUtils;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
@@ -141,10 +142,12 @@ public class DefaultClient implements Client {
         try (DaemonRegistry registry = new DaemonRegistry(layout.registry())) {
             boolean status = args.remove("--status");
             if (status) {
-                output.accept(null, String.format("    %36s  %7s  %5s  %7s  %23s  %s",
-                        "UUID", "PID", "Port", "Status", "Last activity", "Java home"));
-                registry.getAll().forEach(d -> output.accept(null, String.format("    %36s  %7s  %5s  %7s  %23s  %s",
+                final String template = "    %36s  %7s  %5s  %7s  %5s  %23s  %s";
+                output.accept(null, String.format(template,
+                        "UUID", "PID", "Port", "Status", "RSS", "Last activity", "Java home"));
+                registry.getAll().forEach(d -> output.accept(null, String.format(template,
                         d.getUid(), d.getPid(), d.getAddress(), d.getState(),
+                        OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
                         LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
                                 ZoneId.systemDefault()),
