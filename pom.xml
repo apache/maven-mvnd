@@ -68,6 +68,7 @@
         <module>common</module>
         <module>client</module>
         <module>daemon</module>
+        <module>dist</module>
         <module>integration-tests</module>
     </modules>
 
@@ -166,6 +167,12 @@
             <dependency>
                 <groupId>org.jboss.fuse.mvnd</groupId>
                 <artifactId>mvnd-common</artifactId>
+                <version>0.0.9-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.fuse.mvnd</groupId>
+                <artifactId>mvnd-dist</artifactId>
+                <type>pom</type>
                 <version>0.0.9-SNAPSHOT</version>
             </dependency>
             <dependency>
