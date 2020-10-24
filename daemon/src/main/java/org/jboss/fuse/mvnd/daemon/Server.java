@@ -58,7 +58,7 @@ import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.BuildRequest;
 import org.jboss.fuse.mvnd.common.Message.KeepAliveMessage;
-import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
+import org.jboss.fuse.mvnd.common.Message.StopMessage;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
@@ -187,7 +187,7 @@ public class Server implements AutoCloseable, Runnable {
 
     private void client(SocketChannel socket) {
         LOGGER.info("Client connected");
-        try (DaemonConnection<Message> connection = new DaemonConnection<Message>(socket, new MessageSerializer())) {
+        try (DaemonConnection connection = new DaemonConnection(socket)) {
             while (true) {
                 LOGGER.info("Waiting for request");
                 Message message = connection.receive();
@@ -383,10 +383,7 @@ public class Server implements AutoCloseable, Runnable {
         }
     }
 
-    static final Message STOP = new Message() {
-    };
-
-    private void handle(DaemonConnection<Message> connection, BuildRequest buildRequest) {
+    private void handle(DaemonConnection connection, BuildRequest buildRequest) {
         updateState(Busy);
         try {
             int keepAlive = Environment.DAEMON_KEEP_ALIVE_MS.systemProperty().asInt();
@@ -411,7 +408,7 @@ public class Server implements AutoCloseable, Runnable {
                         if (flushed) {
                             m = queue.poll(keepAlive, TimeUnit.MILLISECONDS);
                             if (m == null) {
-                                m = new KeepAliveMessage();
+                                m = KeepAliveMessage.SINGLETON;
                             }
                             flushed = false;
                         } else {
@@ -422,7 +419,7 @@ public class Server implements AutoCloseable, Runnable {
                                 continue;
                             }
                         }
-                        if (m == STOP) {
+                        if (m == StopMessage.SINGLETON) {
                             connection.flush();
                             LOGGER.info("No more message to dispatch");
                             return;
@@ -473,7 +470,7 @@ public class Server implements AutoCloseable, Runnable {
             return 96;
         } else if (m instanceof BuildException) {
             return 97;
-        } else if (m == STOP) {
+        } else if (m == StopMessage.SINGLETON) {
             return 99;
         } else if (m instanceof KeepAliveMessage) {
             return 100;
@@ -537,12 +534,12 @@ public class Server implements AutoCloseable, Runnable {
 
         public void finish() throws Exception {
             queue.add(new BuildEvent(Type.BuildStopped, "", ""));
-            queue.add(STOP);
+            queue.add(StopMessage.SINGLETON);
         }
 
         public void fail(Throwable t) throws Exception {
             queue.add(new BuildException(t));
-            queue.add(STOP);
+            queue.add(StopMessage.SINGLETON);
         }
 
         @Override

@@ -36,7 +36,6 @@ import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.KeepAliveMessage;
-import org.jboss.fuse.mvnd.common.Message.MessageSerializer;
 import org.jboss.fuse.mvnd.common.OsUtils;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
@@ -184,7 +183,7 @@ public class DefaultClient implements Client {
                 args.add("-Dmaven.repo.local=" + localMavenRepository.toString());
             }
 
-            final DaemonConnector connector = new DaemonConnector(layout, registry, buildProperties, new MessageSerializer());
+            final DaemonConnector connector = new DaemonConnector(layout, registry, buildProperties);
             List<String> opts = new ArrayList<>();
             try (DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts),
                     s -> output.accept(null, s))) {

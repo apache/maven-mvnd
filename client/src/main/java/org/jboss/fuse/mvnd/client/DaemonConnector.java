@@ -48,9 +48,7 @@ import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.MavenDaemon;
-import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Os;
-import org.jboss.fuse.mvnd.common.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,15 +69,12 @@ public class DaemonConnector {
 
     private final DaemonRegistry registry;
     private final ClientLayout layout;
-    private final Serializer<Message> serializer;
     private final BuildProperties buildProperties;
 
-    public DaemonConnector(ClientLayout layout, DaemonRegistry registry, BuildProperties buildProperties,
-            Serializer<Message> serializer) {
+    public DaemonConnector(ClientLayout layout, DaemonRegistry registry, BuildProperties buildProperties) {
         this.layout = layout;
         this.registry = registry;
         this.buildProperties = buildProperties;
-        this.serializer = serializer;
     }
 
     public DaemonClientConnection maybeConnect(DaemonCompatibilitySpec constraint) {
@@ -331,7 +326,7 @@ public class DaemonConnector {
         LOGGER.debug("Connecting to Daemon");
         try {
             int maxKeepAliveMs = layout.getKeepAliveMs() * layout.getMaxLostKeepAlive();
-            DaemonConnection<Message> connection = connect(daemon.getAddress());
+            DaemonConnection connection = connect(daemon.getAddress());
             return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, maxKeepAliveMs);
         } catch (DaemonException.ConnectException e) {
             staleAddressDetector.maybeStaleAddress(e);
@@ -360,7 +355,7 @@ public class DaemonConnector {
         }
     }
 
-    public DaemonConnection<Message> connect(int port) throws DaemonException.ConnectException {
+    public DaemonConnection connect(int port) throws DaemonException.ConnectException {
         InetSocketAddress address = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
         try {
             LOGGER.debug("Trying to connect to address {}.", address);
@@ -372,7 +367,7 @@ public class DaemonConnector {
                 throw new DaemonException.ConnectException(String.format("Socket connected to itself on %s.", address));
             }
             LOGGER.debug("Connected to address {}.", socket.getRemoteSocketAddress());
-            return new DaemonConnection<>(socketChannel, serializer);
+            return new DaemonConnection(socketChannel);
         } catch (DaemonException.ConnectException e) {
             throw e;
         } catch (Exception e) {
