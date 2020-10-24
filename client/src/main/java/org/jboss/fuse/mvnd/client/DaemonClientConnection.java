@@ -41,7 +41,7 @@ public class DaemonClientConnection implements Closeable {
 
     private final static Logger LOG = LoggerFactory.getLogger(DaemonClientConnection.class);
 
-    private final DaemonConnection<Message> connection;
+    private final DaemonConnection connection;
     private final DaemonInfo daemon;
     private final StaleAddressDetector staleAddressDetector;
     private final boolean newDaemon;
@@ -53,7 +53,7 @@ public class DaemonClientConnection implements Closeable {
     private final AtomicBoolean running = new AtomicBoolean(true);
     private final AtomicReference<Exception> exception = new AtomicReference<>();
 
-    public DaemonClientConnection(DaemonConnection<Message> connection, DaemonInfo daemon,
+    public DaemonClientConnection(DaemonConnection connection, DaemonInfo daemon,
             StaleAddressDetector staleAddressDetector, boolean newDaemon, int maxKeepAliveMs) {
         this.connection = connection;
         this.daemon = daemon;

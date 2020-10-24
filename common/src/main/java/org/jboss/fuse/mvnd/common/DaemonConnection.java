@@ -40,26 +40,24 @@ import org.slf4j.LoggerFactory;
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/messaging/src/main/java/org/gradle/internal/remote/internal/inet/SocketConnection.java
  *
  */
-public class DaemonConnection<T> implements AutoCloseable {
+public class DaemonConnection implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnection.class);
 
     private final SocketChannel socket;
-    private final Serializer<T> serializer;
+    private final DataInputStream input;
+    private final DataOutputStream output;
     private final InetSocketAddress localAddress;
     private final InetSocketAddress remoteAddress;
-    private final DataInputStream instr;
-    private final DataOutputStream outstr;
 
-    public DaemonConnection(SocketChannel socket, Serializer<T> serializer) {
+    public DaemonConnection(SocketChannel socket) {
         this.socket = socket;
-        this.serializer = serializer;
         try {
             // NOTE: we use non-blocking IO as there is no reliable way when using blocking IO to shutdown reads while
             // keeping writes active. For example, Socket.shutdownInput() does not work on Windows.
             socket.configureBlocking(false);
-            outstr = new DataOutputStream(new SocketOutputStream(socket));
-            instr = new DataInputStream(new SocketInputStream(socket));
+            this.output = new DataOutputStream(new SocketOutputStream(socket));
+            this.input = new DataInputStream(new SocketInputStream(socket));
         } catch (IOException e) {
             throw new DaemonException.InterruptedException(e);
         }
@@ -72,15 +70,15 @@ public class DaemonConnection<T> implements AutoCloseable {
         return "socket connection from " + localAddress + " to " + remoteAddress;
     }
 
-    public T receive() throws DaemonException.MessageIOException {
+    public Message receive() throws DaemonException.MessageIOException {
         try {
-            return serializer.read(instr);
+            return Message.read(input);
         } catch (EOFException e) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Discarding EOFException: {}", e.toString());
             }
             return null;
-        } catch (ClassNotFoundException | IOException e) {
+        } catch (IOException e) {
             throw new DaemonException.RecoverableMessageIOException(
                     String.format("Could not read message from '%s'.", remoteAddress), e);
         } catch (Throwable e) {
@@ -109,11 +107,11 @@ public class DaemonConnection<T> implements AutoCloseable {
         return false;
     }
 
-    public void dispatch(T message) throws DaemonException.MessageIOException {
+    public void dispatch(Message message) throws DaemonException.MessageIOException {
         try {
-            serializer.write(outstr, message);
-            outstr.flush();
-        } catch (ClassNotFoundException | IOException e) {
+            message.write(output);
+            output.flush();
+        } catch (IOException e) {
             throw new DaemonException.RecoverableMessageIOException(
                     String.format("Could not write message %s to '%s'.", message, remoteAddress), e);
         } catch (Throwable e) {
@@ -124,7 +122,7 @@ public class DaemonConnection<T> implements AutoCloseable {
 
     public void flush() throws DaemonException.MessageIOException {
         try {
-            outstr.flush();
+            output.flush();
         } catch (Throwable e) {
             throw new DaemonException.MessageIOException(String.format("Could not write '%s'.", remoteAddress), e);
         }
@@ -132,7 +130,7 @@ public class DaemonConnection<T> implements AutoCloseable {
 
     public void close() {
         Throwable failure = null;
-        List<Closeable> elements = Arrays.asList(this::flush, instr, outstr, socket);
+        List<Closeable> elements = Arrays.asList(this::flush, input, output, socket);
         for (Closeable element : elements) {
             try {
                 element.close();
