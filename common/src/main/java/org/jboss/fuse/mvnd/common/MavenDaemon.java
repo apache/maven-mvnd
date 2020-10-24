@@ -43,7 +43,10 @@ public class MavenDaemon {
                                 throw new RuntimeException("Could not list " + p, e);
                             }
                         })
-                        .filter(p -> p.getFileName().toString().endsWith(".jar"))
+                        .filter(p -> {
+                            final String fileName = p.getFileName().toString();
+                            return fileName.endsWith(".jar") && !fileName.startsWith("mvnd-client-");
+                        })
                         .filter(Files::isRegularFile),
                 /* resources */
                 Stream.of(mvndHome.resolve("mvn/conf"), mvndHome.resolve("mvn/conf/logging")))
