@@ -6,16 +6,28 @@
 
 **Closed issues:**
 
+- Split daemon module into daemon and dist [\#130](https://github.com/mvndaemon/mvnd/issues/130)
+- mvnd --status to display memory usage [\#129](https://github.com/mvndaemon/mvnd/issues/129)
+- Test with two threads at least [\#128](https://github.com/mvndaemon/mvnd/issues/128)
+- Environment variables not propagated to the daemon during subsequent builds [\#122](https://github.com/mvndaemon/mvnd/issues/122)
 - Please give a meaningful name to the mvnd process [\#118](https://github.com/mvndaemon/mvnd/issues/118)
 - Building... output detail of how many modules in total and left to build [\#112](https://github.com/mvndaemon/mvnd/issues/112)
 - Run with min 1 cpu core left to the user [\#111](https://github.com/mvndaemon/mvnd/issues/111)
 - Connection timeout when trying to execute any build [\#63](https://github.com/mvndaemon/mvnd/issues/63)
+- Client hangs forever if the daemon crashes [\#47](https://github.com/mvndaemon/mvnd/issues/47)
 
 **Merged pull requests:**
 
+- Have unique test project module names [\#139](https://github.com/mvndaemon/mvnd/pull/139) ([ppalaga](https://github.com/ppalaga))
+- Split daemon module into daemon and dist \#130 [\#138](https://github.com/mvndaemon/mvnd/pull/138) ([ppalaga](https://github.com/ppalaga))
+- Polish client status line [\#137](https://github.com/mvndaemon/mvnd/pull/137) ([ppalaga](https://github.com/ppalaga))
+- mvnd --status to display memory usage \#129 [\#136](https://github.com/mvndaemon/mvnd/pull/136) ([ppalaga](https://github.com/ppalaga))
+- Test with two threads at least \#128 [\#135](https://github.com/mvndaemon/mvnd/pull/135) ([ppalaga](https://github.com/ppalaga))
+- Simplify logging [\#134](https://github.com/mvndaemon/mvnd/pull/134) ([ppalaga](https://github.com/ppalaga))
 - Improvements [\#126](https://github.com/mvndaemon/mvnd/pull/126) ([gnodet](https://github.com/gnodet))
 - Display warning in case of environment mismatch \#122 [\#125](https://github.com/mvndaemon/mvnd/pull/125) ([gnodet](https://github.com/gnodet))
 - Improvements [\#124](https://github.com/mvndaemon/mvnd/pull/124) ([gnodet](https://github.com/gnodet))
+- Issue 47 [\#123](https://github.com/mvndaemon/mvnd/pull/123) ([gnodet](https://github.com/gnodet))
 - Fixup \#111 Document the number of utilized cores and use 1 core at least [\#121](https://github.com/mvndaemon/mvnd/pull/121) ([ppalaga](https://github.com/ppalaga))
 - Rename ServerMain to MavenDaemon to be more explicit, fixes \#118 [\#120](https://github.com/mvndaemon/mvnd/pull/120) ([gnodet](https://github.com/gnodet))
 - Leave 1 processor unused on the daemon by default, fixes \#111 [\#119](https://github.com/mvndaemon/mvnd/pull/119) ([gnodet](https://github.com/gnodet))
