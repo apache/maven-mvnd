@@ -18,6 +18,7 @@
 
 **Merged pull requests:**
 
+- Do not add mvnd-client.jar to daemon's class path [\#140](https://github.com/mvndaemon/mvnd/pull/140) ([ppalaga](https://github.com/ppalaga))
 - Have unique test project module names [\#139](https://github.com/mvndaemon/mvnd/pull/139) ([ppalaga](https://github.com/ppalaga))
 - Split daemon module into daemon and dist \#130 [\#138](https://github.com/mvndaemon/mvnd/pull/138) ([ppalaga](https://github.com/ppalaga))
 - Polish client status line [\#137](https://github.com/mvndaemon/mvnd/pull/137) ([ppalaga](https://github.com/ppalaga))
