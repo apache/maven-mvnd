@@ -1,16 +1,16 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.0.9](https://github.com/mvndaemon/mvnd/tree/0.0.9) (2020-10-25)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.8...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.8...0.0.9)
 
 **Closed issues:**
 
 - Split daemon module into daemon and dist [\#130](https://github.com/mvndaemon/mvnd/issues/130)
 - mvnd --status to display memory usage [\#129](https://github.com/mvndaemon/mvnd/issues/129)
 - Test with two threads at least [\#128](https://github.com/mvndaemon/mvnd/issues/128)
-- Environment variables not propagated to the daemon during subsequent builds [\#122](https://github.com/mvndaemon/mvnd/issues/122)
-- Please give a meaningful name to the mvnd process [\#118](https://github.com/mvndaemon/mvnd/issues/118)
+- Warn if the environment of the client does not match the environment of the daemon [\#122](https://github.com/mvndaemon/mvnd/issues/122)
+- Give a meaningful name to the mvnd process [\#118](https://github.com/mvndaemon/mvnd/issues/118)
 - Building... output detail of how many modules in total and left to build [\#112](https://github.com/mvndaemon/mvnd/issues/112)
 - Run with min 1 cpu core left to the user [\#111](https://github.com/mvndaemon/mvnd/issues/111)
 - Connection timeout when trying to execute any build [\#63](https://github.com/mvndaemon/mvnd/issues/63)
@@ -18,6 +18,8 @@
 
 **Merged pull requests:**
 
+- Publish sha256 checksums for the released artifacts [\#144](https://github.com/mvndaemon/mvnd/pull/144) ([ppalaga](https://github.com/ppalaga))
+- Remove the superfluous Serializer interface and its implemetation [\#141](https://github.com/mvndaemon/mvnd/pull/141) ([ppalaga](https://github.com/ppalaga))
 - Do not add mvnd-client.jar to daemon's class path [\#140](https://github.com/mvndaemon/mvnd/pull/140) ([ppalaga](https://github.com/ppalaga))
 - Have unique test project module names [\#139](https://github.com/mvndaemon/mvnd/pull/139) ([ppalaga](https://github.com/ppalaga))
 - Split daemon module into daemon and dist \#130 [\#138](https://github.com/mvndaemon/mvnd/pull/138) ([ppalaga](https://github.com/ppalaga))
