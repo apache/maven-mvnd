@@ -33,7 +33,7 @@ This architecture brings the following advantages:
 we implemented a simplified a non-rolling view showing the status of each build thread on a separate line. This is
 what it looks like on a machine with 24 cores:
 +
-image::src/main/images/console-output.png[]
+image::https://asciinema.org/a/BwsKoBYfW9jsXlDG3QcxSSBEw.svg[link="https://asciinema.org/a/BwsKoBYfW9jsXlDG3QcxSSBEw"]
 +
 Once the build is finshed, the complete Maven output is forwarded to the console.
 
@@ -51,6 +51,13 @@ $ sdk install mvnd
 If you used the manual install in the past, please make sure that the settings in `~/.m2/mvnd.properties` still make
 sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at all, because both `JAVA_HOME` and
 `MVND_HOME` are managed by SDKMAN!.
+
+=== Install using https://brew.sh/[Homebrew]
+
+[source,shell]
+----
+$ brew install mvndaemon/homebrew-mvnd/mvnd
+----
 
 === Install manually
 
