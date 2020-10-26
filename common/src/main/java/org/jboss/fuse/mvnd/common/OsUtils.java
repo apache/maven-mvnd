@@ -56,7 +56,13 @@ public class OsUtils {
             final List<String> output = new ArrayList<String>(1);
             exec(cmd, output);
             if (output.size() == 1) {
-                return Long.parseLong(output.get(0));
+                try {
+                    return Long.parseLong(output.get(0).trim());
+                } catch (NumberFormatException e) {
+                    LOGGER.warn("Could not parse the output of " + Stream.of(cmd).collect(Collectors.joining(" "))
+                            + " as a long:\n"
+                            + output.stream().collect(Collectors.joining("\n")));
+                }
             } else {
                 LOGGER.warn("Unexpected output of " + Stream.of(cmd).collect(Collectors.joining(" ")) + ":\n"
                         + output.stream().collect(Collectors.joining("\n")));
