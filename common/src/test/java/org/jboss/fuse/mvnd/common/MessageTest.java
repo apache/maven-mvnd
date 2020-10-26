@@ -46,6 +46,6 @@ public class MessageTest {
         }
 
         assertTrue(msg2 instanceof Message.BuildMessage);
-        assertEquals(stringToWrite, ((Message.BuildMessage) msg2).getMessage());
+        assertEquals(stringToWrite.toString(), ((Message.BuildMessage) msg2).getMessage());
     }
 }
