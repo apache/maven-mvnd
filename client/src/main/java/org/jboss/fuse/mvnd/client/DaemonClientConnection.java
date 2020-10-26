@@ -97,7 +97,8 @@ public class DaemonClientConnection implements Closeable {
                 } else if (m != null) {
                     return m;
                 } else {
-                    throw new IOException("No message received within " + maxKeepAliveMs + "ms, daemon may have crashed");
+                    throw new IOException("No message received within " + maxKeepAliveMs
+                            + "ms, daemon may have crashed. You may want to check its status using mvnd --status");
                 }
             } catch (Exception e) {
                 LOG.debug("Problem receiving message to the daemon. Performing 'on failure' operation...");
