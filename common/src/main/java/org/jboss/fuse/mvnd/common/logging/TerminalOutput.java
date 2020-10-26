@@ -117,6 +117,10 @@ public class TerminalOutput implements ClientOutput {
         this.reader = r;
     }
 
+    public Terminal getTerminal() {
+        return terminal;
+    }
+
     public void startBuild(String name, int projects, int cores) {
         this.name = name;
         this.totalProjects = projects;
