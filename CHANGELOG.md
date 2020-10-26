@@ -1,15 +1,18 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.9...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.9...0.0.10)
 
 **Closed issues:**
 
+- Provide build output when cancelling a job [\#142](https://github.com/mvndaemon/mvnd/issues/142)
 - Provide a homebrew package [\#106](https://github.com/mvndaemon/mvnd/issues/106)
+- mvnd --status throws NumberFormatException in 0.0.9 [\#147](https://github.com/mvndaemon/mvnd/issues/147)
 
 **Merged pull requests:**
 
+- mvnd --status throws NumberFormatException in 0.0.9 [\#149](https://github.com/mvndaemon/mvnd/pull/149) ([ppalaga](https://github.com/ppalaga))
 - Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
 - Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
 
