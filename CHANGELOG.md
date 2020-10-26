@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.9...HEAD)
+
+**Closed issues:**
+
+- Provide a homebrew package [\#106](https://github.com/mvndaemon/mvnd/issues/106)
+
+**Merged pull requests:**
+
+- Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
+- Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
+
 ## [0.0.9](https://github.com/mvndaemon/mvnd/tree/0.0.9) (2020-10-25)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.8...0.0.9)
@@ -18,7 +31,6 @@
 
 **Merged pull requests:**
 
-- Publish sha256 checksums for the released artifacts [\#144](https://github.com/mvndaemon/mvnd/pull/144) ([ppalaga](https://github.com/ppalaga))
 - Remove the superfluous Serializer interface and its implemetation [\#141](https://github.com/mvndaemon/mvnd/pull/141) ([ppalaga](https://github.com/ppalaga))
 - Do not add mvnd-client.jar to daemon's class path [\#140](https://github.com/mvndaemon/mvnd/pull/140) ([ppalaga](https://github.com/ppalaga))
 - Have unique test project module names [\#139](https://github.com/mvndaemon/mvnd/pull/139) ([ppalaga](https://github.com/ppalaga))
