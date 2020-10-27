@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -54,7 +55,33 @@ public enum Environment {
 
     public static final int DEFAULT_MIN_THREADS = 1;
 
-    private static final Logger LOG = LoggerFactory.getLogger(Environment.class);
+    private static final Consumer<String> LOG;
+    private static final boolean DEBUG_ENABLED;
+    public static final String DEBUG_ENVIRONMENT_PROP = "mvnd.environment.debug";
+
+    static {
+        Consumer<String> log = null;
+        boolean debugEnabled = false;
+        try {
+            Logger logger = LoggerFactory.getLogger(Environment.class);
+            log = logger::debug;
+            debugEnabled = logger.isDebugEnabled();
+        } catch (java.lang.NoClassDefFoundError e) {
+            if (e.getMessage().contains("org/slf4j/LoggerFactory")) {
+                /* This is when we are in the daemon's boot class path where slf4j is not available */
+                if (Boolean.getBoolean(DEBUG_ENVIRONMENT_PROP)) {
+                    log = s -> System.out.println("mvnd.environment: " + s);
+                    debugEnabled = true;
+                }
+            } else {
+                throw e;
+            }
+        }
+        LOG = log != null ? log : s -> {
+        };
+        DEBUG_ENABLED = debugEnabled;
+    }
+
     static Properties properties = System.getProperties();
     static Map<String, String> env = System.getenv();
 
@@ -276,7 +303,7 @@ public enum Environment {
                 }
             }
             final String result = valueSource.valueSupplier.get();
-            if (result != null && LOG.isDebugEnabled()) {
+            if (result != null && DEBUG_ENABLED) {
                 StringBuilder sb = new StringBuilder("Loaded environment value for key [")
                         .append(envKey.name())
                         .append("] from ");
@@ -284,7 +311,7 @@ public enum Environment {
                 sb.append(": [")
                         .append(result)
                         .append(']');
-                LOG.debug(sb.toString());
+                LOG.accept(sb.toString());
             }
             return result;
         }

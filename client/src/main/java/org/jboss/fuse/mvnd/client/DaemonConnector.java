@@ -16,12 +16,10 @@
 package org.jboss.fuse.mvnd.client;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,9 +31,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec.Result;
@@ -252,11 +248,8 @@ public class DaemonConnector {
         final Path workingDir = layout.userDir();
         String command = "";
         try {
-            String classpath = findJars(
-                    mavenHome,
-                    p -> p.getFileName().toString().equals("mvnd-common-" + buildProperties.getVersion() + ".jar"),
-                    p -> p.getFileName().toString().startsWith("slf4j-api-"),
-                    p -> p.getFileName().toString().startsWith("logback-"));
+            final String classpath = mavenHome.resolve("mvn/lib/ext/mvnd-common-" + buildProperties.getVersion() + ".jar")
+                    .toString();
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
             List<String> args = new ArrayList<>();
             args.add(layout.javaHome().resolve(java).toString());
@@ -269,6 +262,9 @@ public class DaemonConnector {
             args.add("-Dmvnd.java.home=" + layout.javaHome().toString());
             args.add("-Dlogback.configurationFile=" + layout.getLogbackConfigurationPath());
             args.add("-Ddaemon.uid=" + uid);
+            if (Boolean.getBoolean(Environment.DEBUG_ENVIRONMENT_PROP)) {
+                args.add("-D" + Environment.DEBUG_ENVIRONMENT_PROP + "=true");
+            }
             args.add("-Xmx4g");
             args.add(Environment.DAEMON_IDLE_TIMEOUT_MS.asCommandLineProperty(Integer.toString(layout.getIdleTimeoutMs())));
             args.add(Environment.DAEMON_KEEP_ALIVE_MS.asCommandLineProperty(Integer.toString(layout.getKeepAliveMs())));
@@ -289,18 +285,6 @@ public class DaemonConnector {
                     String.format("Error starting daemon: uid = %s, workingDir = %s, daemonArgs: %s",
                             uid, workingDir, command),
                     e);
-        }
-    }
-
-    private String findJars(Path mavenHome, Predicate<Path>... filters) {
-        final Path libExtDir = mavenHome.resolve("mvn/lib/ext");
-        try (Stream<Path> jars = Files.list(libExtDir)) {
-            return jars
-                    .filter(Stream.of(filters).reduce((previous, current) -> previous.or(current)).get())
-                    .map(Path::toString)
-                    .collect(Collectors.joining(File.pathSeparator));
-        } catch (IOException e) {
-            throw new RuntimeException("Could not list " + libExtDir);
         }
     }
 
