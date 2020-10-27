@@ -237,7 +237,7 @@ public class DaemonConnector {
                 throw new DaemonException.InterruptedException(e);
             }
         } while (System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
-        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon), layout.daemonOutLog(daemon));
+        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout);
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
@@ -297,7 +297,7 @@ public class DaemonConnector {
             try {
                 return connectToDaemon(daemonInfo, new CleanupOnStaleAddress(daemonInfo), newDaemon);
             } catch (DaemonException.ConnectException e) {
-                DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon), layout.daemonOutLog(daemon));
+                DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout);
                 throw new DaemonException.ConnectException("Could not connect to the Maven daemon.\n" + diag.describe(), e);
             }
         }
@@ -311,7 +311,7 @@ public class DaemonConnector {
         try {
             int maxKeepAliveMs = layout.getKeepAliveMs() * layout.getMaxLostKeepAlive();
             DaemonConnection connection = connect(daemon.getAddress());
-            return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, maxKeepAliveMs);
+            return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, maxKeepAliveMs, layout);
         } catch (DaemonException.ConnectException e) {
             staleAddressDetector.maybeStaleAddress(e);
             throw e;

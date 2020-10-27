@@ -35,29 +35,26 @@ public class DaemonDiagnostics {
     private final static int TAIL_SIZE = 20;
 
     private final String uid;
-    private final Path daemonLog;
-    private final Path daemonOutLog;
+    private final Layout layout;
 
-    public DaemonDiagnostics(String uid, Path daemonLog, Path daemonOutLog) {
+    public DaemonDiagnostics(String uid, Layout layout) {
         this.uid = uid;
-        this.daemonLog = daemonLog;
-        this.daemonOutLog = daemonOutLog;
+        this.layout = layout;
     }
 
     @Override
     public String toString() {
         return "{"
                 + "uid=" + uid
-                + ", daemonLog=" + daemonLog
-                + ", daemonOutLog=" + daemonOutLog
+                + ", layout=" + layout
                 + '}';
     }
 
     public String describe() {
         StringBuilder sb = new StringBuilder();
         sb.append("Daemon uid: ").append(uid).append("\n");
-        tail(sb, "log file", daemonLog);
-        tail(sb, "output", daemonOutLog);
+        tail(sb, "log file", layout.daemonLog(uid));
+        tail(sb, "output", layout.daemonOutLog(uid));
         return sb.toString();
     }
 
