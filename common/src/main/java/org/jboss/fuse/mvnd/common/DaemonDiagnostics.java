@@ -18,6 +18,7 @@ package org.jboss.fuse.mvnd.common;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -35,10 +36,12 @@ public class DaemonDiagnostics {
 
     private final String uid;
     private final Path daemonLog;
+    private final Path daemonOutLog;
 
-    public DaemonDiagnostics(String uid, Path daemonLog) {
+    public DaemonDiagnostics(String uid, Path daemonLog, Path daemonOutLog) {
         this.uid = uid;
         this.daemonLog = daemonLog;
+        this.daemonOutLog = daemonOutLog;
     }
 
     @Override
@@ -46,27 +49,40 @@ public class DaemonDiagnostics {
         return "{"
                 + "uid=" + uid
                 + ", daemonLog=" + daemonLog
+                + ", daemonOutLog=" + daemonOutLog
                 + '}';
     }
 
-    private String tailDaemonLog() {
+    public String describe() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Daemon uid: ").append(uid).append("\n");
+        tail(sb, "log file", daemonLog);
+        tail(sb, "output", daemonOutLog);
+        return sb.toString();
+    }
+
+    static void tail(StringBuilder sb, String name, Path log) {
         try {
-            String tail = tail(daemonLog, TAIL_SIZE);
-            return formatTail(tail);
+            String tail = tail(log);
+            sb.append("  ").append(name).append(": ").append(log).append("\n");
+            sb.append("----- Last  " + TAIL_SIZE + " lines from daemon ").append(name).append(" - ").append(log).append(" -----\n");
+            sb.append(tail);
+            sb.append("----- End of the daemon ").append(name).append(" -----\n");
+        } catch (NoSuchFileException e) {
+            sb.append("  no ").append(name).append(" at: ").append(log).append("\n");
         } catch (IOException e) {
-            return "Unable to read from the daemon log file: " + daemonLog + ", because of: " + e.getCause();
+            sb.append("  unable to read from the daemon ").append(name).append(": ").append(log).append(", because of: ").append(e);
         }
     }
 
     /**
      * @param  path        to read from tail
-     * @param  maxLines    max lines to read
      * @return             tail content
      * @throws IOException when reading failed
      */
-    static String tail(Path path, int maxLines) throws IOException {
+    static String tail(Path path) throws IOException {
         try (BufferedReader r = Files.newBufferedReader(path)) {
-            return String.join("\n", r.lines().collect(lastN(maxLines)));
+            return String.join("\n", r.lines().collect(lastN(TAIL_SIZE))) + "\n";
         }
     }
 
@@ -83,15 +99,4 @@ public class DaemonDiagnostics {
         }, ArrayList::new);
     }
 
-    private String formatTail(String tail) {
-        return "----- Last  " + TAIL_SIZE + " lines from daemon log file - " + daemonLog + " -----\n"
-                + tail
-                + "----- End of the daemon log -----\n";
-    }
-
-    public String describe() {
-        return "Daemon uid: " + uid + "\n"
-                + "  log file: " + daemonLog + "\n"
-                + tailDaemonLog();
-    }
 }

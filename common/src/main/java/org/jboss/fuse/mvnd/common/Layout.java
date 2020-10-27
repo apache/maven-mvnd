@@ -56,6 +56,10 @@ public class Layout {
         return mavenHome.resolve("daemon/daemon-" + daemon + ".log");
     }
 
+    public Path daemonOutLog(String daemon) {
+        return mavenHome.resolve("daemon/daemon-" + daemon + ".out.log");
+    }
+
     public Path multiModuleProjectDirectory() {
         return multiModuleProjectDirectory;
     }

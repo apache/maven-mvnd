@@ -237,7 +237,7 @@ public class DaemonConnector {
                 throw new DaemonException.InterruptedException(e);
             }
         } while (System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
-        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon));
+        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon), layout.daemonOutLog(daemon));
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
@@ -272,7 +272,7 @@ public class DaemonConnector {
             command = String.join(" ", args);
 
             LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
-            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(layout.daemonLog(uid + ".out").toFile());
+            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(layout.daemonOutLog(uid).toFile());
             new ProcessBuilder()
                     .directory(workingDir.toFile())
                     .command(args)
@@ -297,7 +297,7 @@ public class DaemonConnector {
             try {
                 return connectToDaemon(daemonInfo, new CleanupOnStaleAddress(daemonInfo), newDaemon);
             } catch (DaemonException.ConnectException e) {
-                DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon));
+                DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout.daemonLog(daemon), layout.daemonOutLog(daemon));
                 throw new DaemonException.ConnectException("Could not connect to the Maven daemon.\n" + diag.describe(), e);
             }
         }
