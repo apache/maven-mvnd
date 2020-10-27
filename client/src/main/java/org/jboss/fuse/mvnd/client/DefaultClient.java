@@ -154,13 +154,20 @@ public class DefaultClient implements Client {
                 final String template = "    %36s  %7s  %5s  %7s  %5s  %23s  %s";
                 output.accept(null, String.format(template,
                         "UUID", "PID", "Port", "Status", "RSS", "Last activity", "Java home"));
-                registry.getAll().forEach(d -> output.accept(null, String.format(template,
-                        d.getUid(), d.getPid(), d.getAddress(), d.getState(),
-                        OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
-                        LocalDateTime.ofInstant(
-                                Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
-                                ZoneId.systemDefault()),
-                        d.getJavaHome())));
+                for (DaemonInfo d : registry.getAll()) {
+                    if (ProcessHandle.of(d.getPid()).isEmpty()) {
+                        /* The process does not exist anymore - remove it from the registry */
+                        registry.remove(d.getUid());
+                    } else {
+                        output.accept(null, String.format(template,
+                                d.getUid(), d.getPid(), d.getAddress(), d.getState(),
+                                OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
+                                LocalDateTime.ofInstant(
+                                        Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
+                                        ZoneId.systemDefault()),
+                                d.getJavaHome()));
+                    }
+                }
                 return new DefaultResult(argv, null);
             }
             boolean stop = args.remove("--stop");
