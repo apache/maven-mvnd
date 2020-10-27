@@ -88,7 +88,6 @@ public class DefaultClient implements Client {
         boolean version = false;
         boolean showVersion = false;
         boolean debug = false;
-        final Properties commandLineProperties = new Properties();
         for (String arg : argv) {
             switch (arg) {
             case "-v":
@@ -111,9 +110,9 @@ public class DefaultClient implements Client {
                 if (arg.startsWith("-D")) {
                     final int eqPos = arg.indexOf('=');
                     if (eqPos >= 0) {
-                        commandLineProperties.setProperty(arg.substring(2, eqPos), arg.substring(eqPos + 1));
+                        System.setProperty(arg.substring(2, eqPos), arg.substring(eqPos + 1));
                     } else {
-                        commandLineProperties.setProperty(arg.substring(2), "");
+                        System.setProperty(arg.substring(2), "");
                     }
                 }
                 args.add(arg);
