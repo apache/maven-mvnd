@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.10...HEAD)
+
+**Closed issues:**
+
+- Messages bigger than 65535 utf code points crash the server [\#155](https://github.com/mvndaemon/mvnd/issues/155)
+- Add a spinner, progress or something indicating that the build is going on [\#150](https://github.com/mvndaemon/mvnd/issues/150)
+- Warning "Unable to create a system terminal" when running maven daemon [\#36](https://github.com/mvndaemon/mvnd/issues/36)
+
+**Merged pull requests:**
+
+- Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
+- Issue 36 [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
+
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.9...0.0.10)
