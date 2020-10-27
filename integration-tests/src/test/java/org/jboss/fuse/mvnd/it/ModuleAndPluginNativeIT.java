@@ -42,11 +42,14 @@ public class ModuleAndPluginNativeIT {
     @Test
     void cleanInstall() throws IOException, InterruptedException {
         final Path helloPath = layout.multiModuleProjectDirectory().resolve("hello/target/hello.txt");
-        try {
-            Files.deleteIfExists(helloPath);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not delete " + helloPath);
-        }
+        final Path helloPropertyPath = layout.multiModuleProjectDirectory().resolve("hello/target/hello.property.txt");
+        Stream.of(helloPath, helloPropertyPath).forEach(p -> {
+            try {
+                Files.deleteIfExists(p);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not delete " + p);
+            }
+        });
 
         final Path localMavenRepo = layout.getLocalMavenRepository();
         TestUtils.deleteDir(localMavenRepo);
@@ -59,10 +62,13 @@ public class ModuleAndPluginNativeIT {
         /* Build #1: with "Hello" output to target/hello.txt */
         {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
-            client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
+            client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG", "-Dhello.property=Hello1")
+                    .assertSuccess();
 
             Assertions.assertThat(helloPath).exists();
             Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello");
+            Assertions.assertThat(helloPropertyPath).exists();
+            Assertions.assertThat(helloPropertyPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello1");
             Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).exists());
         }
 
@@ -75,10 +81,12 @@ public class ModuleAndPluginNativeIT {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             client.execute(output,
                     "clean",
-                    "install", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
+                    "install", "-e", "-Dmvnd.log.level=DEBUG", "-Dhello.property=Hello2").assertSuccess();
 
             Assertions.assertThat(helloPath).exists();
             Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hi");
+            Assertions.assertThat(helloPropertyPath).exists();
+            Assertions.assertThat(helloPropertyPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello2");
             Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).exists());
         }
 

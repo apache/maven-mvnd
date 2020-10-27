@@ -122,6 +122,7 @@
                                 -H:IncludeResources=org/jboss/fuse/mvnd/.*
                                 -H:IncludeResources=org/jline/utils/.*
                                 -H:IncludeResources=org/fusesource/jansi/jansi.properties
+                                -H:-ParseRuntimeOptions
                             </buildArgs>
                         </configuration>
                     </plugin>

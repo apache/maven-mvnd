@@ -35,6 +35,9 @@ public class HelloMojo extends AbstractMojo {
     @Parameter
     File file;
 
+    @Parameter(property = "hello.property", defaultValue = "Hello")
+    String property;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -42,6 +45,7 @@ public class HelloMojo extends AbstractMojo {
             final Path path = file.toPath();
             Files.createDirectories(path.getParent());
             Files.write(path, "Hello".getBytes(StandardCharsets.UTF_8));
+            Files.write(path.getParent().resolve("hello.property.txt"), property.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             throw new RuntimeException("", e);
         }
