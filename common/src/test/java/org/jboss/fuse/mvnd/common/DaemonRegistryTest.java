@@ -26,10 +26,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class DaemonRegistryTest {
+ class DaemonRegistryTest {
 
     @Test
-    public void testReadWrite() throws IOException {
+     void testReadWrite() throws IOException {
         Path temp = File.createTempFile("reg", ".data").toPath();
         DaemonRegistry reg1 = new DaemonRegistry(temp);
         DaemonRegistry reg2 = new DaemonRegistry(temp);

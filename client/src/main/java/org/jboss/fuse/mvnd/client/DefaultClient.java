@@ -179,7 +179,7 @@ public class DefaultClient implements Client {
                         try {
                             ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
                         } catch (Exception t) {
-                            System.out.println("Daemon " + di.getUid() + ": " + t);
+                            LOGGER.info("Daemon " + di.getUid() + ": " + t);
                         } finally {
                             registry.remove(di.getUid());
                         }
