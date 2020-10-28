@@ -25,10 +25,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.fuse.mvnd.common.DaemonConnection;
+import org.jboss.fuse.mvnd.common.DaemonDiagnostics;
 import org.jboss.fuse.mvnd.common.DaemonException;
 import org.jboss.fuse.mvnd.common.DaemonException.ConnectException;
 import org.jboss.fuse.mvnd.common.DaemonException.StaleAddressException;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
+import org.jboss.fuse.mvnd.common.Layout;
 import org.jboss.fuse.mvnd.common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +54,10 @@ public class DaemonClientConnection implements Closeable {
     private final Thread receiver;
     private final AtomicBoolean running = new AtomicBoolean(true);
     private final AtomicReference<Exception> exception = new AtomicReference<>();
+    private final Layout layout;
 
     public DaemonClientConnection(DaemonConnection connection, DaemonInfo daemon,
-            StaleAddressDetector staleAddressDetector, boolean newDaemon, int maxKeepAliveMs) {
+            StaleAddressDetector staleAddressDetector, boolean newDaemon, int maxKeepAliveMs, Layout layout) {
         this.connection = connection;
         this.daemon = daemon;
         this.staleAddressDetector = staleAddressDetector;
@@ -62,6 +65,7 @@ public class DaemonClientConnection implements Closeable {
         this.maxKeepAliveMs = maxKeepAliveMs;
         this.receiver = new Thread(this::doReceive);
         this.receiver.start();
+        this.layout = layout;
     }
 
     public DaemonInfo getDaemon() {
@@ -101,11 +105,12 @@ public class DaemonClientConnection implements Closeable {
                             + "ms, daemon may have crashed. You may want to check its status using mvnd --status");
                 }
             } catch (Exception e) {
+                DaemonDiagnostics diag = new DaemonDiagnostics(daemon.getUid(), layout);
                 LOG.debug("Problem receiving message to the daemon. Performing 'on failure' operation...");
                 if (!hasReceived && newDaemon) {
-                    throw new ConnectException("Could not receive a message from the daemon.", e);
+                    throw new ConnectException("Could not receive a message from the daemon.\n" + diag.describe(), e);
                 } else if (staleAddressDetector.maybeStaleAddress(e)) {
-                    throw new StaleAddressException("Could not receive a message from the daemon.", e);
+                    throw new StaleAddressException("Could not receive a message from the daemon.\n" + diag.describe(), e);
                 }
             } finally {
                 hasReceived = true;

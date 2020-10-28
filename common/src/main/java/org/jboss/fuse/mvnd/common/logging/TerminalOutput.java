@@ -190,7 +190,7 @@ public class TerminalOutput implements ClientOutput {
                     break;
                 }
                 if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M) {
-                    queue.add(new Event(EventType.INPUT, null, Character.toString(c)));
+                    queue.add(new Event(EventType.INPUT, null, Character.toString((char) c)));
                 }
             }
         } catch (InterruptedIOException e) {
@@ -257,7 +257,7 @@ public class TerminalOutput implements ClientOutput {
                             linesPerProject = Math.max(0, linesPerProject - 1);
                             break;
                         case CTRL_L:
-                            display.update(List.of(), 0);
+                            display.update(Collections.emptyList(), 0);
                             break;
                         case CTRL_M:
                             displayDone = !displayDone;
