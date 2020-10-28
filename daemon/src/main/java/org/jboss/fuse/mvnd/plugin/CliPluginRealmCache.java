@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -354,7 +353,6 @@ public class CliPluginRealmCache
                     /*  Store the multiModuleProjectDirectory path */
                     multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
                 } else if (event instanceof MavenExecutionResult) {
-                    String rootUri = multiModuleProjectDirectory.toUri().toString();
                     /* Evict the entries refering to jars under multiModuleProjectDirectory */
                     final Iterator<Entry<Key, ValidableCacheRecord>> i = cache.entrySet().iterator();
                     while (i.hasNext()) {
@@ -382,7 +380,6 @@ public class CliPluginRealmCache
     };
 
     public CliPluginRealmCache() {
-        final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         this.watcher = new RecordValidator();
     }
 
