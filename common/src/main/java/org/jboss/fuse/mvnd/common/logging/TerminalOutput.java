@@ -64,13 +64,14 @@ public class TerminalOutput implements ClientOutput {
     private boolean displayDone = false;
 
     private final long start;
+    private String buildStatus;
     private String name;
     private int totalProjects;
     private int doneProjects;
-    private int usedCores;
+    private int maxThreads;
 
     enum EventType {
-        BUILD,
+        BUILD_STATUS,
         PROJECT_STATE,
         PROJECT_FINISHED,
         LOG,
@@ -92,6 +93,10 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
+    /**
+     * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
+     * to be immutable.
+     */
     static class Project {
         final String id;
         String status;
@@ -125,7 +130,7 @@ public class TerminalOutput implements ClientOutput {
         this.name = name;
         this.totalProjects = projects;
         this.doneProjects = 0;
-        this.usedCores = cores;
+        this.maxThreads = cores;
     }
 
     public void projectStateChanged(String projectId, String task) {
@@ -182,6 +187,15 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
+    @Override
+    public void buildStatus(String status) {
+        try {
+            queue.put(new Event(EventType.BUILD_STATUS, null, status));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     void readInputLoop() {
         try {
             while (!closing) {
@@ -209,6 +223,10 @@ public class TerminalOutput implements ClientOutput {
                 queue.drainTo(entries);
                 for (Event entry : entries) {
                     switch (entry.type) {
+                    case BUILD_STATUS: {
+                        this.buildStatus = entry.message;
+                        break;
+                    }
                     case END_OF_STREAM: {
                         projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                         clearDisplay();
@@ -312,49 +330,16 @@ public class TerminalOutput implements ClientOutput {
             return;
         }
         final List<AttributedString> lines = new ArrayList<>(rows);
-        int dispLines = rows - 1; // for the "Building..." line
+        int dispLines = rows - 1; // for the build status line
         dispLines--; // there's a bug which sometimes make the cursor goes one line below, so keep one more line empty at the end
-        if (projects.size() <= dispLines) {
-            if (name != null) {
-                AttributedStringBuilder asb = new AttributedStringBuilder();
-                asb.append("Building ");
-                asb.style(AttributedStyle.BOLD);
-                asb.append(name);
-                asb.style(AttributedStyle.DEFAULT);
+        final int projectsCount = projects.size();
 
-                StringBuilder statusLine = new StringBuilder(64);
-                statusLine.append("  threads: ").append(usedCores);
+        addStatusLine(lines, dispLines, projectsCount);
 
-                statusLine.append("  time: ");
-                long sec = (System.currentTimeMillis() - this.start) / 1000;
-                if (sec > 60) {
-                    statusLine.append(sec / 60).append('m').append(String.valueOf(sec % 60)).append('s');
-                } else {
-                    statusLine.append(sec).append('s');
-                }
-
-                if (totalProjects > 0) {
-                    statusLine.append("  progress: ").append(doneProjects).append('/').append(totalProjects).append(' ')
-                            .append(doneProjects * 100 / totalProjects).append('%');
-                }
-                lines.add(asb.append(statusLine.toString()).toAttributedString());
-            }
-            int remLogLines = dispLines - projects.size();
+        if (projectsCount <= dispLines) {
+            int remLogLines = dispLines - projectsCount;
             for (Project prj : projects.values()) {
-                String str = prj.status != null ? prj.status : ":" + prj.id + ":<unknown>";
-                int cs = str.indexOf(':');
-                int ce = cs >= 0 ? str.indexOf(':', cs + 1) : -1;
-                if (ce > 0) {
-                    AttributedStringBuilder asb = new AttributedStringBuilder();
-                    asb.append(str, 0, cs);
-                    asb.style(AttributedStyle.BOLD);
-                    asb.append(str, cs, ce);
-                    asb.style(AttributedStyle.DEFAULT);
-                    asb.append(str, ce, str.length());
-                    lines.add(asb.toAttributedString());
-                } else {
-                    lines.add(AttributedString.fromAnsi(str));
-                }
+                addProjectLine(lines, prj);
                 // get the last lines of the project log, taking multi-line logs into account
                 int nb = Math.min(remLogLines, linesPerProject);
                 List<AttributedString> logs = lastN(prj.log, nb).stream()
@@ -365,15 +350,75 @@ public class TerminalOutput implements ClientOutput {
                 remLogLines -= logs.size();
             }
         } else {
-            lines.add(new AttributedString("Building... (" + (projects.size() - dispLines) + " more)"));
-            lines.addAll(projects.values().stream()
-                    .map(prj -> AttributedString.fromAnsi(prj.status != null ? prj.status : "<unknown>"))
-                    .collect(lastN(dispLines)));
+            int skipProjects = projectsCount - dispLines;
+            for (Project prj : projects.values()) {
+                if (skipProjects == 0) {
+                    addProjectLine(lines, prj);
+                } else {
+                    skipProjects--;
+                }
+            }
         }
         List<AttributedString> trimmed = lines.stream()
                 .map(s -> s.columnSubSequence(0, cols))
                 .collect(Collectors.toList());
         display.update(trimmed, -1);
+    }
+
+    private void addStatusLine(final List<AttributedString> lines, int dispLines, final int projectsCount) {
+        AttributedStringBuilder asb = new AttributedStringBuilder();
+        StringBuilder statusLine = new StringBuilder(64);
+        if (name == null) {
+            statusLine.append(buildStatus != null ? buildStatus : "Looking up daemon...");
+        } else {
+            asb.append("Building ");
+            asb.style(AttributedStyle.BOLD);
+            asb.append(name);
+            asb.style(AttributedStyle.DEFAULT);
+            if (projectsCount <= dispLines) {
+                statusLine.append("  threads used/max: ")
+                        .append(projectsCount).append('/').append(maxThreads);
+            } else {
+                statusLine.append("  threads used/hidden/max: ")
+                        .append(projectsCount).append('/').append(projectsCount - dispLines).append('/').append(maxThreads);
+            }
+
+            if (totalProjects > 0) {
+                statusLine.append("  progress: ").append(doneProjects).append('/').append(totalProjects).append(' ')
+                        .append(doneProjects * 100 / totalProjects).append('%');
+            }
+        }
+
+        statusLine.append("  time: ");
+        long sec = (System.currentTimeMillis() - this.start) / 1000;
+        if (sec > 60) {
+            statusLine.append(sec / 60).append('m').append(String.valueOf(sec % 60)).append('s');
+        } else {
+            statusLine.append(sec).append('s');
+        }
+
+        asb.append(statusLine.toString());
+        lines.add(asb.toAttributedString());
+    }
+
+    private void addProjectLine(final List<AttributedString> lines, Project prj) {
+        String str = prj.status != null ? prj.status : ":" + prj.id + ":<unknown>";
+        if (str.length() >= 1 && str.charAt(0) == ':') {
+            int ce = str.indexOf(':', 1);
+            final AttributedStringBuilder asb = new AttributedStringBuilder();
+            asb.append(":");
+            asb.style(AttributedStyle.BOLD);
+            if (ce > 0) {
+                asb.append(str, 1, ce);
+                asb.style(AttributedStyle.DEFAULT);
+                asb.append(str, ce, str.length());
+            } else {
+                asb.append(str, 1, str.length());
+            }
+            lines.add(asb.toAttributedString());
+        } else {
+            lines.add(AttributedString.fromAnsi(str));
+        }
     }
 
     private static <T> List<T> lastN(List<T> list, int n) {

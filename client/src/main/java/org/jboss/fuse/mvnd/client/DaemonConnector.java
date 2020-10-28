@@ -15,7 +15,6 @@
  */
 package org.jboss.fuse.mvnd.client;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -30,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
@@ -45,6 +43,7 @@ import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.MavenDaemon;
 import org.jboss.fuse.mvnd.common.Os;
+import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,10 +85,10 @@ public class DaemonConnector {
         return null;
     }
 
-    public DaemonClientConnection connect(DaemonCompatibilitySpec constraint, Consumer<String> logger) {
+    public DaemonClientConnection connect(DaemonCompatibilitySpec constraint, ClientOutput output) {
+        output.buildStatus("Looking up daemon...");
         Map<Boolean, List<DaemonInfo>> idleBusy = registry.getAll().stream()
                 .collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
-
         final Collection<DaemonInfo> idleDaemons = idleBusy.getOrDefault(true, Collections.emptyList());
         final Collection<DaemonInfo> busyDaemons = idleBusy.getOrDefault(false, Collections.emptyList());
 
@@ -107,7 +106,7 @@ public class DaemonConnector {
 
         // No compatible daemons available - start a new daemon
         String message = handleStopEvents(idleDaemons, busyDaemons);
-        logger.accept(message);
+        output.buildStatus(message);
         return startDaemon(constraint);
     }
 
@@ -151,11 +150,11 @@ public class DaemonConnector {
             if (numStopped > 0) {
                 reasons.add(numStopped + " stopped");
             }
-            return "Starting a Maven Daemon, "
-                    + String.join(" and ", reasons) + " Daemon" + (totalUnavailableDaemons > 1 ? "s" : "")
+            return "Starting new daemon, "
+                    + String.join(" and ", reasons) + " daemon" + (totalUnavailableDaemons > 1 ? "s" : "")
                     + " could not be reused, use --status for details";
         } else {
-            return "Starting a Maven Daemon (subsequent builds will be faster)";
+            return "Starting new daemon (subsequent builds will be faster)...";
         }
     }
 
