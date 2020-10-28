@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
@@ -30,8 +29,6 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -40,13 +37,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
+
 import javax.enterprise.inject.Default;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.eventspy.AbstractEventSpy;
@@ -115,7 +112,7 @@ public class CliPluginRealmCache
                 }
             }
             this.parentRealm = parentRealm;
-            this.foreignImports = (foreignImports != null) ? foreignImports : Collections.<String, ClassLoader> emptyMap();
+            this.foreignImports = (foreignImports != null) ? foreignImports : Collections.emptyMap();
             this.filter = dependencyFilter;
 
             int hash = 17;
@@ -161,19 +158,17 @@ public class CliPluginRealmCache
         }
     }
 
-    interface RecordValidator {
-        void validateRecords();
+    static class ValidableCacheRecord extends CacheRecord {
 
-        ValidableCacheRecord newRecord(ClassRealm pluginRealm, List<Artifact> pluginArtifacts);
-    }
-
-    static abstract class ValidableCacheRecord extends CacheRecord {
+        private volatile boolean valid = true;
 
         public ValidableCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
             super(realm, artifacts);
         }
 
-        public abstract boolean isValid();
+        public boolean isValid() {
+            return valid;
+        }
 
         public void dispose() {
             ClassRealm realm = getRealm();
@@ -185,82 +180,10 @@ public class CliPluginRealmCache
         }
     }
 
-    static class TimestampedRecordValidator implements RecordValidator {
-
-        @Override
-        public void validateRecords() {
-        }
-
-        @Override
-        public ValidableCacheRecord newRecord(ClassRealm realm, List<Artifact> artifacts) {
-            return new TimestampedCacheRecord(realm, artifacts);
-        }
-
-    }
-
-    static class TimestampedCacheRecord extends ValidableCacheRecord {
-
-        static class ArtifactTimestamp {
-            final Path path;
-            final FileTime lastModifiedTime;
-            final Object fileKey;
-
-            ArtifactTimestamp(Path path) {
-                this.path = path;
-                try {
-                    BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-                    this.lastModifiedTime = attrs.lastModifiedTime();
-                    this.fileKey = attrs.fileKey();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (this == o)
-                    return true;
-                if (o == null || getClass() != o.getClass())
-                    return false;
-                ArtifactTimestamp that = (ArtifactTimestamp) o;
-                return path.equals(that.path) &&
-                        Objects.equals(lastModifiedTime, that.lastModifiedTime) &&
-                        Objects.equals(fileKey, that.fileKey);
-            }
-
-            @Override
-            public int hashCode() {
-                return Objects.hash(path, lastModifiedTime, fileKey);
-            }
-        }
-
-        Set<ArtifactTimestamp> timestamp;
-
-        public TimestampedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
-            super(realm, artifacts);
-            timestamp = current();
-        }
-
-        public boolean isValid() {
-            try {
-                return Objects.equals(current(), timestamp);
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        private Set<ArtifactTimestamp> current() {
-            return getArtifacts().stream().map(Artifact::getFile)
-                    .map(File::toPath)
-                    .map(ArtifactTimestamp::new)
-                    .collect(Collectors.toSet());
-        }
-    }
-
     /**
-     * A {@link WatchService} with some methods to watch JARs associated with {@link WatchedCacheRecord}.
+     * A {@link RecordValidator} with some methods to watch JARs associated with {@link ValidableCacheRecord}.
      */
-    static class MultiWatcher implements RecordValidator {
+    static class RecordValidator {
         private final WatchService watchService;
 
         /**
@@ -275,7 +198,7 @@ public class CliPluginRealmCache
          */
         private final Map<Path, Registration> registrationsByDir = new ConcurrentHashMap<>();
 
-        public MultiWatcher() {
+        public RecordValidator() {
             try {
                 this.watchService = FileSystems.getDefault().newWatchService();
             } catch (IOException e) {
@@ -286,7 +209,7 @@ public class CliPluginRealmCache
         /**
          * Watch the JARs associated with the given {@code record} for deletions and modifications.
          *
-         * @param record the {@link WatchedCacheRecord} to watch
+         * @param record the {@link ValidableCacheRecord} to watch
          */
         void add(ValidableCacheRecord record) {
             record.getArtifacts().stream()
@@ -323,7 +246,7 @@ public class CliPluginRealmCache
         /**
          * Stopn watching the JARs associated with the given {@code record} for deletions and modifications.
          *
-         * @param record the {@link WatchedCacheRecord} to stop watching
+         * @param record the {@link ValidableCacheRecord} to stop watching
          */
         void remove(ValidableCacheRecord record) {
             record.getArtifacts().stream()
@@ -368,7 +291,7 @@ public class CliPluginRealmCache
                             synchronized (records) {
                                 for (ValidableCacheRecord record : records) {
                                     log.debug("Invalidating recorder of path {}", path);
-                                    ((WatchedCacheRecord) record).valid = false;
+                                    record.valid = false;
                                     remove(record);
                                 }
                                 records.clear();
@@ -383,7 +306,7 @@ public class CliPluginRealmCache
                                 if (records != null) {
                                     synchronized (records) {
                                         for (ValidableCacheRecord record : records) {
-                                            ((WatchedCacheRecord) record).valid = false;
+                                            record.valid = false;
                                             remove(record);
                                         }
                                         records.clear();
@@ -409,25 +332,10 @@ public class CliPluginRealmCache
             }
         }
 
-        @Override
         public ValidableCacheRecord newRecord(ClassRealm pluginRealm, List<Artifact> pluginArtifacts) {
-            final ValidableCacheRecord result = new WatchedCacheRecord(pluginRealm, pluginArtifacts);
+            final ValidableCacheRecord result = new ValidableCacheRecord(pluginRealm, pluginArtifacts);
             add(result);
             return result;
-        }
-
-    }
-
-    static class WatchedCacheRecord extends ValidableCacheRecord {
-
-        private volatile boolean valid = true;
-
-        public WatchedCacheRecord(ClassRealm realm, List<Artifact> artifacts) {
-            super(realm, artifacts);
-        }
-
-        public boolean isValid() {
-            return valid;
         }
 
     }
@@ -446,6 +354,7 @@ public class CliPluginRealmCache
                     /*  Store the multiModuleProjectDirectory path */
                     multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
                 } else if (event instanceof MavenExecutionResult) {
+                    String rootUri = multiModuleProjectDirectory.toUri().toString();
                     /* Evict the entries refering to jars under multiModuleProjectDirectory */
                     final Iterator<Entry<Key, ValidableCacheRecord>> i = cache.entrySet().iterator();
                     while (i.hasNext()) {
@@ -474,9 +383,7 @@ public class CliPluginRealmCache
 
     public CliPluginRealmCache() {
         final String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
-        this.watcher = osName.startsWith("osx") || osName.startsWith("mac os x")
-                ? new TimestampedRecordValidator()
-                : new MultiWatcher();
+        this.watcher = new RecordValidator();
     }
 
     public Key createKey(Plugin plugin, ClassLoader parentRealm, Map<String, ClassLoader> foreignImports,
