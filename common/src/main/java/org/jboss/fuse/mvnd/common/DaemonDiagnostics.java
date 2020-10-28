@@ -62,13 +62,15 @@ public class DaemonDiagnostics {
         try {
             String tail = tail(log);
             sb.append("  ").append(name).append(": ").append(log).append("\n");
-            sb.append("----- Last  " + TAIL_SIZE + " lines from daemon ").append(name).append(" - ").append(log).append(" -----\n");
+            sb.append("----- Last  " + TAIL_SIZE + " lines from daemon ").append(name).append(" - ").append(log)
+                    .append(" -----\n");
             sb.append(tail);
             sb.append("----- End of the daemon ").append(name).append(" -----\n");
         } catch (NoSuchFileException e) {
             sb.append("  no ").append(name).append(" at: ").append(log).append("\n");
         } catch (IOException e) {
-            sb.append("  unable to read from the daemon ").append(name).append(": ").append(log).append(", because of: ").append(e);
+            sb.append("  unable to read from the daemon ").append(name).append(": ").append(log).append(", because of: ")
+                    .append(e);
         }
     }
 
