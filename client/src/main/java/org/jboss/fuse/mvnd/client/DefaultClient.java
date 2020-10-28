@@ -202,8 +202,7 @@ public class DefaultClient implements Client {
 
             final DaemonConnector connector = new DaemonConnector(layout, registry, buildProperties);
             List<String> opts = new ArrayList<>();
-            try (DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts),
-                    s -> output.accept(null, s))) {
+            try (DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts), output)) {
 
                 daemon.dispatch(new Message.BuildRequest(
                         args,

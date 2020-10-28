@@ -36,4 +36,6 @@ public interface ClientOutput extends AutoCloseable {
 
     void keepAlive();
 
+    void buildStatus(String status);
+
 }
