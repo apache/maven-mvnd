@@ -114,6 +114,9 @@ public abstract class Message {
     static String readUTF(DataInputStream input) throws IOException {
         byte[] byteBuf = BUF_TLS.get();
         int len = input.readInt();
+        if (len == -1) {
+            return null;
+        }
         final char[] chars = new char[len];
         int i = 0, cnt = 0, charIdx = 0;
         while (charIdx < len) {
@@ -176,6 +179,10 @@ public abstract class Message {
 
     static void writeUTF(DataOutputStream output, String s) throws IOException {
         byte[] byteBuf = BUF_TLS.get();
+        if (s == null) {
+            output.writeInt(-1);
+            return;
+        }
         final int length = s.length();
         output.writeInt(length);
         int strIdx = 0;

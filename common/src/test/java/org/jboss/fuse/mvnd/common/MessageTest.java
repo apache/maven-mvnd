@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MessageTest {
@@ -47,5 +48,25 @@ public class MessageTest {
 
         assertTrue(msg2 instanceof Message.BuildMessage);
         assertEquals(stringToWrite.toString(), ((Message.BuildMessage) msg2).getMessage());
+    }
+
+    @Test
+    void buildExceptionSerialization() throws Exception {
+        Message msg = new Message.BuildException(new NullPointerException());
+        assertNull(((Message.BuildException) msg).getMessage());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (DataOutputStream daos = new DataOutputStream(baos)) {
+            msg.write(daos);
+        }
+
+        Message msg2;
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        try (DataInputStream dis = new DataInputStream(bais)) {
+            msg2 = Message.read(dis);
+        }
+
+        assertTrue(msg2 instanceof Message.BuildException);
+        assertNull(((Message.BuildException) msg2).getMessage());
     }
 }
