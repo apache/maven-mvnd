@@ -22,7 +22,7 @@
 
     <groupId>org.jboss.fuse.mvnd</groupId>
     <artifactId>mvnd</artifactId>
-    <version>0.0.11-SNAPSHOT</version>
+    <version>0.0.11</version>
 
     <packaging>pom</packaging>
     <name>Maven Daemon - Parent</name>
@@ -162,23 +162,23 @@
             <dependency>
                 <groupId>org.jboss.fuse.mvnd</groupId>
                 <artifactId>mvnd-client</artifactId>
-                <version>0.0.11-SNAPSHOT</version>
+                <version>0.0.11</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.fuse.mvnd</groupId>
                 <artifactId>mvnd-common</artifactId>
-                <version>0.0.11-SNAPSHOT</version>
+                <version>0.0.11</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.fuse.mvnd</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
-                <version>0.0.11-SNAPSHOT</version>
+                <version>0.0.11</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.fuse.mvnd</groupId>
                 <artifactId>mvnd-daemon</artifactId>
-                <version>0.0.11-SNAPSHOT</version>
+                <version>0.0.11</version>
             </dependency>
 
             <dependency>
