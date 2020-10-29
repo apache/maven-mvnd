@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -139,7 +140,7 @@ public enum Environment {
         return MVND_PROPERTIES_PATH
                 .environmentVariable()
                 .orSystemProperty()
-                .orDefault(() -> System.getProperty("user.home") + "/.m2/mvnd.properties")
+                .orDefault(() -> Paths.get(System.getProperty("user.home"), ".m2", "mvnd.properties").toString())
                 .asPath()
                 .toAbsolutePath().normalize();
     }
@@ -325,8 +326,20 @@ public enum Environment {
         }
 
         public Path asPath() {
-            final String result = get();
+            String result = get();
+            if (result != null && Os.current().isCygwin()) {
+                result = cygpath(result);
+            }
             return result == null ? null : Paths.get(result);
+        }
+
+        static String cygpath(String result) {
+            String path = result.replace('/', '\\');
+            if (path.matches("\\\\cygdrive\\\\[a-z]\\\\.*")) {
+                String s = path.substring("\\cygdrive\\".length());
+                result = s.substring(0, 1).toUpperCase(Locale.ENGLISH) + ":" + s.substring(1);
+            }
+            return result;
         }
 
         public boolean asBoolean() {
