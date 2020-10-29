@@ -20,7 +20,18 @@ import java.util.Locale;
 public enum Os {
     LINUX(true),
     MAC(true),
-    WINDOWS(false),
+    WINDOWS(false) {
+        private boolean cygwin;
+        {
+            String pwd = System.getenv("PWD");
+            cygwin = pwd != null && pwd.startsWith("/");
+        }
+
+        @Override
+        public boolean isCygwin() {
+            return cygwin;
+        }
+    },
     UNKNOWN(false) {
 
         @Override
@@ -56,6 +67,10 @@ public enum Os {
 
     public boolean isUnixLike() {
         return unixLike;
+    }
+
+    public boolean isCygwin() {
+        return false;
     }
 
 }

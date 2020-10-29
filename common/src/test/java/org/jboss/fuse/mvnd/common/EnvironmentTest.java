@@ -87,6 +87,11 @@ public class EnvironmentTest {
         }
     }
 
+    @Test
+    void cygwin() {
+        Assertions.assertEquals("C:\\jdk-11.0.2\\", Environment.EnvValue.cygpath("/cygdrive/c/jdk-11.0.2/"));
+    }
+
     static class EnvironmentResource implements AutoCloseable {
 
         private final Properties props = new Properties();
