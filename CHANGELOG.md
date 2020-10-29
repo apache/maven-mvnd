@@ -4,16 +4,31 @@
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.10...HEAD)
 
+**Fixed bugs:**
+
+- Killed or crashed daemon process kept in the registry until mvnd --stop is called [\#154](https://github.com/mvndaemon/mvnd/issues/154)
+
 **Closed issues:**
 
+- ProjectBuildLogAppender not found when starting the daemon [\#165](https://github.com/mvndaemon/mvnd/issues/165)
+- mvnd --status complains about Unexpected output of ps -o rss= when the process is not alive anymore [\#163](https://github.com/mvndaemon/mvnd/issues/163)
+- mvnd native executable is not passing -Dkey=val to the daemon [\#157](https://github.com/mvndaemon/mvnd/issues/157)
 - Messages bigger than 65535 utf code points crash the server [\#155](https://github.com/mvndaemon/mvnd/issues/155)
 - Add a spinner, progress or something indicating that the build is going on [\#150](https://github.com/mvndaemon/mvnd/issues/150)
+- Error when using axistools-maven-plugin [\#87](https://github.com/mvndaemon/mvnd/issues/87)
 - Warning "Unable to create a system terminal" when running maven daemon [\#36](https://github.com/mvndaemon/mvnd/issues/36)
 
 **Merged pull requests:**
 
+- Improve terminal output [\#172](https://github.com/mvndaemon/mvnd/pull/172) ([ppalaga](https://github.com/ppalaga))
+- Fixup 67d5b4b Remove leftovers [\#170](https://github.com/mvndaemon/mvnd/pull/170) ([ppalaga](https://github.com/ppalaga))
+- Improvements [\#169](https://github.com/mvndaemon/mvnd/pull/169) ([gnodet](https://github.com/gnodet))
+- Use a single cache removal strategy [\#168](https://github.com/mvndaemon/mvnd/pull/168) ([gnodet](https://github.com/gnodet))
+- ProjectBuildLogAppender not found when starting the daemon \#165 [\#166](https://github.com/mvndaemon/mvnd/pull/166) ([ppalaga](https://github.com/ppalaga))
+- Killed or crashed daemon process kept in the registry until mvnd --st… [\#164](https://github.com/mvndaemon/mvnd/pull/164) ([ppalaga](https://github.com/ppalaga))
+- mvnd native executable is not passing -Dkey=val to the daemon [\#159](https://github.com/mvndaemon/mvnd/pull/159) ([ppalaga](https://github.com/ppalaga))
 - Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
-- Issue 36 [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
+- Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
