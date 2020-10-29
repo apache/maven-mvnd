@@ -1,25 +1,30 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.0.11](https://github.com/mvndaemon/mvnd/tree/0.0.11) (2020-10-29)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.10...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.10...0.0.11)
 
 **Fixed bugs:**
 
+- Problem with the native client running in Cygwin [\#156](https://github.com/mvndaemon/mvnd/issues/156)
 - Killed or crashed daemon process kept in the registry until mvnd --stop is called [\#154](https://github.com/mvndaemon/mvnd/issues/154)
 
 **Closed issues:**
 
+- exec-maven-plugin fails to run maven wrapper when run via maven daemon [\#171](https://github.com/mvndaemon/mvnd/issues/171)
+- Error when using axistools-maven-plugin [\#87](https://github.com/mvndaemon/mvnd/issues/87)
+- Support for failsafe? [\#86](https://github.com/mvndaemon/mvnd/issues/86)
 - ProjectBuildLogAppender not found when starting the daemon [\#165](https://github.com/mvndaemon/mvnd/issues/165)
 - mvnd --status complains about Unexpected output of ps -o rss= when the process is not alive anymore [\#163](https://github.com/mvndaemon/mvnd/issues/163)
 - mvnd native executable is not passing -Dkey=val to the daemon [\#157](https://github.com/mvndaemon/mvnd/issues/157)
 - Messages bigger than 65535 utf code points crash the server [\#155](https://github.com/mvndaemon/mvnd/issues/155)
 - Add a spinner, progress or something indicating that the build is going on [\#150](https://github.com/mvndaemon/mvnd/issues/150)
-- Error when using axistools-maven-plugin [\#87](https://github.com/mvndaemon/mvnd/issues/87)
+- Provide a homebrew package [\#106](https://github.com/mvndaemon/mvnd/issues/106)
 - Warning "Unable to create a system terminal" when running maven daemon [\#36](https://github.com/mvndaemon/mvnd/issues/36)
 
 **Merged pull requests:**
 
+- Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 - Improve terminal output [\#172](https://github.com/mvndaemon/mvnd/pull/172) ([ppalaga](https://github.com/ppalaga))
 - Fixup 67d5b4b Remove leftovers [\#170](https://github.com/mvndaemon/mvnd/pull/170) ([ppalaga](https://github.com/ppalaga))
 - Improvements [\#169](https://github.com/mvndaemon/mvnd/pull/169) ([gnodet](https://github.com/gnodet))
@@ -37,7 +42,6 @@
 **Closed issues:**
 
 - Provide build output when cancelling a job [\#142](https://github.com/mvndaemon/mvnd/issues/142)
-- Provide a homebrew package [\#106](https://github.com/mvndaemon/mvnd/issues/106)
 - mvnd --status throws NumberFormatException in 0.0.9 [\#147](https://github.com/mvndaemon/mvnd/issues/147)
 
 **Merged pull requests:**
