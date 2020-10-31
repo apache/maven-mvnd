@@ -7,54 +7,54 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="24.000002"
-   height="24.000015"
-   viewBox="0 0 6.3500001 6.3500039"
-   version="1.1"
-   id="svg8"
-   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
-   sodipodi:docname="mvnd-logo-gray.svg"
-   inkscape:export-filename="/home/ppalaga/zzz/ec4j-logos/ec4j-logo7.svg.png"
+   inkscape:export-ydpi="1024"
    inkscape:export-xdpi="1024"
-   inkscape:export-ydpi="1024">
+   inkscape:export-filename="/home/ppalaga/orgs/mvnd/mvnd/src/main/images/mvnd-logo-256x256.png"
+   sodipodi:docname="mvnd-logo.svg"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   id="svg8"
+   version="1.1"
+   viewBox="0 0 6.3500001 6.3500039"
+   height="24.000015"
+   width="24.000002">
   <defs
      id="defs2" />
   <sodipodi:namedview
-     fit-margin-bottom="0"
-     fit-margin-right="0"
-     fit-margin-left="0"
-     fit-margin-top="0"
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="11.2"
-     inkscape:cx="25.594149"
-     inkscape:cy="13.695395"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     showgrid="true"
-     units="px"
-     borderlayer="false"
-     inkscape:pagecheckerboard="true"
-     inkscape:window-width="1838"
-     inkscape:window-height="1055"
-     inkscape:window-x="82"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
+     inkscape:document-rotation="0"
      gridtolerance="7"
-     inkscape:document-rotation="0">
+     inkscape:window-maximized="1"
+     inkscape:window-y="0"
+     inkscape:window-x="82"
+     inkscape:window-height="1055"
+     inkscape:window-width="1838"
+     inkscape:pagecheckerboard="true"
+     borderlayer="false"
+     units="px"
+     showgrid="true"
+     inkscape:current-layer="layer1"
+     inkscape:document-units="px"
+     inkscape:cy="13.695395"
+     inkscape:cx="17.201292"
+     inkscape:zoom="11.2"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
     <inkscape:grid
-       originy="4.0620566e-06"
-       originx="-3.1292438e-07"
-       type="xygrid"
-       id="grid815"
-       spacingx="0.13229167"
-       spacingy="0.13229167"
+       visible="false"
        empspacing="2"
-       visible="false" />
+       spacingy="0.13229167"
+       spacingx="0.13229167"
+       id="grid815"
+       type="xygrid"
+       originx="-3.1292438e-07"
+       originy="4.0620566e-06" />
   </sodipodi:namedview>
   <metadata
      id="metadata5">
@@ -69,30 +69,36 @@
     </rdf:RDF>
   </metadata>
   <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
+     transform="translate(-3.1292439e-7,-290.65)"
      id="layer1"
-     transform="translate(-3.1292439e-7,-290.65)">
+     inkscape:groupmode="layer"
+     inkscape:label="Layer 1">
+    <circle
+       r="3.175"
+       cy="293.82501"
+       cx="3.1750002"
+       id="path835"
+       style="opacity:1;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:2.2;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    <text
+       id="text1423"
+       y="293.05261"
+       x="1.0269884"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.05833px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#484848;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.05833px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#484848;fill-opacity:1;stroke-width:0.264583"
+         y="293.05261"
+         x="1.0269884"
+         id="tspan1421"
+         sodipodi:role="line">mvn</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.05833px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#484848;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="1.0269884"
-       y="293.05261"
-       id="text1423"><tspan
-         sodipodi:role="line"
-         id="tspan1421"
-         x="1.0269884"
-         y="293.05261"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:1.05833px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#484848;fill-opacity:1;stroke-width:0.264583">mvn</tspan></text>
-    <text
-       id="text1423-2"
-       y="295.14017"
-       x="2.6723545"
        style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.52778px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       xml:space="preserve"><tspan
-         sodipodi:role="line"
-         id="tspan1443"
+       x="2.6723545"
+       y="295.14017"
+       id="text1423-2"><tspan
+         y="295.14017"
          x="2.6723545"
-         y="295.14017">d</tspan></text>
+         id="tspan1443"
+         sodipodi:role="line">d</tspan></text>
   </g>
 </svg>
