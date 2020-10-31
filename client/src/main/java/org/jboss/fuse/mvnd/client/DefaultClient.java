@@ -257,8 +257,7 @@ public class DefaultClient implements Client {
 
     static void setDefaultArgs(List<String> args, ClientLayout layout) {
         if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
-            final int threads = Math.max(Runtime.getRuntime().availableProcessors() - 1, layout.getMinThreads());
-            args.add("-T" + threads);
+            args.add("-T" + layout.getThreads());
         }
         if (args.stream().noneMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
             args.add("-bsmart");

@@ -41,7 +41,7 @@ public class ClientLayout extends Layout {
     private final int idleTimeoutMs;
     private final int keepAliveMs;
     private final int maxLostKeepAlive;
-    private final int minThreads;
+    private final String threads;
 
     public static ClientLayout getEnvInstance() {
         if (ENV_INSTANCE == null) {
@@ -87,11 +87,20 @@ public class ClientLayout extends Layout {
                     .orLocalProperty(mvndProperties, mvndPropertiesPath)
                     .orDefault(() -> Integer.toString(Environment.DEFAULT_MAX_LOST_KEEP_ALIVE))
                     .asInt();
-            final int minThreads = Environment.MVND_MIN_THREADS
+            final String threads = Environment.MVND_THREADS
                     .systemProperty()
                     .orLocalProperty(mvndProperties, mvndPropertiesPath)
-                    .orDefault(() -> Integer.toString(Environment.DEFAULT_MIN_THREADS))
-                    .asInt();
+                    .orDefault(() -> {
+                        final int minThreads = Environment.MVND_MIN_THREADS
+                                .systemProperty()
+                                .orLocalProperty(mvndProperties, mvndPropertiesPath)
+                                .orDefault(() -> Integer.toString(Environment.DEFAULT_MIN_THREADS))
+                                .asInt();
+                        return String
+                                .valueOf(Math.max(Runtime.getRuntime().availableProcessors() - 1, minThreads));
+                    })
+                    .asString();
+
             ENV_INSTANCE = new ClientLayout(
                     mvndPropertiesPath,
                     mvndHome,
@@ -101,14 +110,14 @@ public class ClientLayout extends Layout {
                     findLocalRepo(),
                     null,
                     Environment.findLogbackConfigurationPath(mvndProperties, mvndPropertiesPath, mvndHome),
-                    idleTimeoutMs, keepAliveMs, maxLostKeepAlive, minThreads);
+                    idleTimeoutMs, keepAliveMs, maxLostKeepAlive, threads);
         }
         return ENV_INSTANCE;
     }
 
     public ClientLayout(Path mvndPropertiesPath, Path mavenHome, Path userDir, Path multiModuleProjectDirectory, Path javaHome,
             Path localMavenRepository, Path settings, Path logbackConfigurationPath, int idleTimeoutMs, int keepAliveMs,
-            int maxLostKeepAlive, int minThreads) {
+            int maxLostKeepAlive, String threads) {
         super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory);
         this.localMavenRepository = localMavenRepository;
         this.settings = settings;
@@ -117,7 +126,7 @@ public class ClientLayout extends Layout {
         this.idleTimeoutMs = idleTimeoutMs;
         this.keepAliveMs = keepAliveMs;
         this.maxLostKeepAlive = maxLostKeepAlive;
-        this.minThreads = minThreads;
+        this.threads = threads;
     }
 
     /**
@@ -127,7 +136,7 @@ public class ClientLayout extends Layout {
     public ClientLayout cd(Path newUserDir) {
         return new ClientLayout(mvndPropertiesPath, mavenHome, newUserDir, multiModuleProjectDirectory, javaHome,
                 localMavenRepository, settings, logbackConfigurationPath, idleTimeoutMs, keepAliveMs, maxLostKeepAlive,
-                minThreads);
+                threads);
     }
 
     /**
@@ -166,11 +175,11 @@ public class ClientLayout extends Layout {
     }
 
     /**
-     * @return the minimum number of threads to use when constructing the default {@code -T} parameter for the daemon.
-     *         This value is ignored if the user passes his own `-T` or `--threads`.
+     * @return the number of threads (same syntax as Maven's {@code -T}/{@code --threads} option) to pass to the daemon
+     *         unless the user passes his own `-T` or `--threads`.
      */
-    public int getMinThreads() {
-        return minThreads;
+    public String getThreads() {
+        return threads;
     }
 
     static Path findLocalRepo() {

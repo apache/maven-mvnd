@@ -26,7 +26,8 @@ public class TestLayout extends ClientLayout {
             Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath,
             int idleTimeout, int keepAlive, int maxLostKeepAlive) {
         super(mvndPropertiesPath, mavenHome, userDir, multiModuleProjectDirectory, javaHome, localMavenRepository,
-                settings, logbackConfigurationPath, idleTimeout, keepAlive, maxLostKeepAlive, TEST_MIN_THREADS);
+                settings, logbackConfigurationPath, idleTimeout, keepAlive, maxLostKeepAlive,
+                String.valueOf(Math.max(Runtime.getRuntime().availableProcessors() - 1, TEST_MIN_THREADS)));
         this.testDir = testDir;
     }
 

@@ -45,7 +45,18 @@ public enum Environment {
     DAEMON_IDLE_TIMEOUT_MS("daemon.idleTimeoutMs", null),
     DAEMON_KEEP_ALIVE_MS("daemon.keepAliveMs", null),
     DAEMON_MAX_LOST_KEEP_ALIVE("daemon.maxLostKeepAlive", null),
+    /**
+     * The minimum number of threads to use when constructing the default {@code -T} parameter for the daemon.
+     * This value is ignored if the user passes @{@code-T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
+     * line or if he sets {@code mvnd.threads} in {@code ~/.m2/mvnd.properties}.
+     */
     MVND_MIN_THREADS("mvnd.minThreads", null),
+    /**
+     * The number of threads to pass to the daemon; same syntax as Maven's {@code -T}/{@code --threads} option. Ignored
+     * if the user passes @{@code-T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
+     * line.
+     */
+    MVND_THREADS("mvnd.threads", null),
     DAEMON_UID("daemon.uid", null);
 
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
