@@ -203,12 +203,15 @@ public class DefaultClient implements Client {
             final DaemonConnector connector = new DaemonConnector(layout, registry, buildProperties);
             List<String> opts = new ArrayList<>();
             try (DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts), output)) {
+                output.buildStatus("Connected to daemon");
 
                 daemon.dispatch(new Message.BuildRequest(
                         args,
                         layout.userDir().toString(),
                         layout.multiModuleProjectDirectory().toString(),
                         System.getenv()));
+
+                output.buildStatus("Build request sent");
 
                 while (true) {
                     Message m = daemon.receive();
