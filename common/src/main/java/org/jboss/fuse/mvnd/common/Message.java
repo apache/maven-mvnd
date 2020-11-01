@@ -34,6 +34,7 @@ public abstract class Message {
     static final int BUILD_EXCEPTION = 3;
     static final int KEEP_ALIVE = 4;
     static final int STOP = 5;
+    static final int BUILD_STARTED = 6;
 
     public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(Message.KEEP_ALIVE, "KEEP_ALIVE");
     public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(Message.STOP, "STOP");
@@ -46,6 +47,8 @@ public abstract class Message {
         switch (type) {
         case BUILD_REQUEST:
             return BuildRequest.read(input);
+        case BUILD_STARTED:
+            return BuildStarted.read(input);
         case BUILD_EVENT:
             return BuildEvent.read(input);
         case BUILD_MESSAGE:
@@ -315,7 +318,7 @@ public abstract class Message {
 
     public static class BuildEvent extends Message {
         public enum Type {
-            BuildStarted, BuildStopped, ProjectStarted, ProjectStopped, MojoStarted, MojoStopped
+            BuildStopped, ProjectStarted, ProjectStopped, MojoStarted
         }
 
         final Type type;
@@ -362,6 +365,55 @@ public abstract class Message {
             output.write(type.ordinal());
             writeUTF(output, projectId);
             writeUTF(output, display);
+        }
+    }
+
+    public static class BuildStarted extends Message {
+
+        final String projectId;
+        final int projectCount;
+        final int maxThreads;
+
+        public static BuildStarted read(DataInputStream input) throws IOException {
+            final String projectId = readUTF(input);
+            final int projectCount = input.readInt();
+            final int maxThreads = input.readInt();
+            return new BuildStarted(projectId, projectCount, maxThreads);
+        }
+
+        public BuildStarted(String projectId, int projectCount, int maxThreads) {
+            this.projectId = projectId;
+            this.projectCount = projectCount;
+            this.maxThreads = maxThreads;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        public int getProjectCount() {
+            return projectCount;
+        }
+
+        public int getMaxThreads() {
+            return maxThreads;
+        }
+
+        @Override
+        public String toString() {
+            return "BuildEvent{" +
+                    "projectId='" + projectId + '\'' +
+                    ", projectCount=" + projectCount +
+                    ", maxThreads='" + maxThreads + '\'' +
+                    '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            output.write(BUILD_STARTED);
+            writeUTF(output, projectId);
+            output.writeInt(projectCount);
+            output.writeInt(maxThreads);
         }
     }
 

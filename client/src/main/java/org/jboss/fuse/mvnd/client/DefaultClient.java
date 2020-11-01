@@ -15,7 +15,6 @@
  */
 package org.jboss.fuse.mvnd.client;
 
-import java.io.StringReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
@@ -23,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Supplier;
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.common.BuildProperties;
@@ -35,6 +33,7 @@ import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
+import org.jboss.fuse.mvnd.common.Message.BuildStarted;
 import org.jboss.fuse.mvnd.common.OsUtils;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
@@ -219,22 +218,12 @@ public class DefaultClient implements Client {
                         output.error(e.getMessage(), e.getClassName(), e.getStackTrace());
                         return new DefaultResult(argv,
                                 new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
+                    } else if (m instanceof BuildStarted) {
+                        final BuildStarted bs = (BuildStarted) m;
+                        output.startBuild(bs.getProjectId(), bs.getProjectCount(), bs.getMaxThreads());
                     } else if (m instanceof BuildEvent) {
                         BuildEvent be = (BuildEvent) m;
                         switch (be.getType()) {
-                        case BuildStarted:
-                            int projects = 0;
-                            int cores = 0;
-                            Properties props = new Properties();
-                            try {
-                                props.load(new StringReader(be.getDisplay()));
-                                projects = Integer.parseInt(props.getProperty("projects"));
-                                cores = Integer.parseInt(props.getProperty("cores"));
-                            } catch (Exception e) {
-                                // Ignore
-                            }
-                            output.startBuild(be.getProjectId(), projects, cores);
-                            break;
                         case BuildStopped:
                             return new DefaultResult(argv, null);
                         case ProjectStarted:
@@ -254,7 +243,6 @@ public class DefaultClient implements Client {
                 }
             }
         }
-
     }
 
     static void setDefaultArgs(List<String> args, ClientLayout layout) {

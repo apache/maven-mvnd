@@ -16,7 +16,6 @@
 package org.jboss.fuse.mvnd.daemon;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -29,7 +28,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -57,6 +55,7 @@ import org.jboss.fuse.mvnd.common.Message.BuildEvent.Type;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.BuildRequest;
+import org.jboss.fuse.mvnd.common.Message.BuildStarted;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
@@ -452,7 +451,7 @@ public class Server implements AutoCloseable, Runnable {
     int getClassOrder(Message m) {
         if (m instanceof BuildRequest) {
             return 0;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.BuildStarted) {
+        } else if (m instanceof BuildStarted) {
             return 1;
         } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStarted) {
             return 2;
@@ -460,8 +459,6 @@ public class Server implements AutoCloseable, Runnable {
             return 3;
         } else if (m instanceof BuildMessage) {
             return 50;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.MojoStopped) {
-            return 94;
         } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStopped) {
             return 95;
         } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.BuildStopped) {
@@ -542,16 +539,8 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         protected void onStartSession(MavenSession session) {
-            Properties props = new Properties();
-            props.setProperty("projects", Integer.toString(session.getAllProjects().size()));
-            props.setProperty("cores", Integer.toString(session.getRequest().getDegreeOfConcurrency()));
-            StringWriter sw = new StringWriter();
-            try {
-                props.store(sw, null);
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-            queue.add(new BuildEvent(Type.BuildStarted, session.getTopLevelProject().getName(), sw.toString()));
+            queue.add(new BuildStarted(session.getTopLevelProject().getName(), session.getAllProjects().size(),
+                    session.getRequest().getDegreeOfConcurrency()));
         }
 
         @Override
@@ -567,11 +556,6 @@ public class Server implements AutoCloseable, Runnable {
         @Override
         protected void onStartMojo(String projectId, String display) {
             sendEvent(Type.MojoStarted, projectId, display);
-        }
-
-        @Override
-        protected void onStopMojo(String projectId, String display) {
-            sendEvent(Type.MojoStopped, projectId, display);
         }
 
         @Override
