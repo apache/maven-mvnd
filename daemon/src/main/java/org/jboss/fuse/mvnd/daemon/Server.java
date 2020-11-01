@@ -57,8 +57,6 @@ import org.jboss.fuse.mvnd.common.Message.BuildEvent.Type;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.BuildRequest;
-import org.jboss.fuse.mvnd.common.Message.KeepAliveMessage;
-import org.jboss.fuse.mvnd.common.Message.StopMessage;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
@@ -408,7 +406,7 @@ public class Server implements AutoCloseable, Runnable {
                         if (flushed) {
                             m = queue.poll(keepAlive, TimeUnit.MILLISECONDS);
                             if (m == null) {
-                                m = KeepAliveMessage.SINGLETON;
+                                m = Message.KEEP_ALIVE_SINGLETON;
                             }
                             flushed = false;
                         } else {
@@ -419,7 +417,7 @@ public class Server implements AutoCloseable, Runnable {
                                 continue;
                             }
                         }
-                        if (m == StopMessage.SINGLETON) {
+                        if (m == Message.STOP_SINGLETON) {
                             connection.flush();
                             LOGGER.info("No more message to dispatch");
                             return;
@@ -470,9 +468,9 @@ public class Server implements AutoCloseable, Runnable {
             return 96;
         } else if (m instanceof BuildException) {
             return 97;
-        } else if (m == StopMessage.SINGLETON) {
+        } else if (m == Message.STOP_SINGLETON) {
             return 99;
-        } else if (m instanceof KeepAliveMessage) {
+        } else if (m == Message.KEEP_ALIVE_SINGLETON) {
             return 100;
         } else {
             throw new IllegalStateException();
@@ -534,12 +532,12 @@ public class Server implements AutoCloseable, Runnable {
 
         public void finish() throws Exception {
             queue.add(new BuildEvent(Type.BuildStopped, "", ""));
-            queue.add(StopMessage.SINGLETON);
+            queue.add(Message.STOP_SINGLETON);
         }
 
         public void fail(Throwable t) throws Exception {
             queue.add(new BuildException(t));
-            queue.add(StopMessage.SINGLETON);
+            queue.add(Message.STOP_SINGLETON);
         }
 
         @Override
