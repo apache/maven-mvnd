@@ -35,6 +35,9 @@ public abstract class Message {
     static final int KEEP_ALIVE = 4;
     static final int STOP = 5;
 
+    public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(Message.KEEP_ALIVE, "KEEP_ALIVE");
+    public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(Message.STOP, "STOP");
+
     public static Message read(DataInputStream input) throws IOException {
         int type = input.read();
         if (type == -1) {
@@ -50,9 +53,9 @@ public abstract class Message {
         case BUILD_EXCEPTION:
             return BuildException.read(input);
         case KEEP_ALIVE:
-            return KeepAliveMessage.SINGLETON;
+            return SimpleMessage.KEEP_ALIVE_SINGLETON;
         case STOP:
-            return StopMessage.SINGLETON;
+            return SimpleMessage.STOP_SINGLETON;
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -401,43 +404,30 @@ public abstract class Message {
         }
     }
 
-    public static class KeepAliveMessage extends Message {
-        public static final KeepAliveMessage SINGLETON = new KeepAliveMessage();
+    public static class SimpleMessage extends Message {
+
+        final int type;
+        final String mnemonic;
 
         /**
-         * Use {@link #SINGLETON}
+         * Use {@link #KEEP_ALIVE_SINGLETON}
+         *
+         * @param type
          */
-        private KeepAliveMessage() {
+        private SimpleMessage(int type, String mnemonic) {
+            this.type = type;
+            this.mnemonic = mnemonic;
         }
 
         @Override
         public String toString() {
-            return "KeepAliveMessage{}";
+            return mnemonic;
         }
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(KEEP_ALIVE);
+            output.write(type);
         }
     }
 
-    public static class StopMessage extends Message {
-        public static final KeepAliveMessage SINGLETON = new KeepAliveMessage();
-
-        /**
-         * Use {@link #SINGLETON}
-         */
-        private StopMessage() {
-        }
-
-        @Override
-        public String toString() {
-            return "StopMessage{}";
-        }
-
-        @Override
-        public void write(DataOutputStream output) throws IOException {
-            output.write(STOP);
-        }
-    }
 }

@@ -60,15 +60,16 @@ public class TerminalOutput implements ClientOutput {
     private volatile Exception exception;
     private volatile boolean closing;
     private final CountDownLatch closed = new CountDownLatch(1);
-    private int linesPerProject = 0;
-    private boolean displayDone = false;
-
     private final long start;
-    private String buildStatus;
-    private String name;
-    private int totalProjects;
-    private int doneProjects;
-    private int maxThreads;
+
+    private volatile String name;
+    private volatile int totalProjects;
+    private volatile int maxThreads;
+
+    private int linesPerProject = 0; // read/written only by the displayLoop
+    private int doneProjects = 0; // read/written only by the displayLoop
+    private String buildStatus; // read/written only by the displayLoop
+    private boolean displayDone = false; // read/written only by the displayLoop
 
     enum EventType {
         BUILD_STATUS,
@@ -82,6 +83,7 @@ public class TerminalOutput implements ClientOutput {
     }
 
     static class Event {
+        public static final Event KEEP_ALIVE = new Event(EventType.KEEP_ALIVE, null, null);
         public final EventType type;
         public final String projectId;
         public final String message;
@@ -129,8 +131,12 @@ public class TerminalOutput implements ClientOutput {
     public void startBuild(String name, int projects, int cores) {
         this.name = name;
         this.totalProjects = projects;
-        this.doneProjects = 0;
         this.maxThreads = cores;
+        try {
+            queue.put(Event.KEEP_ALIVE);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public void projectStateChanged(String projectId, String task) {
@@ -181,7 +187,7 @@ public class TerminalOutput implements ClientOutput {
     @Override
     public void keepAlive() {
         try {
-            queue.put(new Event(EventType.KEEP_ALIVE, null, null));
+            queue.put(Event.KEEP_ALIVE);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

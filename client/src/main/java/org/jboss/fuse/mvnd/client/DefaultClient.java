@@ -35,7 +35,6 @@ import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
-import org.jboss.fuse.mvnd.common.Message.KeepAliveMessage;
 import org.jboss.fuse.mvnd.common.OsUtils;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
@@ -249,7 +248,7 @@ public class DefaultClient implements Client {
                     } else if (m instanceof BuildMessage) {
                         BuildMessage bm = (BuildMessage) m;
                         output.accept(bm.getProjectId(), bm.getMessage());
-                    } else if (m instanceof KeepAliveMessage) {
+                    } else if (m == Message.KEEP_ALIVE_SINGLETON) {
                         output.keepAlive();
                     }
                 }
