@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.11...HEAD)
+
+**Implemented enhancements:**
+
+- Opt out of implicit -T [\#132](https://github.com/mvndaemon/mvnd/issues/132)
+
+**Merged pull requests:**
+
+- User's preference for -T can be stored as mvnd.threads in ~/.m2/mvnd.… [\#176](https://github.com/mvndaemon/mvnd/pull/176) ([ppalaga](https://github.com/ppalaga))
+
 ## [0.0.11](https://github.com/mvndaemon/mvnd/tree/0.0.11) (2020-10-29)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.10...0.0.11)
