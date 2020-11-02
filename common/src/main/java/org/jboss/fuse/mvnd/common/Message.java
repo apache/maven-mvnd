@@ -35,6 +35,9 @@ public abstract class Message {
     static final int KEEP_ALIVE = 4;
     static final int STOP = 5;
     static final int BUILD_STARTED = 6;
+    static final int DISPLAY = 7;
+    static final int PROMPT = 8;
+    static final int PROMPT_RESPONSE = 9;
 
     public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(Message.KEEP_ALIVE, "KEEP_ALIVE");
     public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(Message.STOP, "STOP");
@@ -59,6 +62,12 @@ public abstract class Message {
             return SimpleMessage.KEEP_ALIVE_SINGLETON;
         case STOP:
             return SimpleMessage.STOP_SINGLETON;
+        case DISPLAY:
+            return Display.read(input);
+        case PROMPT:
+            return Prompt.read(input);
+        case PROMPT_RESPONSE:
+            return PromptResponse.read(input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -486,6 +495,153 @@ public abstract class Message {
         @Override
         public void write(DataOutputStream output) throws IOException {
             output.write(type);
+        }
+    }
+
+    public static class Display extends Message {
+
+        final String projectId;
+        final String message;
+
+        public static Message read(DataInputStream input) throws IOException {
+            String projectId = readUTF(input);
+            String message = readUTF(input);
+            return new Display(projectId, message);
+        }
+
+        public Display(String projectId, String message) {
+            this.projectId = projectId;
+            this.message = message;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public String toString() {
+            return "Display{" +
+                    "projectId='" + projectId + '\'' +
+                    ", message='" + message + '\'' +
+                    '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            output.write(DISPLAY);
+            writeUTF(output, projectId);
+            writeUTF(output, message);
+        }
+    }
+
+    public static class Prompt extends Message {
+
+        final String projectId;
+        final String uid;
+        final String message;
+        final boolean password;
+
+        public static Message read(DataInputStream input) throws IOException {
+            String projectId = Message.readUTF(input);
+            String uid = Message.readUTF(input);
+            String message = Message.readUTF(input);
+            boolean password = input.readBoolean();
+            return new Prompt(projectId, uid, message, password);
+        }
+
+        public Prompt(String projectId, String uid, String message, boolean password) {
+            this.projectId = projectId;
+            this.uid = uid;
+            this.message = message;
+            this.password = password;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        public String getUid() {
+            return uid;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public boolean isPassword() {
+            return password;
+        }
+
+        @Override
+        public String toString() {
+            return "Prompt{" +
+                    "projectId='" + projectId + '\'' +
+                    ", uid='" + uid + '\'' +
+                    ", message='" + message + '\'' +
+                    ", password=" + password +
+                    '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            output.write(PROMPT);
+            writeUTF(output, projectId);
+            writeUTF(output, uid);
+            writeUTF(output, message);
+            output.writeBoolean(password);
+        }
+    }
+
+    public static class PromptResponse extends Message {
+
+        final String projectId;
+        final String uid;
+        final String message;
+
+        public static Message read(DataInputStream input) throws IOException {
+            String projectId = Message.readUTF(input);
+            String uid = Message.readUTF(input);
+            String message = Message.readUTF(input);
+            return new PromptResponse(projectId, uid, message);
+        }
+
+        public PromptResponse(String projectId, String uid, String message) {
+            this.projectId = projectId;
+            this.uid = uid;
+            this.message = message;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        public String getUid() {
+            return uid;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public String toString() {
+            return "PromptResponse{" +
+                    "projectId='" + projectId + '\'' +
+                    ", uid='" + uid + '\'' +
+                    ", message='" + message + '\'' +
+                    '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            output.write(PROMPT_RESPONSE);
+            writeUTF(output, projectId);
+            writeUTF(output, uid);
+            writeUTF(output, message);
         }
     }
 

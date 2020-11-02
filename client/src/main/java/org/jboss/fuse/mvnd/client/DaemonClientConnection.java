@@ -120,6 +120,9 @@ public class DaemonClientConnection implements Closeable {
         try {
             while (running.get()) {
                 Message m = connection.receive();
+                if (m == null) {
+                    break;
+                }
                 queue.put(m);
             }
         } catch (Exception e) {

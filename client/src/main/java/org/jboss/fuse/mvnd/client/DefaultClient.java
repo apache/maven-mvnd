@@ -243,6 +243,13 @@ public class DefaultClient implements Client {
                         output.accept(bm.getProjectId(), bm.getMessage());
                     } else if (m == Message.KEEP_ALIVE_SINGLETON) {
                         output.keepAlive();
+                    } else if (m instanceof Message.Display) {
+                        Message.Display d = (Message.Display) m;
+                        output.display(d.getProjectId(), d.getMessage());
+                    } else if (m instanceof Message.Prompt) {
+                        Message.Prompt p = (Message.Prompt) m;
+                        String response = output.prompt(p.getProjectId(), p.getMessage(), p.isPassword());
+                        daemon.dispatch(new Message.PromptResponse(p.getProjectId(), p.getUid(), response));
                     }
                 }
             }

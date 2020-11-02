@@ -42,4 +42,13 @@ public class MvndTestUtil {
         }
     }
 
+    public static String version(Path pomXmlPath) {
+        try (Reader runtimeReader = Files.newBufferedReader(pomXmlPath, StandardCharsets.UTF_8)) {
+            final MavenXpp3Reader rxppReader = new MavenXpp3Reader();
+            return rxppReader.read(runtimeReader).getVersion();
+        } catch (IOException | XmlPullParserException e) {
+            throw new RuntimeException("Could not read or parse " + pomXmlPath);
+        }
+    }
+
 }

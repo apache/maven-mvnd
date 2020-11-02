@@ -29,12 +29,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.maven.cli.DaemonMavenCli;
 import org.apache.maven.execution.MavenSession;
@@ -53,6 +56,9 @@ import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.BuildRequest;
 import org.jboss.fuse.mvnd.common.Message.BuildStarted;
+import org.jboss.fuse.mvnd.common.Message.Display;
+import org.jboss.fuse.mvnd.common.Message.Prompt;
+import org.jboss.fuse.mvnd.common.Message.PromptResponse;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
@@ -181,8 +187,9 @@ public class Server implements AutoCloseable, Runnable {
     private void accept() {
         try {
             while (true) {
-                SocketChannel socket = this.socket.accept();
-                new DaemonThread(() -> client(socket)).start();
+                try (SocketChannel socket = this.socket.accept()) {
+                    client(socket);
+                }
             }
         } catch (Throwable t) {
             LOGGER.error("Error running daemon loop", t);
@@ -192,17 +199,21 @@ public class Server implements AutoCloseable, Runnable {
     private void client(SocketChannel socket) {
         LOGGER.info("Client connected");
         try (DaemonConnection connection = new DaemonConnection(socket)) {
-            while (true) {
-                LOGGER.info("Waiting for request");
+            LOGGER.info("Waiting for request");
+            SynchronousQueue<Message> request = new SynchronousQueue<>();
+            new DaemonThread(() -> {
                 Message message = connection.receive();
-                if (message == null) {
-                    return;
-                }
-                LOGGER.info("Request received: " + message);
-
-                if (message instanceof BuildRequest) {
-                    handle(connection, (BuildRequest) message);
-                }
+                request.offer(message);
+            }).start();
+            Message message = request.poll(1, TimeUnit.MINUTES);
+            if (message == null) {
+                LOGGER.info("Could not receive request after one minute, dropping connection");
+                updateState(DaemonState.Idle);
+                return;
+            }
+            LOGGER.info("Request received: " + message);
+            if (message instanceof BuildRequest) {
+                handle(connection, (BuildRequest) message);
             }
         } catch (Throwable t) {
             LOGGER.error("Error reading request", t);
@@ -394,24 +405,25 @@ public class Server implements AutoCloseable, Runnable {
 
             LOGGER.info("Executing request");
 
-            BlockingQueue<Message> queue = new PriorityBlockingQueue<Message>(64,
+            BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64,
                     Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
+            BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
 
-            DaemonLoggingSpy loggingSpy = new DaemonLoggingSpy(queue);
+            DaemonLoggingSpy loggingSpy = new DaemonLoggingSpy(sendQueue);
             AbstractLoggingSpy.instance(loggingSpy);
-            Thread pumper = new Thread(() -> {
+            Thread sender = new Thread(() -> {
                 try {
                     boolean flushed = true;
                     while (true) {
                         Message m;
                         if (flushed) {
-                            m = queue.poll(keepAlive, TimeUnit.MILLISECONDS);
+                            m = sendQueue.poll(keepAlive, TimeUnit.MILLISECONDS);
                             if (m == null) {
                                 m = Message.KEEP_ALIVE_SINGLETON;
                             }
                             flushed = false;
                         } else {
-                            m = queue.poll();
+                            m = sendQueue.poll();
                             if (m == null) {
                                 connection.flush();
                                 flushed = true;
@@ -430,9 +442,64 @@ public class Server implements AutoCloseable, Runnable {
                     LOGGER.error("Error dispatching events", t);
                 }
             });
-            pumper.start();
+            sender.start();
+            Thread receiver = new Thread(() -> {
+                try {
+                    while (true) {
+                        Message message = connection.receive();
+                        if (message == null) {
+                            break;
+                        }
+                        LOGGER.info("Received message: {}", message);
+                        synchronized (recvQueue) {
+                            recvQueue.put(message);
+                            recvQueue.notifyAll();
+                        }
+                    }
+                } catch (Throwable t) {
+                    LOGGER.error("Error receiving events", t);
+                }
+            });
+            receiver.start();
             try {
-                cli.main(buildRequest.getArgs(),
+                Connection.setCurrent(new Connection() {
+                    @Override
+                    public void dispatch(Message message) {
+                        try {
+                            sendQueue.put(message);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    @Override
+                    public <T extends Message> T request(Message request, Class<T> responseType, Predicate<T> matcher) {
+                        try {
+                            synchronized (recvQueue) {
+                                sendQueue.put(request);
+                                LOGGER.info("Waiting for response");
+                                while (true) {
+                                    T t = recvQueue.stream()
+                                            .filter(responseType::isInstance)
+                                            .map(responseType::cast)
+                                            .filter(matcher)
+                                            .findFirst()
+                                            .orElse(null);
+                                    if (t != null) {
+                                        recvQueue.remove(t);
+                                        LOGGER.info("Received response: {}", t);
+                                        return t;
+                                    }
+                                    recvQueue.wait();
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+                cli.main(
+                        buildRequest.getArgs(),
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
                         buildRequest.getEnv());
@@ -442,7 +509,7 @@ public class Server implements AutoCloseable, Runnable {
                 LOGGER.error("Error while building project", t);
                 loggingSpy.fail(t);
             } finally {
-                pumper.join();
+                sender.join();
             }
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);
@@ -458,10 +525,12 @@ public class Server implements AutoCloseable, Runnable {
             return 0;
         } else if (m instanceof BuildStarted) {
             return 1;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStarted) {
+        } else if (m instanceof Prompt || m instanceof PromptResponse || m instanceof Display) {
             return 2;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.MojoStarted) {
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStarted) {
             return 3;
+        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.MojoStarted) {
+            return 4;
         } else if (m instanceof BuildMessage) {
             return 50;
         } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStopped) {

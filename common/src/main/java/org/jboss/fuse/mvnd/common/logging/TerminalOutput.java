@@ -30,6 +30,10 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -61,6 +65,7 @@ public class TerminalOutput implements ClientOutput {
     private volatile boolean closing;
     private final CountDownLatch closed = new CountDownLatch(1);
     private final long start;
+    private final ReadWriteLock readInput = new ReentrantReadWriteLock();
 
     private volatile String name;
     private volatile int totalProjects;
@@ -79,7 +84,10 @@ public class TerminalOutput implements ClientOutput {
         ERROR,
         END_OF_STREAM,
         INPUT,
-        KEEP_ALIVE
+        KEEP_ALIVE,
+        DISPLAY,
+        PROMPT,
+        PROMPT_PASSWORD
     }
 
     static class Event {
@@ -87,11 +95,17 @@ public class TerminalOutput implements ClientOutput {
         public final EventType type;
         public final String projectId;
         public final String message;
+        public final SynchronousQueue<String> response;
 
         public Event(EventType type, String projectId, String message) {
+            this(type, projectId, message, null);
+        }
+
+        public Event(EventType type, String projectId, String message, SynchronousQueue<String> response) {
             this.type = type;
             this.projectId = projectId;
             this.message = message;
+            this.response = response;
         }
     }
 
@@ -202,17 +216,44 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
+    @Override
+    public void display(String projectId, String message) {
+        try {
+            queue.put(new Event(EventType.DISPLAY, projectId, message));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    @Override
+    public String prompt(String projectId, String message, boolean password) {
+        String response = null;
+        try {
+            SynchronousQueue<String> sq = new SynchronousQueue<>();
+            queue.put(new Event(password ? EventType.PROMPT_PASSWORD : EventType.PROMPT, projectId, message, sq));
+            response = sq.take();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return response;
+    }
+
     void readInputLoop() {
         try {
             while (!closing) {
-                int c = terminal.reader().read(10);
-                if (c == -1) {
-                    break;
-                }
-                if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M) {
-                    queue.add(new Event(EventType.INPUT, null, Character.toString((char) c)));
+                if (readInput.readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
+                    int c = terminal.reader().read(10);
+                    if (c == -1) {
+                        break;
+                    }
+                    if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M) {
+                        queue.add(new Event(EventType.INPUT, null, Character.toString((char) c)));
+                    }
+                    readInput.readLock().unlock();
                 }
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (InterruptedIOException e) {
             Thread.currentThread().interrupt();
         } catch (IOException e) {
@@ -289,6 +330,42 @@ public class TerminalOutput implements ClientOutput {
                             break;
                         }
                         break;
+                    case DISPLAY:
+                        display.update(Collections.emptyList(), 0);
+                        terminal.writer().printf("[%s] %s%n", entry.projectId, entry.message);
+                        break;
+                    case PROMPT:
+                    case PROMPT_PASSWORD: {
+                        readInput.writeLock().lock();
+                        try {
+                            display.update(Collections.emptyList(), 0);
+                            terminal.writer().printf("[%s] %s", entry.projectId, entry.message);
+                            terminal.flush();
+                            StringBuilder sb = new StringBuilder();
+                            while (true) {
+                                int c = terminal.reader().read();
+                                if (c < 0) {
+                                    break;
+                                } else if (c == '\n' || c == '\r') {
+                                    entry.response.put(sb.toString());
+                                    terminal.writer().println();
+                                    break;
+                                } else if (c == 127) {
+                                    if (sb.length() > 0) {
+                                        sb.setLength(sb.length() - 1);
+                                        terminal.writer().write("\b \b");
+                                        terminal.writer().flush();
+                                    }
+                                } else {
+                                    terminal.writer().print((char) c);
+                                    terminal.writer().flush();
+                                    sb.append((char) c);
+                                }
+                            }
+                        } finally {
+                            readInput.writeLock().unlock();
+                        }
+                    }
                     }
                 }
                 entries.clear();
