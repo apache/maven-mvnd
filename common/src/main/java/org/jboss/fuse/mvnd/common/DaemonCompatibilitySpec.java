@@ -39,6 +39,14 @@ public class DaemonCompatibilitySpec {
         this.options = Objects.requireNonNull(options, "options");
     }
 
+    public Path getJavaHome() {
+        return javaHome;
+    }
+
+    public List<String> getOptions() {
+        return options;
+    }
+
     public Result isSatisfiedBy(DaemonInfo daemon) {
         if (!javaHomeMatches(daemon)) {
             return new Result(false, () -> "Java home is different.\n" + diff(daemon));

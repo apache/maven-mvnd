@@ -61,7 +61,7 @@
             <exclusion id="*:plexus-utils"/>
         </artifact>
         <artifact id="org.jboss.fuse.mvnd:mvnd-client:${project.version}">
-            <exclusion id="*:slf4j-simple"/>
+            <exclusion id="*:*"/>
         </artifact>
     </artifactSet>
 

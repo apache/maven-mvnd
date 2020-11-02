@@ -47,9 +47,8 @@ public class DistroIT {
                 .collect(Collectors.toList());
 
         final String msg = mavenHome.resolve("mvn/lib/ext") + " contains duplicates available in "
-                + mavenHome.resolve("mvn/lib")
-                + " or " + mavenHome.resolve("mvn/lib");
-        Assertions.assertEquals(new ArrayList<String>(), dups, msg);
+                + mavenHome.resolve("mvn/lib") + " or " + mavenHome.resolve("mvn/boot");
+        Assertions.assertEquals(new ArrayList<Avc>(), dups, msg);
     }
 
     @Test

@@ -101,6 +101,10 @@ public class Server implements AutoCloseable, Runnable {
             strategy = DaemonExpiration.master();
 
             List<String> opts = new ArrayList<>();
+            Environment.DAEMON_EXT_CLASSPATH.systemProperty().asOptional()
+                    .ifPresent(s -> opts.add(Environment.DAEMON_EXT_CLASSPATH.asCommandLineProperty(s)));
+            Environment.DAEMON_CORE_EXTENSIONS.systemProperty().asOptional()
+                    .ifPresent(s -> opts.add(Environment.DAEMON_CORE_EXTENSIONS.asCommandLineProperty(s)));
             long cur = System.currentTimeMillis();
             final Path javaHome = Paths.get(System.getProperty("mvnd.java.home"));
             info = new DaemonInfo(uid, javaHome.toString(), layout.mavenHome().toString(),

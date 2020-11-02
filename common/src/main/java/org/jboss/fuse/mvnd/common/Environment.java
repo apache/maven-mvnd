@@ -57,7 +57,15 @@ public enum Environment {
      * line.
      */
     MVND_THREADS("mvnd.threads", null),
-    DAEMON_UID("daemon.uid", null);
+    DAEMON_UID("daemon.uid", null),
+    /**
+     * Internal option to specify the maven extension classpath
+     */
+    DAEMON_EXT_CLASSPATH("daemon.ext.classpath", null),
+    /**
+     * Internal option to specify the list of maven extension to register
+     */
+    DAEMON_CORE_EXTENSIONS("daemon.core.extensions", null);
 
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
 
