@@ -222,7 +222,8 @@ public class DaemonConnector {
     }
 
     public DaemonClientConnection startDaemon(DaemonCompatibilitySpec constraint) {
-        final String daemon = startDaemon();
+        final String daemon = UUID.randomUUID().toString();
+        final Process process = startDaemon(daemon);
         LOGGER.debug("Started Maven daemon {}", daemon);
         long start = System.currentTimeMillis();
         do {
@@ -235,14 +236,12 @@ public class DaemonConnector {
             } catch (InterruptedException e) {
                 throw new DaemonException.InterruptedException(e);
             }
-        } while (System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
+        } while (process.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
         DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout);
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
-    private String startDaemon() {
-
-        final String uid = UUID.randomUUID().toString();
+    private Process startDaemon(String uid) {
         final Path mavenHome = layout.mavenHome();
         final Path workingDir = layout.userDir();
         String command = "";
@@ -272,13 +271,13 @@ public class DaemonConnector {
 
             LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
             ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(layout.daemonOutLog(uid).toFile());
-            new ProcessBuilder()
+            Process process = new ProcessBuilder()
                     .directory(workingDir.toFile())
                     .command(args)
                     .redirectOutput(redirect)
                     .redirectError(redirect)
                     .start();
-            return uid;
+            return process;
         } catch (Exception e) {
             throw new DaemonException.StartException(
                     String.format("Error starting daemon: uid = %s, workingDir = %s, daemonArgs: %s",
