@@ -223,7 +223,7 @@ public class DaemonConnector {
 
     public DaemonClientConnection startDaemon(DaemonCompatibilitySpec constraint) {
         final String daemon = UUID.randomUUID().toString();
-        final Process process = startDaemon(daemon);
+        final Process process = startDaemon(daemon, constraint.getOptions());
         LOGGER.debug("Started Maven daemon {}", daemon);
         long start = System.currentTimeMillis();
         do {
@@ -241,7 +241,7 @@ public class DaemonConnector {
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
-    private Process startDaemon(String uid) {
+    private Process startDaemon(String uid, List<String> opts) {
         final Path mavenHome = layout.mavenHome();
         final Path workingDir = layout.userDir();
         String command = "";
@@ -266,6 +266,7 @@ public class DaemonConnector {
             args.add("-Xmx4g");
             args.add(Environment.DAEMON_IDLE_TIMEOUT_MS.asCommandLineProperty(Integer.toString(layout.getIdleTimeoutMs())));
             args.add(Environment.DAEMON_KEEP_ALIVE_MS.asCommandLineProperty(Integer.toString(layout.getKeepAliveMs())));
+            args.addAll(opts);
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 

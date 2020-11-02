@@ -15,14 +15,25 @@
  */
 package org.jboss.fuse.mvnd.client;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import org.apache.maven.cli.internal.extension.model.CoreExtension;
+import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3Reader;
+import org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
@@ -44,9 +55,13 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultClient implements Client {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
     public static final int DEFAULT_PERIODIC_CHECK_INTERVAL_MILLIS = 10 * 1000;
     public static final int CANCEL_TIMEOUT = 10 * 1000;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
+    private static final String EXT_CLASS_PATH = "maven.ext.class.path";
+    private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
+
     private final Supplier<ClientLayout> lazyLayout;
     private final BuildProperties buildProperties;
 
@@ -198,8 +213,8 @@ public class DefaultClient implements Client {
                 args.add("-Dmaven.repo.local=" + localMavenRepository.toString());
             }
 
+            List<String> opts = getDaemonOpts(layout);
             final DaemonConnector connector = new DaemonConnector(layout, registry, buildProperties);
-            List<String> opts = new ArrayList<>();
             try (DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts), output)) {
                 output.buildStatus("Connected to daemon");
 
@@ -242,6 +257,56 @@ public class DefaultClient implements Client {
                     }
                 }
             }
+        }
+    }
+
+    private List<String> getDaemonOpts(ClientLayout layout) {
+        List<String> options = new ArrayList<>();
+        // Classpath
+        List<Path> jars = parseExtClasspath(layout);
+        if (!jars.isEmpty()) {
+            options.add(Environment.DAEMON_EXT_CLASSPATH.asCommandLineProperty(
+                    jars.stream().map(Path::toString).collect(Collectors.joining(","))));
+        }
+        // Extensions
+        try {
+            List<CoreExtension> extensions = readCoreExtensionsDescriptor(layout);
+            if (!extensions.isEmpty()) {
+                options.add(Environment.DAEMON_CORE_EXTENSIONS.asCommandLineProperty(
+                        extensions.stream().map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
+                                .collect(Collectors.joining(","))));
+            }
+        } catch (IOException | XmlPullParserException e) {
+            throw new RuntimeException("Unable to parse core extensions", e);
+        }
+        return options;
+    }
+
+    private List<Path> parseExtClasspath(ClientLayout layout) {
+        String extClassPath = System.getProperty(EXT_CLASS_PATH);
+        List<Path> jars = new ArrayList<>();
+        if (StringUtils.isNotEmpty(extClassPath)) {
+            for (String jar : StringUtils.split(extClassPath, File.pathSeparator)) {
+                Path path = layout.userDir().resolve(jar).toAbsolutePath();
+                jars.add(path);
+            }
+        }
+        return jars;
+    }
+
+    private List<CoreExtension> readCoreExtensionsDescriptor(ClientLayout layout)
+            throws IOException, XmlPullParserException {
+        Path multiModuleProjectDirectory = layout.multiModuleProjectDirectory();
+        if (multiModuleProjectDirectory == null) {
+            return Collections.emptyList();
+        }
+        Path extensionsFile = multiModuleProjectDirectory.resolve(EXTENSIONS_FILENAME);
+        if (!Files.exists(extensionsFile)) {
+            return Collections.emptyList();
+        }
+        CoreExtensionsXpp3Reader parser = new CoreExtensionsXpp3Reader();
+        try (InputStream is = Files.newInputStream(extensionsFile)) {
+            return parser.read(is).getExtensions();
         }
     }
 

@@ -52,6 +52,8 @@ import org.apache.maven.building.Source;
 import org.apache.maven.cli.configuration.ConfigurationProcessor;
 import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.cli.event.ExecutionEventLogger;
+import org.apache.maven.cli.internal.BootstrapCoreExtensionManager;
+import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.apache.maven.cli.logging.Slf4jLoggerManager;
 import org.apache.maven.cli.transfer.ConsoleMavenTransferListener;
 import org.apache.maven.cli.transfer.QuietMavenTransferListener;
@@ -90,6 +92,7 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
+import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
 import org.jboss.fuse.mvnd.plugin.CliPluginRealmCache;
 import org.slf4j.ILoggerFactory;
@@ -120,6 +123,10 @@ public class DaemonMavenCli {
     public static final File DEFAULT_USER_TOOLCHAINS_FILE = new File(USER_MAVEN_CONFIGURATION_HOME, "toolchains.xml");
 
     public static final File DEFAULT_GLOBAL_TOOLCHAINS_FILE = new File(System.getProperty("maven.conf"), "toolchains.xml");
+
+    private static final String EXT_CLASS_PATH = "maven.ext.class.path";
+
+    private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
 
     private static final String MVN_MAVEN_CONFIG = ".mvn/maven.config";
 
@@ -168,6 +175,7 @@ public class DaemonMavenCli {
             cli(cliRequest);
             properties(cliRequest);
             logging(cliRequest);
+            container(cliRequest);
             configure(cliRequest);
             version(cliRequest);
             toolchains(cliRequest);
@@ -390,6 +398,17 @@ public class DaemonMavenCli {
         populateProperties(cliRequest.commandLine, cliRequest.systemProperties, cliRequest.userProperties);
     }
 
+    void container(CliRequest cliRequest) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("plexus", container);
+        data.put("workingDirectory", cliRequest.workingDirectory);
+        data.put("systemProperties", cliRequest.systemProperties);
+        data.put("userProperties", cliRequest.userProperties);
+        data.put("versionProperties", CLIReportingUtils.getBuildProperties());
+        eventSpyDispatcher.init(() -> data);
+
+    }
+
     void container()
             throws Exception {
         ClassRealm coreRealm = classWorld.getClassRealm("plexus.core");
@@ -397,13 +416,28 @@ public class DaemonMavenCli {
             coreRealm = classWorld.getRealms().iterator().next();
         }
 
-        //        List<File> extClassPath = parseExtClasspath( cliRequest );
+        List<File> extClassPath = Stream
+                .of(Environment.DAEMON_EXT_CLASSPATH.systemProperty().orDefault(() -> "").asString().split(","))
+                .map(File::new)
+                .collect(Collectors.toList());
 
         CoreExtensionEntry coreEntry = CoreExtensionEntry.discoverFrom(coreRealm);
-        List<CoreExtensionEntry> extensions = Collections.emptyList();
-        //            loadCoreExtensions( cliRequest, coreRealm, coreEntry.getExportedArtifacts() );
 
-        ClassRealm containerRealm = coreRealm;
+        List<CoreExtension> extensions = Stream
+                .of(Environment.DAEMON_CORE_EXTENSIONS.systemProperty().orDefault(() -> "").asString().split(","))
+                .filter(s -> s != null && !s.isEmpty())
+                .map(s -> {
+                    String[] parts = s.split(":");
+                    CoreExtension ce = new CoreExtension();
+                    ce.setGroupId(parts[0]);
+                    ce.setArtifactId(parts[1]);
+                    ce.setVersion(parts[2]);
+                    return ce;
+                })
+                .collect(Collectors.toList());
+        List<CoreExtensionEntry> extensionsEntries = loadCoreExtensions(extensions, coreRealm,
+                coreEntry.getExportedArtifacts());
+        ClassRealm containerRealm = setupContainerRealm(classWorld, coreRealm, extClassPath, extensionsEntries);
 
         ContainerConfiguration cc = new DefaultContainerConfiguration().setClassWorld(classWorld)
                 .setRealm(containerRealm).setClassPathScanning(PlexusConstants.SCANNING_INDEX).setAutoWiring(true)
@@ -411,11 +445,10 @@ public class DaemonMavenCli {
 
         Set<String> exportedArtifacts = new HashSet<>(coreEntry.getExportedArtifacts());
         Set<String> exportedPackages = new HashSet<>(coreEntry.getExportedPackages());
-        //        for ( CoreExtensionEntry extension : extensions )
-        //        {
-        //            exportedArtifacts.addAll( extension.getExportedArtifacts() );
-        //            exportedPackages.addAll( extension.getExportedPackages() );
-        //        }
+        for (CoreExtensionEntry extension : extensionsEntries) {
+            exportedArtifacts.addAll(extension.getExportedArtifacts());
+            exportedPackages.addAll(extension.getExportedPackages());
+        }
 
         final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);
         final CliPluginRealmCache realmCache = new CliPluginRealmCache();
@@ -435,7 +468,7 @@ public class DaemonMavenCli {
 
         container.setLoggerManager(plexusLoggerManager);
 
-        for (CoreExtensionEntry extension : extensions) {
+        for (CoreExtensionEntry extension : extensionsEntries) {
             container.discoverComponents(extension.getClassRealm(), new SessionScopeModule(container),
                     new MojoExecutionScopeModule(container));
         }
@@ -454,7 +487,108 @@ public class DaemonMavenCli {
         toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
 
         dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
+    }
 
+    private List<CoreExtensionEntry> loadCoreExtensions(List<CoreExtension> extensions, ClassRealm containerRealm,
+            Set<String> providedArtifacts) {
+        try {
+            if (extensions.isEmpty()) {
+                return Collections.emptyList();
+            }
+            ContainerConfiguration cc = new DefaultContainerConfiguration() //
+                    .setClassWorld(classWorld) //
+                    .setRealm(containerRealm) //
+                    .setClassPathScanning(PlexusConstants.SCANNING_INDEX) //
+                    .setAutoWiring(true) //
+                    .setJSR250Lifecycle(true) //
+                    .setName("maven");
+
+            DefaultPlexusContainer container = new DefaultPlexusContainer(cc, new AbstractModule() {
+                @Override
+                protected void configure() {
+                    bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
+                }
+            });
+
+            try {
+                CliRequest cliRequest = new CliRequest(new String[0], classWorld);
+                cliRequest.commandLine = new CommandLine.Builder().build();
+                container.setLookupRealm(null);
+                container.setLoggerManager(plexusLoggerManager);
+                container.getLoggerManager().setThresholds(cliRequest.request.getLoggingLevel());
+                Thread.currentThread().setContextClassLoader(container.getContainerRealm());
+                executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
+                configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
+                configure(cliRequest);
+                populateRequest(cliRequest, cliRequest.request);
+                executionRequestPopulator.populateDefaults(cliRequest.request);
+                BootstrapCoreExtensionManager resolver = container.lookup(BootstrapCoreExtensionManager.class);
+                return Collections
+                        .unmodifiableList(resolver.loadCoreExtensions(cliRequest.request, providedArtifacts, extensions));
+            } finally {
+                executionRequestPopulator = null;
+                container.dispose();
+            }
+        } catch (RuntimeException e) {
+            // runtime exceptions are most likely bugs in maven, let them bubble up to the user
+            throw e;
+        } catch (Exception e) {
+            slf4jLogger.warn("Failed to load extensions descriptor {}: {}", extensions, e.getMessage());
+        }
+        return Collections.emptyList();
+    }
+
+    private ClassRealm setupContainerRealm(ClassWorld classWorld, ClassRealm coreRealm, List<File> extClassPath,
+            List<CoreExtensionEntry> extensions) throws Exception {
+        if (!extClassPath.isEmpty() || !extensions.isEmpty()) {
+            ClassRealm extRealm = classWorld.newRealm("maven.ext", null);
+            extRealm.setParentRealm(coreRealm);
+            slf4jLogger.debug("Populating class realm {}", extRealm.getId());
+            for (File file : extClassPath) {
+
+                extRealm.addURL(file.toURI().toURL());
+            }
+            for (CoreExtensionEntry entry : reverse(extensions)) {
+                Set<String> exportedPackages = entry.getExportedPackages();
+                ClassRealm realm = entry.getClassRealm();
+                for (String exportedPackage : exportedPackages) {
+                    extRealm.importFrom(realm, exportedPackage);
+                }
+                if (exportedPackages.isEmpty()) {
+                    // sisu uses realm imports to establish component visibility
+                    extRealm.importFrom(realm, realm.getId());
+                }
+            }
+            return extRealm;
+        }
+        return coreRealm;
+    }
+
+    private static <T> List<T> reverse(List<T> list) {
+        List<T> copy = new ArrayList<>(list);
+        Collections.reverse(copy);
+        return copy;
+    }
+
+    private List<File> parseExtClasspath(CliRequest cliRequest) {
+        String extClassPath = cliRequest.userProperties.getProperty(EXT_CLASS_PATH);
+        if (extClassPath == null) {
+            extClassPath = cliRequest.systemProperties.getProperty(EXT_CLASS_PATH);
+        }
+
+        List<File> jars = new ArrayList<>();
+
+        if (StringUtils.isNotEmpty(extClassPath)) {
+            for (String jar : StringUtils.split(extClassPath, File.pathSeparator)) {
+                File file = resolveFile(new File(jar), cliRequest.workingDirectory);
+
+                slf4jLogger.debug("  Included {}", file);
+
+                jars.add(file);
+            }
+        }
+
+        return jars;
     }
 
     //
@@ -669,14 +803,6 @@ public class DaemonMavenCli {
         //
         cliRequest.request.setEventSpyDispatcher(eventSpyDispatcher);
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("plexus", container);
-        data.put("workingDirectory", cliRequest.workingDirectory);
-        data.put("systemProperties", cliRequest.systemProperties);
-        data.put("userProperties", cliRequest.userProperties);
-        data.put("versionProperties", CLIReportingUtils.getBuildProperties());
-        eventSpyDispatcher.init(() -> data);
-
         //
         // We expect at most 2 implementations to be available. The SettingsXmlConfigurationProcessor implementation
         // is always available in the core and likely always will be, but we may have another ConfigurationProcessor
@@ -797,7 +923,10 @@ public class DaemonMavenCli {
     }
 
     private void populateRequest(CliRequest cliRequest) {
-        MavenExecutionRequest request = cliRequest.request;
+        populateRequest(cliRequest, cliRequest.request);
+    }
+
+    private void populateRequest(CliRequest cliRequest, MavenExecutionRequest request) {
         CommandLine commandLine = cliRequest.commandLine;
         String workingDirectory = cliRequest.workingDirectory;
         boolean quiet = cliRequest.quiet;
