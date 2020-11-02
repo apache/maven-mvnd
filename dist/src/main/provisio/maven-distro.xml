@@ -58,6 +58,7 @@
             <exclusion id="*:plexus-interpolation"/>
             <exclusion id="*:plexus-sec-dispatcher"/>
             <exclusion id="*:plexus-utils"/>
+            <exclusion id="*:plexus-container-default"/>
         </artifact>
         <artifact id="org.jboss.fuse.mvnd:mvnd-client:${project.version}">
             <exclusion id="*:*"/>

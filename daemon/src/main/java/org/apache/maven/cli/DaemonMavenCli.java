@@ -456,6 +456,9 @@ public class DaemonMavenCli {
             exportedArtifacts.addAll(extension.getExportedArtifacts());
             exportedPackages.addAll(extension.getExportedPackages());
         }
+        exportedPackages.add("org.codehaus.plexus.components.interactivity");
+        exportedPackages.add("org.jboss.fuse.mvnd.interactivity");
+        exportedArtifacts.add("org.codehaus.plexus:plexus-interactivity-api");
 
         final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);
 
