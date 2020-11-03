@@ -6,10 +6,17 @@
 
 **Implemented enhancements:**
 
+- Fail fast if the daemon can not be started [\#162](https://github.com/mvndaemon/mvnd/issues/162)
 - Opt out of implicit -T [\#132](https://github.com/mvndaemon/mvnd/issues/132)
+
+**Closed issues:**
+
+- Domain transfer offer [\#153](https://github.com/mvndaemon/mvnd/issues/153)
 
 **Merged pull requests:**
 
+- Issue 162 [\#182](https://github.com/mvndaemon/mvnd/pull/182) ([gnodet](https://github.com/gnodet))
+- Issue 114 [\#181](https://github.com/mvndaemon/mvnd/pull/181) ([gnodet](https://github.com/gnodet))
 - Separate BuildStarted message to avoid serializing via Propertries.\[l… [\#178](https://github.com/mvndaemon/mvnd/pull/178) ([ppalaga](https://github.com/ppalaga))
 - More fine grained status on build start [\#177](https://github.com/mvndaemon/mvnd/pull/177) ([ppalaga](https://github.com/ppalaga))
 - User's preference for -T can be stored as mvnd.threads in ~/.m2/mvnd.… [\#176](https://github.com/mvndaemon/mvnd/pull/176) ([ppalaga](https://github.com/ppalaga))
@@ -217,6 +224,7 @@
 **Merged pull requests:**
 
 - Fix \#56 Require Java 8+ instead of Java 11+ at runtime [\#57](https://github.com/mvndaemon/mvnd/pull/57) ([ppalaga](https://github.com/ppalaga))
+- Include native clients in platform specific distros [\#55](https://github.com/mvndaemon/mvnd/pull/55) ([ppalaga](https://github.com/ppalaga))
 - Fix \#53 Using MAVEN\_HOME may clash with other tools [\#54](https://github.com/mvndaemon/mvnd/pull/54) ([ppalaga](https://github.com/ppalaga))
 - Add curl -L flag to cope with redirects [\#51](https://github.com/mvndaemon/mvnd/pull/51) ([fvaleri](https://github.com/fvaleri))
 - Fix \#49 Could not notify CliPluginRealmCache [\#50](https://github.com/mvndaemon/mvnd/pull/50) ([ppalaga](https://github.com/ppalaga))
