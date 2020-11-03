@@ -20,7 +20,7 @@
     <artifactSet to="/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
-                    excludes="lib/slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*"/>
+                    excludes="lib/*slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*"/>
         </artifact>
     </artifactSet>
 
@@ -34,7 +34,6 @@
             <exclusion id="*:guava"/>
             <exclusion id="*:guice"/>
             <exclusion id="*:javax.inject"/>
-            <exclusion id="*:jcl-over-slf4j"/>
             <exclusion id="*:jsr250-api"/>
             <exclusion id="*:maven-artifact"/>
             <exclusion id="*:maven-builder-support"/>
