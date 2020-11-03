@@ -54,6 +54,8 @@ public class ExtensionsNativeIT {
         assertEquals(Collections.singletonList("-Ddaemon.core.extensions=io.takari.aether:takari-local-repository:0.11.3"),
                 daemon.getOptions());
 
+        registry.awaitIdle(daemon.getUid());
+
         client.execute(o, "-v").assertSuccess();
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
     }
