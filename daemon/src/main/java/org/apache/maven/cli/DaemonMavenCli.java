@@ -621,7 +621,7 @@ public class DaemonMavenCli {
                 .filter(key -> !Objects.equals(requested.get(key), actual.get(key)))
                 .collect(Collectors.toList());
         if (!diffs.isEmpty()) {
-            slf4jLogger.warn("Environment mistmach !");
+            slf4jLogger.warn("Environment mismatch !");
             slf4jLogger.warn("A few environment mismatches have been detected between the client and the daemon.");
             diffs.forEach(key -> {
                 String vr = requested.get(key);
