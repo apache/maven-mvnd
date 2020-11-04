@@ -15,6 +15,7 @@
 
 **Merged pull requests:**
 
+- Deliver the same slf4j version as Maven 3.6.3 and manage jcl-over-slf… [\#184](https://github.com/mvndaemon/mvnd/pull/184) ([ppalaga](https://github.com/ppalaga))
 - Issue 162 [\#182](https://github.com/mvndaemon/mvnd/pull/182) ([gnodet](https://github.com/gnodet))
 - Issue 114 [\#181](https://github.com/mvndaemon/mvnd/pull/181) ([gnodet](https://github.com/gnodet))
 - Separate BuildStarted message to avoid serializing via Propertries.\[l… [\#178](https://github.com/mvndaemon/mvnd/pull/178) ([ppalaga](https://github.com/ppalaga))
