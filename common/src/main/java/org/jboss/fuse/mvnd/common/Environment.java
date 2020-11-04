@@ -65,11 +65,18 @@ public enum Environment {
     /**
      * Internal option to specify the list of maven extension to register
      */
-    DAEMON_CORE_EXTENSIONS("daemon.core.extensions", null);
+    DAEMON_CORE_EXTENSIONS("daemon.core.extensions", null),
+    /**
+     * Interval to check if the daemon should expire
+     */
+    EXPIRATION_CHECK_DELAY_MS("daemon.expirationCheckDelayMs", null),
+    ;
 
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
 
     public static final int DEFAULT_KEEP_ALIVE = (int) TimeUnit.SECONDS.toMillis(1);
+
+    public static final int DEFAULT_EXPIRATION_CHECK_DELAY = (int) TimeUnit.SECONDS.toMillis(10);
 
     public static final int DEFAULT_MAX_LOST_KEEP_ALIVE = 3;
 

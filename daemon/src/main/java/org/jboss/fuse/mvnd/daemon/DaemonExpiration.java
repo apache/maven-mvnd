@@ -31,6 +31,7 @@ import org.jboss.fuse.mvnd.common.DaemonState;
 
 import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
 import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
+import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.IMMEDIATE_EXPIRE;
 import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.QUIET_EXPIRE;
 import static org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
 
@@ -58,18 +59,21 @@ public class DaemonExpiration {
     }
 
     static DaemonExpirationStrategy gcTrashing() {
-        // TODO
-        return daemon -> NOT_TRIGGERED;
+        return daemon -> daemon.getMemoryStatus().isTrashing()
+                ? new DaemonExpirationResult(IMMEDIATE_EXPIRE, "JVM garbage collector thrashing")
+                : NOT_TRIGGERED;
     }
 
     static DaemonExpirationStrategy lowHeapSpace() {
-        // TODO
-        return daemon -> NOT_TRIGGERED;
+        return daemon -> daemon.getMemoryStatus().isHeapSpaceExhausted()
+                ? new DaemonExpirationResult(GRACEFUL_EXPIRE, "after running out of JVM memory")
+                : NOT_TRIGGERED;
     }
 
     static DaemonExpirationStrategy lowNonHeap() {
-        // TODO
-        return daemon -> NOT_TRIGGERED;
+        return daemon -> daemon.getMemoryStatus().isNonHeapSpaceExhausted()
+                ? new DaemonExpirationResult(GRACEFUL_EXPIRE, "after running out of JVM memory")
+                : NOT_TRIGGERED;
     }
 
     static DaemonExpirationStrategy lowMemory(double minFreeMemoryPercentage) {

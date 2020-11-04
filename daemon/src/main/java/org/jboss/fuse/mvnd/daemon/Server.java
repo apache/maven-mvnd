@@ -83,6 +83,7 @@ public class Server implements AutoCloseable, Runnable {
     private final Lock expirationLock = new ReentrantLock();
     private final Lock stateLock = new ReentrantLock();
     private final Condition condition = stateLock.newCondition();
+    private final DaemonMemoryStatus memoryStatus;
 
     public Server(String uid) throws IOException {
         this.uid = uid;
@@ -99,6 +100,7 @@ public class Server implements AutoCloseable, Runnable {
                     .asInt();
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
+            memoryStatus = new DaemonMemoryStatus(executor);
 
             List<String> opts = new ArrayList<>();
             Environment.DAEMON_EXT_CLASSPATH.systemProperty().asOptional()
@@ -115,6 +117,10 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Exception e) {
             throw new RuntimeException("Could not initialize " + Server.class.getName(), e);
         }
+    }
+
+    public DaemonMemoryStatus getMemoryStatus() {
+        return memoryStatus;
     }
 
     public void close() {
@@ -156,8 +162,12 @@ public class Server implements AutoCloseable, Runnable {
 
     public void run() {
         try {
+            int expirationCheckDelayMs = Environment.EXPIRATION_CHECK_DELAY_MS
+                    .systemProperty()
+                    .orDefault(() -> String.valueOf(Environment.DEFAULT_EXPIRATION_CHECK_DELAY))
+                    .asInt();
             executor.scheduleAtFixedRate(this::expirationCheck,
-                    info.getIdleTimeout(), info.getIdleTimeout(), TimeUnit.MILLISECONDS);
+                    expirationCheckDelayMs, expirationCheckDelayMs, TimeUnit.MILLISECONDS);
             LOGGER.info("Daemon started");
             new DaemonThread(this::accept).start();
             awaitStop();
