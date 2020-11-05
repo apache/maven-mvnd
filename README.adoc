@@ -73,7 +73,8 @@ $ brew install mvndaemon/homebrew-mvnd/mvnd
 [source,shell]
 ----
 $ mvnd --version
-Maven Daemon 0.0.0 (native)
+Maven Daemon 0.0.11-linux-amd64 (native)
+Terminal: org.jline.terminal.impl.PosixSysTerminal with pty org.jline.terminal.impl.jansi.osx.OsXNativePty
 Apache Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)
 Maven home: /home/ppalaga/orgs/mvnd/mvnd/daemon/target/maven-distro
 Java version: 11.0.1, vendor: AdoptOpenJDK, runtime: /home/data/jvm/adopt-openjdk/jdk-11.0.1+13
