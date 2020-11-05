@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.common;
+package org.jboss.fuse.mvnd.client;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,26 +35,26 @@ public class DaemonDiagnostics {
     private final static int TAIL_SIZE = 20;
 
     private final String uid;
-    private final Layout layout;
+    private final DaemonParameters parameters;
 
-    public DaemonDiagnostics(String uid, Layout layout) {
+    public DaemonDiagnostics(String uid, DaemonParameters parameters) {
         this.uid = uid;
-        this.layout = layout;
+        this.parameters = parameters;
     }
 
     @Override
     public String toString() {
         return "{"
                 + "uid=" + uid
-                + ", layout=" + layout
+                + ", parameters=" + parameters
                 + '}';
     }
 
     public String describe() {
         StringBuilder sb = new StringBuilder();
         sb.append("Daemon uid: ").append(uid).append("\n");
-        tail(sb, "log file", layout.daemonLog(uid));
-        tail(sb, "output", layout.daemonOutLog(uid));
+        tail(sb, "log file", parameters.daemonLog(uid));
+        tail(sb, "output", parameters.daemonOutLog(uid));
         return sb.toString();
     }
 

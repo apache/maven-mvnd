@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
@@ -37,12 +37,12 @@ public class ModuleAndPluginNativeIT {
     Client client;
 
     @Inject
-    ClientLayout layout;
+    DaemonParameters parameters;
 
     @Test
     void cleanInstall() throws IOException, InterruptedException {
-        final Path helloPath = layout.multiModuleProjectDirectory().resolve("hello/target/hello.txt");
-        final Path helloPropertyPath = layout.multiModuleProjectDirectory().resolve("hello/target/hello.property.txt");
+        final Path helloPath = parameters.multiModuleProjectDirectory().resolve("hello/target/hello.txt");
+        final Path helloPropertyPath = parameters.multiModuleProjectDirectory().resolve("hello/target/hello.property.txt");
         Stream.of(helloPath, helloPropertyPath).forEach(p -> {
             try {
                 Files.deleteIfExists(p);
@@ -51,7 +51,7 @@ public class ModuleAndPluginNativeIT {
             }
         });
 
-        final Path localMavenRepo = layout.getLocalMavenRepository();
+        final Path localMavenRepo = parameters.mavenRepoLocal();
         TestUtils.deleteDir(localMavenRepo);
         final Path[] installedJars = {
                 localMavenRepo.resolve(
@@ -74,7 +74,7 @@ public class ModuleAndPluginNativeIT {
 
         /* Build #2: with the mojo source changed to output "Hi" to target/hello.txt */
         {
-            final Path mojoPath = layout.multiModuleProjectDirectory()
+            final Path mojoPath = parameters.multiModuleProjectDirectory()
                     .resolve("plugin/src/main/java/org/jboss/fuse/mvnd/test/module/plugin/mojo/HelloMojo.java");
             TestUtils.replace(mojoPath, "\"Hello\".getBytes", "\"Hi\".getBytes");
 

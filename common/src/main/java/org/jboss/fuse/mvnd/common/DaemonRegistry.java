@@ -242,7 +242,6 @@ public class DaemonRegistry implements AutoCloseable {
                         String mavenHome = readString();
                         int pid = buffer.getInt();
                         int address = buffer.getInt();
-                        int idle = buffer.getInt();
                         String locale = readString();
                         List<String> opts = new ArrayList<>();
                         int nbOpts = buffer.getInt();
@@ -252,7 +251,7 @@ public class DaemonRegistry implements AutoCloseable {
                         DaemonState state = DaemonState.values()[buffer.get()];
                         long lastIdle = buffer.getLong();
                         long lastBusy = buffer.getLong();
-                        DaemonInfo di = new DaemonInfo(uid, javaHome, mavenHome, pid, address, idle, locale, opts, state,
+                        DaemonInfo di = new DaemonInfo(uid, javaHome, mavenHome, pid, address, locale, opts, state,
                                 lastIdle, lastBusy);
                         infosMap.putIfAbsent(di.getUid(), di);
                     }
@@ -276,10 +275,9 @@ public class DaemonRegistry implements AutoCloseable {
                     for (DaemonInfo di : infosMap.values()) {
                         writeString(di.getUid());
                         writeString(di.getJavaHome());
-                        writeString(di.getMavenHome());
+                        writeString(di.getMvndHome());
                         buffer.putInt(di.getPid());
                         buffer.putInt(di.getAddress());
-                        buffer.putInt(di.getIdleTimeout());
                         writeString(di.getLocale());
                         buffer.putInt(di.getOptions().size());
                         for (String opt : di.getOptions()) {

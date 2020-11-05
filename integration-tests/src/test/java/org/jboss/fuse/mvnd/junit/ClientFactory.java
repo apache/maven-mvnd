@@ -16,8 +16,8 @@
 package org.jboss.fuse.mvnd.junit;
 
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 
 public interface ClientFactory {
-    Client newClient(ClientLayout layout);
+    Client newClient(DaemonParameters parameters);
 }

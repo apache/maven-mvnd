@@ -30,8 +30,7 @@ public class MavenDaemon {
         // loaded from jars that are built by a previous run
         new File("txt").toURI().toURL().openConnection().setDefaultUseCaches(false);
 
-        final String uidStr = Environment.DAEMON_UID.systemProperty().orFail().asString();
-        final Path mvndHome = Environment.MVND_HOME.systemProperty().orFail().asPath();
+        final Path mvndHome = Environment.MVND_HOME.asPath();
         URL[] classpath = Stream.concat(
                 /* jars */
                 Stream.of("mvn/lib/ext", "mvn/lib", "mvn/boot")
@@ -73,7 +72,7 @@ public class MavenDaemon {
         };
         Thread.currentThread().setContextClassLoader(loader);
         Class<?> clazz = loader.loadClass("org.jboss.fuse.mvnd.daemon.Server");
-        try (AutoCloseable server = (AutoCloseable) clazz.getConstructor(String.class).newInstance(uidStr)) {
+        try (AutoCloseable server = (AutoCloseable) clazz.getConstructor().newInstance()) {
             ((Runnable) server).run();
         }
     }

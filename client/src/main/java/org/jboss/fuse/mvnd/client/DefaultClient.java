@@ -15,27 +15,17 @@
  */
 package org.jboss.fuse.mvnd.client;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import org.apache.maven.cli.internal.extension.model.CoreExtension;
-import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3Reader;
-import org.codehaus.plexus.util.StringUtils;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.common.BuildProperties;
-import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.Environment;
@@ -54,15 +44,11 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultClient implements Client {
 
-    public static final int DEFAULT_PERIODIC_CHECK_INTERVAL_MILLIS = 10 * 1000;
     public static final int CANCEL_TIMEOUT = 10 * 1000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
-    private static final String EXT_CLASS_PATH = "maven.ext.class.path";
-    private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
 
-    private final Supplier<ClientLayout> lazyLayout;
-    private final BuildProperties buildProperties;
+    private final Supplier<DaemonParameters> lazyParameters;
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(argv.length);
@@ -83,13 +69,12 @@ public class DefaultClient implements Client {
         }
 
         try (TerminalOutput output = new TerminalOutput(logFile)) {
-            new DefaultClient(ClientLayout::getEnvInstance, BuildProperties.getInstance()).execute(output, args);
+            new DefaultClient(() -> new DaemonParameters(new Properties())).execute(output, args);
         }
     }
 
-    public DefaultClient(Supplier<ClientLayout> layout, BuildProperties buildProperties) {
-        this.lazyLayout = layout;
-        this.buildProperties = buildProperties;
+    public DefaultClient(Supplier<DaemonParameters> lazyParameters) {
+        this.lazyParameters = lazyParameters;
     }
 
     @Override
@@ -135,6 +120,7 @@ public class DefaultClient implements Client {
         // Print version if needed
         if (version || showVersion || debug) {
             // Print mvnd version
+            BuildProperties buildProperties = BuildProperties.getInstance();
             final String nativeSuffix = Environment.isNative() ? " (native)" : "";
             final String v = Ansi.ansi().bold().a(
                     "Maven Daemon "
@@ -158,9 +144,8 @@ public class DefaultClient implements Client {
              */
         }
 
-        final ClientLayout layout = lazyLayout.get();
-        final Path javaHome = layout.javaHome();
-        try (DaemonRegistry registry = new DaemonRegistry(layout.registry())) {
+        final DaemonParameters parameters = lazyParameters.get();
+        try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
             boolean status = args.remove("--status");
             if (status) {
                 final String template = "    %36s  %7s  %5s  %7s  %5s  %23s  %s";
@@ -200,27 +185,32 @@ public class DefaultClient implements Client {
                 return new DefaultResult(argv, null);
             }
 
-            setDefaultArgs(args, layout);
-            final Path settings = layout.getSettings();
+            if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
+                args.add("--threads");
+                args.add(parameters.threads());
+            }
+            if (args.stream().noneMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
+                args.add("--builder");
+                args.add(parameters.builder());
+            }
+            final Path settings = parameters.settings();
             if (settings != null && args.stream().noneMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
-                args.add("-s");
+                args.add("--settings");
                 args.add(settings.toString());
             }
-
-            final Path localMavenRepository = layout.getLocalMavenRepository();
-            if (localMavenRepository != null) {
+            final Path localMavenRepository = parameters.mavenRepoLocal();
+            if (localMavenRepository != null && args.stream().noneMatch(arg -> arg.startsWith("-Dmaven.repo.local="))) {
                 args.add("-Dmaven.repo.local=" + localMavenRepository.toString());
             }
 
-            List<String> opts = getDaemonOpts(layout);
-            final DaemonConnector connector = new DaemonConnector(layout, registry, buildProperties);
-            try (DaemonClientConnection daemon = connector.connect(new DaemonCompatibilitySpec(javaHome, opts), output)) {
+            final DaemonConnector connector = new DaemonConnector(parameters, registry);
+            try (DaemonClientConnection daemon = connector.connect(output)) {
                 output.buildStatus("Connected to daemon");
 
                 daemon.dispatch(new Message.BuildRequest(
                         args,
-                        layout.userDir().toString(),
-                        layout.multiModuleProjectDirectory().toString(),
+                        parameters.userDir().toString(),
+                        parameters.multiModuleProjectDirectory().toString(),
                         System.getenv()));
 
                 output.buildStatus("Build request sent");
@@ -256,65 +246,6 @@ public class DefaultClient implements Client {
                     }
                 }
             }
-        }
-    }
-
-    private List<String> getDaemonOpts(ClientLayout layout) {
-        List<String> options = new ArrayList<>();
-        // Classpath
-        List<Path> jars = parseExtClasspath(layout);
-        if (!jars.isEmpty()) {
-            options.add(Environment.DAEMON_EXT_CLASSPATH.asCommandLineProperty(
-                    jars.stream().map(Path::toString).collect(Collectors.joining(","))));
-        }
-        // Extensions
-        try {
-            List<CoreExtension> extensions = readCoreExtensionsDescriptor(layout);
-            if (!extensions.isEmpty()) {
-                options.add(Environment.DAEMON_CORE_EXTENSIONS.asCommandLineProperty(
-                        extensions.stream().map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
-                                .collect(Collectors.joining(","))));
-            }
-        } catch (IOException | XmlPullParserException e) {
-            throw new RuntimeException("Unable to parse core extensions", e);
-        }
-        return options;
-    }
-
-    private List<Path> parseExtClasspath(ClientLayout layout) {
-        String extClassPath = System.getProperty(EXT_CLASS_PATH);
-        List<Path> jars = new ArrayList<>();
-        if (StringUtils.isNotEmpty(extClassPath)) {
-            for (String jar : StringUtils.split(extClassPath, File.pathSeparator)) {
-                Path path = layout.userDir().resolve(jar).toAbsolutePath();
-                jars.add(path);
-            }
-        }
-        return jars;
-    }
-
-    private List<CoreExtension> readCoreExtensionsDescriptor(ClientLayout layout)
-            throws IOException, XmlPullParserException {
-        Path multiModuleProjectDirectory = layout.multiModuleProjectDirectory();
-        if (multiModuleProjectDirectory == null) {
-            return Collections.emptyList();
-        }
-        Path extensionsFile = multiModuleProjectDirectory.resolve(EXTENSIONS_FILENAME);
-        if (!Files.exists(extensionsFile)) {
-            return Collections.emptyList();
-        }
-        CoreExtensionsXpp3Reader parser = new CoreExtensionsXpp3Reader();
-        try (InputStream is = Files.newInputStream(extensionsFile)) {
-            return parser.read(is).getExtensions();
-        }
-    }
-
-    static void setDefaultArgs(List<String> args, ClientLayout layout) {
-        if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
-            args.add("-T" + layout.getThreads());
-        }
-        if (args.stream().noneMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
-            args.add("-bsmart");
         }
     }
 

@@ -33,7 +33,7 @@
   </appender>
 
   <appender name="DAEMON" class="ch.qos.logback.core.FileAppender">
-    <file>${mvnd.home}/daemon/daemon-${daemon.uid}.log</file>
+    <file>${mvnd.daemon.storage}/daemon-${daemon.uid}.log</file>
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} %.-1level %msg%n</pattern>
     </encoder>

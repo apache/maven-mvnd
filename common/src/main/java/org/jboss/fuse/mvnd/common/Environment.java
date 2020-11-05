@@ -15,367 +15,208 @@
  */
 package org.jboss.fuse.mvnd.common;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Collects system properties and environment variables used by mvnd client or server.
  */
 public enum Environment {
-    LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null),
-    JAVA_HOME("java.home", "JAVA_HOME"),
-    MVND_HOME("mvnd.home", "MVND_HOME"),
-    MAVEN_REPO_LOCAL("maven.repo.local", null),
-    MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null),
-    MVND_PROPERTIES_PATH("mvnd.properties.path", "MVND_PROPERTIES_PATH"),
-    DAEMON_DEBUG("daemon.debug", null),
-    DAEMON_IDLE_TIMEOUT_MS("daemon.idleTimeoutMs", null),
-    DAEMON_KEEP_ALIVE_MS("daemon.keepAliveMs", null),
-    DAEMON_MAX_LOST_KEEP_ALIVE("daemon.maxLostKeepAlive", null),
+    LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null, null, false),
+    JAVA_HOME("java.home", "JAVA_HOME", null, false),
+    MVND_HOME("mvnd.home", "MVND_HOME", null, false),
+    USER_HOME("user.home", null, null, false),
+    USER_DIR("user.dir", null, null, false),
+    MAVEN_REPO_LOCAL("maven.repo.local", null, null, false),
+    MAVEN_SETTINGS("maven.settings", null, null, false) {
+        @Override
+        public boolean hasCommandLineProperty(Collection<String> args) {
+            return args.stream().anyMatch(arg -> arg.startsWith("-s") || arg.startsWith("--settings"));
+        }
+
+        @Override
+        public String asCommandLineProperty(String value) {
+            return "--settings=" + value;
+        }
+    },
+    MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, false),
+    MVND_PROPERTIES_PATH("mvnd.properties.path", "MVND_PROPERTIES_PATH", null, false),
+    MVND_DAEMON_STORAGE("mvnd.daemon.storage", null, null, false),
+    /**
+     * The path to the daemon registry
+     */
+    DAEMON_REGISTRY("daemon.registry", null, null, false),
+    DAEMON_DEBUG("daemon.debug", null, false, true),
+    DAEMON_IDLE_TIMEOUT_MS("daemon.idleTimeoutMs", null, TimeUnit.HOURS.toMillis(3), true),
+    DAEMON_KEEP_ALIVE_MS("daemon.keepAliveMs", null, TimeUnit.SECONDS.toMillis(1), true),
+    DAEMON_MAX_LOST_KEEP_ALIVE("daemon.maxLostKeepAlive", null, 3, false),
     /**
      * The minimum number of threads to use when constructing the default {@code -T} parameter for the daemon.
-     * This value is ignored if the user passes @{@code-T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
+     * This value is ignored if the user passes @{@code -T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
      * line or if he sets {@code mvnd.threads} in {@code ~/.m2/mvnd.properties}.
      */
-    MVND_MIN_THREADS("mvnd.minThreads", null),
+    MVND_MIN_THREADS("mvnd.minThreads", null, 1, false),
     /**
      * The number of threads to pass to the daemon; same syntax as Maven's {@code -T}/{@code --threads} option. Ignored
-     * if the user passes @{@code-T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
+     * if the user passes @{@code -T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
      * line.
      */
-    MVND_THREADS("mvnd.threads", null),
-    DAEMON_UID("daemon.uid", null),
+    MVND_THREADS("mvnd.threads", null, null, false) {
+        @Override
+        public boolean hasCommandLineProperty(Collection<String> args) {
+            return args.stream().anyMatch(arg -> arg.startsWith("-T") || arg.startsWith("--threads"));
+        }
+
+        @Override
+        public String asCommandLineProperty(String value) {
+            return "--threads=" + value;
+        }
+    },
+    /**
+     * The maven builder name to use. Ignored if the user passes
+     * 
+     * @{@code -b} or @{@code --builder} on the command line
+     */
+    MVND_BUILDER("mvnd.builder", null, "smart", false) {
+        @Override
+        public boolean hasCommandLineProperty(Collection<String> args) {
+            return args.stream().anyMatch(arg -> arg.startsWith("-b") || arg.startsWith("--builder"));
+        }
+
+        @Override
+        public String asCommandLineProperty(String value) {
+            return "--builder=" + value;
+        }
+    },
+    /**
+     * Internal system property set by the client when starting the daemon to identify its id
+     */
+    DAEMON_UID("daemon.uid", null, null, false),
     /**
      * Internal option to specify the maven extension classpath
      */
-    DAEMON_EXT_CLASSPATH("daemon.ext.classpath", null),
+    DAEMON_EXT_CLASSPATH("daemon.ext.classpath", null, null, true),
     /**
      * Internal option to specify the list of maven extension to register
      */
-    DAEMON_CORE_EXTENSIONS("daemon.core.extensions", null),
+    DAEMON_CORE_EXTENSIONS("daemon.core.extensions", null, null, true),
+    /**
+     * JVM options for the daemon
+     */
+    DAEMON_MIN_HEAP_SIZE("daemon.minHeapSize", null, "128M", true),
+    /**
+     * JVM options for the daemon
+     */
+    DAEMON_MAX_HEAP_SIZE("daemon.maxHeapSize", null, "2G", true),
+    /**
+     * JVM options for the daemon
+     */
+    DAEMON_ENABLE_ASSERTIONS("daemon.enableAssertions", null, false, true),
     /**
      * Interval to check if the daemon should expire
      */
-    EXPIRATION_CHECK_DELAY_MS("daemon.expirationCheckDelayMs", null),
+    DAEMON_EXPIRATION_CHECK_DELAY_MS("daemon.expirationCheckDelayMs", null, TimeUnit.SECONDS.toMillis(10), true),
+    /**
+     * Period after which idle daemons will shut down
+     */
+    DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD_MS("daemon.duplicateDaemonGracePeriodMs", null, TimeUnit.SECONDS.toMillis(10), true),
     ;
 
     public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
 
     public static final int DEFAULT_KEEP_ALIVE = (int) TimeUnit.SECONDS.toMillis(1);
 
-    public static final int DEFAULT_EXPIRATION_CHECK_DELAY = (int) TimeUnit.SECONDS.toMillis(10);
+    static Properties properties = System.getProperties();
 
-    public static final int DEFAULT_MAX_LOST_KEEP_ALIVE = 3;
-
-    public static final int DEFAULT_MIN_THREADS = 1;
-
-    private static final Consumer<String> LOG;
-    private static final boolean DEBUG_ENABLED;
-    public static final String DEBUG_ENVIRONMENT_PROP = "mvnd.environment.debug";
-
-    static {
-        Consumer<String> log = null;
-        boolean debugEnabled = false;
-        try {
-            Logger logger = LoggerFactory.getLogger(Environment.class);
-            log = logger::debug;
-            debugEnabled = logger.isDebugEnabled();
-        } catch (java.lang.NoClassDefFoundError e) {
-            if (e.getMessage().contains("org/slf4j/LoggerFactory")) {
-                /* This is when we are in the daemon's boot class path where slf4j is not available */
-                if (Boolean.getBoolean(DEBUG_ENVIRONMENT_PROP)) {
-                    log = s -> System.out.println("mvnd.environment: " + s);
-                    debugEnabled = true;
-                }
-            } else {
-                throw e;
-            }
-        }
-        LOG = log != null ? log : s -> {
-        };
-        DEBUG_ENABLED = debugEnabled;
+    public static void setProperties(Properties properties) {
+        Environment.properties = properties;
     }
 
-    static Properties properties = System.getProperties();
-    static Map<String, String> env = System.getenv();
+    public static String getProperty(String property) {
+        return properties.getProperty(property);
+    }
 
     private final String property;
     private final String environmentVariable;
+    private final String def;
+    private final boolean discriminating;
 
-    Environment(String property, String environmentVariable) {
-        this.property = property;
+    Environment(String property, String environmentVariable, Object def, boolean discriminating) {
+        this.property = Objects.requireNonNull(property);
         this.environmentVariable = environmentVariable;
+        this.def = def != null ? def.toString() : null;
+        this.discriminating = discriminating;
     }
 
-    public Environment.EnvValue systemProperty() {
-        return new EnvValue(this, systemPropertySource());
+    public String getProperty() {
+        return property;
     }
 
-    public Environment.EnvValue commandLineProperty(Supplier<Properties> commandLineProperties) {
-        return new EnvValue(this, new ValueSource(
-                description -> description.append("command line property ").append(property),
-                () -> commandLineProperties.get().getProperty(property)));
+    public String getEnvironmentVariable() {
+        return environmentVariable;
     }
 
-    public Environment.EnvValue environmentVariable() {
-        return new EnvValue(this, environmentVariableSource());
+    public String getDef() {
+        return def;
     }
 
-    public EnvValue fromValueSource(ValueSource valueSource) {
-        return new EnvValue(this, valueSource);
+    public boolean isDiscriminating() {
+        return discriminating;
+    }
+
+    public String asString() {
+        String val = getProperty(property);
+        if (val == null) {
+            throw new IllegalStateException("The system property " + property + " is missing");
+        }
+        return val;
+    }
+
+    public int asInt() {
+        return Integer.parseInt(asString());
+    }
+
+    public boolean asBoolean() {
+        return Boolean.parseBoolean(asString());
+    }
+
+    public Path asPath() {
+        String result = asString();
+        if (Os.current().isCygwin()) {
+            result = cygpath(result);
+        }
+        return Paths.get(result);
     }
 
     public String asCommandLineProperty(String value) {
         return "-D" + property + "=" + value;
     }
 
+    public String asDaemonOpt(String value) {
+        return property + "=" + value;
+    }
+
     public boolean hasCommandLineProperty(Collection<String> args) {
-        final String prefix = "-D" + property + "=";
+        final String prefix = "-D" + getProperty() + "=";
         return args.stream().anyMatch(s -> s.startsWith(prefix));
     }
 
-    public static Path findJavaHome(Supplier<Properties> mvndProperties, Path mvndPropertiesPath) {
-        final Path result = JAVA_HOME
-                .environmentVariable()
-                .orLocalProperty(mvndProperties, mvndPropertiesPath)
-                .orSystemProperty()
-                .orFail()
-                .asPath();
-        try {
-            return result
-                    .toRealPath();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not get a real path from path " + result);
+    public static String cygpath(String result) {
+        String path = result.replace('/', '\\');
+        if (path.matches("\\\\cygdrive\\\\[a-z]\\\\.*")) {
+            String s = path.substring("\\cygdrive\\".length());
+            result = s.substring(0, 1).toUpperCase(Locale.ENGLISH) + ":" + s.substring(1);
         }
-    }
-
-    public static Path findMvndPropertiesPath() {
-        return MVND_PROPERTIES_PATH
-                .environmentVariable()
-                .orSystemProperty()
-                .orDefault(() -> Paths.get(System.getProperty("user.home"), ".m2", "mvnd.properties").toString())
-                .asPath()
-                .toAbsolutePath().normalize();
-    }
-
-    public static EnvValue findBasicMavenHome() {
-        return MVND_HOME
-                .environmentVariable()
-                .orSystemProperty();
-    }
-
-    public static Path findMultiModuleProjectDirectory(Path pwd) {
-        return MAVEN_MULTIMODULE_PROJECT_DIRECTORY
-                .systemProperty()
-                .orDefault(() -> findDefaultMultimoduleProjectDirectory(pwd))
-                .asPath()
-                .toAbsolutePath().normalize();
-    }
-
-    public static String findDefaultMultimoduleProjectDirectory(Path pwd) {
-        Path dir = pwd;
-        do {
-            if (Files.isDirectory(dir.resolve(".mvn"))) {
-                return dir.toString();
-            }
-            dir = dir.getParent();
-        } while (dir != null);
-        /*
-         * Return pwd if .mvn directory was not found in the hierarchy.
-         * Maven does the same thing in mvn shell script's find_maven_basedir()
-         * and find_file_argument_basedir() routines
-         */
-        return pwd.toString();
-    }
-
-    public static Path findLogbackConfigurationPath(Supplier<Properties> mvndProperties, Path mvndPropertiesPath,
-            Path mvndHome) {
-        return LOGBACK_CONFIGURATION_FILE
-                .systemProperty()
-                .orLocalProperty(mvndProperties, mvndPropertiesPath)
-                .orDefault(() -> mvndHome.resolve("mvn/conf/logging/logback.xml").toString())
-                .orFail()
-                .asPath();
+        return result;
     }
 
     public static boolean isNative() {
         return "executable".equals(System.getProperty("org.graalvm.nativeimage.kind"));
-    }
-
-    private Environment.ValueSource systemPropertySource() {
-        if (property == null) {
-            throw new IllegalStateException("Cannot use " + Environment.class.getName() + " for getting a system property");
-        }
-        return new ValueSource(
-                description -> description.append("system property ").append(property),
-                () -> properties.getProperty(property));
-    }
-
-    private Environment.ValueSource environmentVariableSource() {
-        if (environmentVariable == null) {
-            throw new IllegalStateException(
-                    "Cannot use " + Environment.class.getName() + "." + name() + " for getting an environment variable");
-        }
-        return new ValueSource(
-                description -> description.append("environment variable ").append(environmentVariable),
-                () -> env.get(environmentVariable));
-    }
-
-    /**
-     * A source of an environment value with a description capability.
-     */
-    public static class ValueSource {
-        final Function<StringBuilder, StringBuilder> descriptionFunction;
-        final Supplier<String> valueSupplier;
-
-        public ValueSource(Function<StringBuilder, StringBuilder> descriptionFunction, Supplier<String> valueSupplier) {
-            this.descriptionFunction = descriptionFunction;
-            this.valueSupplier = valueSupplier;
-        }
-
-        /** Mostly for debugging */
-        @Override
-        public String toString() {
-            return descriptionFunction.apply(new StringBuilder()).toString();
-        }
-
-    }
-
-    /**
-     * A chained lazy environment value.
-     */
-    public static class EnvValue {
-        private final Environment envKey;
-        private final Environment.ValueSource valueSource;
-        protected Environment.EnvValue previous;
-
-        public EnvValue(Environment envKey, Environment.ValueSource valueSource) {
-            this.previous = null;
-            this.envKey = envKey;
-            this.valueSource = valueSource;
-        }
-
-        public EnvValue(Environment.EnvValue previous, Environment envKey, Environment.ValueSource valueSource) {
-            this.previous = previous;
-            this.envKey = envKey;
-            this.valueSource = valueSource;
-        }
-
-        public Environment.EnvValue orSystemProperty() {
-            return new EnvValue(this, envKey, envKey.systemPropertySource());
-        }
-
-        public Environment.EnvValue orLocalProperty(Supplier<Properties> localProperties, Path localPropertiesPath) {
-            return new EnvValue(this, envKey, new ValueSource(
-                    description -> description.append("property ").append(envKey.property).append(" in ")
-                            .append(localPropertiesPath),
-                    () -> localProperties.get().getProperty(envKey.property)));
-        }
-
-        public Environment.EnvValue orEnvironmentVariable() {
-            return new EnvValue(this, envKey, envKey.environmentVariableSource());
-        }
-
-        public EnvValue or(ValueSource source) {
-            return new EnvValue(this, envKey, source);
-        }
-
-        public Environment.EnvValue orDefault(Supplier<String> defaultSupplier) {
-            return new EnvValue(this, envKey,
-                    new ValueSource(sb -> sb.append("default: ").append(defaultSupplier.get()), defaultSupplier));
-        }
-
-        public Environment.EnvValue orFail() {
-            return new EnvValue(this, envKey, new ValueSource(sb -> sb, () -> {
-                final StringBuilder sb = new StringBuilder("Could not get value for ")
-                        .append(Environment.class.getSimpleName())
-                        .append(".").append(envKey.name()).append(" from any of the following sources: ");
-
-                /*
-                 * Compose the description functions to invert the order thus getting the resolution order in the
-                 * message
-                 */
-                Function<StringBuilder, StringBuilder> description = (s -> s);
-                EnvValue val = this;
-                while (val != null) {
-                    description = description.compose(val.valueSource.descriptionFunction);
-                    val = val.previous;
-                    if (val != null) {
-                        description = description.compose(s -> s.append(", "));
-                    }
-                }
-                description.apply(sb);
-                throw new IllegalStateException(sb.toString());
-            }));
-        }
-
-        String get() {
-            if (previous != null) {
-                final String result = previous.get();
-                if (result != null) {
-                    return result;
-                }
-            }
-            final String result = valueSource.valueSupplier.get();
-            if (result != null && DEBUG_ENABLED) {
-                StringBuilder sb = new StringBuilder("Loaded environment value for key [")
-                        .append(envKey.name())
-                        .append("] from ");
-                valueSource.descriptionFunction.apply(sb);
-                sb.append(": [")
-                        .append(result)
-                        .append(']');
-                LOG.accept(sb.toString());
-            }
-            return result;
-        }
-
-        public String asString() {
-            return get();
-        }
-
-        public Optional<String> asOptional() {
-            return Optional.ofNullable(get());
-        }
-
-        public Path asPath() {
-            String result = get();
-            if (result != null && Os.current().isCygwin()) {
-                result = cygpath(result);
-            }
-            return result == null ? null : Paths.get(result);
-        }
-
-        static String cygpath(String result) {
-            String path = result.replace('/', '\\');
-            if (path.matches("\\\\cygdrive\\\\[a-z]\\\\.*")) {
-                String s = path.substring("\\cygdrive\\".length());
-                result = s.substring(0, 1).toUpperCase(Locale.ENGLISH) + ":" + s.substring(1);
-            }
-            return result;
-        }
-
-        public boolean asBoolean() {
-            return Boolean.parseBoolean(get());
-        }
-
-        public int asInt() {
-            return Integer.parseInt(get());
-        }
-
     }
 
 }

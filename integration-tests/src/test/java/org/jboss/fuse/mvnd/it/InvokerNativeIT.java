@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.junit.jupiter.api.Test;
@@ -37,18 +37,18 @@ public class InvokerNativeIT {
     Client client;
 
     @Inject
-    ClientLayout layout;
+    DaemonParameters parameters;
 
     @Test
     void cleanInstall() throws IOException, InterruptedException {
 
-        final Path helloPath = layout.multiModuleProjectDirectory().resolve("target/it/invoke-hello/target/hello.txt");
+        final Path helloPath = parameters.multiModuleProjectDirectory().resolve("target/it/invoke-hello/target/hello.txt");
         try {
             Files.deleteIfExists(helloPath);
         } catch (IOException e) {
             throw new RuntimeException("Could not delete " + helloPath);
         }
-        final Path logPath = layout.multiModuleProjectDirectory().resolve("target/it/invoke-hello/build.log");
+        final Path logPath = parameters.multiModuleProjectDirectory().resolve("target/it/invoke-hello/build.log");
         try {
             Files.deleteIfExists(logPath);
         } catch (IOException e) {

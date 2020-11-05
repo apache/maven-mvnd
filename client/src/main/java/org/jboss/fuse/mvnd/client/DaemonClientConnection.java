@@ -25,12 +25,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.jboss.fuse.mvnd.common.DaemonConnection;
-import org.jboss.fuse.mvnd.common.DaemonDiagnostics;
 import org.jboss.fuse.mvnd.common.DaemonException;
 import org.jboss.fuse.mvnd.common.DaemonException.ConnectException;
 import org.jboss.fuse.mvnd.common.DaemonException.StaleAddressException;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
-import org.jboss.fuse.mvnd.common.Layout;
 import org.jboss.fuse.mvnd.common.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,10 +52,10 @@ public class DaemonClientConnection implements Closeable {
     private final Thread receiver;
     private final AtomicBoolean running = new AtomicBoolean(true);
     private final AtomicReference<Exception> exception = new AtomicReference<>();
-    private final Layout layout;
+    private final DaemonParameters parameters;
 
     public DaemonClientConnection(DaemonConnection connection, DaemonInfo daemon,
-            StaleAddressDetector staleAddressDetector, boolean newDaemon, int maxKeepAliveMs, Layout layout) {
+            StaleAddressDetector staleAddressDetector, boolean newDaemon, int maxKeepAliveMs, DaemonParameters parameters) {
         this.connection = connection;
         this.daemon = daemon;
         this.staleAddressDetector = staleAddressDetector;
@@ -65,7 +63,7 @@ public class DaemonClientConnection implements Closeable {
         this.maxKeepAliveMs = maxKeepAliveMs;
         this.receiver = new Thread(this::doReceive);
         this.receiver.start();
-        this.layout = layout;
+        this.parameters = parameters;
     }
 
     public DaemonInfo getDaemon() {
@@ -105,7 +103,7 @@ public class DaemonClientConnection implements Closeable {
                             + "ms, daemon may have crashed. You may want to check its status using mvnd --status");
                 }
             } catch (Exception e) {
-                DaemonDiagnostics diag = new DaemonDiagnostics(daemon.getUid(), layout);
+                DaemonDiagnostics diag = new DaemonDiagnostics(daemon.getUid(), parameters);
                 LOG.debug("Problem receiving message to the daemon. Performing 'on failure' operation...");
                 if (!hasReceived && newDaemon) {
                     throw new ConnectException("Could not receive a message from the daemon.\n" + diag.describe(), e);

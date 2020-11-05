@@ -79,7 +79,11 @@ class ReactorBuildStats {
     }
 
     public void recordServiceTime(MavenProject project, long durationNanos) {
-        serviceTimes.get(projectGA(project)).addAndGet(durationNanos);
+        AtomicLong serviceTime = serviceTimes.get(projectGA(project));
+        if (serviceTime == null) {
+            throw new IllegalStateException("Unknown project " + projectGA(project) + ", found " + serviceTimes.keySet());
+        }
+        serviceTime.addAndGet(durationNanos);
     }
 
     public void recordBottlenecks(Set<MavenProject> projects, int degreeOfConcurrency,

@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.jboss.fuse.mvnd.common.DaemonExpirationStatus;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonState;
+import org.jboss.fuse.mvnd.common.Environment;
 
 import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
 import static org.jboss.fuse.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
@@ -53,7 +53,7 @@ public class DaemonExpiration {
         return any(
                 any(gcTrashing(), lowHeapSpace(), lowNonHeap()),
                 all(compatible(), duplicateGracePeriod(), notMostRecentlyUsed()),
-                idleTimeout(Server::getIdleTimeout),
+                idleTimeout(Environment.DAEMON_IDLE_TIMEOUT_MS.asInt()),
                 all(duplicateGracePeriod(), notMostRecentlyUsed(), lowMemory(0.05)),
                 registryUnavailable());
     }
@@ -82,18 +82,17 @@ public class DaemonExpiration {
     }
 
     static DaemonExpirationStrategy duplicateGracePeriod() {
-        return idleTimeout(daemon -> DUPLICATE_DAEMON_GRACE_PERIOD_MS);
+        return idleTimeout(Environment.DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD_MS.asInt());
     }
 
     private static final long HOUR = 60 * 60 * 1000;
     private static final long MINUTE = 60 * 1000;
     private static final long SECOND = 1000;
 
-    static DaemonExpirationStrategy idleTimeout(ToLongFunction<Server> timeout) {
+    static DaemonExpirationStrategy idleTimeout(long timeout) {
         return daemon -> {
-            long len = timeout.applyAsLong(daemon);
             long idl = System.currentTimeMillis() - daemon.getLastIdle();
-            if (daemon.getState() == DaemonState.Idle && idl > len) {
+            if (daemon.getState() == DaemonState.Idle && idl > timeout) {
                 String str;
                 if (idl > HOUR) {
                     str = (idl / HOUR) + " hours";
