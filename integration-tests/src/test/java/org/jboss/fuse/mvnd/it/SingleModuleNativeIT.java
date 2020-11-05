@@ -22,7 +22,7 @@ import java.util.Properties;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
@@ -39,16 +39,16 @@ public class SingleModuleNativeIT {
     Client client;
 
     @Inject
-    ClientLayout layout;
+    DaemonParameters parameters;
 
     @Test
     void cleanInstall() throws IOException, InterruptedException {
-        final Path helloFilePath = layout.multiModuleProjectDirectory().resolve("target/hello.txt");
+        final Path helloFilePath = parameters.multiModuleProjectDirectory().resolve("target/hello.txt");
         if (Files.exists(helloFilePath)) {
             Files.delete(helloFilePath);
         }
 
-        final Path localMavenRepo = layout.getLocalMavenRepository();
+        final Path localMavenRepo = parameters.mavenRepoLocal();
         TestUtils.deleteDir(localMavenRepo);
         final Path installedJar = localMavenRepo.resolve(
                 "org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
@@ -56,7 +56,7 @@ public class SingleModuleNativeIT {
 
         final ClientOutput o = Mockito.mock(ClientOutput.class);
         client.execute(o, "clean", "install", "-e").assertSuccess();
-        final Properties props = MvndTestUtil.properties(layout.multiModuleProjectDirectory().resolve("pom.xml"));
+        final Properties props = MvndTestUtil.properties(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
 
         final InOrder inOrder = Mockito.inOrder(o);
         inOrder.verify(o).accept(any(), Mockito.contains("Building single-module"));

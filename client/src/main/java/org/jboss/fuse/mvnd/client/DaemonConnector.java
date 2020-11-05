@@ -34,7 +34,6 @@ import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec;
 import org.jboss.fuse.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.jboss.fuse.mvnd.common.DaemonConnection;
-import org.jboss.fuse.mvnd.common.DaemonDiagnostics;
 import org.jboss.fuse.mvnd.common.DaemonException;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
@@ -63,13 +62,11 @@ public class DaemonConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnector.class);
 
     private final DaemonRegistry registry;
-    private final ClientLayout layout;
-    private final BuildProperties buildProperties;
+    private final DaemonParameters parameters;
 
-    public DaemonConnector(ClientLayout layout, DaemonRegistry registry, BuildProperties buildProperties) {
-        this.layout = layout;
+    public DaemonConnector(DaemonParameters parameters, DaemonRegistry registry) {
+        this.parameters = parameters;
         this.registry = registry;
-        this.buildProperties = buildProperties;
     }
 
     public DaemonClientConnection maybeConnect(DaemonCompatibilitySpec constraint) {
@@ -85,7 +82,9 @@ public class DaemonConnector {
         return null;
     }
 
-    public DaemonClientConnection connect(DaemonCompatibilitySpec constraint, ClientOutput output) {
+    public DaemonClientConnection connect(ClientOutput output) {
+        final DaemonCompatibilitySpec constraint = new DaemonCompatibilitySpec(
+                parameters.javaHome(), parameters.getDaemonOpts());
         output.buildStatus("Looking up daemon...");
         Map<Boolean, List<DaemonInfo>> idleBusy = registry.getAll().stream()
                 .collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
@@ -107,7 +106,7 @@ public class DaemonConnector {
         // No compatible daemons available - start a new daemon
         String message = handleStopEvents(idleDaemons, busyDaemons);
         output.buildStatus(message);
-        return startDaemon(constraint);
+        return startDaemon();
     }
 
     private String handleStopEvents(Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {
@@ -221,9 +220,9 @@ public class DaemonConnector {
         return null;
     }
 
-    public DaemonClientConnection startDaemon(DaemonCompatibilitySpec constraint) {
+    public DaemonClientConnection startDaemon() {
         final String daemon = UUID.randomUUID().toString();
-        final Process process = startDaemon(daemon, constraint.getOptions());
+        final Process process = startDaemon(daemon);
         LOGGER.debug("Started Maven daemon {}", daemon);
         long start = System.currentTimeMillis();
         do {
@@ -237,41 +236,49 @@ public class DaemonConnector {
                 throw new DaemonException.InterruptedException(e);
             }
         } while (process.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
-        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout);
+        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, parameters);
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
-    private Process startDaemon(String uid, List<String> opts) {
-        final Path mavenHome = layout.mavenHome();
-        final Path workingDir = layout.userDir();
+    private Process startDaemon(String uid) {
+        final Path mvndHome = parameters.mvndHome();
+        final Path workingDir = parameters.userDir();
         String command = "";
         try {
-            final String classpath = mavenHome.resolve("mvn/lib/ext/mvnd-common-" + buildProperties.getVersion() + ".jar")
-                    .toString();
-            final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
             List<String> args = new ArrayList<>();
-            args.add(layout.javaHome().resolve(java).toString());
+            // executable
+            final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
+            args.add(parameters.javaHome().resolve(java).toString());
+            // classpath
             args.add("-classpath");
+            final String mvndCommonPath = "mvn/lib/ext/mvnd-common-" + BuildProperties.getInstance().getVersion() + ".jar";
+            final String classpath = mvndHome.resolve(mvndCommonPath).toString();
             args.add(classpath);
-            if (Environment.DAEMON_DEBUG.systemProperty().orDefault(() -> "false").asBoolean()) {
+            // debug options
+            if (parameters.property(Environment.DAEMON_DEBUG).asBoolean()) {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
-            args.add("-Dmvnd.home=" + mavenHome);
-            args.add("-Dmvnd.java.home=" + layout.javaHome().toString());
-            args.add("-Dlogback.configurationFile=" + layout.getLogbackConfigurationPath());
-            args.add("-Ddaemon.uid=" + uid);
-            if (Boolean.getBoolean(Environment.DEBUG_ENVIRONMENT_PROP)) {
-                args.add("-D" + Environment.DEBUG_ENVIRONMENT_PROP + "=true");
+            // memory
+            String minHeapSize = parameters.minHeapSize();
+            if (minHeapSize != null) {
+                args.add("-Xms" + minHeapSize);
             }
-            args.add("-Xmx4g");
-            args.add(Environment.DAEMON_IDLE_TIMEOUT_MS.asCommandLineProperty(Integer.toString(layout.getIdleTimeoutMs())));
-            args.add(Environment.DAEMON_KEEP_ALIVE_MS.asCommandLineProperty(Integer.toString(layout.getKeepAliveMs())));
-            args.addAll(opts);
+            String maxHeapSize = parameters.maxHeapSize();
+            if (maxHeapSize != null) {
+                args.add("-Xmx" + maxHeapSize);
+            }
+
+            args.add(Environment.MVND_HOME.asCommandLineProperty(mvndHome.toString()));
+            args.add(Environment.LOGBACK_CONFIGURATION_FILE
+                    .asCommandLineProperty(parameters.logbackConfigurationPath().toString()));
+            args.add(Environment.DAEMON_UID.asCommandLineProperty(uid));
+            args.add(Environment.DAEMON_REGISTRY.asCommandLineProperty(parameters.registry().toString()));
+            args.addAll(parameters.getDaemonCommandLineProperties());
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 
             LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
-            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(layout.daemonOutLog(uid).toFile());
+            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(parameters.daemonOutLog(uid).toFile());
             Process process = new ProcessBuilder()
                     .directory(workingDir.toFile())
                     .command(args)
@@ -296,7 +303,7 @@ public class DaemonConnector {
             try {
                 return connectToDaemon(daemonInfo, new CleanupOnStaleAddress(daemonInfo), newDaemon);
             } catch (DaemonException.ConnectException e) {
-                DaemonDiagnostics diag = new DaemonDiagnostics(daemon, layout);
+                DaemonDiagnostics diag = new DaemonDiagnostics(daemon, parameters);
                 throw new DaemonException.ConnectException("Could not connect to the Maven daemon.\n" + diag.describe(), e);
             }
         }
@@ -308,9 +315,9 @@ public class DaemonConnector {
             throws DaemonException.ConnectException {
         LOGGER.debug("Connecting to Daemon");
         try {
-            int maxKeepAliveMs = layout.getKeepAliveMs() * layout.getMaxLostKeepAlive();
+            int maxKeepAliveMs = parameters.keepAliveMs() * parameters.maxLostKeepAlive();
             DaemonConnection connection = connect(daemon.getAddress());
-            return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, maxKeepAliveMs, layout);
+            return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, maxKeepAliveMs, parameters);
         } catch (DaemonException.ConnectException e) {
             staleAddressDetector.maybeStaleAddress(e);
             throw e;

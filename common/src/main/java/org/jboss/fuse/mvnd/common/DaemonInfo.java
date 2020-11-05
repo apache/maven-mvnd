@@ -28,10 +28,9 @@ public class DaemonInfo {
 
     private final String uid;
     private final String javaHome;
-    private final String mavenHome;
+    private final String mvndHome;
     private final int pid;
     private final int address;
-    private final int idleTimeout;
     private final String locale;
     private final List<String> options;
     private final DaemonState state;
@@ -39,15 +38,14 @@ public class DaemonInfo {
     private final long lastBusy;
 
     public DaemonInfo(String uid, String javaHome, String mavenHome,
-            int pid, int address, int idleTimeout,
+            int pid, int address,
             String locale, List<String> options,
             DaemonState state, long lastIdle, long lastBusy) {
         this.uid = uid;
         this.javaHome = javaHome;
-        this.mavenHome = mavenHome;
+        this.mvndHome = mavenHome;
         this.pid = pid;
         this.address = address;
-        this.idleTimeout = idleTimeout;
         this.locale = locale;
         this.options = options;
         this.state = state;
@@ -63,8 +61,8 @@ public class DaemonInfo {
         return javaHome;
     }
 
-    public String getMavenHome() {
-        return mavenHome;
+    public String getMvndHome() {
+        return mvndHome;
     }
 
     public int getPid() {
@@ -73,10 +71,6 @@ public class DaemonInfo {
 
     public int getAddress() {
         return address;
-    }
-
-    public int getIdleTimeout() {
-        return idleTimeout;
     }
 
     public String getLocale() {
@@ -111,8 +105,8 @@ public class DaemonInfo {
             li = lastIdle;
             lb = lastBusy;
         }
-        return new DaemonInfo(uid, javaHome, mavenHome, pid, address,
-                idleTimeout, locale, options, state, li, lb);
+        return new DaemonInfo(uid, javaHome, mvndHome, pid, address,
+                locale, options, state, li, lb);
     }
 
     @Override
@@ -125,10 +119,9 @@ public class DaemonInfo {
     public StringBuilder appendNonKeyFields(StringBuilder sb) {
         return sb.append("javaHome=").append(javaHome)
                 .append(", options=").append(options)
-                .append(", mavenHome=").append(mavenHome)
+                .append(", mavenHome=").append(mvndHome)
                 .append(", pid=").append(pid)
                 .append(", address=").append(address)
-                .append(", idleTimeout=").append(idleTimeout)
                 .append(", locale=").append(locale)
                 .append(", state=").append(state)
                 .append(", lastIdle=").append(lastIdle)

@@ -16,11 +16,10 @@
 package org.jboss.fuse.mvnd.it;
 
 import java.io.IOException;
-import java.util.Collections;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
@@ -28,7 +27,7 @@ import org.jboss.fuse.mvnd.junit.TestRegistry;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndNativeTest(projectDir = "src/test/projects/extensions")
 public class ExtensionsNativeIT {
@@ -37,7 +36,7 @@ public class ExtensionsNativeIT {
     Client client;
 
     @Inject
-    ClientLayout layout;
+    DaemonParameters parameters;
 
     @Inject
     TestRegistry registry;
@@ -51,8 +50,7 @@ public class ExtensionsNativeIT {
         client.execute(o, "-v").assertSuccess();
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
         DaemonInfo daemon = registry.getAll().iterator().next();
-        assertEquals(Collections.singletonList("-Ddaemon.core.extensions=io.takari.aether:takari-local-repository:0.11.3"),
-                daemon.getOptions());
+        assertTrue(daemon.getOptions().contains("daemon.core.extensions=io.takari.aether:takari-local-repository:0.11.3"));
 
         registry.awaitIdle(daemon.getUid());
 

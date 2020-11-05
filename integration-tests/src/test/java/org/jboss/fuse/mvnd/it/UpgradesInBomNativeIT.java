@@ -25,7 +25,7 @@ import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.ClientFactory;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
-import org.jboss.fuse.mvnd.junit.TestLayout;
+import org.jboss.fuse.mvnd.junit.TestParameters;
 import org.jboss.fuse.mvnd.junit.TestRegistry;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 public class UpgradesInBomNativeIT {
 
     @Inject
-    TestLayout layout;
+    TestParameters parameters;
 
     @Inject
     TestRegistry registry;
@@ -47,7 +47,7 @@ public class UpgradesInBomNativeIT {
     void upgrade() throws IOException, InterruptedException {
         /* Install the dependencies */
         for (String artifactDir : Arrays.asList("project/hello-0.0.1", "project/hello-0.0.2-SNAPSHOT")) {
-            final Client cl = clientFactory.newClient(layout.cd(layout.getTestDir().resolve(artifactDir)));
+            final Client cl = clientFactory.newClient(parameters.cd(parameters.getTestDir().resolve(artifactDir)));
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             cl.execute(output, "clean", "install", "-e").assertSuccess();
             registry.killAll();
@@ -55,8 +55,8 @@ public class UpgradesInBomNativeIT {
         Assertions.assertThat(registry.getAll().size()).isEqualTo(0);
 
         /* Build the initial state of the test project */
-        final Path parentDir = layout.getTestDir().resolve("project/parent");
-        final Client cl = clientFactory.newClient(layout.cd(parentDir));
+        final Path parentDir = parameters.getTestDir().resolve("project/parent");
+        final Client cl = clientFactory.newClient(parameters.cd(parentDir));
         {
             final ClientOutput output = Mockito.mock(ClientOutput.class);
             cl.execute(output, "clean", "install", "-e").assertSuccess();

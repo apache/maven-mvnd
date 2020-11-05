@@ -21,9 +21,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import org.apache.maven.cli.CliRequest;
 import org.apache.maven.cli.CliRequestBuilder;
 import org.apache.maven.cli.DaemonMavenCli;
@@ -48,7 +49,6 @@ import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
-import org.jboss.fuse.mvnd.common.Layout;
 import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildEvent.Type;
@@ -76,7 +76,6 @@ public class Server implements AutoCloseable, Runnable {
     private final DaemonMavenCli cli;
     private volatile DaemonInfo info;
     private final DaemonRegistry registry;
-    private final Layout layout;
 
     private final ScheduledExecutorService executor;
     private final DaemonExpirationStrategy strategy;
@@ -85,33 +84,33 @@ public class Server implements AutoCloseable, Runnable {
     private final Condition condition = stateLock.newCondition();
     private final DaemonMemoryStatus memoryStatus;
 
-    public Server(String uid) throws IOException {
-        this.uid = uid;
-        this.layout = Layout.getEnvInstance();
+    public Server() throws IOException {
+        this.uid = Environment.DAEMON_UID.asString();
         try {
             cli = new DaemonMavenCli();
-
-            registry = new DaemonRegistry(layout.registry());
+            registry = new DaemonRegistry(Environment.DAEMON_REGISTRY.asPath());
             socket = ServerSocketChannel.open().bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-
-            final int idleTimeout = Environment.DAEMON_IDLE_TIMEOUT_MS
-                    .systemProperty()
-                    .orDefault(() -> String.valueOf(Environment.DEFAULT_IDLE_TIMEOUT))
-                    .asInt();
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
             memoryStatus = new DaemonMemoryStatus(executor);
 
             List<String> opts = new ArrayList<>();
-            Environment.DAEMON_EXT_CLASSPATH.systemProperty().asOptional()
-                    .ifPresent(s -> opts.add(Environment.DAEMON_EXT_CLASSPATH.asCommandLineProperty(s)));
-            Environment.DAEMON_CORE_EXTENSIONS.systemProperty().asOptional()
-                    .ifPresent(s -> opts.add(Environment.DAEMON_CORE_EXTENSIONS.asCommandLineProperty(s)));
+            Arrays.stream(Environment.values())
+                    .filter(Environment::isDiscriminating)
+                    .map(v -> v.getProperty() + "=" + v.asString())
+                    .forEach(opts::add);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(opts.stream().collect(Collectors.joining(
+                        "\n     ", "Initializing daemon with properties:\n     ", "\n")));
+            }
             long cur = System.currentTimeMillis();
-            final Path javaHome = Paths.get(System.getProperty("mvnd.java.home"));
-            info = new DaemonInfo(uid, javaHome.toString(), layout.mavenHome().toString(),
-                    DaemonRegistry.getProcessId(), socket.socket().getLocalPort(),
-                    idleTimeout, Locale.getDefault().toLanguageTag(), opts,
+            info = new DaemonInfo(uid,
+                    Environment.JAVA_HOME.asString(),
+                    Environment.MVND_HOME.asString(),
+                    DaemonRegistry.getProcessId(),
+                    socket.socket().getLocalPort(),
+                    Locale.getDefault().toLanguageTag(),
+                    opts,
                     Busy, cur, cur);
             registry.store(info);
         } catch (Exception e) {
@@ -162,10 +161,7 @@ public class Server implements AutoCloseable, Runnable {
 
     public void run() {
         try {
-            int expirationCheckDelayMs = Environment.EXPIRATION_CHECK_DELAY_MS
-                    .systemProperty()
-                    .orDefault(() -> String.valueOf(Environment.DEFAULT_EXPIRATION_CHECK_DELAY))
-                    .asInt();
+            int expirationCheckDelayMs = Environment.DAEMON_EXPIRATION_CHECK_DELAY_MS.asInt();
             executor.scheduleAtFixedRate(this::expirationCheck,
                     expirationCheckDelayMs, expirationCheckDelayMs, TimeUnit.MILLISECONDS);
             LOGGER.info("Daemon started");
@@ -397,7 +393,7 @@ public class Server implements AutoCloseable, Runnable {
     private void handle(DaemonConnection connection, BuildRequest buildRequest) {
         updateState(Busy);
         try {
-            int keepAlive = Environment.DAEMON_KEEP_ALIVE_MS.systemProperty().asInt();
+            int keepAlive = Environment.DAEMON_KEEP_ALIVE_MS.asInt();
 
             LOGGER.info("Executing request");
             CliRequest req = new CliRequestBuilder()
@@ -507,10 +503,6 @@ public class Server implements AutoCloseable, Runnable {
 
     public DaemonInfo getInfo() {
         return info;
-    }
-
-    public int getIdleTimeout() {
-        return info.getIdleTimeout();
     }
 
     public String getUid() {

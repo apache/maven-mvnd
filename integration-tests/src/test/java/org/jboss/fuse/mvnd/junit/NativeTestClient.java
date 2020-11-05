@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.client.ExecutionResult;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.OsUtils.CommandProcess;
@@ -33,15 +33,15 @@ import org.jboss.fuse.mvnd.common.logging.ClientOutput;
  */
 public class NativeTestClient implements Client {
 
-    private final ClientLayout layout;
+    private final DaemonParameters parameters;
 
     private final Path mvndNativeExecutablePath;
 
     private final long timeoutMs;
 
-    public NativeTestClient(ClientLayout layout, Path mvndNativeExecutablePath, long timeoutMs) {
+    public NativeTestClient(DaemonParameters parameters, Path mvndNativeExecutablePath, long timeoutMs) {
         super();
-        this.layout = layout;
+        this.parameters = parameters;
         this.mvndNativeExecutablePath = mvndNativeExecutablePath;
         this.timeoutMs = timeoutMs;
     }
@@ -51,24 +51,27 @@ public class NativeTestClient implements Client {
         final List<String> cmd = new ArrayList<String>(args.size() + 1);
         cmd.add(mvndNativeExecutablePath.toString());
         cmd.addAll(args);
-        if (!Environment.MVND_PROPERTIES_PATH.hasCommandLineProperty(args)) {
-            cmd.add(Environment.MVND_PROPERTIES_PATH.asCommandLineProperty(layout.getMvndPropertiesPath().toString()));
+        if (!Environment.MVND_DAEMON_STORAGE.hasCommandLineProperty(args)) {
+            Path daemonStorage = parameters.daemonStorage();
+            cmd.add(Environment.MVND_DAEMON_STORAGE.asCommandLineProperty(daemonStorage.toString()));
         }
         if (!Environment.MAVEN_REPO_LOCAL.hasCommandLineProperty(args)) {
-            cmd.add(Environment.MAVEN_REPO_LOCAL.asCommandLineProperty(layout.getLocalMavenRepository().toString()));
+            Path mavenRepoLocal = parameters.mavenRepoLocal();
+            cmd.add(Environment.MAVEN_REPO_LOCAL.asCommandLineProperty(mavenRepoLocal.toString()));
         }
-        final Path settings = layout.getSettings();
-        if (settings != null && args.stream().noneMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
-            cmd.add("-s");
-            cmd.add(settings.toString());
+        if (!Environment.MAVEN_SETTINGS.hasCommandLineProperty(args)) {
+            final Path settings = parameters.settings();
+            if (settings != null) {
+                cmd.add(Environment.MAVEN_SETTINGS.asCommandLineProperty(settings.toString()));
+            }
         }
-        if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
-            final int threads = Math.max(Runtime.getRuntime().availableProcessors() - 1, TestLayout.TEST_MIN_THREADS);
-            cmd.add("-T" + threads);
+        if (!Environment.MVND_THREADS.hasCommandLineProperty(args)) {
+            final String threads = parameters.threads();
+            cmd.add(Environment.MVND_THREADS.asCommandLineProperty(threads));
         }
 
         final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
-                .directory(layout.userDir().toFile()) //
+                .directory(parameters.userDir().toFile()) //
                 .redirectErrorStream(true);
 
         final Map<String, String> env = builder.environment();

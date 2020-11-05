@@ -24,7 +24,7 @@ import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.EqualsInOrderAmongOthers;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
@@ -41,13 +41,13 @@ public class MultiModuleTest {
     Client client;
 
     @Inject
-    ClientLayout layout;
+    DaemonParameters parameters;
 
     @Test
     void cleanInstall() throws IOException, InterruptedException {
         final Path[] helloFilePaths = {
-                layout.multiModuleProjectDirectory().resolve("hello/target/hello.txt"),
-                layout.multiModuleProjectDirectory().resolve("hi/target/hi.txt")
+                parameters.multiModuleProjectDirectory().resolve("hello/target/hello.txt"),
+                parameters.multiModuleProjectDirectory().resolve("hi/target/hi.txt")
         };
         Stream.of(helloFilePaths).forEach(path -> {
             try {
@@ -57,7 +57,7 @@ public class MultiModuleTest {
             }
         });
 
-        final Path localMavenRepo = layout.getLocalMavenRepository();
+        final Path localMavenRepo = parameters.mavenRepoLocal();
         TestUtils.deleteDir(localMavenRepo);
         final Path[] installedJars = {
                 localMavenRepo.resolve(

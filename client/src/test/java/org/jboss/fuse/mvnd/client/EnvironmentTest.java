@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jboss.fuse.mvnd.common;
+package org.jboss.fuse.mvnd.client;
 
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import org.jboss.fuse.mvnd.common.Environment;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,7 @@ public class EnvironmentTest {
     void prop() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.props("mvnd.home", "/maven/home/prop");
-            Assertions.assertEquals("/maven/home/prop", Environment.MVND_HOME.systemProperty().asString());
+            Assertions.assertEquals("/maven/home/prop", DaemonParameters.systemProperty(Environment.MVND_HOME).asString());
         }
     }
 
@@ -36,7 +37,7 @@ public class EnvironmentTest {
     void env() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.env("MVND_HOME", "/maven/home/env");
-            Assertions.assertEquals("/maven/home/env", Environment.MVND_HOME.environmentVariable().asString());
+            Assertions.assertEquals("/maven/home/env", DaemonParameters.environmentVariable(Environment.MVND_HOME).asString());
         }
     }
 
@@ -46,10 +47,10 @@ public class EnvironmentTest {
             final Properties localProps = new Properties();
             localProps.put("mvnd.home", "/maven/home/local");
             Assertions.assertEquals(Paths.get("/maven/home/local"),
-                    Environment.MVND_HOME
-                            .environmentVariable()
+                    DaemonParameters
+                            .environmentVariable(Environment.MVND_HOME)
                             .orSystemProperty()
-                            .orLocalProperty(() -> localProps, Paths.get("/local/properties"))
+                            .orLocalProperty(path -> localProps, Paths.get("/local/properties"))
                             .orFail()
                             .asPath());
         }
@@ -61,8 +62,8 @@ public class EnvironmentTest {
             env.props("mvnd.home", "/maven/home/prop");
             env.env("MVND_HOME", "/maven/home/env");
             Assertions.assertEquals("/maven/home/env",
-                    Environment.MVND_HOME
-                            .environmentVariable()
+                    DaemonParameters
+                            .environmentVariable(Environment.MVND_HOME)
                             .orSystemProperty()
                             .asString());
         }
@@ -73,8 +74,8 @@ public class EnvironmentTest {
         try (EnvironmentResource env = new EnvironmentResource()) {
             try {
                 Assertions.assertEquals("/maven/home/env",
-                        Environment.MVND_HOME
-                                .environmentVariable()
+                        DaemonParameters
+                                .environmentVariable(Environment.MVND_HOME)
                                 .orSystemProperty()
                                 .orFail()
                                 .asString());
@@ -89,7 +90,7 @@ public class EnvironmentTest {
 
     @Test
     void cygwin() {
-        Assertions.assertEquals("C:\\jdk-11.0.2\\", Environment.EnvValue.cygpath("/cygdrive/c/jdk-11.0.2/"));
+        Assertions.assertEquals("C:\\jdk-11.0.2\\", Environment.cygpath("/cygdrive/c/jdk-11.0.2/"));
     }
 
     static class EnvironmentResource implements AutoCloseable {
@@ -98,8 +99,8 @@ public class EnvironmentTest {
         private final Map<String, String> env = new HashMap<>();
 
         public EnvironmentResource() {
-            Environment.env = env;
-            Environment.properties = props;
+            DaemonParameters.EnvValue.env = env;
+            Environment.setProperties(props);
         }
 
         public void props(String... props) {
@@ -118,8 +119,8 @@ public class EnvironmentTest {
 
         @Override
         public void close() {
-            Environment.env = System.getenv();
-            Environment.properties = System.getProperties();
+            DaemonParameters.EnvValue.env = System.getenv();
+            Environment.setProperties(System.getProperties());
         }
 
     }

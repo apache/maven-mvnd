@@ -20,7 +20,7 @@ import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.MvndTestExtension;
@@ -37,7 +37,7 @@ public class VersionNativeIT {
     Client client;
 
     @Inject
-    ClientLayout layout;
+    DaemonParameters parameters;
 
     @Test
     void version() throws IOException, InterruptedException {
@@ -55,6 +55,6 @@ public class VersionNativeIT {
                                 + "-" + System.getProperty("os.detected.name")
                                 + "-" + System.getProperty("os.detected.arch")
                                 + "\\E",
-                        "\\QMaven home: " + layout.mavenHome() + "\\E"));
+                        "\\QMaven home: " + parameters.mvndHome() + "\\E"));
     }
 }

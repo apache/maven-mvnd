@@ -26,12 +26,10 @@ import java.util.Objects;
 import java.util.stream.Stream;
 import org.apache.log4j.Logger;
 import org.jboss.fuse.mvnd.client.Client;
-import org.jboss.fuse.mvnd.client.ClientLayout;
+import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.client.DefaultClient;
-import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.Environment;
-import org.jboss.fuse.mvnd.common.Layout;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -96,12 +94,13 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     f.setAccessible(true);
                     if (DaemonRegistry.class.isAssignableFrom(f.getType())) {
                         f.set(testInstance, resource.registry);
-                    } else if (Layout.class.isAssignableFrom(f.getType())) {
-                        f.set(testInstance, resource.layout);
+                    } else if (DaemonParameters.class.isAssignableFrom(f.getType())) {
+                        f.set(testInstance, resource.parameters);
                     } else if (f.getType() == Client.class) {
-                        f.set(testInstance, newClient(resource.isNative, resource.layout, resource.timeoutMs));
+                        f.set(testInstance, newClient(resource.isNative, resource.parameters, resource.timeoutMs));
                     } else if (f.getType() == ClientFactory.class) {
-                        final ClientFactory cf = customLayout -> newClient(resource.isNative, customLayout, resource.timeoutMs);
+                        final ClientFactory cf = customParameters -> newClient(resource.isNative, customParameters,
+                                resource.timeoutMs);
                         f.set(testInstance, cf);
                     }
                 }
@@ -110,9 +109,9 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         }
     }
 
-    Client newClient(boolean isNative, ClientLayout layout, long timeoutMs) {
+    Client newClient(boolean isNative, DaemonParameters parameters, long timeoutMs) {
         if (isNative) {
-            final Path mvndNativeExecutablePath = layout.mavenHome().resolve(
+            final Path mvndNativeExecutablePath = parameters.mvndHome().resolve(
                     System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows")
                             ? "bin/mvnd.exe"
                             : "bin/mvnd")
@@ -120,9 +119,9 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             if (!Files.isRegularFile(mvndNativeExecutablePath)) {
                 throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
             }
-            return new NativeTestClient(layout, mvndNativeExecutablePath, timeoutMs);
+            return new NativeTestClient(parameters, mvndNativeExecutablePath, timeoutMs);
         } else {
-            return new DefaultClient(() -> layout, BuildProperties.getInstance());
+            return new DefaultClient(() -> parameters);
         }
     }
 
@@ -137,7 +136,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
 
     static class MvndResource implements ExtensionContext.Store.CloseableResource {
 
-        private final TestLayout layout;
+        private final TestParameters parameters;
         private final TestRegistry registry;
         private final boolean isNative;
         private final long timeoutMs;
@@ -181,7 +180,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 }
             }
             final Path multiModuleProjectDirectory = Paths
-                    .get(Environment.findDefaultMultimoduleProjectDirectory(testExecutionDir));
+                    .get(DaemonParameters.findDefaultMultimoduleProjectDirectory(testExecutionDir));
 
             final Path mvndHome = Paths
                     .get(Objects.requireNonNull(System.getProperty("mvnd.home"), "System property mvnd.home must be set"))
@@ -195,10 +194,12 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
             final Path settingsPath = createSettings(testDir.resolve("settings.xml"));
             final Path logback = Paths.get("src/test/resources/logback.xml").toAbsolutePath();
-            final TestLayout layout = new TestLayout(
+            final Path home = deleteDir(testDir.resolve("home"));
+            final TestParameters parameters = new TestParameters(
                     testDir,
                     mvndPropertiesPath,
                     mvndHome,
+                    home,
                     testExecutionDir,
                     multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
@@ -206,10 +207,10 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     logback,
                     Environment.DEFAULT_IDLE_TIMEOUT,
                     Environment.DEFAULT_KEEP_ALIVE,
-                    Environment.DEFAULT_MAX_LOST_KEEP_ALIVE);
-            final TestRegistry registry = new TestRegistry(layout.registry());
+                    Integer.parseInt(Environment.DAEMON_MAX_LOST_KEEP_ALIVE.getDef()));
+            final TestRegistry registry = new TestRegistry(parameters.registry());
 
-            return new MvndResource(layout, registry, isNative, timeoutMs);
+            return new MvndResource(parameters, registry, isNative, timeoutMs);
         }
 
         static Path createSettings(Path settingsPath) {
@@ -234,9 +235,9 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             return settingsPath;
         }
 
-        public MvndResource(TestLayout layout, TestRegistry registry, boolean isNative, long timeoutMs) {
+        public MvndResource(TestParameters parameters, TestRegistry registry, boolean isNative, long timeoutMs) {
             super();
-            this.layout = layout;
+            this.parameters = parameters;
             this.registry = registry;
             this.isNative = isNative;
             this.timeoutMs = timeoutMs;
