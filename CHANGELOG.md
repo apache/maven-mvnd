@@ -15,6 +15,8 @@
 
 **Merged pull requests:**
 
+- Add JVM memory expiration checks, use a specific timeout for checks [\#186](https://github.com/mvndaemon/mvnd/pull/186) ([gnodet](https://github.com/gnodet))
+- Fix spelling error in console logs [\#185](https://github.com/mvndaemon/mvnd/pull/185) ([dsyer](https://github.com/dsyer))
 - Deliver the same slf4j version as Maven 3.6.3 and manage jcl-over-slf… [\#184](https://github.com/mvndaemon/mvnd/pull/184) ([ppalaga](https://github.com/ppalaga))
 - Issue 162 [\#182](https://github.com/mvndaemon/mvnd/pull/182) ([gnodet](https://github.com/gnodet))
 - Issue 114 [\#181](https://github.com/mvndaemon/mvnd/pull/181) ([gnodet](https://github.com/gnodet))
