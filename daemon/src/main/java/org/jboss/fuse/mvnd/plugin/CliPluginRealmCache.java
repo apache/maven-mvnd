@@ -20,10 +20,8 @@ package org.jboss.fuse.mvnd.plugin;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchEvent.Kind;
@@ -31,7 +29,6 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,10 +40,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.eventspy.AbstractEventSpy;
-import org.apache.maven.eventspy.EventSpy;
-import org.apache.maven.execution.MavenExecutionRequest;
-import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.project.MavenProject;
@@ -58,6 +51,8 @@ import org.eclipse.aether.graph.DependencyFilter;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.WorkspaceRepository;
+import org.eclipse.sisu.Priority;
+import org.eclipse.sisu.Typed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +64,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @Named
-@Default
+@Priority(10)
+@Typed(PluginRealmCache.class)
 public class CliPluginRealmCache
         implements PluginRealmCache, Disposable {
     /**
@@ -223,7 +219,7 @@ public class CliPluginRealmCache
                         final Path dir = p.getParent();
                         registrationsByDir.compute(dir, (key, value) -> {
                             if (value == null) {
-                                log.debug("Starting to watch path {}", key);
+                                LOG.debug("Starting to watch path {}", key);
                                 try {
                                     final WatchKey watchKey = dir.register(watchService, StandardWatchEventKinds.ENTRY_DELETE,
                                             StandardWatchEventKinds.ENTRY_MODIFY);
@@ -233,7 +229,7 @@ public class CliPluginRealmCache
                                 }
                             } else {
                                 int cnt = value.count.incrementAndGet();
-                                log.debug("Already {} watchers for path {}", cnt, key);
+                                LOG.debug("Already {} watchers for path {}", cnt, key);
                                 return value;
                             }
                         });
@@ -253,16 +249,16 @@ public class CliPluginRealmCache
                         final Path dir = p.getParent();
                         registrationsByDir.compute(dir, (key, value) -> {
                             if (value == null) {
-                                log.debug("Already unwatchers for path {}", key);
+                                LOG.debug("Already unwatchers for path {}", key);
                                 return null;
                             } else {
                                 final int cnt = value.count.decrementAndGet();
                                 if (cnt <= 0) {
-                                    log.debug("Unwatching path {}", key);
+                                    LOG.debug("Unwatching path {}", key);
                                     value.watchKey.cancel();
                                     return null;
                                 } else {
-                                    log.debug("Still {} watchers for path {}", cnt, key);
+                                    LOG.debug("Still {} watchers for path {}", cnt, key);
                                     return value;
                                 }
                             }
@@ -279,15 +275,15 @@ public class CliPluginRealmCache
                 final WatchKey watchKey = entry.getValue().watchKey;
                 for (WatchEvent<?> event : watchKey.pollEvents()) {
                     Kind<?> kind = event.kind();
-                    log.debug("Got watcher event {}", kind.name());
+                    LOG.debug("Got watcher event {}", kind.name());
                     if (kind == StandardWatchEventKinds.ENTRY_DELETE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
                         final Path path = dir.resolve((Path) event.context());
                         final List<ValidableCacheRecord> records = validRecordsByPath.get(path);
-                        log.debug("Records for path {}: {}", path, records);
+                        LOG.debug("Records for path {}: {}", path, records);
                         if (records != null) {
                             synchronized (records) {
                                 for (ValidableCacheRecord record : records) {
-                                    log.debug("Invalidating recorder of path {}", path);
+                                    LOG.debug("Invalidating recorder of path {}", path);
                                     record.valid = false;
                                     remove(record);
                                 }
@@ -337,45 +333,10 @@ public class CliPluginRealmCache
 
     }
 
-    private static final Logger log = LoggerFactory.getLogger(CliPluginRealmCache.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CliPluginRealmCache.class);
+
     protected final Map<Key, ValidableCacheRecord> cache = new ConcurrentHashMap<>();
     private final RecordValidator watcher;
-    private final EventSpy eventSpy = new AbstractEventSpy() {
-
-        private Path multiModuleProjectDirectory;
-
-        @Override
-        public void onEvent(Object event) throws Exception {
-            try {
-                if (event instanceof MavenExecutionRequest) {
-                    /*  Store the multiModuleProjectDirectory path */
-                    multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
-                } else if (event instanceof MavenExecutionResult) {
-                    /* Evict the entries refering to jars under multiModuleProjectDirectory */
-                    final Iterator<Entry<Key, ValidableCacheRecord>> i = cache.entrySet().iterator();
-                    while (i.hasNext()) {
-                        final Entry<Key, ValidableCacheRecord> entry = i.next();
-                        final ValidableCacheRecord record = entry.getValue();
-                        for (URL url : record.getRealm().getURLs()) {
-                            if (url.getProtocol().equals("file")) {
-                                final Path path = Paths.get(url.toURI());
-                                if (path.startsWith(multiModuleProjectDirectory)) {
-                                    log.debug(
-                                            "Removing PluginRealmCache entry {} because it refers to an artifact in the build tree {}",
-                                            entry.getKey(), path);
-                                    record.dispose();
-                                    i.remove();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                log.warn("Could not notify CliPluginRealmCache", e);
-            }
-        }
-    };
 
     public CliPluginRealmCache() {
         this.watcher = new RecordValidator();
@@ -418,10 +379,6 @@ public class CliPluginRealmCache
 
     public void dispose() {
         flush();
-    }
-
-    public EventSpy asEventSpy() {
-        return eventSpy;
     }
 
 }
