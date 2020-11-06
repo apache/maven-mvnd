@@ -21,7 +21,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -37,8 +36,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import org.apache.maven.cli.CliRequest;
-import org.apache.maven.cli.CliRequestBuilder;
 import org.apache.maven.cli.DaemonMavenCli;
 import org.apache.maven.execution.MavenSession;
 import org.jboss.fuse.mvnd.common.DaemonConnection;
@@ -396,11 +393,6 @@ public class Server implements AutoCloseable, Runnable {
             int keepAlive = Environment.DAEMON_KEEP_ALIVE_MS.asInt();
 
             LOGGER.info("Executing request");
-            CliRequest req = new CliRequestBuilder()
-                    .arguments(buildRequest.getArgs())
-                    .workingDirectory(Paths.get(buildRequest.getWorkingDir()))
-                    .projectDirectory(Paths.get(buildRequest.getProjectDir()))
-                    .build();
 
             BlockingQueue<Message> queue = new PriorityBlockingQueue<Message>(64,
                     Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
@@ -440,7 +432,10 @@ public class Server implements AutoCloseable, Runnable {
             });
             pumper.start();
             try {
-                cli.doMain(req, buildRequest.getEnv());
+                cli.main(buildRequest.getArgs(),
+                        buildRequest.getWorkingDir(),
+                        buildRequest.getProjectDir(),
+                        buildRequest.getEnv());
                 LOGGER.info("Build finished, finishing message dispatch");
                 loggingSpy.finish();
             } catch (Throwable t) {

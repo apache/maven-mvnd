@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.cli.logging;
+package org.jboss.fuse.mvnd.logging.internal;
 
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.LoggerManager;
@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Adapted from
  * https://github.com/apache/maven/blob/maven-3.6.3/maven-embedder/src/main/java/org/apache/maven/cli/logging/Slf4jLoggerManager.java
+ * This class has no differences with the above beyond formatting. Its purpose is simply to be able to call the
+ * Slf4Logger.
  *
  * @author Jason van Zyl
  */

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.maven.cli.logging;
+package org.jboss.fuse.mvnd.logging.internal;
 
 import org.codehaus.plexus.logging.Logger;
 import org.jboss.fuse.mvnd.logging.smart.ProjectBuildLogAppender;
@@ -29,6 +29,8 @@ import org.slf4j.MDC;
  * <p>
  * Adapted from
  * https://github.com/apache/maven/blob/maven-3.6.3/maven-embedder/src/main/java/org/apache/maven/cli/logging/Slf4jLogger.java
+ * The main change is that the MDC property for redirecting the log to the correct maven project is set
+ * when the logger is instantiated (usually when injected into a mojo).
  *
  * @author Jason van Zyl
  */

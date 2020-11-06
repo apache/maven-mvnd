@@ -54,7 +54,6 @@ import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cli.internal.BootstrapCoreExtensionManager;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
-import org.apache.maven.cli.logging.Slf4jLoggerManager;
 import org.apache.maven.cli.transfer.ConsoleMavenTransferListener;
 import org.apache.maven.cli.transfer.QuietMavenTransferListener;
 import org.apache.maven.cli.transfer.Slf4jMavenTransferListener;
@@ -72,7 +71,6 @@ import org.apache.maven.extension.internal.CoreExports;
 import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
-import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.properties.internal.EnvironmentUtils;
 import org.apache.maven.properties.internal.SystemProperties;
@@ -93,8 +91,9 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.logging.internal.Slf4jLoggerManager;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
-import org.jboss.fuse.mvnd.plugin.CliPluginRealmCache;
+import org.jboss.fuse.mvnd.logging.smart.LoggingExecutionListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,8 +101,6 @@ import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
-
-// TODO push all common bits back to plexus cli and prepare for transition to Guice. We don't need 50 ways to make CLIs
 
 /**
  * File origin:
@@ -167,7 +164,17 @@ public class DaemonMavenCli {
         container();
     }
 
-    // TODO need to externalize CliRequest
+    public int main(List<String> arguments,
+            String workingDirectory,
+            String projectDirectory,
+            Map<String, String> clientEnv) throws Exception {
+        CliRequest req = new CliRequest(null, null);
+        req.args = arguments.toArray(new String[0]);
+        req.workingDirectory = workingDirectory;
+        req.multiModuleProjectDirectory = new File(projectDirectory);
+        return doMain(req, clientEnv);
+    }
+
     public int doMain(CliRequest cliRequest, Map<String, String> clientEnv) throws Exception {
         Properties props = (Properties) System.getProperties().clone();
         try {
@@ -451,14 +458,12 @@ public class DaemonMavenCli {
         }
 
         final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);
-        final CliPluginRealmCache realmCache = new CliPluginRealmCache();
 
         container = new DefaultPlexusContainer(cc, new AbstractModule() {
             @Override
             protected void configure() {
                 bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
                 bind(CoreExports.class).toInstance(exports);
-                bind(PluginRealmCache.class).toInstance(realmCache);
             }
         });
 
@@ -474,7 +479,6 @@ public class DaemonMavenCli {
         }
 
         eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
-        eventSpyDispatcher.getEventSpies().add(realmCache.asEventSpy());
 
         maven = container.lookup(Maven.class);
 
@@ -1042,7 +1046,7 @@ public class DaemonMavenCli {
 
         ExecutionListener executionListener = new ExecutionEventLogger();
         if (eventSpyDispatcher != null) {
-            executionListener = eventSpyDispatcher.chainListener(executionListener);
+            executionListener = new LoggingExecutionListener(eventSpyDispatcher.chainListener(executionListener));
         }
 
         String alternatePomFile = null;

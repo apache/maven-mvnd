@@ -126,14 +126,16 @@ public class DaemonParameters {
         return value(Environment.USER_DIR)
                 .orSystemProperty()
                 .orFail()
-                .asPath();
+                .asPath()
+                .toAbsolutePath();
     }
 
     public Path userHome() {
         return value(Environment.USER_HOME)
                 .orSystemProperty()
                 .orFail()
-                .asPath();
+                .asPath()
+                .toAbsolutePath();
     }
 
     public Path suppliedPropertiesPath() {

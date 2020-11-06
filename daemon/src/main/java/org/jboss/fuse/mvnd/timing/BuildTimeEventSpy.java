@@ -26,15 +26,18 @@ import java.util.stream.Stream;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.eventspy.AbstractEventSpy;
+import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.sisu.Typed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
 @Named("timing")
+@Typed(EventSpy.class)
 public class BuildTimeEventSpy extends AbstractEventSpy {
 
     public static final int MAX_NAME_LENGTH = 58;
