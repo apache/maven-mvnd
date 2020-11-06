@@ -272,6 +272,7 @@ public class DaemonConnector {
             args.add(Environment.LOGBACK_CONFIGURATION_FILE
                     .asCommandLineProperty(parameters.logbackConfigurationPath().toString()));
             args.add(Environment.DAEMON_UID.asCommandLineProperty(uid));
+            args.add(Environment.MVND_DAEMON_STORAGE.asCommandLineProperty(parameters.daemonStorage().toString()));
             args.add(Environment.DAEMON_REGISTRY.asCommandLineProperty(parameters.registry().toString()));
             args.addAll(parameters.getDaemonCommandLineProperties());
             args.add(MavenDaemon.class.getName());
