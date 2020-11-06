@@ -22,7 +22,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.common.BuildProperties;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
@@ -47,7 +46,7 @@ public class DefaultClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
 
-    private final Supplier<DaemonParameters> lazyParameters;
+    private final DaemonParameters parameters;
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(argv.length);
@@ -68,12 +67,12 @@ public class DefaultClient implements Client {
         }
 
         try (TerminalOutput output = new TerminalOutput(logFile)) {
-            new DefaultClient(() -> new DaemonParameters()).execute(output, args);
+            new DefaultClient(new DaemonParameters()).execute(output, args);
         }
     }
 
-    public DefaultClient(Supplier<DaemonParameters> lazyParameters) {
-        this.lazyParameters = lazyParameters;
+    public DefaultClient(DaemonParameters parameters) {
+        this.parameters = parameters;
     }
 
     @Override
@@ -143,7 +142,6 @@ public class DefaultClient implements Client {
              */
         }
 
-        final DaemonParameters parameters = lazyParameters.get();
         try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
             boolean status = args.remove("--status");
             if (status) {
