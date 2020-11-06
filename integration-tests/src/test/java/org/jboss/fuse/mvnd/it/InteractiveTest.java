@@ -16,9 +16,7 @@
 package org.jboss.fuse.mvnd.it;
 
 import java.io.IOException;
-
 import javax.inject.Inject;
-
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;

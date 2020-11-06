@@ -24,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -55,10 +56,14 @@ public class DaemonParameters {
     protected final Map<Path, Properties> mvndProperties = new ConcurrentHashMap<>();
     protected final Function<Path, Properties> provider = path -> mvndProperties.computeIfAbsent(path,
             p -> loadProperties(path));
-    protected final Properties properties;
+    private final Map<String, String> properties;
 
-    public DaemonParameters(Properties properties) {
-        this.properties = properties;
+    public DaemonParameters() {
+        this.properties = Collections.emptyMap();
+    }
+
+    protected DaemonParameters(PropertiesBuilder propertiesBuilder) {
+        this.properties = propertiesBuilder.build();
     }
 
     public List<String> getDaemonOpts() {
@@ -239,10 +244,9 @@ public class DaemonParameters {
      * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
     public DaemonParameters cd(Path newUserDir) {
-        Properties properties = new Properties();
-        properties.putAll(this.properties);
-        properties.put(Environment.USER_DIR.getProperty(), newUserDir.toString());
-        return new DaemonParameters(properties);
+        return new DaemonParameters(new PropertiesBuilder()
+                .putAll(this.properties)
+                .put(Environment.USER_DIR.getProperty(), newUserDir.toString()));
     }
 
     public int keepAliveMs() {
@@ -282,7 +286,7 @@ public class DaemonParameters {
     protected EnvValue value(Environment env) {
         return new EnvValue(env, new ValueSource(
                 description -> description.append("value: ").append(env.getProperty()),
-                () -> properties.getProperty(env.getProperty())));
+                () -> properties.get(env.getProperty())));
     }
 
     public static EnvValue systemProperty(Environment env) {
@@ -352,6 +356,35 @@ public class DaemonParameters {
             }
         }
         return result;
+    }
+
+    public static class PropertiesBuilder {
+        private Map<String, String> properties = new LinkedHashMap<>();
+
+        public PropertiesBuilder put(String key, String value) {
+            properties.put(key, value);
+            return this;
+        }
+
+        public PropertiesBuilder put(Environment envKey, Object value) {
+            if (value == null) {
+                properties.remove(envKey.getProperty());
+            } else {
+                properties.put(envKey.getProperty(), value.toString());
+            }
+            return this;
+        }
+
+        public PropertiesBuilder putAll(Map<String, String> props) {
+            properties.putAll(props);
+            return this;
+        }
+
+        public Map<String, String> build() {
+            Map<String, String> props = properties;
+            properties = null;
+            return Collections.unmodifiableMap(props);
+        }
     }
 
     /**
