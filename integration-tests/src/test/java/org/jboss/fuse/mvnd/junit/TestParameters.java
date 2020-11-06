@@ -16,7 +16,6 @@
 package org.jboss.fuse.mvnd.junit;
 
 import java.nio.file.Path;
-import java.util.Properties;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.Environment;
 
@@ -28,27 +27,21 @@ public class TestParameters extends DaemonParameters {
             Path multiModuleProjectDirectory,
             Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath,
             int idleTimeout, int keepAlive, int maxLostKeepAlive) {
-        super(new Properties());
+        super(new PropertiesBuilder().put(Environment.MVND_PROPERTIES_PATH, mvndPropertiesPath)
+                .put(Environment.MVND_HOME, mavenHome)
+                .put(Environment.USER_HOME, userHome)
+                .put(Environment.USER_DIR, userDir)
+                .put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, multiModuleProjectDirectory)
+                .put(Environment.JAVA_HOME, javaHome)
+                .put(Environment.MAVEN_REPO_LOCAL, localMavenRepository)
+                .put(Environment.MAVEN_SETTINGS, settings)
+                .put(Environment.LOGBACK_CONFIGURATION_FILE, logbackConfigurationPath)
+                .put(Environment.DAEMON_IDLE_TIMEOUT_MS, idleTimeout)
+                .put(Environment.DAEMON_KEEP_ALIVE_MS, keepAlive)
+                .put(Environment.DAEMON_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
+                .put(Environment.MVND_MIN_THREADS, TEST_MIN_THREADS));
         this.testDir = testDir;
-        put(Environment.MVND_PROPERTIES_PATH, mvndPropertiesPath);
-        put(Environment.MVND_HOME, mavenHome);
-        put(Environment.USER_HOME, userHome);
-        put(Environment.USER_DIR, userDir);
-        put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, multiModuleProjectDirectory);
-        put(Environment.JAVA_HOME, javaHome);
-        put(Environment.MAVEN_REPO_LOCAL, localMavenRepository);
-        put(Environment.MAVEN_SETTINGS, settings);
-        put(Environment.LOGBACK_CONFIGURATION_FILE, logbackConfigurationPath);
-        put(Environment.DAEMON_IDLE_TIMEOUT_MS, idleTimeout);
-        put(Environment.DAEMON_KEEP_ALIVE_MS, keepAlive);
-        put(Environment.DAEMON_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive);
-        put(Environment.MVND_MIN_THREADS, TEST_MIN_THREADS);
-    }
 
-    private void put(Environment env, Object value) {
-        if (value != null) {
-            this.properties.put(env.getProperty(), value.toString());
-        }
     }
 
     public Path getTestDir() {
