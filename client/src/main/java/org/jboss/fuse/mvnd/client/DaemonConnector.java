@@ -258,6 +258,15 @@ public class DaemonConnector {
             if (parameters.property(Environment.DAEMON_DEBUG).asBoolean()) {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
+            // jvm args
+            String jvmArgs = parameters.jvmArgs();
+            if (jvmArgs != null) {
+                for (String arg : jvmArgs.split(" ")) {
+                    if (!arg.isEmpty()) {
+                        args.add(arg);
+                    }
+                }
+            }
             // memory
             String minHeapSize = parameters.minHeapSize();
             if (minHeapSize != null) {

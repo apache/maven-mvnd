@@ -199,6 +199,10 @@ public class DaemonParameters {
         return property(Environment.DAEMON_MAX_HEAP_SIZE).asString();
     }
 
+    public String jvmArgs() {
+        return property(Environment.DAEMON_JVM_ARGS).asString();
+    }
+
     /**
      * @return the number of threads (same syntax as Maven's {@code -T}/{@code --threads} option) to pass to the daemon
      *         unless the user passes his own `-T` or `--threads`.

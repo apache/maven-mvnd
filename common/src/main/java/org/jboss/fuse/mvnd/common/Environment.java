@@ -114,6 +114,10 @@ public enum Environment {
      */
     DAEMON_MAX_HEAP_SIZE("daemon.maxHeapSize", null, "2G", true),
     /**
+     * Additional JVM args for the daemon
+     */
+    DAEMON_JVM_ARGS("daemon.jvmArgs", null, "", true),
+    /**
      * JVM options for the daemon
      */
     DAEMON_ENABLE_ASSERTIONS("daemon.enableAssertions", null, false, true),
