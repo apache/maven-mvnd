@@ -121,7 +121,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             }
             return new NativeTestClient(parameters, mvndNativeExecutablePath, timeoutMs);
         } else {
-            return new DefaultClient(() -> parameters);
+            return new DefaultClient(parameters);
         }
     }
 

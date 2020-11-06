@@ -246,7 +246,7 @@ public class DaemonParameters {
     public DaemonParameters cd(Path newUserDir) {
         return new DaemonParameters(new PropertiesBuilder()
                 .putAll(this.properties)
-                .put(Environment.USER_DIR.getProperty(), newUserDir.toString()));
+                .put(Environment.USER_DIR, newUserDir));
     }
 
     public int keepAliveMs() {
@@ -360,11 +360,6 @@ public class DaemonParameters {
 
     public static class PropertiesBuilder {
         private Map<String, String> properties = new LinkedHashMap<>();
-
-        public PropertiesBuilder put(String key, String value) {
-            properties.put(key, value);
-            return this;
-        }
 
         public PropertiesBuilder put(Environment envKey, Object value) {
             if (value == null) {
