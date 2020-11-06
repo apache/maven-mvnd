@@ -193,7 +193,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
             final Path settingsPath = createSettings(testDir.resolve("settings.xml"));
-            final Path logback = Paths.get("src/test/resources/logback.xml").toAbsolutePath();
+            final Path logback = Paths.get("src/test/resources/logback/logback.xml").toAbsolutePath();
             final Path home = deleteDir(testDir.resolve("home"));
             final TestParameters parameters = new TestParameters(
                     testDir,
