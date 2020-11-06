@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.maven.cli.logging;
+package org.jboss.fuse.mvnd.logging.internal;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -24,6 +24,10 @@ import ch.qos.logback.core.CoreConstants;
 
 import static org.apache.maven.shared.utils.logging.MessageUtils.level;
 
+/**
+ * This appender acts like the slf4j simple logger.
+ * It's used
+ */
 public class SimpleAppender extends AppenderBase<ILoggingEvent> {
 
     @Override

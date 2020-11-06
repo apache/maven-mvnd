@@ -54,7 +54,6 @@ import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cli.internal.BootstrapCoreExtensionManager;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
-import org.apache.maven.cli.logging.Slf4jLoggerManager;
 import org.apache.maven.cli.transfer.ConsoleMavenTransferListener;
 import org.apache.maven.cli.transfer.QuietMavenTransferListener;
 import org.apache.maven.cli.transfer.Slf4jMavenTransferListener;
@@ -92,6 +91,7 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.logging.internal.Slf4jLoggerManager;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
 import org.jboss.fuse.mvnd.logging.smart.LoggingExecutionListener;
 import org.slf4j.ILoggerFactory;
@@ -101,8 +101,6 @@ import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
-
-// TODO push all common bits back to plexus cli and prepare for transition to Guice. We don't need 50 ways to make CLIs
 
 /**
  * File origin:
@@ -166,7 +164,17 @@ public class DaemonMavenCli {
         container();
     }
 
-    // TODO need to externalize CliRequest
+    public int main(List<String> arguments,
+            String workingDirectory,
+            String projectDirectory,
+            Map<String, String> clientEnv) throws Exception {
+        CliRequest req = new CliRequest(null, null);
+        req.args = arguments.toArray(new String[0]);
+        req.workingDirectory = workingDirectory;
+        req.multiModuleProjectDirectory = new File(projectDirectory);
+        return doMain(req, clientEnv);
+    }
+
     public int doMain(CliRequest cliRequest, Map<String, String> clientEnv) throws Exception {
         Properties props = (Properties) System.getProperties().clone();
         try {
