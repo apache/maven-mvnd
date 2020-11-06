@@ -66,10 +66,6 @@ public class DaemonClientConnection implements Closeable {
         this.parameters = parameters;
     }
 
-    public DaemonInfo getDaemon() {
-        return daemon;
-    }
-
     public void dispatch(Message message) throws DaemonException.ConnectException {
         LOG.debug("thread {}: dispatching {}", Thread.currentThread().getId(), message.getClass());
         try {
