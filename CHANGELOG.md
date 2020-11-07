@@ -12,11 +12,18 @@
 **Closed issues:**
 
 - Support multiple level of properties file, discriminate between daemons, allow configuring min/max memory [\#188](https://github.com/mvndaemon/mvnd/issues/188)
+- Support for interactive sessions [\#180](https://github.com/mvndaemon/mvnd/issues/180)
+- Do not create runtime files/directories in installation directory [\#179](https://github.com/mvndaemon/mvnd/issues/179)
+- How to pass jvm args to mvnd ? [\#174](https://github.com/mvndaemon/mvnd/issues/174)
 - Domain transfer offer [\#153](https://github.com/mvndaemon/mvnd/issues/153)
 
 **Merged pull requests:**
 
+- Minor refactorings [\#192](https://github.com/mvndaemon/mvnd/pull/192) ([ppalaga](https://github.com/ppalaga))
+- Allow passing additional jvm args to the daemon, fixes \#174 [\#191](https://github.com/mvndaemon/mvnd/pull/191) ([gnodet](https://github.com/gnodet))
+- Refactor [\#190](https://github.com/mvndaemon/mvnd/pull/190) ([gnodet](https://github.com/gnodet))
 - Refactor usage of properties in the client / daemon, fixes \#188 [\#189](https://github.com/mvndaemon/mvnd/pull/189) ([gnodet](https://github.com/gnodet))
+- Support for interactive sessions \#180 [\#187](https://github.com/mvndaemon/mvnd/pull/187) ([gnodet](https://github.com/gnodet))
 - Add JVM memory expiration checks, use a specific timeout for checks [\#186](https://github.com/mvndaemon/mvnd/pull/186) ([gnodet](https://github.com/gnodet))
 - Fix spelling error in console logs [\#185](https://github.com/mvndaemon/mvnd/pull/185) ([dsyer](https://github.com/dsyer))
 - Deliver the same slf4j version as Maven 3.6.3 and manage jcl-over-slf… [\#184](https://github.com/mvndaemon/mvnd/pull/184) ([ppalaga](https://github.com/ppalaga))
