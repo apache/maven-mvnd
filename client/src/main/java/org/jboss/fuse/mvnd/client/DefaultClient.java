@@ -35,8 +35,6 @@ import org.jboss.fuse.mvnd.common.Message.BuildStarted;
 import org.jboss.fuse.mvnd.common.OsUtils;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.impl.AbstractPosixTerminal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,13 +127,7 @@ public class DefaultClient implements Client {
                     .reset().toString();
             output.accept(null, v);
             // Print terminal information
-            Terminal terminal = output.getTerminal();
-            StringBuilder sb = new StringBuilder();
-            sb.append("Terminal: ").append(terminal != null ? terminal.getClass().getName() : null);
-            if (terminal instanceof AbstractPosixTerminal) {
-                sb.append(" with pty ").append(((AbstractPosixTerminal) terminal).getPty().getClass().getName());
-            }
-            output.accept(null, sb.toString());
+            output.describeTerminal();
             /*
              * Do not return, rather pass -v to the server so that the client module does not need to depend on any
              * Maven artifacts

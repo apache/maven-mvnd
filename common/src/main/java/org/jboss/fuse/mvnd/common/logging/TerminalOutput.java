@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.impl.AbstractPosixTerminal;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -138,10 +139,6 @@ public class TerminalOutput implements ClientOutput {
         this.reader = r;
     }
 
-    public Terminal getTerminal() {
-        return terminal;
-    }
-
     public void startBuild(String name, int projects, int cores) {
         this.name = name;
         this.totalProjects = projects;
@@ -236,6 +233,16 @@ public class TerminalOutput implements ClientOutput {
             Thread.currentThread().interrupt();
         }
         return response;
+    }
+
+    @Override
+    public void describeTerminal() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Terminal: ").append(terminal != null ? terminal.getClass().getName() : null);
+        if (terminal instanceof AbstractPosixTerminal) {
+            sb.append(" with pty ").append(((AbstractPosixTerminal) terminal).getPty().getClass().getName());
+        }
+        this.accept(null, sb.toString());
     }
 
     void readInputLoop() {

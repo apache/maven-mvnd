@@ -15,14 +15,10 @@
  */
 package org.jboss.fuse.mvnd.common.logging;
 
-import org.jline.terminal.Terminal;
-
 /**
  * A sink for various kinds of events sent by the daemon.
  */
 public interface ClientOutput extends AutoCloseable {
-
-    Terminal getTerminal();
 
     void startBuild(String name, int projects, int cores);
 
@@ -41,4 +37,6 @@ public interface ClientOutput extends AutoCloseable {
     void display(String projectId, String message);
 
     String prompt(String projectId, String message, boolean password);
+
+    void describeTerminal();
 }
