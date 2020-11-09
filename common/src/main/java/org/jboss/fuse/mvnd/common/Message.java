@@ -38,9 +38,11 @@ public abstract class Message {
     static final int DISPLAY = 7;
     static final int PROMPT = 8;
     static final int PROMPT_RESPONSE = 9;
+    static final int CANCEL = 10;
 
     public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(Message.KEEP_ALIVE, "KEEP_ALIVE");
     public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(Message.STOP, "STOP");
+    public static final SimpleMessage CANCEL_SINGLETON = new SimpleMessage(Message.CANCEL, "CANCEL");
 
     public static Message read(DataInputStream input) throws IOException {
         int type = input.read();
@@ -68,6 +70,8 @@ public abstract class Message {
             return Prompt.read(input);
         case PROMPT_RESPONSE:
             return PromptResponse.read(input);
+        case CANCEL:
+            return SimpleMessage.CANCEL_SINGLETON;
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }

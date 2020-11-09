@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.common.BuildProperties;
+import org.jboss.fuse.mvnd.common.DaemonException;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.Environment;
@@ -37,12 +38,12 @@ import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.impl.AbstractPosixTerminal;
+import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultClient implements Client {
-
-    public static final int CANCEL_TIMEOUT = 10 * 1000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
 
@@ -67,7 +68,12 @@ public class DefaultClient implements Client {
         }
 
         try (TerminalOutput output = new TerminalOutput(logFile)) {
-            new DefaultClient(new DaemonParameters()).execute(output, args);
+            try {
+                new DefaultClient(new DaemonParameters()).execute(output, args);
+            } catch (DaemonException.InterruptedException e) {
+                final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
+                new AttributedString(System.lineSeparator() + "Canceled !!!", s).println(output.getTerminal());
+            }
         }
     }
 
@@ -201,6 +207,8 @@ public class DefaultClient implements Client {
             }
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
+            output.onInterrupt(connector::cancel);
+
             try (DaemonClientConnection daemon = connector.connect(output)) {
                 output.buildStatus("Connected to daemon");
 
@@ -212,9 +220,14 @@ public class DefaultClient implements Client {
 
                 output.buildStatus("Build request sent");
 
+                output.onInterrupt(daemon::cancel);
+
                 while (true) {
                     Message m = daemon.receive();
-                    if (m instanceof BuildException) {
+                    if (m == Message.CANCEL_SINGLETON) {
+                        output.cancel();
+                        return null;
+                    } else if (m instanceof BuildException) {
                         final BuildException e = (BuildException) m;
                         output.error(e.getMessage(), e.getClassName(), e.getStackTrace());
                         return new DefaultResult(argv,
