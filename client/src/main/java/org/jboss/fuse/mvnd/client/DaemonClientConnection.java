@@ -32,7 +32,6 @@ import org.jboss.fuse.mvnd.common.DaemonException.ConnectException;
 import org.jboss.fuse.mvnd.common.DaemonException.StaleAddressException;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.Message;
-import org.jboss.fuse.mvnd.common.Message.Prompt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +85,14 @@ public class DaemonClientConnection implements Closeable {
             }
             throw new DaemonException.ConnectException("Could not dispatch a message to the daemon.", e);
         }
+        // in case we dispatch a cancelation request, also forward it to the main thread to exit asap
+        try {
+            if (message.getType() == Message.CANCEL_BUILD) {
+                queue.put(message);
+            }
+        } catch (InterruptedException e) {
+            throw new DaemonException.InterruptedException(e);
+        }
     }
 
     public List<Message> receive() throws ConnectException, StaleAddressException {
@@ -129,10 +136,6 @@ public class DaemonClientConnection implements Closeable {
                 Message m = connection.receive();
                 if (m == null) {
                     break;
-                }
-                if (m.getType() == Message.PROMPT) {
-                    final Prompt prompt = (Prompt) m;
-                    m = prompt.withCallback(response -> dispatch(prompt.response(response)));
                 }
                 queue.put(m);
             }

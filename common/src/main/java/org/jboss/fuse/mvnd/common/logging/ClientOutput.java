@@ -16,12 +16,16 @@
 package org.jboss.fuse.mvnd.common.logging;
 
 import java.util.List;
+import java.util.function.Consumer;
 import org.jboss.fuse.mvnd.common.Message;
 
 /**
  * A sink for various kinds of events sent by the daemon.
  */
 public interface ClientOutput extends AutoCloseable {
+
+    void setDeamonDispatch(Consumer<Message> sink);
+
     void accept(Message message);
 
     void accept(List<Message> messages);

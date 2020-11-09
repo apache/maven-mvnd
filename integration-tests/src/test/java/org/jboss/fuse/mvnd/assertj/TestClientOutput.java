@@ -17,6 +17,7 @@ package org.jboss.fuse.mvnd.assertj;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.jboss.fuse.mvnd.common.Message;
@@ -24,9 +25,15 @@ import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 
 public class TestClientOutput implements ClientOutput {
     private final List<Message> messages = new ArrayList<>();
+    protected Consumer<Message> daemonDispatch;
 
     @Override
     public void close() throws Exception {
+    }
+
+    @Override
+    public void setDeamonDispatch(Consumer<Message> daemonDispatch) {
+        this.daemonDispatch = daemonDispatch;
     }
 
     @Override
@@ -43,7 +50,7 @@ public class TestClientOutput implements ClientOutput {
 
     @Override
     public void describeTerminal() {
-        accept(Message.log("Test terminal"));
+        accept(Message.display("Test terminal"));
     }
 
     public List<Message> getMessages() {

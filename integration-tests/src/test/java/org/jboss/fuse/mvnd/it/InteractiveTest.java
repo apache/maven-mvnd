@@ -44,7 +44,7 @@ public class InteractiveTest {
             @Override
             public void accept(Message m) {
                 if (m instanceof Prompt) {
-                    ((Prompt) m).getCallback().accept("0.1.0-SNAPSHOT");
+                    daemonDispatch.accept(((Prompt) m).response("0.1.0-SNAPSHOT"));
                 }
                 super.accept(m);
             }
