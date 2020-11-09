@@ -107,20 +107,24 @@ public class TerminalOutput implements ClientOutput {
     @Override
     public void accept(Message entry) {
         assert "main".equals(Thread.currentThread().getName());
-        doAccept(entry);
-        update();
+        if (doAccept(entry)) {
+            update();
+        }
     }
 
     @Override
     public void accept(List<Message> entries) {
         assert "main".equals(Thread.currentThread().getName());
+        boolean update = true;
         for (Message entry : entries) {
-            doAccept(entry);
+            update &= doAccept(entry);
         }
-        update();
+        if (update) {
+            update();
+        }
     }
 
-    private void doAccept(Message entry) {
+    private boolean doAccept(Message entry) {
         switch (entry.getType()) {
         case Message.BUILD_STARTED: {
             BuildStarted bs = (BuildStarted) entry;
@@ -147,7 +151,7 @@ public class TerminalOutput implements ClientOutput {
             final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
             new AttributedString(msg, s).println(terminal);
             terminal.flush();
-            return;
+            return false;
         }
         case Message.PROJECT_STARTED:
         case Message.MOJO_STARTED: {
@@ -180,7 +184,7 @@ public class TerminalOutput implements ClientOutput {
             } finally {
                 terminal.flush();
             }
-            return;
+            return false;
         }
         case Message.KEEP_ALIVE: {
             break;
@@ -193,7 +197,6 @@ public class TerminalOutput implements ClientOutput {
         }
         case Message.PROMPT: {
             Message.Prompt prompt = (Message.Prompt) entry;
-
             readInput.writeLock().lock();
             try {
                 display.update(Collections.emptyList(), 0);
@@ -265,7 +268,7 @@ public class TerminalOutput implements ClientOutput {
             }
             break;
         }
-
+        return true;
     }
 
     @Override
