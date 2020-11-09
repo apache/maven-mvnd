@@ -15,50 +15,41 @@
  */
 package org.jboss.fuse.mvnd.it;
 
+import java.util.List;
 import java.util.Properties;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
+import java.util.stream.Collectors;
+import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
+import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.junit.MvndTest;
-import org.mockito.InOrder;
-import org.mockito.Mockito;
 
 @MvndTest(projectDir = "src/test/projects/single-module")
 public class SingleModuleTest extends SingleModuleNativeIT {
 
-    protected void assertJVM(ClientOutput output, Properties props) {
-        final InOrder inOrder = Mockito.inOrder(output);
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-clean-plugin")
-                        + ":clean {execution: default-clean}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
-                        + ":resources {execution: default-resources}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
-                        + ":compile {execution: default-compile}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
-                        + ":testResources {execution: default-testResources}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
-                        + ":testCompile {execution: default-testCompile}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-surefire-plugin")
-                        + ":test {execution: default-test}");
-        inOrder.verify(output).projectStateChanged(
-                "single-module",
-                ":single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-install-plugin")
-                        + ":install {execution: default-install}");
+    protected void assertJVM(TestClientOutput o, Properties props) {
+        final List<String> filteredMessages = o.getMessages().stream()
+                .filter(m -> m.getType() == Message.MOJO_STARTED)
+                .map(m -> m.toString())
+                .collect(Collectors.toList());
 
-        inOrder.verify(output).projectFinished("single-module");
+        Assertions.assertThat(filteredMessages)
+                .is(new MatchInOrderAmongOthers<>(
+                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-clean-plugin")
+                                + ":clean {execution: default-clean}\\E",
+                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
+                                + ":resources {execution: default-resources}\\E",
+                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
+                                + ":compile {execution: default-compile}\\E",
+                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
+                                + ":testResources {execution: default-testResources}\\E",
+                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
+                                + ":testCompile {execution: default-testCompile}\\E",
+                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-surefire-plugin")
+                                + ":test {execution: default-test}\\E",
+                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-install-plugin")
+                                + ":install {execution: default-install}\\E"));
+
     }
 
 }

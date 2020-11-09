@@ -22,13 +22,12 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 @MvndNativeTest(projectDir = "src/test/projects/module-and-plugin")
 public class ModuleAndPluginNativeIT {
@@ -61,7 +60,7 @@ public class ModuleAndPluginNativeIT {
 
         /* Build #1: with "Hello" output to target/hello.txt */
         {
-            final ClientOutput output = Mockito.mock(ClientOutput.class);
+            final TestClientOutput output = new TestClientOutput();
             client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG", "-Dhello.property=Hello1")
                     .assertSuccess();
 
@@ -78,7 +77,7 @@ public class ModuleAndPluginNativeIT {
                     .resolve("plugin/src/main/java/org/jboss/fuse/mvnd/test/module/plugin/mojo/HelloMojo.java");
             TestUtils.replace(mojoPath, "\"Hello\".getBytes", "\"Hi\".getBytes");
 
-            final ClientOutput output = Mockito.mock(ClientOutput.class);
+            final TestClientOutput output = new TestClientOutput();
             client.execute(output,
                     "clean",
                     "install", "-e", "-Dmvnd.log.level=DEBUG", "-Dhello.property=Hello2").assertSuccess();

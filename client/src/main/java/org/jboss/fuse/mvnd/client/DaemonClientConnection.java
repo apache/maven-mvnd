@@ -17,6 +17,8 @@ package org.jboss.fuse.mvnd.client;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +32,7 @@ import org.jboss.fuse.mvnd.common.DaemonException.ConnectException;
 import org.jboss.fuse.mvnd.common.DaemonException.StaleAddressException;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Message.Prompt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,19 +88,27 @@ public class DaemonClientConnection implements Closeable {
         }
     }
 
-    public Message receive() throws ConnectException, StaleAddressException {
+    public List<Message> receive() throws ConnectException, StaleAddressException {
         while (true) {
             try {
-                Message m = queue.poll(maxKeepAliveMs, TimeUnit.MILLISECONDS);
+                final Message m = queue.poll(maxKeepAliveMs, TimeUnit.MILLISECONDS);
+                {
+                    Exception e = exception.get();
+                    if (e != null) {
+                        throw e;
+                    } else if (m == null) {
+                        throw new IOException("No message received within " + maxKeepAliveMs
+                                + "ms, daemon may have crashed. You may want to check its status using mvnd --status");
+                    }
+                }
+                final List<Message> result = new ArrayList<>(4);
+                result.add(m);
+                queue.drainTo(result);
                 Exception e = exception.get();
                 if (e != null) {
                     throw e;
-                } else if (m != null) {
-                    return m;
-                } else {
-                    throw new IOException("No message received within " + maxKeepAliveMs
-                            + "ms, daemon may have crashed. You may want to check its status using mvnd --status");
                 }
+                return result;
             } catch (Exception e) {
                 DaemonDiagnostics diag = new DaemonDiagnostics(daemon.getUid(), parameters);
                 LOG.debug("Problem receiving message to the daemon. Performing 'on failure' operation...");
@@ -118,6 +129,10 @@ public class DaemonClientConnection implements Closeable {
                 Message m = connection.receive();
                 if (m == null) {
                     break;
+                }
+                if (m.getType() == Message.PROMPT) {
+                    final Prompt prompt = (Prompt) m;
+                    m = prompt.withCallback(response -> dispatch(prompt.response(response)));
                 }
                 queue.put(m);
             }

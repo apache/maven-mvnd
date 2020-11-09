@@ -23,12 +23,11 @@ import java.util.List;
 import java.util.regex.Pattern;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 @MvndNativeTest(projectDir = "src/test/projects/invoker")
 public class InvokerNativeIT {
@@ -55,7 +54,7 @@ public class InvokerNativeIT {
             throw new RuntimeException("Could not delete " + helloPath);
         }
 
-        final ClientOutput output = Mockito.mock(ClientOutput.class);
+        final TestClientOutput output = new TestClientOutput();
         client.execute(output, "clean", "verify", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
 
         Assertions.assertThat(helloPath).exists();

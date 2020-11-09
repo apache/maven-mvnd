@@ -17,18 +17,12 @@ package org.jboss.fuse.mvnd.it;
 
 import java.io.IOException;
 import javax.inject.Inject;
-import org.assertj.core.api.Assertions;
-import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.MvndTestExtension;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
-import static org.mockito.ArgumentMatchers.any;
 
 @MvndNativeTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
 public class VersionNativeIT {
@@ -41,20 +35,16 @@ public class VersionNativeIT {
 
     @Test
     void version() throws IOException, InterruptedException {
-        final ClientOutput output = Mockito.mock(ClientOutput.class);
+        final TestClientOutput output = new TestClientOutput();
 
         client.execute(output, "-v").assertSuccess();
 
-        final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).accept(any(), logMessage.capture());
-
-        Assertions.assertThat(logMessage.getAllValues())
-                .is(new MatchInOrderAmongOthers<>(
-                        "\\QMaven Daemon "
-                                + System.getProperty("project.version")
-                                + "-" + System.getProperty("os.detected.name")
-                                + "-" + System.getProperty("os.detected.arch")
-                                + "\\E",
-                        "\\QMaven home: " + parameters.mvndHome() + "\\E"));
+        output.assertContainsMatchingSubsequence(
+                "\\QMaven Daemon "
+                        + System.getProperty("project.version")
+                        + "-" + System.getProperty("os.detected.name")
+                        + "-" + System.getProperty("os.detected.arch")
+                        + "\\E",
+                "\\QMaven home: " + parameters.mvndHome() + "\\E");
     }
 }

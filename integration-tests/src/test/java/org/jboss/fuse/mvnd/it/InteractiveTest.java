@@ -17,13 +17,14 @@ package org.jboss.fuse.mvnd.it;
 
 import java.io.IOException;
 import javax.inject.Inject;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
+import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Message.Prompt;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 @MvndTest(projectDir = "src/test/projects/single-module")
 public class InteractiveTest {
@@ -39,9 +40,15 @@ public class InteractiveTest {
         final String version = MvndTestUtil.version(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
         Assertions.assertEquals("0.0.1-SNAPSHOT", version);
 
-        final ClientOutput o = Mockito.mock(ClientOutput.class);
-        Mockito.when(o.prompt("single-module", "Enter the new version to set 0.0.1-SNAPSHOT: ", false))
-                .thenReturn("0.1.0-SNAPSHOT");
+        final TestClientOutput o = new TestClientOutput() {
+            @Override
+            public void accept(Message m) {
+                if (m instanceof Prompt) {
+                    ((Prompt) m).getCallback().accept("0.1.0-SNAPSHOT");
+                }
+                super.accept(m);
+            }
+        };
         client.execute(o, "versions:set").assertSuccess();
 
         final String newVersion = MvndTestUtil.version(parameters.multiModuleProjectDirectory().resolve("pom.xml"));

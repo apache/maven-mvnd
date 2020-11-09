@@ -21,14 +21,13 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.DaemonException;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -58,7 +57,7 @@ public class DaemonCrashTest {
         };
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
-        final ClientOutput output = Mockito.mock(ClientOutput.class);
+        final TestClientOutput output = new TestClientOutput();
         assertThrows(DaemonException.StaleAddressException.class,
                 () -> client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG").assertFailure());
     }

@@ -18,19 +18,19 @@ package org.jboss.fuse.mvnd.it;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
+import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
-import org.mockito.Mockito;
-
-import static org.mockito.ArgumentMatchers.any;
 
 @MvndNativeTest(projectDir = "src/test/projects/single-module")
 public class SingleModuleNativeIT {
@@ -54,18 +54,23 @@ public class SingleModuleNativeIT {
                 "org/jboss/fuse/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
         Assertions.assertThat(installedJar).doesNotExist();
 
-        final ClientOutput o = Mockito.mock(ClientOutput.class);
+        final TestClientOutput o = new TestClientOutput();
         client.execute(o, "clean", "install", "-e").assertSuccess();
         final Properties props = MvndTestUtil.properties(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
 
-        final InOrder inOrder = Mockito.inOrder(o);
-        inOrder.verify(o).accept(any(), Mockito.contains("Building single-module"));
-        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-clean-plugin") + ":clean"));
-        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":compile"));
-        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":testCompile"));
-        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-surefire-plugin") + ":test"));
-        inOrder.verify(o).accept(any(), Mockito.contains(MvndTestUtil.plugin(props, "maven-install-plugin") + ":install"));
-        inOrder.verify(o).accept(any(), Mockito.contains("BUILD SUCCESS"));
+        final List<String> messages = o.getMessages().stream()
+                .filter(m -> m.getType() != Message.MOJO_STARTED)
+                .map(m -> m.toString())
+                .collect(Collectors.toList());
+        Assertions.assertThat(messages)
+                .is(new MatchInOrderAmongOthers<>(
+                        "Building single-module",
+                        MvndTestUtil.plugin(props, "maven-clean-plugin") + ":clean",
+                        MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":compile",
+                        MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":testCompile",
+                        MvndTestUtil.plugin(props, "maven-surefire-plugin") + ":test",
+                        MvndTestUtil.plugin(props, "maven-install-plugin") + ":install",
+                        "BUILD SUCCESS"));
 
         assertJVM(o, props);
 
@@ -76,7 +81,7 @@ public class SingleModuleNativeIT {
 
     }
 
-    protected void assertJVM(ClientOutput o, Properties props) {
-        /* implemented in the subclass*/
+    protected void assertJVM(TestClientOutput o, Properties props) {
+        /* implemented in the subclass */
     }
 }
