@@ -26,21 +26,34 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class Message {
-    static final int BUILD_REQUEST = 0;
-    static final int BUILD_EVENT = 1;
-    static final int BUILD_MESSAGE = 2;
-    static final int BUILD_EXCEPTION = 3;
-    static final int KEEP_ALIVE = 4;
-    static final int STOP = 5;
-    static final int BUILD_STARTED = 6;
-    static final int DISPLAY = 7;
-    static final int PROMPT = 8;
-    static final int PROMPT_RESPONSE = 9;
+    public static final int BUILD_REQUEST = 0;
+    public static final int BUILD_STARTED = 1;
+    public static final int BUILD_STOPPED = 2;
+    public static final int PROJECT_STARTED = 3;
+    public static final int PROJECT_STOPPED = 4;
+    public static final int MOJO_STARTED = 5;
+    public static final int BUILD_MESSAGE = 6;
+    public static final int BUILD_EXCEPTION = 7;
+    public static final int KEEP_ALIVE = 8;
+    public static final int STOP = 9;
+    public static final int DISPLAY = 10;
+    public static final int PROMPT = 11;
+    public static final int PROMPT_RESPONSE = 12;
+    public static final int BUILD_STATUS = 13;
+    public static final int KEYBOARD_INPUT = 14;
 
-    public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(Message.KEEP_ALIVE, "KEEP_ALIVE");
-    public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(Message.STOP, "STOP");
+    public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(KEEP_ALIVE);
+    public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(STOP);
+    public static final SimpleMessage BUILD_STOPPED_SINGLETON = new SimpleMessage(BUILD_STOPPED);
+
+    final int type;
+
+    Message(int type) {
+        this.type = type;
+    }
 
     public static Message read(DataInputStream input) throws IOException {
         int type = input.read();
@@ -52,8 +65,12 @@ public abstract class Message {
             return BuildRequest.read(input);
         case BUILD_STARTED:
             return BuildStarted.read(input);
-        case BUILD_EVENT:
-            return BuildEvent.read(input);
+        case BUILD_STOPPED:
+            return SimpleMessage.BUILD_STOPPED_SINGLETON;
+        case PROJECT_STARTED:
+        case PROJECT_STOPPED:
+        case MOJO_STARTED:
+            return BuildEvent.read(type, input);
         case BUILD_MESSAGE:
             return BuildMessage.read(input);
         case BUILD_EXCEPTION:
@@ -68,6 +85,8 @@ public abstract class Message {
             return Prompt.read(input);
         case PROMPT_RESPONSE:
             return PromptResponse.read(input);
+        case BUILD_STATUS:
+            return StringMessage.read(BUILD_STATUS, input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -78,7 +97,9 @@ public abstract class Message {
         return timestamp;
     }
 
-    public abstract void write(DataOutputStream output) throws IOException;
+    public void write(DataOutputStream output) throws IOException {
+        output.write(type);
+    }
 
     static void writeStringList(DataOutputStream output, List<String> value) throws IOException {
         output.writeInt(value.size());
@@ -233,6 +254,7 @@ public abstract class Message {
         }
 
         public BuildRequest(List<String> args, String workingDir, String projectDir, Map<String, String> env) {
+            super(BUILD_REQUEST);
             this.args = args;
             this.workingDir = workingDir;
             this.projectDir = projectDir;
@@ -266,7 +288,7 @@ public abstract class Message {
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(BUILD_REQUEST);
+            super.write(output);
             writeStringList(output, args);
             writeUTF(output, workingDir);
             writeUTF(output, projectDir);
@@ -297,6 +319,7 @@ public abstract class Message {
         }
 
         public BuildException(String message, String className, String stackTrace) {
+            super(BUILD_EXCEPTION);
             this.message = message;
             this.className = className;
             this.stackTrace = stackTrace;
@@ -325,7 +348,7 @@ public abstract class Message {
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(BUILD_EXCEPTION);
+            super.write(output);
             writeUTF(output, message);
             writeUTF(output, className);
             writeUTF(output, stackTrace);
@@ -333,29 +356,19 @@ public abstract class Message {
     }
 
     public static class BuildEvent extends Message {
-        public enum Type {
-            BuildStopped, ProjectStarted, ProjectStopped, MojoStarted
-        }
-
-        final Type type;
         final String projectId;
         final String display;
 
-        public static Message read(DataInputStream input) throws IOException {
-            BuildEvent.Type type = BuildEvent.Type.values()[input.read()];
+        public static Message read(int type, DataInputStream input) throws IOException {
             String projectId = readUTF(input);
             String display = readUTF(input);
             return new BuildEvent(type, projectId, display);
         }
 
-        public BuildEvent(Type type, String projectId, String display) {
-            this.type = type;
+        public BuildEvent(int type, String projectId, String display) {
+            super(type);
             this.projectId = projectId;
             this.display = display;
-        }
-
-        public Type getType() {
-            return type;
         }
 
         public String getProjectId() {
@@ -368,17 +381,28 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "BuildEvent{" +
+            return mnemonic() + "{" +
                     "projectId='" + projectId + '\'' +
-                    ", type=" + type +
                     ", display='" + display + '\'' +
                     '}';
         }
 
+        private String mnemonic() {
+            switch (type) {
+            case PROJECT_STARTED:
+                return "ProjectStarted";
+            case PROJECT_STOPPED:
+                return "ProjectStopped";
+            case MOJO_STARTED:
+                return "MojoStarted";
+            default:
+                throw new IllegalStateException("Unexpected type " + type);
+            }
+        }
+
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(BUILD_EVENT);
-            output.write(type.ordinal());
+            super.write(output);
             writeUTF(output, projectId);
             writeUTF(output, display);
         }
@@ -398,6 +422,7 @@ public abstract class Message {
         }
 
         public BuildStarted(String projectId, int projectCount, int maxThreads) {
+            super(BUILD_STARTED);
             this.projectId = projectId;
             this.projectCount = projectCount;
             this.maxThreads = maxThreads;
@@ -417,16 +442,14 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "BuildEvent{" +
-                    "projectId='" + projectId + '\'' +
-                    ", projectCount=" + projectCount +
-                    ", maxThreads='" + maxThreads + '\'' +
-                    '}';
+            return "BuildStarted{" +
+                    "projectId='" + projectId + "', projectCount=" + projectCount +
+                    ", maxThreads='" + maxThreads + "'}";
         }
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(BUILD_STARTED);
+            super.write(output);
             writeUTF(output, projectId);
             output.writeInt(projectCount);
             output.writeInt(maxThreads);
@@ -444,6 +467,7 @@ public abstract class Message {
         }
 
         public BuildMessage(String projectId, String message) {
+            super(BUILD_MESSAGE);
             this.projectId = projectId;
             this.message = message;
         }
@@ -466,7 +490,7 @@ public abstract class Message {
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(BUILD_MESSAGE);
+            super.write(output);
             writeUTF(output, projectId != null ? projectId : "");
             writeUTF(output, message);
         }
@@ -474,28 +498,66 @@ public abstract class Message {
 
     public static class SimpleMessage extends Message {
 
-        final int type;
-        final String mnemonic;
-
-        /**
-         * Use {@link #KEEP_ALIVE_SINGLETON}
-         *
-         * @param type
-         */
-        private SimpleMessage(int type, String mnemonic) {
-            this.type = type;
-            this.mnemonic = mnemonic;
+        private SimpleMessage(int type) {
+            super(type);
         }
 
         @Override
         public String toString() {
-            return mnemonic;
+            switch (type) {
+            case KEEP_ALIVE:
+                return "KeepAlive";
+            case BUILD_STOPPED:
+                return "BuildStopped";
+            case STOP:
+                return "Stop";
+            default:
+                throw new IllegalStateException("Unexpected type " + type);
+            }
+        }
+
+    }
+
+    public static class StringMessage extends Message {
+
+        final String payload;
+
+        public static StringMessage read(int type, DataInputStream input) throws IOException {
+            String payload = readUTF(input);
+            return new StringMessage(type, payload);
+        }
+
+        private StringMessage(int type, String payload) {
+            super(type);
+            this.payload = payload;
+        }
+
+        public String getPayload() {
+            return payload;
         }
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(type);
+            super.write(output);
+            writeUTF(output, payload);
         }
+
+        @Override
+        public String toString() {
+            return mnemonic() + "{payload='" + payload + "'}";
+        }
+
+        private String mnemonic() {
+            switch (type) {
+            case BUILD_STATUS:
+                return "BuildStatus";
+            case Message.KEYBOARD_INPUT:
+                return "KeyboardInput";
+            default:
+                throw new IllegalStateException("Unexpected type " + type);
+            }
+        }
+
     }
 
     public static class Display extends Message {
@@ -510,6 +572,7 @@ public abstract class Message {
         }
 
         public Display(String projectId, String message) {
+            super(DISPLAY);
             this.projectId = projectId;
             this.message = message;
         }
@@ -532,7 +595,7 @@ public abstract class Message {
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(DISPLAY);
+            super.write(output);
             writeUTF(output, projectId);
             writeUTF(output, message);
         }
@@ -544,8 +607,9 @@ public abstract class Message {
         final String uid;
         final String message;
         final boolean password;
+        final Consumer<String> callback;
 
-        public static Message read(DataInputStream input) throws IOException {
+        public static Prompt read(DataInputStream input) throws IOException {
             String projectId = Message.readUTF(input);
             String uid = Message.readUTF(input);
             String message = Message.readUTF(input);
@@ -554,10 +618,16 @@ public abstract class Message {
         }
 
         public Prompt(String projectId, String uid, String message, boolean password) {
+            this(projectId, uid, message, password, null);
+        }
+
+        public Prompt(String projectId, String uid, String message, boolean password, Consumer<String> callback) {
+            super(PROMPT);
             this.projectId = projectId;
             this.uid = uid;
             this.message = message;
             this.password = password;
+            this.callback = callback;
         }
 
         public String getProjectId() {
@@ -588,12 +658,25 @@ public abstract class Message {
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(PROMPT);
+            super.write(output);
             writeUTF(output, projectId);
             writeUTF(output, uid);
             writeUTF(output, message);
             output.writeBoolean(password);
         }
+
+        public Prompt withCallback(Consumer<String> callback) {
+            return new Prompt(projectId, uid, message, password, callback);
+        }
+
+        public PromptResponse response(String message) {
+            return new PromptResponse(projectId, uid, message);
+        }
+
+        public Consumer<String> getCallback() {
+            return callback;
+        }
+
     }
 
     public static class PromptResponse extends Message {
@@ -610,6 +693,7 @@ public abstract class Message {
         }
 
         public PromptResponse(String projectId, String uid, String message) {
+            super(PROMPT_RESPONSE);
             this.projectId = projectId;
             this.uid = uid;
             this.message = message;
@@ -638,11 +722,31 @@ public abstract class Message {
 
         @Override
         public void write(DataOutputStream output) throws IOException {
-            output.write(PROMPT_RESPONSE);
+            super.write(output);
             writeUTF(output, projectId);
             writeUTF(output, uid);
             writeUTF(output, message);
         }
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public static StringMessage buildStatus(String payload) {
+        return new StringMessage(BUILD_STATUS, payload);
+    }
+
+    public static BuildMessage log(String message) {
+        return new BuildMessage(null, message);
+    }
+
+    public static BuildMessage log(String projectId, String message) {
+        return new BuildMessage(projectId, message);
+    }
+
+    public static StringMessage keyboardInput(char keyStroke) {
+        return new StringMessage(KEYBOARD_INPUT, String.valueOf(keyStroke));
     }
 
 }

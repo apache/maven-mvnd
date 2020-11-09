@@ -25,6 +25,7 @@ import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.client.ExecutionResult;
 import org.jboss.fuse.mvnd.common.Environment;
+import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.OsUtils.CommandProcess;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 
@@ -82,7 +83,7 @@ public class NativeTestClient implements Client {
             env.put("JAVA_HOME", System.getProperty("java.home"));
         }
         final String cmdString = String.join(" ", cmd);
-        output.accept(null, "Executing " + cmdString);
+        output.accept(Message.log("Executing " + cmdString));
 
         final List<String> log = new ArrayList<>();
         final Consumer<String> loggingConsumer = s -> {
@@ -91,7 +92,7 @@ public class NativeTestClient implements Client {
             }
         };
         try (CommandProcess process = new CommandProcess(builder.start(),
-                loggingConsumer.andThen(s -> output.accept(null, s)))) {
+                loggingConsumer.andThen(s -> output.accept(Message.log(s))))) {
             final int exitCode = process.waitFor(timeoutMs);
             return new Result(args, exitCode, log);
         } catch (IOException e) {

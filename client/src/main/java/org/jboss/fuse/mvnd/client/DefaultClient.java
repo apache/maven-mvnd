@@ -28,10 +28,7 @@ import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.Message;
-import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
-import org.jboss.fuse.mvnd.common.Message.BuildMessage;
-import org.jboss.fuse.mvnd.common.Message.BuildStarted;
 import org.jboss.fuse.mvnd.common.OsUtils;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
@@ -125,7 +122,7 @@ public class DefaultClient implements Client {
                             + "-" + buildProperties.getOsArch()
                             + nativeSuffix)
                     .reset().toString();
-            output.accept(null, v);
+            output.accept(Message.log(v));
             // Print terminal information
             output.describeTerminal();
             /*
@@ -138,20 +135,20 @@ public class DefaultClient implements Client {
             boolean status = args.remove("--status");
             if (status) {
                 final String template = "    %36s  %7s  %5s  %7s  %5s  %23s  %s";
-                output.accept(null, String.format(template,
-                        "UUID", "PID", "Port", "Status", "RSS", "Last activity", "Java home"));
+                output.accept(Message.log(String.format(template,
+                        "UUID", "PID", "Port", "Status", "RSS", "Last activity", "Java home")));
                 for (DaemonInfo d : registry.getAll()) {
                     if (ProcessHandle.of(d.getPid()).isEmpty()) {
                         /* The process does not exist anymore - remove it from the registry */
                         registry.remove(d.getUid());
                     } else {
-                        output.accept(null, String.format(template,
+                        output.accept(Message.log(String.format(template,
                                 d.getUid(), d.getPid(), d.getAddress(), d.getState(),
                                 OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
                                 LocalDateTime.ofInstant(
                                         Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
                                         ZoneId.systemDefault()),
-                                d.getJavaHome()));
+                                d.getJavaHome())));
                     }
                 }
                 return new DefaultResult(argv, null);
@@ -160,7 +157,7 @@ public class DefaultClient implements Client {
             if (stop) {
                 DaemonInfo[] dis = registry.getAll().toArray(new DaemonInfo[0]);
                 if (dis.length > 0) {
-                    output.accept(null, "Stopping " + dis.length + " running daemons");
+                    output.accept(Message.log("Stopping " + dis.length + " running daemons"));
                     for (DaemonInfo di : dis) {
                         try {
                             ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
@@ -194,7 +191,7 @@ public class DefaultClient implements Client {
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
-                output.buildStatus("Connected to daemon");
+                output.accept(Message.buildStatus("Connected to daemon"));
 
                 daemon.dispatch(new Message.BuildRequest(
                         args,
@@ -202,44 +199,28 @@ public class DefaultClient implements Client {
                         parameters.multiModuleProjectDirectory().toString(),
                         System.getenv()));
 
-                output.buildStatus("Build request sent");
+                output.accept(Message.buildStatus("Build request sent"));
 
                 while (true) {
-                    Message m = daemon.receive();
-                    if (m instanceof BuildException) {
-                        final BuildException e = (BuildException) m;
-                        output.error(e.getMessage(), e.getClassName(), e.getStackTrace());
-                        return new DefaultResult(argv,
-                                new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
-                    } else if (m instanceof BuildStarted) {
-                        final BuildStarted bs = (BuildStarted) m;
-                        output.startBuild(bs.getProjectId(), bs.getProjectCount(), bs.getMaxThreads());
-                    } else if (m instanceof BuildEvent) {
-                        BuildEvent be = (BuildEvent) m;
-                        switch (be.getType()) {
-                        case BuildStopped:
+                    final List<Message> messages = daemon.receive();
+                    for (int i = 0; i < messages.size(); i++) {
+                        Message m = messages.get(i);
+                        switch (m.getType()) {
+                        case Message.BUILD_EXCEPTION: {
+                            output.accept(messages.subList(0, i + 1));
+                            final BuildException e = (BuildException) m;
+                            return new DefaultResult(argv,
+                                    new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
+                        }
+                        case Message.BUILD_STOPPED: {
+                            output.accept(messages.subList(0, i));
                             return new DefaultResult(argv, null);
-                        case ProjectStarted:
-                        case MojoStarted:
-                            output.projectStateChanged(be.getProjectId(), be.getDisplay());
-                            break;
-                        case ProjectStopped:
-                            output.projectFinished(be.getProjectId());
+                        }
+                        default:
                             break;
                         }
-                    } else if (m instanceof BuildMessage) {
-                        BuildMessage bm = (BuildMessage) m;
-                        output.accept(bm.getProjectId(), bm.getMessage());
-                    } else if (m == Message.KEEP_ALIVE_SINGLETON) {
-                        output.keepAlive();
-                    } else if (m instanceof Message.Display) {
-                        Message.Display d = (Message.Display) m;
-                        output.display(d.getProjectId(), d.getMessage());
-                    } else if (m instanceof Message.Prompt) {
-                        Message.Prompt p = (Message.Prompt) m;
-                        String response = output.prompt(p.getProjectId(), p.getMessage(), p.isPassword());
-                        daemon.dispatch(new Message.PromptResponse(p.getProjectId(), p.getUid(), response));
                     }
+                    output.accept(messages);
                 }
             }
         }

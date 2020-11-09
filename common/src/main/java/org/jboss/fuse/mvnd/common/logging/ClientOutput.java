@@ -15,28 +15,16 @@
  */
 package org.jboss.fuse.mvnd.common.logging;
 
+import java.util.List;
+import org.jboss.fuse.mvnd.common.Message;
+
 /**
  * A sink for various kinds of events sent by the daemon.
  */
 public interface ClientOutput extends AutoCloseable {
+    void accept(Message message);
 
-    void startBuild(String name, int projects, int cores);
-
-    void projectStateChanged(String projectId, String display);
-
-    void projectFinished(String projectId);
-
-    void accept(String projectId, String message);
-
-    void error(String message, String className, String stackTrace);
-
-    void keepAlive();
-
-    void buildStatus(String status);
-
-    void display(String projectId, String message);
-
-    String prompt(String projectId, String message, boolean password);
+    void accept(List<Message> messages);
 
     void describeTerminal();
 }

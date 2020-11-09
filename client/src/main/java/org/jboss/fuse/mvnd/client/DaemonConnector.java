@@ -41,6 +41,7 @@ import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.MavenDaemon;
+import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Os;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class DaemonConnector {
     public DaemonClientConnection connect(ClientOutput output) {
         final DaemonCompatibilitySpec constraint = new DaemonCompatibilitySpec(
                 parameters.javaHome(), parameters.getDaemonOpts());
-        output.buildStatus("Looking up daemon...");
+        output.accept(Message.buildStatus("Looking up daemon..."));
         Map<Boolean, List<DaemonInfo>> idleBusy = registry.getAll().stream()
                 .collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
         final Collection<DaemonInfo> idleDaemons = idleBusy.getOrDefault(true, Collections.emptyList());
@@ -105,7 +106,7 @@ public class DaemonConnector {
 
         // No compatible daemons available - start a new daemon
         String message = handleStopEvents(idleDaemons, busyDaemons);
-        output.buildStatus(message);
+        output.accept(Message.buildStatus(message));
         return startDaemon();
     }
 

@@ -51,14 +51,10 @@ import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.Message;
 import org.jboss.fuse.mvnd.common.Message.BuildEvent;
-import org.jboss.fuse.mvnd.common.Message.BuildEvent.Type;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.BuildRequest;
 import org.jboss.fuse.mvnd.common.Message.BuildStarted;
-import org.jboss.fuse.mvnd.common.Message.Display;
-import org.jboss.fuse.mvnd.common.Message.Prompt;
-import org.jboss.fuse.mvnd.common.Message.PromptResponse;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
@@ -521,29 +517,32 @@ public class Server implements AutoCloseable, Runnable {
     }
 
     int getClassOrder(Message m) {
-        if (m instanceof BuildRequest) {
+        switch (m.getType()) {
+        case Message.BUILD_REQUEST:
             return 0;
-        } else if (m instanceof BuildStarted) {
+        case Message.BUILD_STARTED:
             return 1;
-        } else if (m instanceof Prompt || m instanceof PromptResponse || m instanceof Display) {
+        case Message.PROMPT:
+        case Message.PROMPT_RESPONSE:
+        case Message.DISPLAY:
             return 2;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStarted) {
+        case Message.PROJECT_STARTED:
             return 3;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.MojoStarted) {
+        case Message.MOJO_STARTED:
             return 4;
-        } else if (m instanceof BuildMessage) {
+        case Message.BUILD_MESSAGE:
             return 50;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.ProjectStopped) {
+        case Message.PROJECT_STOPPED:
             return 95;
-        } else if (m instanceof BuildEvent && ((BuildEvent) m).getType() == Type.BuildStopped) {
+        case Message.BUILD_STOPPED:
             return 96;
-        } else if (m instanceof BuildException) {
+        case Message.BUILD_EXCEPTION:
             return 97;
-        } else if (m == Message.STOP_SINGLETON) {
+        case Message.STOP:
             return 99;
-        } else if (m == Message.KEEP_ALIVE_SINGLETON) {
+        case Message.KEEP_ALIVE:
             return 100;
-        } else {
+        default:
             throw new IllegalStateException();
         }
     }
@@ -598,7 +597,7 @@ public class Server implements AutoCloseable, Runnable {
         }
 
         public void finish() throws Exception {
-            queue.add(new BuildEvent(Type.BuildStopped, "", ""));
+            queue.add(Message.BUILD_STOPPED_SINGLETON);
             queue.add(Message.STOP_SINGLETON);
         }
 
@@ -615,26 +614,22 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         protected void onStartProject(String projectId, String display) {
-            sendEvent(Type.ProjectStarted, projectId, display);
+            queue.add(new BuildEvent(Message.PROJECT_STARTED, projectId, display));
         }
 
         @Override
         protected void onStopProject(String projectId, String display) {
-            sendEvent(Type.ProjectStopped, projectId, display);
+            queue.add(new BuildEvent(Message.PROJECT_STOPPED, projectId, display));
         }
 
         @Override
         protected void onStartMojo(String projectId, String display) {
-            sendEvent(Type.MojoStarted, projectId, display);
+            queue.add(new BuildEvent(Message.MOJO_STARTED, projectId, display));
         }
 
         @Override
         protected void onProjectLog(String projectId, String message) {
             queue.add(new BuildMessage(projectId, message));
-        }
-
-        private void sendEvent(Type type, String projectId, String display) {
-            queue.add(new BuildEvent(type, projectId, display));
         }
 
     }

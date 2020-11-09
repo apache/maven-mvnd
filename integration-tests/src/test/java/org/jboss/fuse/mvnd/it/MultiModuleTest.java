@@ -18,21 +18,22 @@ package org.jboss.fuse.mvnd.it;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
-import org.jboss.fuse.mvnd.assertj.EqualsInOrderAmongOthers;
 import org.jboss.fuse.mvnd.assertj.MatchInOrderAmongOthers;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
+import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Message.BuildEvent;
+import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
-import static org.mockito.ArgumentMatchers.any;
 
 @MvndTest(projectDir = "src/test/projects/multi-module")
 public class MultiModuleTest {
@@ -69,44 +70,52 @@ public class MultiModuleTest {
         };
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
-        final ClientOutput output = Mockito.mock(ClientOutput.class);
+        final TestClientOutput output = new TestClientOutput();
         client.execute(output, "clean", "install", "-e").assertSuccess();
 
-        final ArgumentCaptor<String> logMessage = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).accept(any(), logMessage.capture());
-        Assertions.assertThat(logMessage.getAllValues())
-                .satisfiesAnyOf( /* Two orderings are possible */
-                        messages -> Assertions.assertThat(messages)
-                                .is(new MatchInOrderAmongOthers<>(
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module$",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-api",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hello",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hi")),
-                        messages -> Assertions.assertThat(messages)
-                                .is(new MatchInOrderAmongOthers<>(
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module$",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-api",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hi",
-                                        "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hello"))
+        {
+            final List<String> filteredMessages = output.getMessages().stream()
+                    .filter(m -> m.getType() == Message.BUILD_MESSAGE)
+                    .map(m -> ((BuildMessage) m).getMessage())
+                    .collect(Collectors.toList());
 
-                );
+            Assertions.assertThat(filteredMessages)
+                    .satisfiesAnyOf( /* Two orderings are possible */
+                            messages -> Assertions.assertThat(messages)
+                                    .is(new MatchInOrderAmongOthers<>(
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module$",
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-api",
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hello",
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hi")),
+                            messages -> Assertions.assertThat(messages)
+                                    .is(new MatchInOrderAmongOthers<>(
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module$",
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-api",
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hi",
+                                            "SUCCESS build of project org.jboss.fuse.mvnd.test.multi-module:multi-module-hello")));
+        }
 
-        final ArgumentCaptor<String> projectFinished = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(output, Mockito.atLeast(1)).projectFinished(projectFinished.capture());
-        Assertions.assertThat(projectFinished.getAllValues())
-                .satisfiesAnyOf( /* Two orderings are possible */
-                        messages -> Assertions.assertThat(messages)
-                                .is(new EqualsInOrderAmongOthers<>(
-                                        "multi-module",
-                                        "multi-module-api",
-                                        "multi-module-hello",
-                                        "multi-module-hi")),
-                        messages -> Assertions.assertThat(messages)
-                                .is(new EqualsInOrderAmongOthers<>(
-                                        "multi-module",
-                                        "multi-module-api",
-                                        "multi-module-hi",
-                                        "multi-module-hello")));
+        {
+            final List<String> filteredMessages = output.getMessages().stream()
+                    .filter(m -> m.getType() == Message.PROJECT_STARTED)
+                    .map(m -> ((BuildEvent) m).getProjectId())
+                    .collect(Collectors.toList());
+
+            Assertions.assertThat(filteredMessages)
+                    .satisfiesAnyOf( /* Two orderings are possible */
+                            messages -> Assertions.assertThat(messages)
+                                    .isEqualTo(Arrays.asList(
+                                            "multi-module",
+                                            "multi-module-api",
+                                            "multi-module-hello",
+                                            "multi-module-hi")),
+                            messages -> Assertions.assertThat(messages)
+                                    .isEqualTo(Arrays.asList(
+                                            "multi-module",
+                                            "multi-module-api",
+                                            "multi-module-hi",
+                                            "multi-module-hello")));
+        }
 
         /* Make sure HelloTest and HiTest have created the files they were supposed to create */
         Stream.of(helloFilePaths).forEach(path -> Assertions.assertThat(path).exists());

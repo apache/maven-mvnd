@@ -27,16 +27,20 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Message.BuildEvent;
+import org.jboss.fuse.mvnd.common.Message.BuildException;
+import org.jboss.fuse.mvnd.common.Message.BuildMessage;
+import org.jboss.fuse.mvnd.common.Message.BuildStarted;
+import org.jboss.fuse.mvnd.common.Message.SimpleMessage;
+import org.jboss.fuse.mvnd.common.Message.StringMessage;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
@@ -55,12 +59,10 @@ public class TerminalOutput implements ClientOutput {
 
     public static final int CTRL_M = 'M' & 0x1f;
 
-    private final BlockingQueue<Event> queue;
     private final Terminal terminal;
     private final Display display;
     private final LinkedHashMap<String, Project> projects = new LinkedHashMap<>();
     private final ClientLog log;
-    private final Thread worker;
     private final Thread reader;
     private volatile Exception exception;
     private volatile boolean closing;
@@ -76,39 +78,6 @@ public class TerminalOutput implements ClientOutput {
     private int doneProjects = 0; // read/written only by the displayLoop
     private String buildStatus; // read/written only by the displayLoop
     private boolean displayDone = false; // read/written only by the displayLoop
-
-    enum EventType {
-        BUILD_STATUS,
-        PROJECT_STATE,
-        PROJECT_FINISHED,
-        LOG,
-        ERROR,
-        END_OF_STREAM,
-        INPUT,
-        KEEP_ALIVE,
-        DISPLAY,
-        PROMPT,
-        PROMPT_PASSWORD
-    }
-
-    static class Event {
-        public static final Event KEEP_ALIVE = new Event(EventType.KEEP_ALIVE, null, null);
-        public final EventType type;
-        public final String projectId;
-        public final String message;
-        public final SynchronousQueue<String> response;
-
-        public Event(EventType type, String projectId, String message) {
-            this(type, projectId, message, null);
-        }
-
-        public Event(EventType type, String projectId, String message, SynchronousQueue<String> response) {
-            this.type = type;
-            this.projectId = projectId;
-            this.message = message;
-            this.response = response;
-        }
-    }
 
     /**
      * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
@@ -126,113 +95,177 @@ public class TerminalOutput implements ClientOutput {
 
     public TerminalOutput(Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
-        this.queue = new LinkedBlockingDeque<>();
         this.terminal = TerminalBuilder.terminal();
         terminal.enterRawMode();
         this.display = new Display(terminal, false);
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
-        final Thread w = new Thread(this::displayLoop);
-        w.start();
-        this.worker = w;
         final Thread r = new Thread(this::readInputLoop);
         r.start();
         this.reader = r;
     }
 
-    public void startBuild(String name, int projects, int cores) {
-        this.name = name;
-        this.totalProjects = projects;
-        this.maxThreads = cores;
-        try {
-            queue.put(Event.KEEP_ALIVE);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public void projectStateChanged(String projectId, String task) {
-        try {
-            queue.put(new Event(EventType.PROJECT_STATE, projectId, task));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    public void projectFinished(String projectId) {
-        try {
-            queue.put(new Event(EventType.PROJECT_FINISHED, projectId, null));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+    @Override
+    public void accept(Message entry) {
+        assert "main".equals(Thread.currentThread().getName());
+        doAccept(entry);
+        update();
     }
 
     @Override
-    public void accept(String projectId, String message) {
-        try {
-            if (closing) {
-                closed.await();
-                System.err.println(message);
+    public void accept(List<Message> entries) {
+        assert "main".equals(Thread.currentThread().getName());
+        for (Message entry : entries) {
+            doAccept(entry);
+        }
+        update();
+    }
+
+    private void doAccept(Message entry) {
+        switch (entry.getType()) {
+        case Message.BUILD_STARTED: {
+            BuildStarted bs = (BuildStarted) entry;
+            this.name = bs.getProjectId();
+            this.totalProjects = bs.getProjectCount();
+            this.maxThreads = bs.getMaxThreads();
+            break;
+        }
+        case Message.BUILD_EXCEPTION: {
+            final BuildException e = (BuildException) entry;
+            final String msg;
+            if ("org.apache.commons.cli.UnrecognizedOptionException".equals(e.getClassName())) {
+                msg = "Unable to parse command line options: " + e.getMessage();
             } else {
-                queue.put(new Event(EventType.LOG, projectId, message));
+                msg = e.getClassName() + ": " + e.getMessage();
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
+            clearDisplay();
+            try {
+                log.close();
+            } catch (IOException e1) {
+                throw new RuntimeException(e1);
+            }
+            final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
+            new AttributedString(msg, s).println(terminal);
+            terminal.flush();
+            return;
         }
-    }
+        case Message.PROJECT_STARTED:
+        case Message.MOJO_STARTED: {
+            BuildEvent be = (BuildEvent) entry;
+            Project prj = projects.computeIfAbsent(be.getProjectId(), Project::new);
+            prj.status = be.getDisplay();
+            break;
+        }
+        case Message.PROJECT_STOPPED: {
+            BuildEvent be = (BuildEvent) entry;
+            Project prj = projects.remove(be.getProjectId());
+            if (prj != null) {
+                prj.log.forEach(log);
+            }
+            doneProjects++;
+            displayDone();
+            break;
+        }
+        case Message.BUILD_STATUS: {
+            this.buildStatus = ((StringMessage) entry).getPayload();
+            break;
+        }
+        case Message.BUILD_STOPPED: {
+            projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
+            clearDisplay();
+            try {
+                log.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                terminal.flush();
+            }
+            return;
+        }
+        case Message.KEEP_ALIVE: {
+            break;
+        }
+        case Message.DISPLAY: {
+            Message.Display d = (Message.Display) entry;
+            display.update(Collections.emptyList(), 0);
+            terminal.writer().printf("[%s] %s%n", d.getProjectId(), d.getMessage());
+            break;
+        }
+        case Message.PROMPT: {
+            Message.Prompt prompt = (Message.Prompt) entry;
 
-    @Override
-    public void error(String message, String className, String stackTrace) {
-        final String msg;
-        if ("org.apache.commons.cli.UnrecognizedOptionException".equals(className)) {
-            msg = "Unable to parse command line options: " + message;
-        } else {
-            msg = className + ": " + message;
+            readInput.writeLock().lock();
+            try {
+                display.update(Collections.emptyList(), 0);
+                terminal.writer().printf("[%s] %s", prompt.getProjectId(), prompt.getMessage());
+                terminal.flush();
+                StringBuilder sb = new StringBuilder();
+                while (true) {
+                    int c = terminal.reader().read();
+                    if (c < 0) {
+                        break;
+                    } else if (c == '\n' || c == '\r') {
+                        prompt.getCallback().accept(sb.toString());
+                        terminal.writer().println();
+                        break;
+                    } else if (c == 127) {
+                        if (sb.length() > 0) {
+                            sb.setLength(sb.length() - 1);
+                            terminal.writer().write("\b \b");
+                            terminal.writer().flush();
+                        }
+                    } else {
+                        terminal.writer().print((char) c);
+                        terminal.writer().flush();
+                        sb.append((char) c);
+                    }
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                readInput.writeLock().unlock();
+            }
+            break;
         }
-        try {
-            queue.put(new Event(EventType.ERROR, null, msg));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        case Message.BUILD_MESSAGE: {
+            BuildMessage bm = (BuildMessage) entry;
+            if (closing) {
+                try {
+                    closed.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                System.err.println(bm.getMessage());
+            } else {
+                if (bm.getProjectId() != null) {
+                    Project prj = projects.computeIfAbsent(bm.getProjectId(), Project::new);
+                    prj.log.add(bm.getMessage());
+                } else {
+                    log.accept(bm.getMessage());
+                }
+            }
+            break;
         }
-    }
+        case Message.KEYBOARD_INPUT:
+            char keyStroke = ((StringMessage) entry).getPayload().charAt(0);
+            switch (keyStroke) {
+            case '+':
+                linesPerProject = Math.min(10, linesPerProject + 1);
+                break;
+            case '-':
+                linesPerProject = Math.max(0, linesPerProject - 1);
+                break;
+            case CTRL_L:
+                display.update(Collections.emptyList(), 0);
+                break;
+            case CTRL_M:
+                displayDone = !displayDone;
+                displayDone();
+                break;
+            }
+            break;
+        }
 
-    @Override
-    public void keepAlive() {
-        try {
-            queue.put(Event.KEEP_ALIVE);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    @Override
-    public void buildStatus(String status) {
-        try {
-            queue.put(new Event(EventType.BUILD_STATUS, null, status));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    @Override
-    public void display(String projectId, String message) {
-        try {
-            queue.put(new Event(EventType.DISPLAY, projectId, message));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-    @Override
-    public String prompt(String projectId, String message, boolean password) {
-        String response = null;
-        try {
-            SynchronousQueue<String> sq = new SynchronousQueue<>();
-            queue.put(new Event(password ? EventType.PROMPT_PASSWORD : EventType.PROMPT, projectId, message, sq));
-            response = sq.take();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        return response;
     }
 
     @Override
@@ -242,7 +275,7 @@ public class TerminalOutput implements ClientOutput {
         if (terminal instanceof AbstractPosixTerminal) {
             sb.append(" with pty ").append(((AbstractPosixTerminal) terminal).getPty().getClass().getName());
         }
-        this.accept(null, sb.toString());
+        this.accept(Message.log(sb.toString()));
     }
 
     void readInputLoop() {
@@ -254,7 +287,7 @@ public class TerminalOutput implements ClientOutput {
                         break;
                     }
                     if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M) {
-                        queue.add(new Event(EventType.INPUT, null, Character.toString((char) c)));
+                        accept(Message.keyboardInput((char) c));
                     }
                     readInput.readLock().unlock();
                 }
@@ -268,130 +301,17 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
-    void displayLoop() {
-        final List<Event> entries = new ArrayList<>();
-
-        while (true) {
-            try {
-                entries.add(queue.take());
-                queue.drainTo(entries);
-                for (Event entry : entries) {
-                    switch (entry.type) {
-                    case BUILD_STATUS: {
-                        this.buildStatus = entry.message;
-                        break;
-                    }
-                    case END_OF_STREAM: {
-                        projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                        clearDisplay();
-                        log.close();
-                        terminal.flush();
-                        return;
-                    }
-                    case LOG: {
-                        if (entry.projectId != null) {
-                            Project prj = projects.computeIfAbsent(entry.projectId, Project::new);
-                            prj.log.add(entry.message);
-                        } else {
-                            log.accept(entry.message);
-                        }
-                        break;
-                    }
-                    case ERROR: {
-                        projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                        clearDisplay();
-                        log.close();
-                        final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
-                        new AttributedString(entry.message, s).println(terminal);
-                        terminal.flush();
-                        return;
-                    }
-                    case PROJECT_STATE: {
-                        Project prj = projects.computeIfAbsent(entry.projectId, Project::new);
-                        prj.status = entry.message;
-                        break;
-                    }
-                    case PROJECT_FINISHED: {
-                        Project prj = projects.remove(entry.projectId);
-                        if (prj != null) {
-                            prj.log.forEach(log);
-                        }
-                        doneProjects++;
-                        displayDone();
-                        break;
-                    }
-                    case INPUT:
-                        switch (entry.message.charAt(0)) {
-                        case '+':
-                            linesPerProject = Math.min(10, linesPerProject + 1);
-                            break;
-                        case '-':
-                            linesPerProject = Math.max(0, linesPerProject - 1);
-                            break;
-                        case CTRL_L:
-                            display.update(Collections.emptyList(), 0);
-                            break;
-                        case CTRL_M:
-                            displayDone = !displayDone;
-                            displayDone();
-                            break;
-                        }
-                        break;
-                    case DISPLAY:
-                        display.update(Collections.emptyList(), 0);
-                        terminal.writer().printf("[%s] %s%n", entry.projectId, entry.message);
-                        break;
-                    case PROMPT:
-                    case PROMPT_PASSWORD: {
-                        readInput.writeLock().lock();
-                        try {
-                            display.update(Collections.emptyList(), 0);
-                            terminal.writer().printf("[%s] %s", entry.projectId, entry.message);
-                            terminal.flush();
-                            StringBuilder sb = new StringBuilder();
-                            while (true) {
-                                int c = terminal.reader().read();
-                                if (c < 0) {
-                                    break;
-                                } else if (c == '\n' || c == '\r') {
-                                    entry.response.put(sb.toString());
-                                    terminal.writer().println();
-                                    break;
-                                } else if (c == 127) {
-                                    if (sb.length() > 0) {
-                                        sb.setLength(sb.length() - 1);
-                                        terminal.writer().write("\b \b");
-                                        terminal.writer().flush();
-                                    }
-                                } else {
-                                    terminal.writer().print((char) c);
-                                    terminal.writer().flush();
-                                    sb.append((char) c);
-                                }
-                            }
-                        } finally {
-                            readInput.writeLock().unlock();
-                        }
-                    }
-                    }
-                }
-                entries.clear();
-                update();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (Exception e) {
-                this.exception = e;
-            }
-        }
-    }
-
     private void clearDisplay() {
         display.update(Collections.emptyList(), 0);
     }
 
-    private void displayDone() throws IOException {
+    private void displayDone() {
         if (displayDone) {
-            log.flush();
+            try {
+                log.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -399,8 +319,7 @@ public class TerminalOutput implements ClientOutput {
     public void close() throws Exception {
         closing = true;
         reader.interrupt();
-        queue.put(new Event(EventType.END_OF_STREAM, null, null));
-        worker.join();
+        accept(SimpleMessage.BUILD_STOPPED_SINGLETON);
         reader.join();
         terminal.close();
         closed.countDown();
@@ -456,39 +375,41 @@ public class TerminalOutput implements ClientOutput {
     }
 
     private void addStatusLine(final List<AttributedString> lines, int dispLines, final int projectsCount) {
-        AttributedStringBuilder asb = new AttributedStringBuilder();
-        StringBuilder statusLine = new StringBuilder(64);
-        if (name == null) {
-            statusLine.append(buildStatus != null ? buildStatus : "Looking up daemon...");
-        } else {
-            asb.append("Building ");
-            asb.style(AttributedStyle.BOLD);
-            asb.append(name);
-            asb.style(AttributedStyle.DEFAULT);
-            if (projectsCount <= dispLines) {
-                statusLine.append("  threads used/max: ")
-                        .append(projectsCount).append('/').append(maxThreads);
+        if (name != null || buildStatus != null) {
+            AttributedStringBuilder asb = new AttributedStringBuilder();
+            StringBuilder statusLine = new StringBuilder(64);
+            if (name != null) {
+                asb.append("Building ");
+                asb.style(AttributedStyle.BOLD);
+                asb.append(name);
+                asb.style(AttributedStyle.DEFAULT);
+                if (projectsCount <= dispLines) {
+                    statusLine.append("  threads used/max: ")
+                            .append(projectsCount).append('/').append(maxThreads);
+                } else {
+                    statusLine.append("  threads used/hidden/max: ")
+                            .append(projectsCount).append('/').append(projectsCount - dispLines).append('/').append(maxThreads);
+                }
+
+                if (totalProjects > 0) {
+                    statusLine.append("  progress: ").append(doneProjects).append('/').append(totalProjects).append(' ')
+                            .append(doneProjects * 100 / totalProjects).append('%');
+                }
+            } else if (buildStatus != null) {
+                statusLine.append(buildStatus);
+            }
+
+            statusLine.append("  time: ");
+            long sec = (System.currentTimeMillis() - this.start) / 1000;
+            if (sec > 60) {
+                statusLine.append(sec / 60).append('m').append(String.valueOf(sec % 60)).append('s');
             } else {
-                statusLine.append("  threads used/hidden/max: ")
-                        .append(projectsCount).append('/').append(projectsCount - dispLines).append('/').append(maxThreads);
+                statusLine.append(sec).append('s');
             }
 
-            if (totalProjects > 0) {
-                statusLine.append("  progress: ").append(doneProjects).append('/').append(totalProjects).append(' ')
-                        .append(doneProjects * 100 / totalProjects).append('%');
-            }
+            asb.append(statusLine.toString());
+            lines.add(asb.toAttributedString());
         }
-
-        statusLine.append("  time: ");
-        long sec = (System.currentTimeMillis() - this.start) / 1000;
-        if (sec > 60) {
-            statusLine.append(sec / 60).append('m').append(String.valueOf(sec % 60)).append('s');
-        } else {
-            statusLine.append(sec).append('s');
-        }
-
-        asb.append(statusLine.toString());
-        lines.add(asb.toAttributedString());
     }
 
     private void addProjectLine(final List<AttributedString> lines, Project prj) {

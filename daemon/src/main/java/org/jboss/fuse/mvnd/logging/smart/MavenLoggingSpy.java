@@ -17,6 +17,8 @@ package org.jboss.fuse.mvnd.logging.smart;
 
 import java.io.IOError;
 import org.apache.maven.execution.MavenSession;
+import org.jboss.fuse.mvnd.common.Message;
+import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 
 public class MavenLoggingSpy extends AbstractLoggingSpy {
@@ -30,10 +32,10 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     protected void onStartSession(MavenSession session) {
         try {
             output = new TerminalOutput(null);
-            output.startBuild(
+            output.accept(new Message.BuildStarted(
                     session.getTopLevelProject().getName(),
                     session.getAllProjects().size(),
-                    session.getRequest().getDegreeOfConcurrency());
+                    session.getRequest().getDegreeOfConcurrency()));
         } catch (Exception e) {
             throw new IOError(e);
         }
@@ -51,30 +53,24 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     @Override
     protected void onStartProject(String projectId, String display) {
         super.onStartProject(projectId, display);
-        output.projectStateChanged(projectId, display);
+        output.accept(new BuildEvent(Message.PROJECT_STARTED, projectId, display));
     }
 
     @Override
     protected void onStopProject(String projectId, String display) {
-        output.projectFinished(projectId);
+        output.accept(new BuildEvent(Message.PROJECT_STOPPED, projectId, display));
     }
 
     @Override
     protected void onStartMojo(String projectId, String display) {
         super.onStartMojo(projectId, display);
-        output.projectStateChanged(projectId, display);
-    }
-
-    @Override
-    protected void onStopMojo(String projectId, String display) {
-        output.projectStateChanged(projectId, ":" + projectId);
-        super.onStopMojo(projectId, display);
+        output.accept(new BuildEvent(Message.MOJO_STARTED, projectId, display));
     }
 
     @Override
     protected void onProjectLog(String projectId, String message) {
         super.onProjectLog(projectId, message);
-        output.accept(projectId, message);
+        output.accept(Message.log(projectId, message));
     }
 
 }

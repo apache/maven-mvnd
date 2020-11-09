@@ -18,14 +18,13 @@ package org.jboss.fuse.mvnd.it;
 import java.io.IOException;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestRegistry;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,7 +45,7 @@ public class ExtensionsNativeIT {
         registry.killAll();
         Assertions.assertThat(registry.getAll().size()).isEqualTo(0);
 
-        final ClientOutput o = Mockito.mock(ClientOutput.class);
+        final TestClientOutput o = new TestClientOutput();
         client.execute(o, "-v").assertSuccess();
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
         DaemonInfo daemon = registry.getAll().iterator().next();

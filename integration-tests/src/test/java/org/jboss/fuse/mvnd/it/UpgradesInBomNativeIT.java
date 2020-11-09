@@ -20,16 +20,15 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
+import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
-import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.junit.ClientFactory;
 import org.jboss.fuse.mvnd.junit.MvndNativeTest;
 import org.jboss.fuse.mvnd.junit.TestParameters;
 import org.jboss.fuse.mvnd.junit.TestRegistry;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 @MvndNativeTest(projectDir = "src/test/projects/upgrades-in-bom")
 public class UpgradesInBomNativeIT {
@@ -48,7 +47,7 @@ public class UpgradesInBomNativeIT {
         /* Install the dependencies */
         for (String artifactDir : Arrays.asList("project/hello-0.0.1", "project/hello-0.0.2-SNAPSHOT")) {
             final Client cl = clientFactory.newClient(parameters.cd(parameters.getTestDir().resolve(artifactDir)));
-            final ClientOutput output = Mockito.mock(ClientOutput.class);
+            final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e").assertSuccess();
             registry.killAll();
         }
@@ -58,7 +57,7 @@ public class UpgradesInBomNativeIT {
         final Path parentDir = parameters.getTestDir().resolve("project/parent");
         final Client cl = clientFactory.newClient(parameters.cd(parentDir));
         {
-            final ClientOutput output = Mockito.mock(ClientOutput.class);
+            final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e").assertSuccess();
         }
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
@@ -76,7 +75,7 @@ public class UpgradesInBomNativeIT {
                 .resolve("module/src/main/java/org/jboss/fuse/mvnd/test/upgrades/bom/module/UseHello.java");
         TestUtils.replace(useHelloPath, "new Hello().sayHello()", "new Hello().sayWisdom()");
         {
-            final ClientOutput output = Mockito.mock(ClientOutput.class);
+            final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e").assertSuccess();
         }
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
