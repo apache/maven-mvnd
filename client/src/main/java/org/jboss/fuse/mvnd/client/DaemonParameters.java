@@ -511,7 +511,7 @@ public class DaemonParameters {
                 }
             }
             final String result = valueSource.valueSupplier.get();
-            if (result != null && LOG.isDebugEnabled()) {
+            if (result != null && LOG.isTraceEnabled()) {
                 StringBuilder sb = new StringBuilder("Loaded environment value for key [")
                         .append(envKey.name())
                         .append("] from ");
@@ -519,7 +519,7 @@ public class DaemonParameters {
                 sb.append(": [")
                         .append(result)
                         .append(']');
-                LOG.debug(sb.toString());
+                LOG.trace(sb.toString());
             }
             return result;
         }
