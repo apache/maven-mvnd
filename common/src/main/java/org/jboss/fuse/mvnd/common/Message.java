@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 public abstract class Message {
     public static final int BUILD_REQUEST = 0;
@@ -44,10 +43,12 @@ public abstract class Message {
     public static final int PROMPT_RESPONSE = 12;
     public static final int BUILD_STATUS = 13;
     public static final int KEYBOARD_INPUT = 14;
+    public static final int CANCEL_BUILD = 15;
 
     public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(KEEP_ALIVE);
     public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(STOP);
     public static final SimpleMessage BUILD_STOPPED_SINGLETON = new SimpleMessage(BUILD_STOPPED);
+    public static final SimpleMessage CANCEL_BUILD_SINGLETON = new SimpleMessage(CANCEL_BUILD);
 
     final int type;
 
@@ -87,6 +88,8 @@ public abstract class Message {
             return PromptResponse.read(input);
         case BUILD_STATUS:
             return StringMessage.read(BUILD_STATUS, input);
+        case CANCEL_BUILD:
+            return SimpleMessage.CANCEL_BUILD_SINGLETON;
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -454,6 +457,7 @@ public abstract class Message {
             output.writeInt(projectCount);
             output.writeInt(maxThreads);
         }
+
     }
 
     public static class BuildMessage extends Message {
@@ -511,6 +515,8 @@ public abstract class Message {
                 return "BuildStopped";
             case STOP:
                 return "Stop";
+            case CANCEL_BUILD:
+                return "BuildCanceled";
             default:
                 throw new IllegalStateException("Unexpected type " + type);
             }
@@ -607,7 +613,6 @@ public abstract class Message {
         final String uid;
         final String message;
         final boolean password;
-        final Consumer<String> callback;
 
         public static Prompt read(DataInputStream input) throws IOException {
             String projectId = Message.readUTF(input);
@@ -618,16 +623,11 @@ public abstract class Message {
         }
 
         public Prompt(String projectId, String uid, String message, boolean password) {
-            this(projectId, uid, message, password, null);
-        }
-
-        public Prompt(String projectId, String uid, String message, boolean password, Consumer<String> callback) {
             super(PROMPT);
             this.projectId = projectId;
             this.uid = uid;
             this.message = message;
             this.password = password;
-            this.callback = callback;
         }
 
         public String getProjectId() {
@@ -665,16 +665,8 @@ public abstract class Message {
             output.writeBoolean(password);
         }
 
-        public Prompt withCallback(Consumer<String> callback) {
-            return new Prompt(projectId, uid, message, password, callback);
-        }
-
         public PromptResponse response(String message) {
             return new PromptResponse(projectId, uid, message);
-        }
-
-        public Consumer<String> getCallback() {
-            return callback;
         }
 
     }
@@ -735,6 +727,10 @@ public abstract class Message {
 
     public static StringMessage buildStatus(String payload) {
         return new StringMessage(BUILD_STATUS, payload);
+    }
+
+    public static Display display(String message) {
+        return new Display(null, message);
     }
 
     public static BuildMessage log(String message) {

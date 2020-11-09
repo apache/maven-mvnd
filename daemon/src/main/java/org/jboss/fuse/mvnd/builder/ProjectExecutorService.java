@@ -88,6 +88,10 @@ class ProjectExecutorService {
         executor.shutdown();
     }
 
+    public void cancel() {
+        executor.shutdownNow();
+    }
+
     // hook to allow pausing executor during unit tests
     protected void beforeExecute(Thread t, Runnable r) {
     }

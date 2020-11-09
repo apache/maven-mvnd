@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.fusesource.jansi.Ansi;
 import org.jboss.fuse.mvnd.common.BuildProperties;
+import org.jboss.fuse.mvnd.common.DaemonException;
 import org.jboss.fuse.mvnd.common.DaemonInfo;
 import org.jboss.fuse.mvnd.common.DaemonRegistry;
 import org.jboss.fuse.mvnd.common.Environment;
@@ -32,12 +33,12 @@ import org.jboss.fuse.mvnd.common.Message.BuildException;
 import org.jboss.fuse.mvnd.common.OsUtils;
 import org.jboss.fuse.mvnd.common.logging.ClientOutput;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
+import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DefaultClient implements Client {
-
-    public static final int CANCEL_TIMEOUT = 10 * 1000;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
 
@@ -62,7 +63,13 @@ public class DefaultClient implements Client {
         }
 
         try (TerminalOutput output = new TerminalOutput(logFile)) {
-            new DefaultClient(new DaemonParameters()).execute(output, args);
+            try {
+                new DefaultClient(new DaemonParameters()).execute(output, args);
+            } catch (DaemonException.InterruptedException e) {
+                final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
+                String str = new AttributedString(System.lineSeparator() + "Canceled by user", s).toAnsi();
+                output.accept(Message.display(str));
+            }
         }
     }
 
@@ -157,7 +164,7 @@ public class DefaultClient implements Client {
             if (stop) {
                 DaemonInfo[] dis = registry.getAll().toArray(new DaemonInfo[0]);
                 if (dis.length > 0) {
-                    output.accept(Message.log("Stopping " + dis.length + " running daemons"));
+                    output.accept(Message.display("Stopping " + dis.length + " running daemons"));
                     for (DaemonInfo di : dis) {
                         try {
                             ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
@@ -191,6 +198,7 @@ public class DefaultClient implements Client {
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
+                output.setDeamonDispatch(daemon::dispatch);
                 output.accept(Message.buildStatus("Connected to daemon"));
 
                 daemon.dispatch(new Message.BuildRequest(
@@ -203,24 +211,20 @@ public class DefaultClient implements Client {
 
                 while (true) {
                     final List<Message> messages = daemon.receive();
-                    for (int i = 0; i < messages.size(); i++) {
-                        Message m = messages.get(i);
+                    output.accept(messages);
+                    for (Message m : messages) {
                         switch (m.getType()) {
-                        case Message.BUILD_EXCEPTION: {
-                            output.accept(messages.subList(0, i + 1));
+                        case Message.CANCEL_BUILD:
+                            return new DefaultResult(argv,
+                                    new InterruptedException("The build was canceled"));
+                        case Message.BUILD_EXCEPTION:
                             final BuildException e = (BuildException) m;
                             return new DefaultResult(argv,
                                     new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
-                        }
-                        case Message.BUILD_STOPPED: {
-                            output.accept(messages.subList(0, i));
+                        case Message.BUILD_STOPPED:
                             return new DefaultResult(argv, null);
                         }
-                        default:
-                            break;
-                        }
                     }
-                    output.accept(messages);
                 }
             }
         }

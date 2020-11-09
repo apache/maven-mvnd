@@ -70,16 +70,41 @@ public class SmartBuilder implements Builder {
 
     private final LifecycleModuleBuilder moduleBuilder;
 
+    private volatile SmartBuilderImpl builder;
+    private volatile boolean canceled;
+
+    private static SmartBuilder INSTANCE;
+
+    public static SmartBuilder cancel() {
+        SmartBuilder builder = INSTANCE;
+        if (builder != null) {
+            builder.doCancel();
+        }
+        return builder;
+    }
+
     @Inject
     public SmartBuilder(LifecycleModuleBuilder moduleBuilder) {
         this.moduleBuilder = moduleBuilder;
+        INSTANCE = this;
+    }
+
+    void doCancel() {
+        canceled = true;
+        SmartBuilderImpl b = builder;
+        if (b != null) {
+            b.cancel();
+        }
+    }
+
+    public void doneCancel() {
+        canceled = false;
     }
 
     @Override
-    public void build(final MavenSession session, final ReactorContext reactorContext,
+    public synchronized void build(final MavenSession session, final ReactorContext reactorContext,
             ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
             ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
-
         List<String> list = new ArrayList<>();
 
         String providerScript = null;
@@ -165,9 +190,16 @@ public class SmartBuilder implements Builder {
         List<Map.Entry<TaskSegment, ReactorBuildStats>> allstats = new ArrayList<>();
         for (TaskSegment taskSegment : taskSegments) {
             Set<MavenProject> projects = projectBuilds.getByTaskSegment(taskSegment).getProjects();
-            ReactorBuildStats stats = new SmartBuilderImpl(moduleBuilder, session, reactorContext, taskSegment, projects, graph)
-                    .build();
-            allstats.add(new AbstractMap.SimpleEntry<>(taskSegment, stats));
+            if (canceled) {
+                return;
+            }
+            builder = new SmartBuilderImpl(moduleBuilder, session, reactorContext, taskSegment, projects, graph);
+            try {
+                ReactorBuildStats stats = builder.build();
+                allstats.add(new AbstractMap.SimpleEntry<>(taskSegment, stats));
+            } finally {
+                builder = null;
+            }
         }
 
         if (session.getResult().hasExceptions()) {

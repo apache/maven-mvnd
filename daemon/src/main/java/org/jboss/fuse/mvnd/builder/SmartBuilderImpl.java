@@ -157,6 +157,10 @@ class SmartBuilderImpl {
         executor.shutdown();
     }
 
+    public void cancel() {
+        executor.cancel();
+    }
+
     private void submitAll(Set<MavenProject> readyProjects) {
         List<ProjectBuildTask> tasks = new ArrayList<>();
         for (MavenProject project : readyProjects) {
