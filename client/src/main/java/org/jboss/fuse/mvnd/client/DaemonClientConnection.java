@@ -135,6 +135,15 @@ public class DaemonClientConnection implements Closeable {
         connection.close();
     }
 
+    public void cancel() {
+        dispatch(Message.CANCEL_SINGLETON);
+        try {
+            queue.put(Message.CANCEL_SINGLETON);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public interface StaleAddressDetector {
         /**
          * @return true if the failure should be considered due to a stale address.

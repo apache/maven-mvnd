@@ -56,6 +56,7 @@ public class TerminalOutput implements ClientOutput {
 
     private final BlockingQueue<Event> queue;
     private final Terminal terminal;
+    private final Terminal.SignalHandler previousIntHandler;
     private final Display display;
     private final LinkedHashMap<String, Project> projects = new LinkedHashMap<>();
     private final ClientLog log;
@@ -71,6 +72,7 @@ public class TerminalOutput implements ClientOutput {
     private volatile int totalProjects;
     private volatile int maxThreads;
 
+    private Runnable interruptHandler;
     private int linesPerProject = 0; // read/written only by the displayLoop
     private int doneProjects = 0; // read/written only by the displayLoop
     private String buildStatus; // read/written only by the displayLoop
@@ -87,11 +89,13 @@ public class TerminalOutput implements ClientOutput {
         KEEP_ALIVE,
         DISPLAY,
         PROMPT,
-        PROMPT_PASSWORD
+        PROMPT_PASSWORD,
+        CANCEL
     }
 
     static class Event {
         public static final Event KEEP_ALIVE = new Event(EventType.KEEP_ALIVE, null, null);
+        public static final Event CANCEL = new Event(EventType.CANCEL, null, "Canceled !!!");
         public final EventType type;
         public final String projectId;
         public final String message;
@@ -128,6 +132,7 @@ public class TerminalOutput implements ClientOutput {
         this.queue = new LinkedBlockingDeque<>();
         this.terminal = TerminalBuilder.terminal();
         terminal.enterRawMode();
+        this.previousIntHandler = terminal.handle(Terminal.Signal.INT, sig -> handleInterrupt());
         this.display = new Display(terminal, false);
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
         final Thread w = new Thread(this::displayLoop);
@@ -136,6 +141,23 @@ public class TerminalOutput implements ClientOutput {
         final Thread r = new Thread(this::readInputLoop);
         r.start();
         this.reader = r;
+    }
+
+    protected void handleInterrupt() {
+        this.interruptHandler.run();
+    }
+
+    public void onInterrupt(Runnable run) {
+        this.interruptHandler = run;
+    }
+
+    @Override
+    public void cancel() {
+        try {
+            queue.put(Event.CANCEL);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public Terminal getTerminal() {
@@ -290,6 +312,7 @@ public class TerminalOutput implements ClientOutput {
                         }
                         break;
                     }
+                    case CANCEL:
                     case ERROR: {
                         projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                         clearDisplay();
@@ -395,6 +418,7 @@ public class TerminalOutput implements ClientOutput {
         queue.put(new Event(EventType.END_OF_STREAM, null, null));
         worker.join();
         reader.join();
+        terminal.handle(Terminal.Signal.INT, previousIntHandler);
         terminal.close();
         closed.countDown();
         if (exception != null) {

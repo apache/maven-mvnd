@@ -41,6 +41,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.maven.cli.DaemonMavenCli;
 import org.apache.maven.execution.MavenSession;
+import org.jboss.fuse.mvnd.builder.SmartBuilder;
 import org.jboss.fuse.mvnd.common.DaemonConnection;
 import org.jboss.fuse.mvnd.common.DaemonException;
 import org.jboss.fuse.mvnd.common.DaemonExpirationStatus;
@@ -65,7 +66,9 @@ import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.jboss.fuse.mvnd.common.DaemonState.Broken;
 import static org.jboss.fuse.mvnd.common.DaemonState.Busy;
+import static org.jboss.fuse.mvnd.common.DaemonState.Canceled;
 import static org.jboss.fuse.mvnd.common.DaemonState.StopRequested;
 import static org.jboss.fuse.mvnd.common.DaemonState.Stopped;
 
@@ -271,7 +274,6 @@ public class Server implements AutoCloseable, Runnable {
                         condition.await();
                         break;
                     case Canceled:
-                        LOGGER.debug("cancel requested.");
                         cancelNow();
                         break;
                     case Broken:
@@ -359,17 +361,13 @@ public class Server implements AutoCloseable, Runnable {
     private void cancelNow() {
         long time = System.currentTimeMillis() + CANCEL_TIMEOUT;
 
-        //        LOGGER.debug("Cancel requested: will wait for daemon to become idle.");
-        //        try {
-        //            cancellationToken.cancel();
-        //        } catch (Exception ex) {
-        //            LOGGER.error("Cancel processing failed. Will continue.", ex);
-        //        }
+        LOGGER.debug("Cancel requested: will wait for daemon to become idle.");
+        SmartBuilder.cancel();
 
         stateLock.lock();
         try {
             long rem;
-            while ((rem = System.currentTimeMillis() - time) > 0) {
+            while ((rem = time - System.currentTimeMillis()) > 0) {
                 try {
                     switch (getState()) {
                     case Idle:
@@ -395,6 +393,7 @@ public class Server implements AutoCloseable, Runnable {
             stopNow("cancel requested but timed out");
         } finally {
             stateLock.unlock();
+            SmartBuilder.doneCancel();
         }
     }
 
@@ -411,6 +410,7 @@ public class Server implements AutoCloseable, Runnable {
 
             DaemonLoggingSpy loggingSpy = new DaemonLoggingSpy(sendQueue);
             AbstractLoggingSpy.instance(loggingSpy);
+            Thread runner = Thread.currentThread();
             Thread sender = new Thread(() -> {
                 try {
                     boolean flushed = true;
@@ -451,12 +451,20 @@ public class Server implements AutoCloseable, Runnable {
                             break;
                         }
                         LOGGER.info("Received message: {}", message);
-                        synchronized (recvQueue) {
-                            recvQueue.put(message);
-                            recvQueue.notifyAll();
+                        if (message == Message.CANCEL_SINGLETON) {
+                            updateState(DaemonState.Canceled);
+                            return;
+                        } else {
+                            synchronized (recvQueue) {
+                                recvQueue.put(message);
+                                recvQueue.notifyAll();
+                            }
                         }
                     }
+                } catch (DaemonException.RecoverableMessageIOException t) {
+                    updateState(Canceled);
                 } catch (Throwable t) {
+                    updateState(Broken);
                     LOGGER.error("Error receiving events", t);
                 }
             });

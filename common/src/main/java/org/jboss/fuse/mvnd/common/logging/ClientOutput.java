@@ -41,4 +41,8 @@ public interface ClientOutput extends AutoCloseable {
     void display(String projectId, String message);
 
     String prompt(String projectId, String message, boolean password);
+
+    void onInterrupt(Runnable runnable);
+
+    void cancel();
 }

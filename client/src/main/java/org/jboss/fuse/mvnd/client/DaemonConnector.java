@@ -63,26 +63,34 @@ public class DaemonConnector {
 
     private final DaemonRegistry registry;
     private final DaemonParameters parameters;
+    private boolean canceled;
+    private Thread thread;
 
     public DaemonConnector(DaemonParameters parameters, DaemonRegistry registry) {
         this.parameters = parameters;
         this.registry = registry;
     }
 
-    public DaemonClientConnection maybeConnect(DaemonCompatibilitySpec constraint) {
-        return findConnection(getCompatibleDaemons(registry.getAll(), constraint));
-    }
-
-    public DaemonClientConnection maybeConnect(DaemonInfo daemon) {
-        try {
-            return connectToDaemon(daemon, new CleanupOnStaleAddress(daemon), false);
-        } catch (DaemonException.ConnectException e) {
-            LOGGER.debug("Cannot connect to daemon {} due to {}. Ignoring.", daemon, e);
+    public void cancel() {
+        canceled = true;
+        Thread thread = this.thread;
+        if (thread != null) {
+            thread.interrupt();
         }
-        return null;
     }
 
     public DaemonClientConnection connect(ClientOutput output) {
+        canceled = false;
+        thread = Thread.currentThread();
+        try {
+            return doConnect(output);
+        } finally {
+            thread = null;
+            canceled = false;
+        }
+    }
+
+    protected DaemonClientConnection doConnect(ClientOutput output) {
         final DaemonCompatibilitySpec constraint = new DaemonCompatibilitySpec(
                 parameters.javaHome(), parameters.getDaemonOpts());
         output.buildStatus("Looking up daemon...");
