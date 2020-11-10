@@ -7,6 +7,7 @@
 **Implemented enhancements:**
 
 - Fail fast if the daemon can not be started [\#162](https://github.com/mvndaemon/mvnd/issues/162)
+- Client: have just one event queue and one consuming thread [\#133](https://github.com/mvndaemon/mvnd/issues/133)
 - Opt out of implicit -T [\#132](https://github.com/mvndaemon/mvnd/issues/132)
 
 **Closed issues:**
@@ -19,6 +20,7 @@
 
 **Merged pull requests:**
 
+- Client: have just one event queue and one consuming thread  [\#198](https://github.com/mvndaemon/mvnd/pull/198) ([ppalaga](https://github.com/ppalaga))
 - Minor refactorings [\#192](https://github.com/mvndaemon/mvnd/pull/192) ([ppalaga](https://github.com/ppalaga))
 - Allow passing additional jvm args to the daemon, fixes \#174 [\#191](https://github.com/mvndaemon/mvnd/pull/191) ([gnodet](https://github.com/gnodet))
 - Refactor [\#190](https://github.com/mvndaemon/mvnd/pull/190) ([gnodet](https://github.com/gnodet))
