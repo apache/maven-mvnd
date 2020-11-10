@@ -49,7 +49,6 @@ public class DaemonClientConnection implements Closeable {
     private final boolean newDaemon;
     private boolean hasReceived;
     private final Lock dispatchLock = new ReentrantLock();
-    private final int maxKeepAliveMs;
     private final BlockingQueue<Message> queue = new ArrayBlockingQueue<>(16);
     private final Thread receiver;
     private final AtomicBoolean running = new AtomicBoolean(true);
@@ -57,12 +56,11 @@ public class DaemonClientConnection implements Closeable {
     private final DaemonParameters parameters;
 
     public DaemonClientConnection(DaemonConnection connection, DaemonInfo daemon,
-            StaleAddressDetector staleAddressDetector, boolean newDaemon, int maxKeepAliveMs, DaemonParameters parameters) {
+            StaleAddressDetector staleAddressDetector, boolean newDaemon, DaemonParameters parameters) {
         this.connection = connection;
         this.daemon = daemon;
         this.staleAddressDetector = staleAddressDetector;
         this.newDaemon = newDaemon;
-        this.maxKeepAliveMs = maxKeepAliveMs;
         this.receiver = new Thread(this::doReceive);
         this.receiver.start();
         this.parameters = parameters;
@@ -96,6 +94,7 @@ public class DaemonClientConnection implements Closeable {
     }
 
     public List<Message> receive() throws ConnectException, StaleAddressException {
+        int maxKeepAliveMs = parameters.keepAliveMs() * parameters.maxLostKeepAlive();
         while (true) {
             try {
                 final Message m = queue.poll(maxKeepAliveMs, TimeUnit.MILLISECONDS);
