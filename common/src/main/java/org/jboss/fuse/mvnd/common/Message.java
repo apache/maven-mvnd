@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class Message {
     public static final int BUILD_REQUEST = 0;
@@ -34,21 +35,22 @@ public abstract class Message {
     public static final int PROJECT_STARTED = 3;
     public static final int PROJECT_STOPPED = 4;
     public static final int MOJO_STARTED = 5;
-    public static final int BUILD_MESSAGE = 6;
-    public static final int BUILD_EXCEPTION = 7;
-    public static final int KEEP_ALIVE = 8;
-    public static final int STOP = 9;
-    public static final int DISPLAY = 10;
-    public static final int PROMPT = 11;
-    public static final int PROMPT_RESPONSE = 12;
-    public static final int BUILD_STATUS = 13;
-    public static final int KEYBOARD_INPUT = 14;
-    public static final int CANCEL_BUILD = 15;
+    public static final int PROJECT_LOG_MESSAGE = 6;
+    public static final int BUILD_LOG_MESSAGE = 7;
+    public static final int BUILD_EXCEPTION = 8;
+    public static final int KEEP_ALIVE = 9;
+    public static final int STOP = 10;
+    public static final int DISPLAY = 11;
+    public static final int PROMPT = 12;
+    public static final int PROMPT_RESPONSE = 13;
+    public static final int BUILD_STATUS = 14;
+    public static final int KEYBOARD_INPUT = 15;
+    public static final int CANCEL_BUILD = 16;
 
-    public static final SimpleMessage KEEP_ALIVE_SINGLETON = new SimpleMessage(KEEP_ALIVE);
-    public static final SimpleMessage STOP_SINGLETON = new SimpleMessage(STOP);
-    public static final SimpleMessage BUILD_STOPPED_SINGLETON = new SimpleMessage(BUILD_STOPPED);
-    public static final SimpleMessage CANCEL_BUILD_SINGLETON = new SimpleMessage(CANCEL_BUILD);
+    public static final BareMessage KEEP_ALIVE_SINGLETON = new BareMessage(KEEP_ALIVE);
+    public static final BareMessage STOP_SINGLETON = new BareMessage(STOP);
+    public static final BareMessage BUILD_STOPPED_SINGLETON = new BareMessage(BUILD_STOPPED);
+    public static final BareMessage CANCEL_BUILD_SINGLETON = new BareMessage(CANCEL_BUILD);
 
     final int type;
 
@@ -67,29 +69,28 @@ public abstract class Message {
         case BUILD_STARTED:
             return BuildStarted.read(input);
         case BUILD_STOPPED:
-            return SimpleMessage.BUILD_STOPPED_SINGLETON;
+            return BareMessage.BUILD_STOPPED_SINGLETON;
         case PROJECT_STARTED:
         case PROJECT_STOPPED:
         case MOJO_STARTED:
-            return BuildEvent.read(type, input);
-        case BUILD_MESSAGE:
-            return BuildMessage.read(input);
+        case PROJECT_LOG_MESSAGE:
+        case DISPLAY:
+            return ProjectEvent.read(type, input);
         case BUILD_EXCEPTION:
             return BuildException.read(input);
         case KEEP_ALIVE:
-            return SimpleMessage.KEEP_ALIVE_SINGLETON;
+            return BareMessage.KEEP_ALIVE_SINGLETON;
         case STOP:
-            return SimpleMessage.STOP_SINGLETON;
-        case DISPLAY:
-            return Display.read(input);
+            return BareMessage.STOP_SINGLETON;
         case PROMPT:
             return Prompt.read(input);
         case PROMPT_RESPONSE:
             return PromptResponse.read(input);
         case BUILD_STATUS:
-            return StringMessage.read(BUILD_STATUS, input);
+        case BUILD_LOG_MESSAGE:
+            return StringMessage.read(type, input);
         case CANCEL_BUILD:
-            return SimpleMessage.CANCEL_BUILD_SINGLETON;
+            return BareMessage.CANCEL_BUILD_SINGLETON;
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -358,35 +359,35 @@ public abstract class Message {
         }
     }
 
-    public static class BuildEvent extends Message {
+    public static class ProjectEvent extends Message {
         final String projectId;
-        final String display;
+        final String message;
 
         public static Message read(int type, DataInputStream input) throws IOException {
             String projectId = readUTF(input);
-            String display = readUTF(input);
-            return new BuildEvent(type, projectId, display);
+            String message = readUTF(input);
+            return new ProjectEvent(type, projectId, message);
         }
 
-        public BuildEvent(int type, String projectId, String display) {
+        private ProjectEvent(int type, String projectId, String message) {
             super(type);
-            this.projectId = projectId;
-            this.display = display;
+            this.projectId = Objects.requireNonNull(projectId, "projectId cannot be null");
+            this.message = Objects.requireNonNull(message, "message cannot be null");
         }
 
         public String getProjectId() {
             return projectId;
         }
 
-        public String getDisplay() {
-            return display;
+        public String getMessage() {
+            return message;
         }
 
         @Override
         public String toString() {
             return mnemonic() + "{" +
                     "projectId='" + projectId + '\'' +
-                    ", display='" + display + '\'' +
+                    ", message='" + message + '\'' +
                     '}';
         }
 
@@ -398,6 +399,8 @@ public abstract class Message {
                 return "ProjectStopped";
             case MOJO_STARTED:
                 return "MojoStarted";
+            case PROJECT_LOG_MESSAGE:
+                return "ProjectLogMessage";
             default:
                 throw new IllegalStateException("Unexpected type " + type);
             }
@@ -407,7 +410,7 @@ public abstract class Message {
         public void write(DataOutputStream output) throws IOException {
             super.write(output);
             writeUTF(output, projectId);
-            writeUTF(output, display);
+            writeUTF(output, message);
         }
     }
 
@@ -460,49 +463,9 @@ public abstract class Message {
 
     }
 
-    public static class BuildMessage extends Message {
-        final String projectId;
-        final String message;
+    public static class BareMessage extends Message {
 
-        public static Message read(DataInputStream input) throws IOException {
-            String projectId = readUTF(input);
-            String message = readUTF(input);
-            return new BuildMessage(projectId.isEmpty() ? null : projectId, message);
-        }
-
-        public BuildMessage(String projectId, String message) {
-            super(BUILD_MESSAGE);
-            this.projectId = projectId;
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public String getProjectId() {
-            return projectId;
-        }
-
-        @Override
-        public String toString() {
-            return "BuildMessage{" +
-                    "projectId='" + projectId + '\'' +
-                    ", message='" + message + '\'' +
-                    '}';
-        }
-
-        @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId != null ? projectId : "");
-            writeUTF(output, message);
-        }
-    }
-
-    public static class SimpleMessage extends Message {
-
-        private SimpleMessage(int type) {
+        private BareMessage(int type) {
             super(type);
         }
 
@@ -526,65 +489,16 @@ public abstract class Message {
 
     public static class StringMessage extends Message {
 
-        final String payload;
-
-        public static StringMessage read(int type, DataInputStream input) throws IOException {
-            String payload = readUTF(input);
-            return new StringMessage(type, payload);
-        }
-
-        private StringMessage(int type, String payload) {
-            super(type);
-            this.payload = payload;
-        }
-
-        public String getPayload() {
-            return payload;
-        }
-
-        @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, payload);
-        }
-
-        @Override
-        public String toString() {
-            return mnemonic() + "{payload='" + payload + "'}";
-        }
-
-        private String mnemonic() {
-            switch (type) {
-            case BUILD_STATUS:
-                return "BuildStatus";
-            case Message.KEYBOARD_INPUT:
-                return "KeyboardInput";
-            default:
-                throw new IllegalStateException("Unexpected type " + type);
-            }
-        }
-
-    }
-
-    public static class Display extends Message {
-
-        final String projectId;
         final String message;
 
-        public static Message read(DataInputStream input) throws IOException {
-            String projectId = readUTF(input);
+        public static StringMessage read(int type, DataInputStream input) throws IOException {
             String message = readUTF(input);
-            return new Display(projectId, message);
+            return new StringMessage(type, message);
         }
 
-        public Display(String projectId, String message) {
-            super(DISPLAY);
-            this.projectId = projectId;
+        private StringMessage(int type, String message) {
+            super(type);
             this.message = message;
-        }
-
-        public String getProjectId() {
-            return projectId;
         }
 
         public String getMessage() {
@@ -592,19 +506,31 @@ public abstract class Message {
         }
 
         @Override
-        public String toString() {
-            return "Display{" +
-                    "projectId='" + projectId + '\'' +
-                    ", message='" + message + '\'' +
-                    '}';
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, message);
         }
 
         @Override
-        public void write(DataOutputStream output) throws IOException {
-            super.write(output);
-            writeUTF(output, projectId);
-            writeUTF(output, message);
+        public String toString() {
+            return mnemonic() + "{payload='" + message + "'}";
         }
+
+        private String mnemonic() {
+            switch (type) {
+            case BUILD_STATUS:
+                return "BuildStatus";
+            case KEYBOARD_INPUT:
+                return "KeyboardInput";
+            case BUILD_LOG_MESSAGE:
+                return "BuildLogMessage";
+            case DISPLAY:
+                return "Display";
+            default:
+                throw new IllegalStateException("Unexpected type " + type);
+            }
+        }
+
     }
 
     public static class Prompt extends Message {
@@ -684,7 +610,7 @@ public abstract class Message {
             return new PromptResponse(projectId, uid, message);
         }
 
-        public PromptResponse(String projectId, String uid, String message) {
+        private PromptResponse(String projectId, String uid, String message) {
             super(PROMPT_RESPONSE);
             this.projectId = projectId;
             this.uid = uid;
@@ -729,20 +655,36 @@ public abstract class Message {
         return new StringMessage(BUILD_STATUS, payload);
     }
 
-    public static Display display(String message) {
-        return new Display(null, message);
+    public static StringMessage display(String message) {
+        return new StringMessage(DISPLAY, message);
     }
 
-    public static BuildMessage log(String message) {
-        return new BuildMessage(null, message);
+    public static StringMessage log(String message) {
+        return new StringMessage(BUILD_LOG_MESSAGE, message);
     }
 
-    public static BuildMessage log(String projectId, String message) {
-        return new BuildMessage(projectId, message);
+    public static ProjectEvent log(String projectId, String message) {
+        return new ProjectEvent(PROJECT_LOG_MESSAGE, projectId, message);
     }
 
     public static StringMessage keyboardInput(char keyStroke) {
         return new StringMessage(KEYBOARD_INPUT, String.valueOf(keyStroke));
+    }
+
+    public static ProjectEvent projectStarted(String projectId, String display) {
+        return new ProjectEvent(Message.PROJECT_STARTED, projectId, display);
+    }
+
+    public static ProjectEvent projectStopped(String projectId, String display) {
+        return new ProjectEvent(PROJECT_STOPPED, projectId, display);
+    }
+
+    public static Message mojoStarted(String projectId, String display) {
+        return new ProjectEvent(Message.MOJO_STARTED, projectId, display);
+    }
+
+    public static ProjectEvent display(String projectId, String message) {
+        return new ProjectEvent(Message.DISPLAY, projectId, message);
     }
 
 }

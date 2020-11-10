@@ -29,8 +29,7 @@ import org.jboss.fuse.mvnd.assertj.TestClientOutput;
 import org.jboss.fuse.mvnd.client.Client;
 import org.jboss.fuse.mvnd.client.DaemonParameters;
 import org.jboss.fuse.mvnd.common.Message;
-import org.jboss.fuse.mvnd.common.Message.BuildEvent;
-import org.jboss.fuse.mvnd.common.Message.BuildMessage;
+import org.jboss.fuse.mvnd.common.Message.ProjectEvent;
 import org.jboss.fuse.mvnd.junit.MvndTest;
 import org.jboss.fuse.mvnd.junit.TestUtils;
 import org.junit.jupiter.api.Test;
@@ -75,8 +74,8 @@ public class MultiModuleTest {
 
         {
             final List<String> filteredMessages = output.getMessages().stream()
-                    .filter(m -> m.getType() == Message.BUILD_MESSAGE)
-                    .map(m -> ((BuildMessage) m).getMessage())
+                    .filter(m -> m.getType() == Message.PROJECT_LOG_MESSAGE)
+                    .map(m -> ((ProjectEvent) m).getMessage())
                     .collect(Collectors.toList());
 
             Assertions.assertThat(filteredMessages)
@@ -98,7 +97,7 @@ public class MultiModuleTest {
         {
             final List<String> filteredMessages = output.getMessages().stream()
                     .filter(m -> m.getType() == Message.PROJECT_STARTED)
-                    .map(m -> ((BuildEvent) m).getProjectId())
+                    .map(m -> ((ProjectEvent) m).getProjectId())
                     .collect(Collectors.toList());
 
             Assertions.assertThat(filteredMessages)

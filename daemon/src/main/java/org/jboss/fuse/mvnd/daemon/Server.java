@@ -51,9 +51,7 @@ import org.jboss.fuse.mvnd.common.DaemonState;
 import org.jboss.fuse.mvnd.common.DaemonStopEvent;
 import org.jboss.fuse.mvnd.common.Environment;
 import org.jboss.fuse.mvnd.common.Message;
-import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
-import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.BuildRequest;
 import org.jboss.fuse.mvnd.common.Message.BuildStarted;
 import org.jboss.fuse.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
@@ -538,8 +536,10 @@ public class Server implements AutoCloseable, Runnable {
             return 3;
         case Message.MOJO_STARTED:
             return 4;
-        case Message.BUILD_MESSAGE:
+        case Message.PROJECT_LOG_MESSAGE:
             return 50;
+        case Message.BUILD_LOG_MESSAGE:
+            return 51;
         case Message.PROJECT_STOPPED:
             return 95;
         case Message.BUILD_STOPPED:
@@ -622,22 +622,22 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         protected void onStartProject(String projectId, String display) {
-            queue.add(new BuildEvent(Message.PROJECT_STARTED, projectId, display));
+            queue.add(Message.projectStarted(projectId, display));
         }
 
         @Override
         protected void onStopProject(String projectId, String display) {
-            queue.add(new BuildEvent(Message.PROJECT_STOPPED, projectId, display));
+            queue.add(Message.projectStopped(projectId, display));
         }
 
         @Override
         protected void onStartMojo(String projectId, String display) {
-            queue.add(new BuildEvent(Message.MOJO_STARTED, projectId, display));
+            queue.add(Message.mojoStarted(projectId, display));
         }
 
         @Override
         protected void onProjectLog(String projectId, String message) {
-            queue.add(new BuildMessage(projectId, message));
+            queue.add(projectId == null ? Message.log(message) : Message.log(projectId, message));
         }
 
     }

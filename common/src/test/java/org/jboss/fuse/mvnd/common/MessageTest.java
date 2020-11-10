@@ -34,7 +34,7 @@ public class MessageTest {
         for (int i = 0; i < 66000; ++i) {
             stringToWrite.append("a");
         }
-        Message msg = new Message.BuildMessage("project", stringToWrite.toString());
+        Message msg = Message.log("project", stringToWrite.toString());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (DataOutputStream daos = new DataOutputStream(baos)) {
             msg.write(daos);
@@ -46,8 +46,8 @@ public class MessageTest {
             msg2 = Message.read(dis);
         }
 
-        assertTrue(msg2 instanceof Message.BuildMessage);
-        assertEquals(stringToWrite.toString(), ((Message.BuildMessage) msg2).getMessage());
+        assertTrue(msg2 instanceof Message.ProjectEvent);
+        assertEquals(stringToWrite.toString(), ((Message.ProjectEvent) msg2).getMessage());
     }
 
     @Test

@@ -148,7 +148,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
         try {
             Connection con = Objects.requireNonNull(Connection.getCurrent());
             String projectId = MDC.get(ProjectBuildLogAppender.KEY_PROJECT_ID);
-            Message.Display msg = new Message.Display(projectId, message);
+            Message.ProjectEvent msg = Message.display(projectId, message);
             LOGGER.info("Sending display request: " + msg);
             con.dispatch(msg);
         } catch (Exception e) {
