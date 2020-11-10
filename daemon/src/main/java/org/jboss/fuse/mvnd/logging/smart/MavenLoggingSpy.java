@@ -18,7 +18,6 @@ package org.jboss.fuse.mvnd.logging.smart;
 import java.io.IOError;
 import org.apache.maven.execution.MavenSession;
 import org.jboss.fuse.mvnd.common.Message;
-import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildStarted;
 import org.jboss.fuse.mvnd.common.logging.TerminalOutput;
 
@@ -54,24 +53,24 @@ public class MavenLoggingSpy extends AbstractLoggingSpy {
     @Override
     protected void onStartProject(String projectId, String display) {
         super.onStartProject(projectId, display);
-        output.accept(new BuildEvent(Message.PROJECT_STARTED, projectId, display));
+        output.accept(Message.projectStarted(projectId, display));
     }
 
     @Override
     protected void onStopProject(String projectId, String display) {
-        output.accept(new BuildEvent(Message.PROJECT_STOPPED, projectId, display));
+        output.accept(Message.projectStopped(projectId, display));
     }
 
     @Override
     protected void onStartMojo(String projectId, String display) {
         super.onStartMojo(projectId, display);
-        output.accept(new BuildEvent(Message.MOJO_STARTED, projectId, display));
+        output.accept(Message.mojoStarted(projectId, display));
     }
 
     @Override
     protected void onProjectLog(String projectId, String message) {
         super.onProjectLog(projectId, message);
-        output.accept(Message.log(projectId, message));
+        output.accept(projectId == null ? Message.log(message) : Message.log(projectId, message));
     }
 
 }

@@ -35,10 +35,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.jboss.fuse.mvnd.common.Message;
-import org.jboss.fuse.mvnd.common.Message.BuildEvent;
 import org.jboss.fuse.mvnd.common.Message.BuildException;
-import org.jboss.fuse.mvnd.common.Message.BuildMessage;
 import org.jboss.fuse.mvnd.common.Message.BuildStarted;
+import org.jboss.fuse.mvnd.common.Message.ProjectEvent;
 import org.jboss.fuse.mvnd.common.Message.StringMessage;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
@@ -182,13 +181,13 @@ public class TerminalOutput implements ClientOutput {
         }
         case Message.PROJECT_STARTED:
         case Message.MOJO_STARTED: {
-            BuildEvent be = (BuildEvent) entry;
+            ProjectEvent be = (ProjectEvent) entry;
             Project prj = projects.computeIfAbsent(be.getProjectId(), Project::new);
-            prj.status = be.getDisplay();
+            prj.status = be.getMessage();
             break;
         }
         case Message.PROJECT_STOPPED: {
-            BuildEvent be = (BuildEvent) entry;
+            ProjectEvent be = (ProjectEvent) entry;
             Project prj = projects.remove(be.getProjectId());
             if (prj != null) {
                 prj.log.forEach(log);
@@ -198,7 +197,7 @@ public class TerminalOutput implements ClientOutput {
             break;
         }
         case Message.BUILD_STATUS: {
-            this.buildStatus = ((StringMessage) entry).getPayload();
+            this.buildStatus = ((StringMessage) entry).getMessage();
             break;
         }
         case Message.BUILD_STOPPED: {
@@ -217,13 +216,9 @@ public class TerminalOutput implements ClientOutput {
             break;
         }
         case Message.DISPLAY: {
-            Message.Display d = (Message.Display) entry;
+            Message.StringMessage d = (Message.StringMessage) entry;
             display.update(Collections.emptyList(), 0);
-            if (d.getProjectId() != null) {
-                terminal.writer().printf("[%s] %s%n", d.getProjectId(), d.getMessage());
-            } else {
-                terminal.writer().printf("%s%n", d.getMessage());
-            }
+            terminal.writer().printf("%s%n", d.getMessage());
             break;
         }
         case Message.PROMPT: {
@@ -261,18 +256,37 @@ public class TerminalOutput implements ClientOutput {
             }
             break;
         }
-        case Message.BUILD_MESSAGE: {
-            BuildMessage bm = (BuildMessage) entry;
-            if (bm.getProjectId() != null) {
-                Project prj = projects.computeIfAbsent(bm.getProjectId(), Project::new);
-                prj.log.add(bm.getMessage());
+        case Message.BUILD_LOG_MESSAGE: {
+            StringMessage sm = (StringMessage) entry;
+            if (closing) {
+                try {
+                    closed.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                System.err.println(sm.getMessage());
             } else {
-                log.accept(bm.getMessage());
+                log.accept(sm.getMessage());
+            }
+            break;
+        }
+        case Message.PROJECT_LOG_MESSAGE: {
+            final ProjectEvent bm = (ProjectEvent) entry;
+            if (closing) {
+                try {
+                    closed.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                System.err.println(bm.getMessage());
+            } else {
+                final Project prj = projects.computeIfAbsent(bm.getProjectId(), Project::new);
+                prj.log.add(bm.getMessage());
             }
             break;
         }
         case Message.KEYBOARD_INPUT: {
-            char keyStroke = ((StringMessage) entry).getPayload().charAt(0);
+            char keyStroke = ((StringMessage) entry).getMessage().charAt(0);
             switch (keyStroke) {
             case '+':
                 linesPerProject = Math.min(10, linesPerProject + 1);
