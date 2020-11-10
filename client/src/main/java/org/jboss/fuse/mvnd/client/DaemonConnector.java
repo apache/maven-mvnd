@@ -326,9 +326,8 @@ public class DaemonConnector {
             throws DaemonException.ConnectException {
         LOGGER.debug("Connecting to Daemon");
         try {
-            int maxKeepAliveMs = parameters.keepAliveMs() * parameters.maxLostKeepAlive();
             DaemonConnection connection = connect(daemon.getAddress());
-            return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, maxKeepAliveMs, parameters);
+            return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, parameters);
         } catch (DaemonException.ConnectException e) {
             staleAddressDetector.maybeStaleAddress(e);
             throw e;
