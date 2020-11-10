@@ -551,7 +551,7 @@ public class Server implements AutoCloseable, Runnable {
         case Message.KEEP_ALIVE:
             return 100;
         default:
-            throw new IllegalStateException();
+            throw new IllegalStateException("Unexpected message type " + m.getType() + ": " + m);
         }
     }
 
