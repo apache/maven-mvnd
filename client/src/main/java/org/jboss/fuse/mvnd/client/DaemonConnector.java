@@ -232,7 +232,7 @@ public class DaemonConnector {
                 return daemonConnection;
             }
             try {
-                sleep(200L);
+                sleep(10L);
             } catch (InterruptedException e) {
                 throw new DaemonException.InterruptedException(e);
             }
