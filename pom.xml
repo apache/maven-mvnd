@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.jboss.fuse.mvnd</groupId>
+    <groupId>org.mvndaemon.mvnd</groupId>
     <artifactId>mvnd</artifactId>
     <version>0.0.12-SNAPSHOT</version>
 
@@ -159,23 +159,23 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.fuse.mvnd</groupId>
+                <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-client</artifactId>
                 <version>0.0.12-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.fuse.mvnd</groupId>
+                <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-common</artifactId>
                 <version>0.0.12-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.fuse.mvnd</groupId>
+                <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
                 <version>0.0.12-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.fuse.mvnd</groupId>
+                <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-daemon</artifactId>
                 <version>0.0.12-SNAPSHOT</version>
             </dependency>

@@ -90,10 +90,10 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
-import org.jboss.fuse.mvnd.common.Environment;
-import org.jboss.fuse.mvnd.logging.internal.Slf4jLoggerManager;
-import org.jboss.fuse.mvnd.logging.smart.AbstractLoggingSpy;
-import org.jboss.fuse.mvnd.logging.smart.LoggingExecutionListener;
+import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
+import org.mvndaemon.mvnd.logging.smart.AbstractLoggingSpy;
+import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -355,7 +355,7 @@ public class DaemonMavenCli {
 
         // Workaround for https://github.com/mvndaemon/mvnd/issues/39
         ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
-                .getLogger("org.jboss.fuse.mvnd");
+                .getLogger("org.mvndaemon.mvnd");
         mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level", "INFO")));
     }
 
@@ -457,7 +457,7 @@ public class DaemonMavenCli {
             exportedPackages.addAll(extension.getExportedPackages());
         }
         exportedPackages.add("org.codehaus.plexus.components.interactivity");
-        exportedPackages.add("org.jboss.fuse.mvnd.interactivity");
+        exportedPackages.add("org.mvndaemon.mvnd.interactivity");
         exportedArtifacts.add("org.codehaus.plexus:plexus-interactivity-api");
 
         final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);

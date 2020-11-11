@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.jboss.fuse.mvnd</groupId>
+        <groupId>org.mvndaemon.mvnd</groupId>
         <artifactId>mvnd</artifactId>
         <version>0.0.12-SNAPSHOT</version>
     </parent>
