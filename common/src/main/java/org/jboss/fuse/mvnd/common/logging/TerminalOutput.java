@@ -28,6 +28,7 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -66,30 +67,17 @@ public class TerminalOutput implements ClientOutput {
     private volatile boolean closing;
     private final long start;
     private final ReadWriteLock readInput = new ReentrantReadWriteLock();
+    private final AtomicInteger doneProjects = new AtomicInteger(0);
+    private final AtomicInteger displayDone = new AtomicInteger(1); // even is true, odd is false
+    private final AtomicInteger linesPerProject = new AtomicInteger(0);
+    private final AtomicInteger noBuffering; // even is true, odd is false
+    private final boolean dumb;
 
     /** A sink for sending messages back to the daemon */
     private volatile Consumer<Message> daemonDispatch;
 
-    /*
-     * The following non-final fields are read/written from the main thread only.
-     * This is guaranteed as follows:
-     * * The read/write ops are only reachable from accept(Message) and accept(List<Message>)
-     * * Both of these methods are guarded with "main".equals(Thread.currentThread().getName()) assertion
-     * Therefore, these fields do not need to be volatile
-     */
-    private String name;
-    private int totalProjects;
-    /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
-    private String projectsDoneFomat;
-    private int maxThreads;
-    /** String format for formatting the actual/hidden/max thread counts */
-    private String threadsFormat;
-    private int linesPerProject = 0;
-    private int doneProjects = 0;
-    private String buildStatus;
-    private boolean displayDone = false;
-    private boolean noBuffering;
-    private boolean dumb;
+    private volatile BuildInfo buildInfo;
+    private volatile String buildStatus;
 
     /**
      * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
@@ -109,7 +97,7 @@ public class TerminalOutput implements ClientOutput {
         this.start = System.currentTimeMillis();
         this.terminal = TerminalBuilder.terminal();
         this.dumb = terminal.getType().startsWith("dumb");
-        this.noBuffering = noBuffering;
+        this.noBuffering = new AtomicInteger(noBuffering ? 0 : 1);
         terminal.enterRawMode();
         Thread mainThread = Thread.currentThread();
         daemonDispatch = m -> {
@@ -137,7 +125,6 @@ public class TerminalOutput implements ClientOutput {
 
     @Override
     public void accept(Message entry) {
-        assert "main".equals(Thread.currentThread().getName());
         if (doAccept(entry)) {
             update();
         }
@@ -145,7 +132,6 @@ public class TerminalOutput implements ClientOutput {
 
     @Override
     public void accept(List<Message> entries) {
-        assert "main".equals(Thread.currentThread().getName());
         for (Message entry : entries) {
             if (!doAccept(entry)) {
                 return;
@@ -157,14 +143,17 @@ public class TerminalOutput implements ClientOutput {
     private boolean doAccept(Message entry) {
         switch (entry.getType()) {
         case Message.BUILD_STARTED: {
-            BuildStarted bs = (BuildStarted) entry;
-            this.name = bs.getProjectId();
-            this.totalProjects = bs.getProjectCount();
-            final int totalProjectsDigits = (int) (Math.log10(totalProjects) + 1);
-            this.projectsDoneFomat = "%" + totalProjectsDigits + "d";
-            this.maxThreads = bs.getMaxThreads();
+            final BuildStarted bs = (BuildStarted) entry;
+            final int maxThreads = bs.getMaxThreads();
             final int maxThreadsDigits = (int) (Math.log10(maxThreads) + 1);
-            this.threadsFormat = "%" + (maxThreadsDigits * 3 + 2) + "s";
+            final int totalProjects = bs.getProjectCount();
+            final int totalProjectsDigits = (int) (Math.log10(totalProjects) + 1);
+            this.buildInfo = new BuildInfo(
+                    bs.getProjectId(),
+                    totalProjects,
+                    "%" + totalProjectsDigits + "d",
+                    maxThreads,
+                    "%" + (maxThreadsDigits * 3 + 2) + "s");
             break;
         }
         case Message.CANCEL_BUILD: {
@@ -213,8 +202,8 @@ public class TerminalOutput implements ClientOutput {
             if (prj != null) {
                 prj.log.forEach(log);
             }
-            doneProjects++;
-            displayDone();
+            doneProjects.incrementAndGet();
+            displayDone(displayDone.get());
             break;
         }
         case Message.BUILD_STATUS: {
@@ -289,9 +278,9 @@ public class TerminalOutput implements ClientOutput {
         case Message.PROJECT_LOG_MESSAGE: {
             final ProjectEvent bm = (ProjectEvent) entry;
             final Project prj = projects.computeIfAbsent(bm.getProjectId(), Project::new);
-            if (noBuffering || dumb) {
-                String msg;
-                if (maxThreads > 1) {
+            if (noBuffering.get() % 2 == 0 || dumb) {
+                final String msg;
+                if (buildInfo != null && buildInfo.maxThreads > 1) {
                     msg = String.format("[%s] %s", bm.getProjectId(), bm.getMessage());
                 } else {
                     msg = bm.getMessage();
@@ -306,14 +295,13 @@ public class TerminalOutput implements ClientOutput {
             char keyStroke = ((StringMessage) entry).getMessage().charAt(0);
             switch (keyStroke) {
             case '+':
-                linesPerProject = Math.min(10, linesPerProject + 1);
+                linesPerProject.updateAndGet(i -> Math.min(10, i + 1));
                 break;
             case '-':
-                linesPerProject = Math.max(0, linesPerProject - 1);
+                linesPerProject.updateAndGet(i -> Math.max(0, i - 1));
                 break;
             case CTRL_B:
-                noBuffering = !noBuffering;
-                if (noBuffering) {
+                if (this.noBuffering.incrementAndGet() % 2 == 0) {
                     projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                     projects.clear();
                 } else {
@@ -324,8 +312,7 @@ public class TerminalOutput implements ClientOutput {
                 clearDisplay();
                 break;
             case CTRL_M:
-                displayDone = !displayDone;
-                displayDone();
+                displayDone(displayDone.incrementAndGet());
                 break;
             }
             break;
@@ -371,14 +358,14 @@ public class TerminalOutput implements ClientOutput {
     }
 
     private void clearDisplay() {
-        if (!noBuffering && !dumb) {
+        if (noBuffering.get() % 2 != 0 && !dumb) {
             display.update(Collections.emptyList(), 0);
         }
 
     }
 
-    private void displayDone() {
-        if (displayDone) {
+    private void displayDone(int displayDone) {
+        if (displayDone % 2 == 0) {
             try {
                 log.flush();
             } catch (IOException e) {
@@ -403,7 +390,7 @@ public class TerminalOutput implements ClientOutput {
     }
 
     private void update() {
-        if (noBuffering || dumb) {
+        if (noBuffering.get() % 2 == 0 || dumb) {
             try {
                 log.flush();
             } catch (IOException e) {
@@ -432,7 +419,7 @@ public class TerminalOutput implements ClientOutput {
             for (Project prj : projects.values()) {
                 addProjectLine(lines, prj);
                 // get the last lines of the project log, taking multi-line logs into account
-                int nb = Math.min(remLogLines, linesPerProject);
+                int nb = Math.min(remLogLines, linesPerProject.get());
                 List<AttributedString> logs = lastN(prj.log, nb).stream()
                         .flatMap(s -> AttributedString.fromAnsi(s).columnSplitLength(Integer.MAX_VALUE).stream())
                         .map(s -> concat("   ", s))
@@ -457,13 +444,15 @@ public class TerminalOutput implements ClientOutput {
     }
 
     private void addStatusLine(final List<AttributedString> lines, int dispLines, final int projectsCount) {
-        if (name != null || buildStatus != null) {
+        final BuildInfo buildInfo = this.buildInfo;
+        final String bStatus = this.buildStatus;
+        if (buildInfo != null || bStatus != null) {
             AttributedStringBuilder asb = new AttributedStringBuilder();
             StringBuilder statusLine = new StringBuilder(64);
-            if (name != null) {
+            if (buildInfo != null) {
                 asb.append("Building ");
                 asb.style(AttributedStyle.BOLD);
-                asb.append(name);
+                asb.append(buildInfo.name);
                 asb.style(AttributedStyle.DEFAULT);
 
                 /* Threads */
@@ -471,26 +460,27 @@ public class TerminalOutput implements ClientOutput {
                         .append("  threads used/hidden/max: ")
                         .append(
                                 String.format(
-                                        threadsFormat,
-                                        new StringBuilder(threadsFormat.length())
+                                        buildInfo.threadsFormat,
+                                        new StringBuilder(buildInfo.threadsFormat.length())
                                                 .append(projectsCount)
                                                 .append('/')
                                                 .append(Math.max(0, projectsCount - dispLines))
                                                 .append('/')
-                                                .append(maxThreads).toString()));
+                                                .append(buildInfo.maxThreads).toString()));
 
                 /* Progress */
+                final int doneProjects = this.doneProjects.get();
                 statusLine
                         .append("  progress: ")
-                        .append(String.format(projectsDoneFomat, doneProjects))
+                        .append(String.format(buildInfo.projectsDoneFomat, doneProjects))
                         .append('/')
-                        .append(totalProjects)
+                        .append(buildInfo.totalProjects)
                         .append(' ')
-                        .append(String.format("%3d", doneProjects * 100 / totalProjects))
+                        .append(String.format("%3d", doneProjects * 100 / buildInfo.totalProjects))
                         .append('%');
 
-            } else if (buildStatus != null) {
-                statusLine.append(buildStatus);
+            } else if (bStatus != null) {
+                statusLine.append(bStatus);
             }
 
             /* Time */
@@ -593,6 +583,25 @@ public class TerminalOutput implements ClientOutput {
         @Override
         public void close() throws IOException {
             out.close();
+        }
+
+    }
+
+    static class BuildInfo {
+        private final String name;
+        private final int totalProjects;
+        /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
+        private final String projectsDoneFomat;
+        private final int maxThreads;
+        /** String format for formatting the actual/hidden/max thread counts */
+        private final String threadsFormat;
+
+        public BuildInfo(String name, int totalProjects, String projectsDoneFomat, int maxThreads, String threadsFormat) {
+            this.name = name;
+            this.totalProjects = totalProjects;
+            this.projectsDoneFomat = projectsDoneFomat;
+            this.maxThreads = maxThreads;
+            this.threadsFormat = threadsFormat;
         }
 
     }
