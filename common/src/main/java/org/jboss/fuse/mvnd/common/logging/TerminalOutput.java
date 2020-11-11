@@ -69,6 +69,8 @@ public class TerminalOutput implements ClientOutput {
 
     /** A sink for sending messages back to the daemon */
     private volatile Consumer<Message> daemonDispatch;
+    /** A sink for queuing messages to the main queue */
+    private volatile Consumer<Message> daemonReceive;
 
     /*
      * The following non-final fields are read/written from the main thread only.
@@ -131,8 +133,13 @@ public class TerminalOutput implements ClientOutput {
     }
 
     @Override
-    public void setDeamonDispatch(Consumer<Message> daemonDispatch) {
+    public void setDaemonDispatch(Consumer<Message> daemonDispatch) {
         this.daemonDispatch = daemonDispatch;
+    }
+
+    @Override
+    public void setDaemonReceive(Consumer<Message> daemonReceive) {
+        this.daemonReceive = daemonReceive;
     }
 
     @Override
@@ -356,7 +363,7 @@ public class TerminalOutput implements ClientOutput {
                         break;
                     }
                     if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M || c == CTRL_B) {
-                        accept(Message.keyboardInput((char) c));
+                        daemonReceive.accept(Message.keyboardInput((char) c));
                     }
                     readInput.readLock().unlock();
                 }

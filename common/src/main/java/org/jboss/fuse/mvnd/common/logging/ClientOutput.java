@@ -24,7 +24,9 @@ import org.jboss.fuse.mvnd.common.Message;
  */
 public interface ClientOutput extends AutoCloseable {
 
-    void setDeamonDispatch(Consumer<Message> sink);
+    void setDaemonDispatch(Consumer<Message> sink);
+
+    void setDaemonReceive(Consumer<Message> sink);
 
     void accept(Message message);
 
