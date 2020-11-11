@@ -279,6 +279,10 @@ public class DaemonParameters {
         return property(Environment.MVND_NO_BUFERING).orFail().asBoolean();
     }
 
+    public int rollingWindowSize() {
+        return property(Environment.MVND_ROLLING_WINDOW_SIZE).orFail().asInt();
+    }
+
     public static String findDefaultMultimoduleProjectDirectory(Path pwd) {
         Path dir = pwd;
         do {

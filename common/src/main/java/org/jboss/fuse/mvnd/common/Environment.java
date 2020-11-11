@@ -65,6 +65,10 @@ public enum Environment {
      */
     MVND_NO_BUFERING("mvnd.noBuffering", null, "false", false),
     /**
+     * The size of the rolling window
+     */
+    MVND_ROLLING_WINDOW_SIZE("mvnd.rollingWindowSize", null, "2", false),
+    /**
      * The path to the daemon registry
      */
     DAEMON_REGISTRY("daemon.registry", null, null, false),
