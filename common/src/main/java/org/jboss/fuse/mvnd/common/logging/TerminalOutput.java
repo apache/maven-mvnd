@@ -71,18 +71,25 @@ public class TerminalOutput implements ClientOutput {
 
     /** A sink for sending messages back to the daemon */
     private volatile Consumer<Message> daemonDispatch;
-    private volatile String name;
-    private volatile int totalProjects;
-    /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
-    private volatile String projectsDoneFomat;
-    private volatile int maxThreads;
-    /** String format for formatting the actual/hidden/max thread counts */
-    private volatile String threadsFormat;
 
-    private int linesPerProject = 0; // read/written only by the displayLoop
-    private int doneProjects = 0; // read/written only by the displayLoop
-    private String buildStatus; // read/written only by the displayLoop
-    private boolean displayDone = false; // read/written only by the displayLoop
+    /*
+     * The following non-final fields are read/written from the main thread only.
+     * This is guaranteed as follows:
+     * * The read/write ops are only reachable from accept(Message) and accept(List<Message>)
+     * * Both of these methods are guarded with "main".equals(Thread.currentThread().getName()) assertion
+     * Therefore, these fields do not need to be volatile
+     */
+    private String name;
+    private int totalProjects;
+    /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
+    private String projectsDoneFomat;
+    private int maxThreads;
+    /** String format for formatting the actual/hidden/max thread counts */
+    private String threadsFormat;
+    private int linesPerProject = 0;
+    private int doneProjects = 0;
+    private String buildStatus;
+    private boolean displayDone = false;
 
     /**
      * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
