@@ -63,7 +63,7 @@ public class DefaultClient implements Client {
         }
 
         DaemonParameters parameters = new DaemonParameters();
-        try (TerminalOutput output = new TerminalOutput(parameters.noBuffering(), logFile)) {
+        try (TerminalOutput output = new TerminalOutput(parameters.noBuffering(), parameters.rollingWindowSize(), logFile)) {
             try {
                 new DefaultClient(parameters).execute(output, args);
             } catch (DaemonException.InterruptedException e) {

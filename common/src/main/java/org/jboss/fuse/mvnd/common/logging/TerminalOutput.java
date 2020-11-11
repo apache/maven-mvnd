@@ -107,11 +107,12 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
-    public TerminalOutput(boolean noBuffering, Path logFile) throws IOException {
+    public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
         this.terminal = TerminalBuilder.terminal();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
+        this.linesPerProject = rollingWindowSize;
         terminal.enterRawMode();
         Thread mainThread = Thread.currentThread();
         daemonDispatch = m -> {
