@@ -28,7 +28,7 @@
   <!--
     | write project-specific build log messages to ${project.build.directory}/build.log files
    -->
-  <appender name="MEM" class="org.jboss.fuse.mvnd.logging.smart.ProjectBuildLogAppender">
+  <appender name="MEM" class="org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender">
     <pattern>[%level] %msg%n</pattern>
   </appender>
 
@@ -39,7 +39,7 @@
     </encoder>
   </appender>
 
-  <logger name="org.jboss.fuse.mvnd.daemon" level="DEBUG" additivity="false">
+  <logger name="org.mvndaemon.mvnd.daemon" level="DEBUG" additivity="false">
     <appender-ref ref="DAEMON" />
   </logger>
 

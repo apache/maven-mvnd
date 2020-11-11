@@ -28,7 +28,7 @@
   <!--
     | write project-specific build log messages to ${project.build.directory}/build.log files
    -->
-  <appender name="CONSOLE" class="org.jboss.fuse.mvnd.logging.internal.SimpleAppender" />
+  <appender name="CONSOLE" class="org.mvndaemon.mvnd.logging.internal.SimpleAppender" />
 
   <logger name="Sisu" level="INFO" />
 

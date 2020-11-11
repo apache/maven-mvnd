@@ -170,7 +170,7 @@ for /F "usebackq delims=" %%a in ("%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config") do s
 :endReadAdditionalConfig
 
 for %%i in ("%MVND_HOME%"\boot\*.jar "%MVND_HOME%"\lib\ext\*.jar "%MVND_HOME%"\lib\*.jar) do set DAEMON_JAR="%%i"
-set DAEMON_LAUNCHER=org.jboss.fuse.mvnd.client.DefaultClient
+set DAEMON_LAUNCHER=org.mvndaemon.mvnd.client.DefaultClient
 
 "%JAVACMD%" ^
   %JVM_CONFIG_MAVEN_PROPS% ^

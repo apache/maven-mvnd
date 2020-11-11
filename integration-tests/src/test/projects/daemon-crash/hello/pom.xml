@@ -19,7 +19,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.jboss.fuse.mvnd.test.daemon-crash</groupId>
+        <groupId>org.mvndaemon.mvnd.test.daemon-crash</groupId>
         <artifactId>daemon-crash</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
@@ -39,7 +39,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.jboss.fuse.mvnd.test.daemon-crash</groupId>
+                <groupId>org.mvndaemon.mvnd.test.daemon-crash</groupId>
                 <artifactId>daemon-crash-maven-plugin</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
                 <executions>
