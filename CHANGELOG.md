@@ -10,6 +10,10 @@
 - Client: have just one event queue and one consuming thread [\#133](https://github.com/mvndaemon/mvnd/issues/133)
 - Opt out of implicit -T [\#132](https://github.com/mvndaemon/mvnd/issues/132)
 
+**Fixed bugs:**
+
+- Should support core extensions [\#114](https://github.com/mvndaemon/mvnd/issues/114)
+
 **Closed issues:**
 
 - Support multiple level of properties file, discriminate between daemons, allow configuring min/max memory [\#188](https://github.com/mvndaemon/mvnd/issues/188)
@@ -17,9 +21,12 @@
 - Do not create runtime files/directories in installation directory [\#179](https://github.com/mvndaemon/mvnd/issues/179)
 - How to pass jvm args to mvnd ? [\#174](https://github.com/mvndaemon/mvnd/issues/174)
 - Domain transfer offer [\#153](https://github.com/mvndaemon/mvnd/issues/153)
+- Implement build cancellation [\#127](https://github.com/mvndaemon/mvnd/issues/127)
 
 **Merged pull requests:**
 
+- Reduce the number of Message subclasses [\#201](https://github.com/mvndaemon/mvnd/pull/201) ([ppalaga](https://github.com/ppalaga))
+- Implement build cancelation [\#199](https://github.com/mvndaemon/mvnd/pull/199) ([ppalaga](https://github.com/ppalaga))
 - Client: have just one event queue and one consuming thread  [\#198](https://github.com/mvndaemon/mvnd/pull/198) ([ppalaga](https://github.com/ppalaga))
 - Minor refactorings [\#192](https://github.com/mvndaemon/mvnd/pull/192) ([ppalaga](https://github.com/ppalaga))
 - Allow passing additional jvm args to the daemon, fixes \#174 [\#191](https://github.com/mvndaemon/mvnd/pull/191) ([gnodet](https://github.com/gnodet))
