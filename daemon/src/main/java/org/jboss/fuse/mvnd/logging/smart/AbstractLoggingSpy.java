@@ -24,12 +24,8 @@ public abstract class AbstractLoggingSpy {
 
     public static AbstractLoggingSpy instance() {
         if (instance == null) {
-            if ("mvns".equals(System.getProperty("mvnd.logging", "mvn"))) {
-                instance = new MavenLoggingSpy();
-            } else {
-                instance = new AbstractLoggingSpy() {
-                };
-            }
+            instance = new AbstractLoggingSpy() {
+            };
         }
         return instance;
     }

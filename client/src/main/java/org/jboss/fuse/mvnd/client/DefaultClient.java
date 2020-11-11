@@ -62,9 +62,10 @@ public class DefaultClient implements Client {
             }
         }
 
-        try (TerminalOutput output = new TerminalOutput(logFile)) {
+        DaemonParameters parameters = new DaemonParameters();
+        try (TerminalOutput output = new TerminalOutput(parameters.noBuffering(), logFile)) {
             try {
-                new DefaultClient(new DaemonParameters()).execute(output, args);
+                new DefaultClient(parameters).execute(output, args);
             } catch (DaemonException.InterruptedException e) {
                 final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
                 String str = new AttributedString(System.lineSeparator() + "Canceled by user", s).toAnsi();

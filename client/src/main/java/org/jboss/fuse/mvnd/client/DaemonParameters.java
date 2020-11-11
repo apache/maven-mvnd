@@ -257,6 +257,10 @@ public class DaemonParameters {
         return property(Environment.DAEMON_MAX_LOST_KEEP_ALIVE).orFail().asInt();
     }
 
+    public boolean noBuffering() {
+        return property(Environment.MVND_NO_BUFERING).orFail().asBoolean();
+    }
+
     public static String findDefaultMultimoduleProjectDirectory(Path pwd) {
         Path dir = pwd;
         do {
