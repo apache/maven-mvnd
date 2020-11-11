@@ -27,11 +27,20 @@ import java.util.concurrent.TimeUnit;
  * Collects system properties and environment variables used by mvnd client or server.
  */
 public enum Environment {
+    //
+    // Log properties
+    //
     LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null, null, false),
+    //
+    // System properties
+    //
     JAVA_HOME("java.home", "JAVA_HOME", null, false),
     MVND_HOME("mvnd.home", "MVND_HOME", null, false),
     USER_HOME("user.home", null, null, false),
     USER_DIR("user.dir", null, null, false),
+    //
+    // Maven properties
+    //
     MAVEN_REPO_LOCAL("maven.repo.local", null, null, false),
     MAVEN_SETTINGS("maven.settings", null, null, false) {
         @Override
@@ -45,8 +54,16 @@ public enum Environment {
         }
     },
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, false),
+    //
+    // mvnd properties
+    //
     MVND_PROPERTIES_PATH("mvnd.properties.path", "MVND_PROPERTIES_PATH", null, false),
     MVND_DAEMON_STORAGE("mvnd.daemon.storage", null, null, false),
+    /**
+     * Property that can be set to avoid buffering the output and display events continuously, closer to the usual maven
+     * display.
+     */
+    MVND_NO_BUFERING("mvnd.noBuffering", null, "false", false),
     /**
      * The path to the daemon registry
      */

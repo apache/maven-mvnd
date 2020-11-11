@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -53,8 +52,8 @@ import org.jline.utils.Display;
  */
 public class TerminalOutput implements ClientOutput {
 
+    public static final int CTRL_B = 'B' & 0x1f;
     public static final int CTRL_L = 'L' & 0x1f;
-
     public static final int CTRL_M = 'M' & 0x1f;
 
     private final Terminal terminal;
@@ -65,7 +64,6 @@ public class TerminalOutput implements ClientOutput {
     private final Thread reader;
     private volatile Exception exception;
     private volatile boolean closing;
-    private final CountDownLatch closed = new CountDownLatch(1);
     private final long start;
     private final ReadWriteLock readInput = new ReentrantReadWriteLock();
 
@@ -90,6 +88,8 @@ public class TerminalOutput implements ClientOutput {
     private int doneProjects = 0;
     private String buildStatus;
     private boolean displayDone = false;
+    private boolean noBuffering;
+    private boolean dumb;
 
     /**
      * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
@@ -105,9 +105,11 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
-    public TerminalOutput(Path logFile) throws IOException {
+    public TerminalOutput(boolean noBuffering, Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
         this.terminal = TerminalBuilder.terminal();
+        this.dumb = terminal.getType().startsWith("dumb");
+        this.noBuffering = noBuffering;
         terminal.enterRawMode();
         Thread mainThread = Thread.currentThread();
         daemonDispatch = m -> {
@@ -119,9 +121,13 @@ public class TerminalOutput implements ClientOutput {
                 sig -> daemonDispatch.accept(Message.CANCEL_BUILD_SINGLETON));
         this.display = new Display(terminal, false);
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
-        final Thread r = new Thread(this::readInputLoop);
-        r.start();
-        this.reader = r;
+        if (!dumb) {
+            final Thread r = new Thread(this::readInputLoop);
+            r.start();
+            this.reader = r;
+        } else {
+            this.reader = null;
+        }
     }
 
     @Override
@@ -232,15 +238,19 @@ public class TerminalOutput implements ClientOutput {
         }
         case Message.DISPLAY: {
             Message.StringMessage d = (Message.StringMessage) entry;
-            display.update(Collections.emptyList(), 0);
+            clearDisplay();
             terminal.writer().printf("%s%n", d.getMessage());
             break;
         }
         case Message.PROMPT: {
             Message.Prompt prompt = (Message.Prompt) entry;
+            if (dumb) {
+                terminal.writer().println("");
+                break;
+            }
             readInput.writeLock().lock();
             try {
-                display.update(Collections.emptyList(), 0);
+                clearDisplay();
                 terminal.writer().printf("[%s] %s", prompt.getProjectId(), prompt.getMessage());
                 terminal.flush();
                 StringBuilder sb = new StringBuilder();
@@ -273,29 +283,21 @@ public class TerminalOutput implements ClientOutput {
         }
         case Message.BUILD_LOG_MESSAGE: {
             StringMessage sm = (StringMessage) entry;
-            if (closing) {
-                try {
-                    closed.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                System.err.println(sm.getMessage());
-            } else {
-                log.accept(sm.getMessage());
-            }
+            log.accept(sm.getMessage());
             break;
         }
         case Message.PROJECT_LOG_MESSAGE: {
             final ProjectEvent bm = (ProjectEvent) entry;
-            if (closing) {
-                try {
-                    closed.await();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+            final Project prj = projects.computeIfAbsent(bm.getProjectId(), Project::new);
+            if (noBuffering || dumb) {
+                String msg;
+                if (maxThreads > 1) {
+                    msg = String.format("[%s] %s", bm.getProjectId(), bm.getMessage());
+                } else {
+                    msg = bm.getMessage();
                 }
-                System.err.println(bm.getMessage());
+                log.accept(msg);
             } else {
-                final Project prj = projects.computeIfAbsent(bm.getProjectId(), Project::new);
                 prj.log.add(bm.getMessage());
             }
             break;
@@ -309,8 +311,17 @@ public class TerminalOutput implements ClientOutput {
             case '-':
                 linesPerProject = Math.max(0, linesPerProject - 1);
                 break;
+            case CTRL_B:
+                noBuffering = !noBuffering;
+                if (noBuffering) {
+                    projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
+                    projects.clear();
+                } else {
+                    clearDisplay();
+                }
+                break;
             case CTRL_L:
-                display.update(Collections.emptyList(), 0);
+                clearDisplay();
                 break;
             case CTRL_M:
                 displayDone = !displayDone;
@@ -344,7 +355,7 @@ public class TerminalOutput implements ClientOutput {
                     if (c == -1) {
                         break;
                     }
-                    if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M) {
+                    if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M || c == CTRL_B) {
                         accept(Message.keyboardInput((char) c));
                     }
                     readInput.readLock().unlock();
@@ -360,7 +371,10 @@ public class TerminalOutput implements ClientOutput {
     }
 
     private void clearDisplay() {
-        display.update(Collections.emptyList(), 0);
+        if (!noBuffering && !dumb) {
+            display.update(Collections.emptyList(), 0);
+        }
+
     }
 
     private void displayDone() {
@@ -376,18 +390,27 @@ public class TerminalOutput implements ClientOutput {
     @Override
     public void close() throws Exception {
         closing = true;
-        reader.interrupt();
+        if (reader != null) {
+            reader.interrupt();
+            reader.join();
+        }
         log.close();
-        reader.join();
         terminal.handle(Terminal.Signal.INT, previousIntHandler);
         terminal.close();
-        closed.countDown();
         if (exception != null) {
             throw exception;
         }
     }
 
     private void update() {
+        if (noBuffering || dumb) {
+            try {
+                log.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
         // no need to refresh the display at every single step
         final Size size = terminal.getSize();
         final int rows = size.getRows();
