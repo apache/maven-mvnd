@@ -125,6 +125,7 @@
                                 --allow-incomplete-classpath
                                 -H:IncludeResources=org/jboss/fuse/mvnd/.*
                                 -H:-ParseRuntimeOptions
+                                -ea
                             </buildArgs>
                         </configuration>
                     </plugin>
