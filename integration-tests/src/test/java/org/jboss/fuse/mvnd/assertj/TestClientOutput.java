@@ -32,8 +32,12 @@ public class TestClientOutput implements ClientOutput {
     }
 
     @Override
-    public void setDeamonDispatch(Consumer<Message> daemonDispatch) {
+    public void setDaemonDispatch(Consumer<Message> daemonDispatch) {
         this.daemonDispatch = daemonDispatch;
+    }
+
+    @Override
+    public void setDaemonReceive(Consumer<Message> sink) {
     }
 
     @Override

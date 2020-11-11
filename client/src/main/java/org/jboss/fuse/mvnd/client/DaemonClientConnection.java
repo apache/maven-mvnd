@@ -129,6 +129,14 @@ public class DaemonClientConnection implements Closeable {
         }
     }
 
+    public void enqueue(Message message) {
+        try {
+            queue.put(message);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     protected void doReceive() {
         try {
             while (running.get()) {

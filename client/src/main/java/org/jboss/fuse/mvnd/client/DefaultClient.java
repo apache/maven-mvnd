@@ -199,7 +199,8 @@ public class DefaultClient implements Client {
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
-                output.setDeamonDispatch(daemon::dispatch);
+                output.setDaemonDispatch(daemon::dispatch);
+                output.setDaemonReceive(daemon::enqueue);
                 output.accept(Message.buildStatus("Connected to daemon"));
 
                 daemon.dispatch(new Message.BuildRequest(
