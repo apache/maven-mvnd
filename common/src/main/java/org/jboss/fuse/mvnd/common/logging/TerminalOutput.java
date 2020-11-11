@@ -73,7 +73,11 @@ public class TerminalOutput implements ClientOutput {
     private volatile Consumer<Message> daemonDispatch;
     private volatile String name;
     private volatile int totalProjects;
+    /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
+    private volatile String projectsDoneFomat;
     private volatile int maxThreads;
+    /** String format for formatting the actual/hidden/max thread counts */
+    private volatile String threadsFormat;
 
     private int linesPerProject = 0; // read/written only by the displayLoop
     private int doneProjects = 0; // read/written only by the displayLoop
@@ -143,7 +147,11 @@ public class TerminalOutput implements ClientOutput {
             BuildStarted bs = (BuildStarted) entry;
             this.name = bs.getProjectId();
             this.totalProjects = bs.getProjectCount();
+            final int totalProjectsDigits = (int) (Math.log10(totalProjects) + 1);
+            this.projectsDoneFomat = "%" + totalProjectsDigits + "d";
             this.maxThreads = bs.getMaxThreads();
+            final int maxThreadsDigits = (int) (Math.log10(maxThreads) + 1);
+            this.threadsFormat = "%" + (maxThreadsDigits * 3 + 2) + "s";
             break;
         }
         case Message.CANCEL_BUILD: {
@@ -427,29 +435,38 @@ public class TerminalOutput implements ClientOutput {
                 asb.style(AttributedStyle.BOLD);
                 asb.append(name);
                 asb.style(AttributedStyle.DEFAULT);
-                if (projectsCount <= dispLines) {
-                    statusLine.append("  threads used/max: ")
-                            .append(projectsCount).append('/').append(maxThreads);
-                } else {
-                    statusLine.append("  threads used/hidden/max: ")
-                            .append(projectsCount).append('/').append(projectsCount - dispLines).append('/').append(maxThreads);
-                }
 
-                if (totalProjects > 0) {
-                    statusLine.append("  progress: ").append(doneProjects).append('/').append(totalProjects).append(' ')
-                            .append(doneProjects * 100 / totalProjects).append('%');
-                }
+                /* Threads */
+                statusLine
+                        .append("  threads used/hidden/max: ")
+                        .append(
+                                String.format(
+                                        threadsFormat,
+                                        new StringBuilder(threadsFormat.length())
+                                                .append(projectsCount)
+                                                .append('/')
+                                                .append(Math.max(0, projectsCount - dispLines))
+                                                .append('/')
+                                                .append(maxThreads).toString()));
+
+                /* Progress */
+                statusLine
+                        .append("  progress: ")
+                        .append(String.format(projectsDoneFomat, doneProjects))
+                        .append('/')
+                        .append(totalProjects)
+                        .append(' ')
+                        .append(String.format("%3d", doneProjects * 100 / totalProjects))
+                        .append('%');
+
             } else if (buildStatus != null) {
                 statusLine.append(buildStatus);
             }
 
+            /* Time */
             statusLine.append("  time: ");
             long sec = (System.currentTimeMillis() - this.start) / 1000;
-            if (sec > 60) {
-                statusLine.append(sec / 60).append('m').append(String.valueOf(sec % 60)).append('s');
-            } else {
-                statusLine.append(sec).append('s');
-            }
+            statusLine.append(String.format("%02d:%02d", sec / 60, sec % 60));
 
             asb.append(statusLine.toString());
             lines.add(asb.toAttributedString());
