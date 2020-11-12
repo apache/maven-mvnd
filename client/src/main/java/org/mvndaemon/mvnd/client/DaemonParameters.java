@@ -51,6 +51,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DaemonParameters {
 
+    public static final String LOG_EXTENSION = ".log";
+
     private static final Logger LOG = LoggerFactory.getLogger(DaemonParameters.class);
     private static final String EXT_CLASS_PATH = "maven.ext.class.path";
     private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
@@ -184,11 +186,11 @@ public class DaemonParameters {
     }
 
     public Path daemonLog(String daemon) {
-        return daemonStorage().resolve("daemon-" + daemon + ".log");
+        return daemonStorage().resolve("daemon-" + daemon + LOG_EXTENSION);
     }
 
     public Path daemonOutLog(String daemon) {
-        return daemonStorage().resolve("daemon-" + daemon + ".out.log");
+        return daemonStorage().resolve("daemon-" + daemon + ".out" + LOG_EXTENSION);
     }
 
     public Path multiModuleProjectDirectory() {
@@ -284,6 +286,10 @@ public class DaemonParameters {
 
     public int rollingWindowSize() {
         return property(Environment.MVND_ROLLING_WINDOW_SIZE).orFail().asInt();
+    }
+
+    public Duration purgeLogPeriod() {
+        return property(Environment.MVND_LOG_PURGE_PERIOD).orFail().asDuration();
     }
 
     public static String findDefaultMultimoduleProjectDirectory(Path pwd) {

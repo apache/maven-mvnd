@@ -69,6 +69,10 @@ public enum Environment {
      */
     MVND_ROLLING_WINDOW_SIZE("mvnd.rollingWindowSize", null, "0", false),
     /**
+     * The automatic log purge period
+     */
+    MVND_LOG_PURGE_PERIOD("mvnd.logPurgePeriod", null, "1w", false),
+    /**
      * The path to the daemon registry
      */
     DAEMON_REGISTRY("daemon.registry", null, null, false),
