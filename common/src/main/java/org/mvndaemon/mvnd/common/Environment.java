@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,12 @@ import java.util.Properties;
 
 /**
  * Collects system properties and environment variables used by mvnd client or server.
+ *
+ * Duration properties such as {@link #DAEMON_IDLE_TIMEOUT}, {@link #DAEMON_KEEP_ALIVE},
+ * {@link #DAEMON_EXPIRATION_CHECK_DELAY} or {@link #MVND_LOG_PURGE_PERIOD} are expressed
+ * in a human readable format such as {@code 2h30m}, {@code 600ms} or {@code 10 seconds}.
+ * The available units are <i>d/day/days</i>, <i>h/hour/hours</i>, <i>m/min/minute/minutes</i>,
+ * <i>s/sec/second/seconds</i> and <i>ms/millis/msec/milliseconds</i>.
  */
 public enum Environment {
     //
@@ -106,7 +112,7 @@ public enum Environment {
     /**
      * The maven builder name to use. Ignored if the user passes
      *
-     * @{@code -b} or @{@code --builder} on the command line
+     * {@code -b} or {@code --builder} on the command line
      */
     MVND_BUILDER("mvnd.builder", null, "smart", false) {
         @Override
