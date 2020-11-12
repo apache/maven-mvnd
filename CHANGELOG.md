@@ -9,6 +9,8 @@
 - Fail fast if the daemon can not be started [\#162](https://github.com/mvndaemon/mvnd/issues/162)
 - Client: have just one event queue and one consuming thread [\#133](https://github.com/mvndaemon/mvnd/issues/133)
 - Opt out of implicit -T [\#132](https://github.com/mvndaemon/mvnd/issues/132)
+- Better support for dumb terminals [\#131](https://github.com/mvndaemon/mvnd/issues/131)
+- Option to default to a simple log when using a single thread [\#116](https://github.com/mvndaemon/mvnd/issues/116)
 
 **Fixed bugs:**
 
@@ -16,6 +18,7 @@
 
 **Closed issues:**
 
+- NoClassDefFoundError: org.slf4j.LoggerFactory [\#200](https://github.com/mvndaemon/mvnd/issues/200)
 - Support multiple level of properties file, discriminate between daemons, allow configuring min/max memory [\#188](https://github.com/mvndaemon/mvnd/issues/188)
 - Support for interactive sessions [\#180](https://github.com/mvndaemon/mvnd/issues/180)
 - Do not create runtime files/directories in installation directory [\#179](https://github.com/mvndaemon/mvnd/issues/179)
@@ -25,9 +28,14 @@
 
 **Merged pull requests:**
 
+- Fix the readInputLoop so that messages are all delivered and processe… [\#205](https://github.com/mvndaemon/mvnd/pull/205) ([gnodet](https://github.com/gnodet))
+- Improve display with an easy opt-out option and support for dumb term… [\#204](https://github.com/mvndaemon/mvnd/pull/204) ([gnodet](https://github.com/gnodet))
+- Minor improvements [\#203](https://github.com/mvndaemon/mvnd/pull/203) ([gnodet](https://github.com/gnodet))
+- Pad the status line elements so that they do not move as the build is progressing [\#202](https://github.com/mvndaemon/mvnd/pull/202) ([ppalaga](https://github.com/ppalaga))
 - Reduce the number of Message subclasses [\#201](https://github.com/mvndaemon/mvnd/pull/201) ([ppalaga](https://github.com/ppalaga))
 - Implement build cancelation [\#199](https://github.com/mvndaemon/mvnd/pull/199) ([ppalaga](https://github.com/ppalaga))
 - Client: have just one event queue and one consuming thread  [\#198](https://github.com/mvndaemon/mvnd/pull/198) ([ppalaga](https://github.com/ppalaga))
+- Non daemon option, fixes \#43 [\#197](https://github.com/mvndaemon/mvnd/pull/197) ([gnodet](https://github.com/gnodet))
 - Minor refactorings [\#192](https://github.com/mvndaemon/mvnd/pull/192) ([ppalaga](https://github.com/ppalaga))
 - Allow passing additional jvm args to the daemon, fixes \#174 [\#191](https://github.com/mvndaemon/mvnd/pull/191) ([gnodet](https://github.com/gnodet))
 - Refactor [\#190](https://github.com/mvndaemon/mvnd/pull/190) ([gnodet](https://github.com/gnodet))
@@ -256,6 +264,7 @@
 
 **Closed issues:**
 
+- Provide a `mvnd.daemon` option to disable daemon for easier debugging [\#43](https://github.com/mvndaemon/mvnd/issues/43)
 - Running maven daemon fails on windows [\#35](https://github.com/mvndaemon/mvnd/issues/35)
 - Add some integration tests [\#23](https://github.com/mvndaemon/mvnd/issues/23)
 - Class loader clash during Quarkus augmentation [\#22](https://github.com/mvndaemon/mvnd/issues/22)
