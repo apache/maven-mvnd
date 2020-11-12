@@ -65,9 +65,9 @@ public enum Environment {
      */
     MVND_NO_BUFERING("mvnd.noBuffering", null, "false", false),
     /**
-     * The size of the rolling window
+     * The number of log lines to display for each Maven module that is built in parallel.
      */
-    MVND_ROLLING_WINDOW_SIZE("mvnd.rollingWindowSize", null, "2", false),
+    MVND_ROLLING_WINDOW_SIZE("mvnd.rollingWindowSize", null, "0", false),
     /**
      * The path to the daemon registry
      */
