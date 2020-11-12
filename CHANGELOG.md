@@ -1,16 +1,16 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.0.12](https://github.com/mvndaemon/mvnd/tree/0.0.12) (2020-11-12)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.11...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.11...0.0.12)
 
 **Implemented enhancements:**
 
 - Fail fast if the daemon can not be started [\#162](https://github.com/mvndaemon/mvnd/issues/162)
 - Client: have just one event queue and one consuming thread [\#133](https://github.com/mvndaemon/mvnd/issues/133)
+- Option to default to a simple log when using a single thread [\#116](https://github.com/mvndaemon/mvnd/issues/116)
 - Opt out of implicit -T [\#132](https://github.com/mvndaemon/mvnd/issues/132)
 - Better support for dumb terminals [\#131](https://github.com/mvndaemon/mvnd/issues/131)
-- Option to default to a simple log when using a single thread [\#116](https://github.com/mvndaemon/mvnd/issues/116)
 
 **Fixed bugs:**
 
@@ -18,16 +18,18 @@
 
 **Closed issues:**
 
-- NoClassDefFoundError: org.slf4j.LoggerFactory [\#200](https://github.com/mvndaemon/mvnd/issues/200)
 - Support multiple level of properties file, discriminate between daemons, allow configuring min/max memory [\#188](https://github.com/mvndaemon/mvnd/issues/188)
 - Support for interactive sessions [\#180](https://github.com/mvndaemon/mvnd/issues/180)
-- Do not create runtime files/directories in installation directory [\#179](https://github.com/mvndaemon/mvnd/issues/179)
 - How to pass jvm args to mvnd ? [\#174](https://github.com/mvndaemon/mvnd/issues/174)
 - Domain transfer offer [\#153](https://github.com/mvndaemon/mvnd/issues/153)
 - Implement build cancellation [\#127](https://github.com/mvndaemon/mvnd/issues/127)
+- NoClassDefFoundError: org.slf4j.LoggerFactory [\#200](https://github.com/mvndaemon/mvnd/issues/200)
+- Do not create runtime files/directories in installation directory [\#179](https://github.com/mvndaemon/mvnd/issues/179)
 
 **Merged pull requests:**
 
+- Store registry under ~/.m2 where we already have mvnd.properties [\#211](https://github.com/mvndaemon/mvnd/pull/211) ([ppalaga](https://github.com/ppalaga))
+- Make TerminalOutput.dumb final, activate TerminalOutput.noBuffering with -B/--batch-mode, mvnd.rollingWindowSize default 0 [\#209](https://github.com/mvndaemon/mvnd/pull/209) ([ppalaga](https://github.com/ppalaga))
 - Fix the readInputLoop so that messages are all delivered and processe… [\#205](https://github.com/mvndaemon/mvnd/pull/205) ([gnodet](https://github.com/gnodet))
 - Improve display with an easy opt-out option and support for dumb term… [\#204](https://github.com/mvndaemon/mvnd/pull/204) ([gnodet](https://github.com/gnodet))
 - Minor improvements [\#203](https://github.com/mvndaemon/mvnd/pull/203) ([gnodet](https://github.com/gnodet))
