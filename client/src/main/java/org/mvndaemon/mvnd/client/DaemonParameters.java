@@ -172,7 +172,8 @@ public class DaemonParameters {
     public Path daemonStorage() {
         return value(Environment.MVND_DAEMON_STORAGE)
                 .orSystemProperty()
-                .orDefault(() -> userHome().resolve(".mvnd/v" + BuildProperties.getInstance().getVersion()).toString())
+                .orDefault(
+                        () -> userHome().resolve(".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion()).toString())
                 .asPath();
     }
 
