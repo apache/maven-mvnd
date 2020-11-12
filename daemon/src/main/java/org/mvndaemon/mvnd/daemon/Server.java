@@ -21,6 +21,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -165,9 +166,9 @@ public class Server implements AutoCloseable, Runnable {
 
     public void run() {
         try {
-            int expirationCheckDelayMs = Environment.DAEMON_EXPIRATION_CHECK_DELAY_MS.asInt();
+            Duration expirationCheckDelay = Environment.DAEMON_EXPIRATION_CHECK_DELAY.asDuration();
             executor.scheduleAtFixedRate(this::expirationCheck,
-                    expirationCheckDelayMs, expirationCheckDelayMs, TimeUnit.MILLISECONDS);
+                    expirationCheckDelay.toMillis(), expirationCheckDelay.toMillis(), TimeUnit.MILLISECONDS);
             LOGGER.info("Daemon started");
             if (noDaemon) {
                 try (SocketChannel socket = this.socket.accept()) {
@@ -405,7 +406,7 @@ public class Server implements AutoCloseable, Runnable {
     private void handle(DaemonConnection connection, BuildRequest buildRequest) {
         updateState(Busy);
         try {
-            int keepAlive = Environment.DAEMON_KEEP_ALIVE_MS.asInt();
+            Duration keepAlive = Environment.DAEMON_KEEP_ALIVE.asDuration();
 
             LOGGER.info("Executing request");
 
@@ -421,7 +422,7 @@ public class Server implements AutoCloseable, Runnable {
                     while (true) {
                         Message m;
                         if (flushed) {
-                            m = sendQueue.poll(keepAlive, TimeUnit.MILLISECONDS);
+                            m = sendQueue.poll(keepAlive.toMillis(), TimeUnit.MILLISECONDS);
                             if (m == null) {
                                 m = Message.KEEP_ALIVE_SINGLETON;
                             }

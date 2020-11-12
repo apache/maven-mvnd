@@ -17,6 +17,8 @@ package org.mvndaemon.mvnd.daemon;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -28,6 +30,7 @@ import org.mvndaemon.mvnd.common.DaemonExpirationStatus;
 import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.common.DaemonState;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.common.TimeUtils;
 
 import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
 import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
@@ -41,8 +44,6 @@ import static org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.
  */
 public class DaemonExpiration {
 
-    public static final int DUPLICATE_DAEMON_GRACE_PERIOD_MS = 10000;
-
     public interface DaemonExpirationStrategy {
 
         DaemonExpirationResult checkExpiration(Server daemon);
@@ -53,7 +54,7 @@ public class DaemonExpiration {
         return any(
                 any(gcTrashing(), lowHeapSpace(), lowNonHeap()),
                 all(compatible(), duplicateGracePeriod(), notMostRecentlyUsed()),
-                idleTimeout(Environment.DAEMON_IDLE_TIMEOUT_MS.asInt()),
+                idleTimeout(Environment.DAEMON_IDLE_TIMEOUT.asDuration()),
                 all(duplicateGracePeriod(), notMostRecentlyUsed(), lowMemory(0.05)),
                 registryUnavailable());
     }
@@ -82,26 +83,14 @@ public class DaemonExpiration {
     }
 
     static DaemonExpirationStrategy duplicateGracePeriod() {
-        return idleTimeout(Environment.DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD_MS.asInt());
+        return idleTimeout(Environment.DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD.asDuration());
     }
 
-    private static final long HOUR = 60 * 60 * 1000;
-    private static final long MINUTE = 60 * 1000;
-    private static final long SECOND = 1000;
-
-    static DaemonExpirationStrategy idleTimeout(long timeout) {
+    static DaemonExpirationStrategy idleTimeout(Duration timeout) {
         return daemon -> {
-            long idl = System.currentTimeMillis() - daemon.getLastIdle();
-            if (daemon.getState() == DaemonState.Idle && idl > timeout) {
-                String str;
-                if (idl > HOUR) {
-                    str = (idl / HOUR) + " hours";
-                } else if (idl > MINUTE) {
-                    str = (idl / MINUTE) + " minutes";
-                } else {
-                    str = (idl / SECOND) + " seconds";
-                }
-                return new DaemonExpirationResult(QUIET_EXPIRE, "after being idle for " + str);
+            Duration idl = Duration.between(Instant.ofEpochMilli(daemon.getLastIdle()), Instant.now());
+            if (daemon.getState() == DaemonState.Idle && idl.compareTo(timeout) > 0) {
+                return new DaemonExpirationResult(QUIET_EXPIRE, "after being idle for " + TimeUtils.printDuration(idl));
             } else {
                 return NOT_TRIGGERED;
             }

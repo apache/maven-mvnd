@@ -35,6 +35,7 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.client.DefaultClient;
 import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.common.TimeUtils;
 
 import static org.mvndaemon.mvnd.junit.TestUtils.deleteDir;
 
@@ -205,8 +206,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository, settingsPath,
                     logback,
-                    Environment.DEFAULT_IDLE_TIMEOUT,
-                    Environment.DEFAULT_KEEP_ALIVE,
+                    TimeUtils.toDuration(Environment.DAEMON_IDLE_TIMEOUT.getDef()),
+                    TimeUtils.toDuration(Environment.DAEMON_KEEP_ALIVE.getDef()),
                     Integer.parseInt(Environment.DAEMON_MAX_LOST_KEEP_ALIVE.getDef()));
             final TestRegistry registry = new TestRegistry(parameters.registry());
 

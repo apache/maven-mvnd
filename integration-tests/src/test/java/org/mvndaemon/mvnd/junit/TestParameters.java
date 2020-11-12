@@ -16,8 +16,10 @@
 package org.mvndaemon.mvnd.junit;
 
 import java.nio.file.Path;
+import java.time.Duration;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.common.TimeUtils;
 
 public class TestParameters extends DaemonParameters {
     static final int TEST_MIN_THREADS = 2;
@@ -26,7 +28,7 @@ public class TestParameters extends DaemonParameters {
     public TestParameters(Path testDir, Path mvndPropertiesPath, Path mavenHome, Path userHome, Path userDir,
             Path multiModuleProjectDirectory,
             Path javaHome, Path localMavenRepository, Path settings, Path logbackConfigurationPath,
-            int idleTimeout, int keepAlive, int maxLostKeepAlive) {
+            Duration idleTimeout, Duration keepAlive, int maxLostKeepAlive) {
         super(new PropertiesBuilder().put(Environment.MVND_PROPERTIES_PATH, mvndPropertiesPath)
                 .put(Environment.MVND_HOME, mavenHome)
                 .put(Environment.USER_HOME, userHome)
@@ -36,8 +38,8 @@ public class TestParameters extends DaemonParameters {
                 .put(Environment.MAVEN_REPO_LOCAL, localMavenRepository)
                 .put(Environment.MAVEN_SETTINGS, settings)
                 .put(Environment.LOGBACK_CONFIGURATION_FILE, logbackConfigurationPath)
-                .put(Environment.DAEMON_IDLE_TIMEOUT_MS, idleTimeout)
-                .put(Environment.DAEMON_KEEP_ALIVE_MS, keepAlive)
+                .put(Environment.DAEMON_IDLE_TIMEOUT, TimeUtils.printDuration(idleTimeout))
+                .put(Environment.DAEMON_KEEP_ALIVE, TimeUtils.printDuration(keepAlive))
                 .put(Environment.DAEMON_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
                 .put(Environment.MVND_MIN_THREADS, TEST_MIN_THREADS));
         this.testDir = testDir;
