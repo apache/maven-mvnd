@@ -61,7 +61,7 @@ public enum Environment {
     MVND_DAEMON_STORAGE("mvnd.daemon.storage", null, null, false),
     /**
      * Property that can be set to avoid buffering the output and display events continuously, closer to the usual maven
-     * display.
+     * display. Passing {@code -B} or {@code --batch-mode} on the command line enables this too for the given build.
      */
     MVND_NO_BUFERING("mvnd.noBuffering", null, "false", false),
     /**
@@ -101,7 +101,7 @@ public enum Environment {
     },
     /**
      * The maven builder name to use. Ignored if the user passes
-     * 
+     *
      * @{@code -b} or @{@code --builder} on the command line
      */
     MVND_BUILDER("mvnd.builder", null, "smart", false) {

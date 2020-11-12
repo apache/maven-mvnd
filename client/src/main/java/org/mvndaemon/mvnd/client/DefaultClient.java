@@ -49,6 +49,7 @@ public class DefaultClient implements Client {
 
         Path logFile = null;
         int i = 0;
+        boolean batchMode = false;
         while (i < argv.length) {
             final String arg = argv[i++];
             if ("-l".equals(arg) || "--log-file".equals(arg)) {
@@ -58,12 +59,15 @@ public class DefaultClient implements Client {
                     throw new IllegalArgumentException("-l and --log-file need to be followed by a path");
                 }
             } else {
+                if (!batchMode && ("-B".equals(arg) || "--batch-mode".equals(arg))) {
+                    batchMode = true;
+                }
                 args.add(arg);
             }
         }
 
         DaemonParameters parameters = new DaemonParameters();
-        try (TerminalOutput output = new TerminalOutput(parameters.noBuffering(), parameters.rollingWindowSize(), logFile)) {
+        try (TerminalOutput output = new TerminalOutput(batchMode || parameters.noBuffering(), parameters.rollingWindowSize(), logFile)) {
             try {
                 new DefaultClient(parameters).execute(output, args);
             } catch (DaemonException.InterruptedException e) {
