@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +42,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.mvndaemon.mvnd.common.BuildProperties;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.common.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -268,8 +270,8 @@ public class DaemonParameters {
                 .put(Environment.USER_DIR, newUserDir));
     }
 
-    public int keepAliveMs() {
-        return property(Environment.DAEMON_KEEP_ALIVE_MS).orFail().asInt();
+    public Duration keepAlive() {
+        return property(Environment.DAEMON_KEEP_ALIVE).orFail().asDuration();
     }
 
     public int maxLostKeepAlive() {
@@ -577,6 +579,10 @@ public class DaemonParameters {
 
         public int asInt(IntUnaryOperator function) {
             return function.applyAsInt(asInt());
+        }
+
+        public Duration asDuration() {
+            return TimeUtils.toDuration(get());
         }
 
     }

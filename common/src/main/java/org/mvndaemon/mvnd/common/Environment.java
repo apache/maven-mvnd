@@ -17,11 +17,11 @@ package org.mvndaemon.mvnd.common;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Collects system properties and environment variables used by mvnd client or server.
@@ -74,8 +74,8 @@ public enum Environment {
     DAEMON_REGISTRY("daemon.registry", null, null, false),
     MVND_NO_DAEMON("mvnd.noDaemon", "MVND_NO_DAEMON", "false", true),
     DAEMON_DEBUG("daemon.debug", null, false, true),
-    DAEMON_IDLE_TIMEOUT_MS("daemon.idleTimeoutMs", null, TimeUnit.HOURS.toMillis(3), true),
-    DAEMON_KEEP_ALIVE_MS("daemon.keepAliveMs", null, TimeUnit.SECONDS.toMillis(1), true),
+    DAEMON_IDLE_TIMEOUT("daemon.idleTimeout", null, "3 hours", true),
+    DAEMON_KEEP_ALIVE("daemon.keepAlive", null, "1 sec", true),
     DAEMON_MAX_LOST_KEEP_ALIVE("daemon.maxLostKeepAlive", null, 3, false),
     /**
      * The minimum number of threads to use when constructing the default {@code -T} parameter for the daemon.
@@ -146,16 +146,12 @@ public enum Environment {
     /**
      * Interval to check if the daemon should expire
      */
-    DAEMON_EXPIRATION_CHECK_DELAY_MS("daemon.expirationCheckDelayMs", null, TimeUnit.SECONDS.toMillis(10), true),
+    DAEMON_EXPIRATION_CHECK_DELAY("daemon.expirationCheckDelay", null, "10 seconds", true),
     /**
      * Period after which idle daemons will shut down
      */
-    DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD_MS("daemon.duplicateDaemonGracePeriodMs", null, TimeUnit.SECONDS.toMillis(10), true),
+    DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD("daemon.duplicateDaemonGracePeriod", null, "10 seconds", true),
     ;
-
-    public static final int DEFAULT_IDLE_TIMEOUT = (int) TimeUnit.HOURS.toMillis(3);
-
-    public static final int DEFAULT_KEEP_ALIVE = (int) TimeUnit.SECONDS.toMillis(1);
 
     static Properties properties = System.getProperties();
 
@@ -217,6 +213,10 @@ public enum Environment {
             result = cygpath(result);
         }
         return Paths.get(result);
+    }
+
+    public Duration asDuration() {
+        return TimeUtils.toDuration(asString());
     }
 
     public String asCommandLineProperty(String value) {

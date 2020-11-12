@@ -94,7 +94,7 @@ public class DaemonClientConnection implements Closeable {
     }
 
     public List<Message> receive() throws ConnectException, StaleAddressException {
-        int maxKeepAliveMs = parameters.keepAliveMs() * parameters.maxLostKeepAlive();
+        long maxKeepAliveMs = parameters.keepAlive().toMillis() * parameters.maxLostKeepAlive();
         while (true) {
             try {
                 final Message m = queue.poll(maxKeepAliveMs, TimeUnit.MILLISECONDS);
