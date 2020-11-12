@@ -15,13 +15,22 @@
  */
 package org.mvndaemon.mvnd.client;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.fusesource.jansi.Ansi;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
@@ -33,10 +42,13 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.OsUtils;
+import org.mvndaemon.mvnd.common.TimeUtils;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.mvndaemon.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
 public class DefaultClient implements Client {
 
@@ -183,6 +195,12 @@ public class DefaultClient implements Client {
                 }
                 return new DefaultResult(argv, null);
             }
+            boolean purge = args.remove("--purge");
+            if (purge) {
+                String result = purgeLogs();
+                output.accept(Message.display(result != null ? result : "Nothing to purge"));
+                return new DefaultResult(argv, null);
+            }
 
             if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
                 args.add("--threads");
@@ -216,24 +234,109 @@ public class DefaultClient implements Client {
 
                 output.accept(Message.buildStatus("Build request sent"));
 
-                while (true) {
-                    final List<Message> messages = daemon.receive();
-                    output.accept(messages);
-                    for (Message m : messages) {
-                        switch (m.getType()) {
-                        case Message.CANCEL_BUILD:
-                            return new DefaultResult(argv,
-                                    new InterruptedException("The build was canceled"));
-                        case Message.BUILD_EXCEPTION:
-                            final BuildException e = (BuildException) m;
-                            return new DefaultResult(argv,
-                                    new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
-                        case Message.BUILD_STOPPED:
-                            return new DefaultResult(argv, null);
+                // We've sent the request, so it gives us a bit of time to purge the logs
+                AtomicReference<String> purgeMessage = new AtomicReference<>();
+                Thread purgeLog = new Thread(() -> {
+                    purgeMessage.set(purgeLogs());
+                }, "Log purge");
+                purgeLog.setDaemon(true);
+                purgeLog.start();
+
+                try {
+                    while (true) {
+                        final List<Message> messages = daemon.receive();
+                        output.accept(messages);
+                        for (Message m : messages) {
+                            switch (m.getType()) {
+                            case Message.CANCEL_BUILD:
+                                return new DefaultResult(argv,
+                                        new InterruptedException("The build was canceled"));
+                            case Message.BUILD_EXCEPTION:
+                                final BuildException e = (BuildException) m;
+                                return new DefaultResult(argv,
+                                        new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
+                            case Message.BUILD_STOPPED:
+                                return new DefaultResult(argv, null);
+                            }
                         }
+                    }
+                } finally {
+                    String msg = purgeMessage.get();
+                    if (msg != null) {
+                        output.accept(Message.display(msg));
                     }
                 }
             }
+        }
+    }
+
+    private String purgeLogs() {
+        Path storage = parameters.daemonStorage();
+        Duration purgeLogPeriod = parameters.purgeLogPeriod();
+        if (!Files.isDirectory(storage) || !TimeUtils.isPositive(purgeLogPeriod)) {
+            return null;
+        }
+        String date = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault()).format(Instant.now());
+        Path log = storage.resolve("purge-" + date + ".log");
+        List<Path> deleted = new ArrayList<>();
+        List<Throwable> exceptions = new ArrayList<>();
+        FileTime limit = FileTime.from(Instant.now().minus(purgeLogPeriod));
+        try {
+            Files.list(storage)
+                    .filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
+                    .filter(p -> !log.equals(p))
+                    .filter(p -> {
+                        try {
+                            FileTime lmt = Files.getLastModifiedTime(p);
+                            return lmt.compareTo(limit) < 0;
+                        } catch (IOException e) {
+                            exceptions.add(e);
+                            return false;
+                        }
+                    })
+                    .forEach(p -> {
+                        try {
+                            Files.delete(p);
+                            deleted.add(p);
+                        } catch (IOException e) {
+                            exceptions.add(e);
+                        }
+                    });
+        } catch (Exception e) {
+            exceptions.add(e);
+        }
+        if (exceptions.isEmpty() && deleted.isEmpty()) {
+            return null;
+        }
+        String logMessage;
+        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(log,
+                StandardOpenOption.WRITE, StandardOpenOption.APPEND, StandardOpenOption.CREATE))) {
+            w.printf("Purge executed at %s%n", Instant.now().toString());
+            if (deleted.isEmpty()) {
+                w.printf("No files deleted.%n");
+            } else {
+                w.printf("Deleted files:%n");
+                for (Path p : deleted) {
+                    w.printf("    %s%n", p.toString());
+                }
+            }
+            if (!exceptions.isEmpty()) {
+                w.printf("%d exception(s) occurred during the purge", exceptions.size());
+                for (Throwable t : exceptions) {
+                    t.printStackTrace(w);
+                }
+            }
+            char[] buf = new char[80];
+            Arrays.fill(buf, '=');
+            w.printf("%s%n", new String(buf));
+            logMessage = "log available in " + log.toString();
+        } catch (IOException e) {
+            logMessage = "an exception occurred when writing log to " + log.toString() + ": " + e.toString();
+        }
+        if (exceptions.isEmpty()) {
+            return String.format("Purged %d log files (%s)", deleted.size(), logMessage);
+        } else {
+            return String.format("Purged %d log files with %d exceptions (%s)", deleted.size(), exceptions.size(), logMessage);
         }
     }
 
