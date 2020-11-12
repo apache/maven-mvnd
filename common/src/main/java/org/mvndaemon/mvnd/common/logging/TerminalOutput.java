@@ -66,6 +66,7 @@ public class TerminalOutput implements ClientOutput {
     private volatile boolean closing;
     private final long start;
     private final ReadWriteLock readInput = new ReentrantReadWriteLock();
+    private final boolean dumb;
 
     /** A sink for sending messages back to the daemon */
     private volatile Consumer<Message> daemonDispatch;
@@ -91,7 +92,6 @@ public class TerminalOutput implements ClientOutput {
     private String buildStatus;
     private boolean displayDone = false;
     private boolean noBuffering;
-    private boolean dumb;
 
     /**
      * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
