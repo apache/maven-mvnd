@@ -77,7 +77,7 @@ public enum Environment {
     /**
      * The automatic log purge period
      */
-    MVND_LOG_PURGE_PERIOD("mvnd.logPurgePeriod", null, "1w", false),
+    MVND_LOG_PURGE_PERIOD("mvnd.logPurgePeriod", null, "7d", false),
     /**
      * The path to the daemon registry
      */
