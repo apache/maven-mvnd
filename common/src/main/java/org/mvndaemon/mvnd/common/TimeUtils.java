@@ -35,11 +35,11 @@ public final class TimeUtils {
             "(?<n>-?\\d+)" +
                     "|" +
                     "(" +
-                        "((?<d>\\d+)\\s*d(ay(s)?)?)?" + "\\s*" +
-                        "((?<h>\\d+)\\s*h(our(s)?)?)?" + "\\s*" +
-                        "((?<m>\\d+)\\s*m(in(ute(s)?)?)?)?" + "\\s*" +
-                        "((?<s>\\d+(\\.\\d+)?)\\s*s(ec(ond(s)?)?)?)?" + "\\s*" +
-                        "((?<l>\\d+(\\.\\d+)?)\\s*m(illi)?s(ec(ond)?(s)?)?)?" +
+                    "((?<d>\\d+)\\s*d(ay(s)?)?)?" + "\\s*" +
+                    "((?<h>\\d+)\\s*h(our(s)?)?)?" + "\\s*" +
+                    "((?<m>\\d+)\\s*m(in(ute(s)?)?)?)?" + "\\s*" +
+                    "((?<s>\\d+(\\.\\d+)?)\\s*s(ec(ond(s)?)?)?)?" + "\\s*" +
+                    "((?<l>\\d+(\\.\\d+)?)\\s*m(illi)?s(ec(ond)?(s)?)?)?" +
                     ")",
             Pattern.CASE_INSENSITIVE);
 
@@ -57,13 +57,13 @@ public final class TimeUtils {
     /**
      * This will print time in human readable format from milliseconds.
      * Examples:
-     *    500 -> 500ms
-     *    1300 -> 1s300ms
-     *    310300 -> 5m10s300ms
-     *    6600000 -> 1h50m
+     * 500 -> 500ms
+     * 1300 -> 1s300ms
+     * 310300 -> 5m10s300ms
+     * 6600000 -> 1h50m
      *
      * @param  millis time in milliseconds
-     * @return           time in string
+     * @return        time in string
      */
     public static String printDuration(long millis) {
         if (millis < 0) {
@@ -111,10 +111,10 @@ public final class TimeUtils {
             String s = matcher.group("s");
             String l = matcher.group("l");
             return (d != null ? TimeUnit.DAYS.toMillis(Long.parseLong(d)) : 0)
-                + (h != null ? TimeUnit.HOURS.toMillis(Long.parseLong(h)) : 0)
-                + (m != null ? TimeUnit.MINUTES.toMillis(Long.parseLong(m)) : 0)
-                + (s != null ? TimeUnit.SECONDS.toMillis(Long.parseLong(s)) : 0)
-                + (l != null ? TimeUnit.MILLISECONDS.toMillis(Long.parseLong(l)) : 0);
+                    + (h != null ? TimeUnit.HOURS.toMillis(Long.parseLong(h)) : 0)
+                    + (m != null ? TimeUnit.MINUTES.toMillis(Long.parseLong(m)) : 0)
+                    + (s != null ? TimeUnit.SECONDS.toMillis(Long.parseLong(s)) : 0)
+                    + (l != null ? TimeUnit.MILLISECONDS.toMillis(Long.parseLong(l)) : 0);
         }
     }
 
