@@ -58,8 +58,10 @@ import org.mvndaemon.mvnd.common.Message.BuildStarted;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.mvndaemon.mvnd.logging.smart.AbstractLoggingSpy;
+import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -539,6 +541,7 @@ public class Server implements AutoCloseable, Runnable {
                 loggingSpy.fail(t);
             } finally {
                 sender.join();
+                MDC.remove(ProjectBuildLogAppender.KEY_PROJECT_ID);
             }
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);
