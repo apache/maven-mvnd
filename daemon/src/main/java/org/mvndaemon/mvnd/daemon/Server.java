@@ -60,6 +60,8 @@ import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.mvndaemon.mvnd.logging.smart.AbstractLoggingSpy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import static org.mvndaemon.mvnd.common.DaemonState.Broken;
 import static org.mvndaemon.mvnd.common.DaemonState.Busy;
@@ -87,6 +89,20 @@ public class Server implements AutoCloseable, Runnable {
     private final DaemonMemoryStatus memoryStatus;
 
     public Server() throws IOException {
+        // When spawning a new process, the child process is create within
+        // the same process group.  This means that a few signals are sent
+        // to the whole group.  This is the case for SIGINT (Ctrl-C) and
+        // SIGTSTP (Ctrl-Z) which are both sent to all the processed in the
+        // group when initiated from the controlling terminal.
+        // This is only a problem when the client creates the daemon, but
+        // without ignoring those signals, a client being interrupted will
+        // also interrupt and kill the daemon.
+        try {
+            Signal.handle(new Signal("INT"), SignalHandler.SIG_IGN);
+            Signal.handle(new Signal("TSTP"), SignalHandler.SIG_IGN);
+        } catch (Throwable t) {
+            LOGGER.warn("Unable to ignore INT and TSTP signals", t);
+        }
         this.uid = Environment.DAEMON_UID.asString();
         this.noDaemon = Environment.MVND_NO_DAEMON.asBoolean();
         try {
