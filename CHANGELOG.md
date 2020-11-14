@@ -1,5 +1,24 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.12...HEAD)
+
+**Implemented enhancements:**
+
+- The daemon created by the client should survive if the client is interrupted using Ctrl+C [\#193](https://github.com/mvndaemon/mvnd/issues/193)
+
+**Closed issues:**
+
+- Messages associated with projectId from the previous build in the terminal and daemon log [\#216](https://github.com/mvndaemon/mvnd/issues/216)
+- Provide an automatic purge of daemon logs [\#196](https://github.com/mvndaemon/mvnd/issues/196)
+
+**Merged pull requests:**
+
+- Messages associated with projectId from the previous build in the ter… [\#217](https://github.com/mvndaemon/mvnd/pull/217) ([ppalaga](https://github.com/ppalaga))
+- Ignore INT and TSTP signals in the daemon [\#214](https://github.com/mvndaemon/mvnd/pull/214) ([gnodet](https://github.com/gnodet))
+- Automatic purge of daemon logs [\#213](https://github.com/mvndaemon/mvnd/pull/213) ([gnodet](https://github.com/gnodet))
+
 ## [0.0.12](https://github.com/mvndaemon/mvnd/tree/0.0.12) (2020-11-12)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.11...0.0.12)
