@@ -26,4 +26,6 @@ public interface ExecutionResult {
 
     ExecutionResult assertSuccess();
 
+    int getExitCode();
+
 }

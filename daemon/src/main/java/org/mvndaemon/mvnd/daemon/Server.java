@@ -529,13 +529,13 @@ public class Server implements AutoCloseable, Runnable {
                         }
                     }
                 });
-                cli.main(
+                int exitCode = cli.main(
                         buildRequest.getArgs(),
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
                         buildRequest.getEnv());
                 LOGGER.info("Build finished, finishing message dispatch");
-                loggingSpy.finish();
+                loggingSpy.finish(exitCode);
             } catch (Throwable t) {
                 LOGGER.error("Error while building project", t);
                 loggingSpy.fail(t);
@@ -574,7 +574,7 @@ public class Server implements AutoCloseable, Runnable {
             return 51;
         case Message.PROJECT_STOPPED:
             return 95;
-        case Message.BUILD_STOPPED:
+        case Message.BUILD_FINISHED:
             return 96;
         case Message.BUILD_EXCEPTION:
             return 97;
@@ -636,8 +636,8 @@ public class Server implements AutoCloseable, Runnable {
             this.queue = queue;
         }
 
-        public void finish() throws Exception {
-            queue.add(Message.BUILD_STOPPED_SINGLETON);
+        public void finish(int exitCode) throws Exception {
+            queue.add(new Message.BuildFinished(exitCode));
             queue.add(Message.STOP_SINGLETON);
         }
 
