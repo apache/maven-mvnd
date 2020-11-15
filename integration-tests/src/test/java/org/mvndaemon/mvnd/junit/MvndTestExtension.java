@@ -32,7 +32,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
-import org.mvndaemon.mvnd.client.DefaultClient;
 import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.TimeUtils;
@@ -122,7 +121,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             }
             return new NativeTestClient(parameters, mvndNativeExecutablePath, timeoutMs);
         } else {
-            return new DefaultClient(parameters);
+            return new JvmTestClient(parameters);
         }
     }
 
