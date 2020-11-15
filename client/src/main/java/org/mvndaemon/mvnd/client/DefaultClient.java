@@ -366,11 +366,11 @@ public class DefaultClient implements Client {
         @Override
         public ExecutionResult assertSuccess() {
             if (exception != null) {
-                throw new AssertionError(appendCommand(new StringBuilder("Build failed: ")).toString(), exception);
+                throw new AssertionError(ExecutionResult.appendCommand(new StringBuilder("Build failed: "), args).toString(), exception);
             }
             if (exitCode != 0) {
                 throw new AssertionError(
-                        appendCommand(new StringBuilder("Build exited with non-zero exit code " + exitCode + ": ")).toString(),
+                        ExecutionResult.appendCommand(new StringBuilder("Build exited with non-zero exit code " + exitCode + ": "), args).toString(),
                         exception);
             }
             return this;
@@ -379,7 +379,7 @@ public class DefaultClient implements Client {
         @Override
         public ExecutionResult assertFailure() {
             if (exception == null && exitCode == 0) {
-                throw new AssertionError(appendCommand(new StringBuilder("Build did not fail: ")));
+                throw new AssertionError(ExecutionResult.appendCommand(new StringBuilder("Build did not fail: "), args));
             }
             return this;
         }
@@ -394,13 +394,6 @@ public class DefaultClient implements Client {
             return exception == null;
         }
 
-        StringBuilder appendCommand(StringBuilder sb) {
-            sb.append("mvnd");
-            for (String arg : args) {
-                sb.append(" \"").append(arg).append('"');
-            }
-            return sb;
-        }
     }
 
 }

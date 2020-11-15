@@ -113,19 +113,18 @@ public class NativeTestClient implements Client {
             this.log = log;
         }
 
-        StringBuilder appendCommand(StringBuilder sb) {
-            for (String arg : args) {
-                sb.append(" \"").append(arg).append('"');
-            }
-            return sb;
-
-        }
-
         @Override
         public Result assertFailure() {
             if (exitCode == 0) {
-                throw new AssertionError(appendCommand(
-                        new StringBuilder("mvnd returned ").append(exitCode).append(" instead of non-zero exit code: ")));
+                final StringBuilder sb = ExecutionResult.appendCommand(
+                        new StringBuilder("mvnd returned ").append(exitCode).append(" instead of non-zero exit code: "),
+                        args);
+                sb.append("\n--- stderr+stdout start ---");
+                synchronized (log) {
+                    log.forEach(s -> sb.append('\n').append(s));
+                }
+                sb.append("\n--- stderr+stdout end ---");
+                throw new AssertionError(sb);
             }
             return this;
         }
@@ -133,7 +132,9 @@ public class NativeTestClient implements Client {
         @Override
         public Result assertSuccess() {
             if (exitCode != 0) {
-                final StringBuilder sb = appendCommand(new StringBuilder("mvnd returned ").append(exitCode));
+                final StringBuilder sb = ExecutionResult.appendCommand(
+                        new StringBuilder("mvnd returned ").append(exitCode),
+                        args);
                 if (exitCode == CommandProcess.TIMEOUT_EXIT_CODE) {
                     sb.append(" (timeout)");
                 }

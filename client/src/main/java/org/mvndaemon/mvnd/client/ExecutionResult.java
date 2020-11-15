@@ -15,6 +15,8 @@
  */
 package org.mvndaemon.mvnd.client;
 
+import java.util.List;
+
 /**
  * A result of a {@code mvnd} build.
  */
@@ -27,5 +29,13 @@ public interface ExecutionResult {
     ExecutionResult assertSuccess();
 
     int getExitCode();
+
+    public static StringBuilder appendCommand(StringBuilder sb, List<String> args) {
+        sb.append("mvnd");
+        for (String arg : args) {
+            sb.append(" \"").append(arg).append('"');
+        }
+        return sb;
+    }
 
 }
