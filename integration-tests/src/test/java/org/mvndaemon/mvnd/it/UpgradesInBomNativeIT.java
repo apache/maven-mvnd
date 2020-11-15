@@ -76,7 +76,8 @@ public class UpgradesInBomNativeIT {
         TestUtils.replace(useHelloPath, "new Hello().sayHello()", "new Hello().sayWisdom()");
         {
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "clean", "install", "-e").assertSuccess();
+            cl.execute(output, "clean", "install", "-e")
+                    .assertFailure(); // Switch back to assertSuccess() once https://github.com/mvndaemon/mvnd/issues/218 is fixed
         }
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
 

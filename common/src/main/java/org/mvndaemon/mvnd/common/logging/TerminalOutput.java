@@ -229,7 +229,7 @@ public class TerminalOutput implements ClientOutput {
             this.buildStatus = ((StringMessage) entry).getMessage();
             break;
         }
-        case Message.BUILD_STOPPED: {
+        case Message.BUILD_FINISHED: {
             projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
             clearDisplay();
             try {

@@ -31,7 +31,7 @@ import java.util.Objects;
 public abstract class Message {
     public static final int BUILD_REQUEST = 0;
     public static final int BUILD_STARTED = 1;
-    public static final int BUILD_STOPPED = 2;
+    public static final int BUILD_FINISHED = 2;
     public static final int PROJECT_STARTED = 3;
     public static final int PROJECT_STOPPED = 4;
     public static final int MOJO_STARTED = 5;
@@ -49,7 +49,6 @@ public abstract class Message {
 
     public static final BareMessage KEEP_ALIVE_SINGLETON = new BareMessage(KEEP_ALIVE);
     public static final BareMessage STOP_SINGLETON = new BareMessage(STOP);
-    public static final BareMessage BUILD_STOPPED_SINGLETON = new BareMessage(BUILD_STOPPED);
     public static final BareMessage CANCEL_BUILD_SINGLETON = new BareMessage(CANCEL_BUILD);
 
     final int type;
@@ -68,8 +67,8 @@ public abstract class Message {
             return BuildRequest.read(input);
         case BUILD_STARTED:
             return BuildStarted.read(input);
-        case BUILD_STOPPED:
-            return BareMessage.BUILD_STOPPED_SINGLETON;
+        case BUILD_FINISHED:
+            return BuildFinished.read(input);
         case PROJECT_STARTED:
         case PROJECT_STOPPED:
         case MOJO_STARTED:
@@ -300,6 +299,34 @@ public abstract class Message {
         }
     }
 
+    public static class BuildFinished extends Message {
+        final int exitCode;
+
+        public static Message read(DataInputStream input) throws IOException {
+            return new BuildFinished(input.readInt());
+        }
+
+        public BuildFinished(int exitCode) {
+            super(BUILD_FINISHED);
+            this.exitCode = exitCode;
+        }
+
+        @Override
+        public String toString() {
+            return "BuildRequest{exitCode=" + exitCode + '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            output.writeInt(exitCode);
+        }
+
+        public int getExitCode() {
+            return exitCode;
+        }
+    }
+
     public static class BuildException extends Message {
         final String message;
         final String className;
@@ -474,7 +501,7 @@ public abstract class Message {
             switch (type) {
             case KEEP_ALIVE:
                 return "KeepAlive";
-            case BUILD_STOPPED:
+            case BUILD_FINISHED:
                 return "BuildStopped";
             case STOP:
                 return "Stop";

@@ -41,6 +41,7 @@ import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
+import org.mvndaemon.mvnd.common.Message.BuildFinished;
 import org.mvndaemon.mvnd.common.OsUtils;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
@@ -79,16 +80,20 @@ public class DefaultClient implements Client {
         }
 
         DaemonParameters parameters = new DaemonParameters();
+        int exitCode = 0;
         try (TerminalOutput output = new TerminalOutput(batchMode || parameters.noBuffering(), parameters.rollingWindowSize(),
                 logFile)) {
             try {
-                new DefaultClient(parameters).execute(output, args);
+                final ExecutionResult result = new DefaultClient(parameters).execute(output, args);
+                exitCode = result.getExitCode();
             } catch (DaemonException.InterruptedException e) {
                 final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
                 String str = new AttributedString(System.lineSeparator() + "Canceled by user", s).toAnsi();
                 output.accept(Message.display(str));
+                exitCode = 130;
             }
         }
+        System.exit(exitCode);
     }
 
     public DefaultClient(DaemonParameters parameters) {
@@ -176,7 +181,7 @@ public class DefaultClient implements Client {
                                 d.getJavaHome())));
                     }
                 }
-                return new DefaultResult(argv, null);
+                return DefaultResult.success(argv);
             }
             boolean stop = args.remove("--stop");
             if (stop) {
@@ -193,13 +198,13 @@ public class DefaultClient implements Client {
                         }
                     }
                 }
-                return new DefaultResult(argv, null);
+                return DefaultResult.success(argv);
             }
             boolean purge = args.remove("--purge");
             if (purge) {
                 String result = purgeLogs();
                 output.accept(Message.display(result != null ? result : "Nothing to purge"));
-                return new DefaultResult(argv, null);
+                return DefaultResult.success(argv);
             }
 
             if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
@@ -250,13 +255,14 @@ public class DefaultClient implements Client {
                             switch (m.getType()) {
                             case Message.CANCEL_BUILD:
                                 return new DefaultResult(argv,
-                                        new InterruptedException("The build was canceled"));
+                                        new InterruptedException("The build was canceled"), 130);
                             case Message.BUILD_EXCEPTION:
                                 final BuildException e = (BuildException) m;
                                 return new DefaultResult(argv,
-                                        new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()));
-                            case Message.BUILD_STOPPED:
-                                return new DefaultResult(argv, null);
+                                        new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()),
+                                        1);
+                            case Message.BUILD_FINISHED:
+                                return new DefaultResult(argv, null, ((BuildFinished) m).getExitCode());
                             }
                         }
                     }
@@ -344,11 +350,17 @@ public class DefaultClient implements Client {
 
         private final Exception exception;
         private final List<String> args;
+        private final int exitCode;
 
-        private DefaultResult(List<String> args, Exception exception) {
+        public static DefaultResult success(List<String> args) {
+            return new DefaultResult(args, null, 0);
+        }
+
+        private DefaultResult(List<String> args, Exception exception, int exitCode) {
             super();
             this.args = args;
             this.exception = exception;
+            this.exitCode = exitCode;
         }
 
         @Override
@@ -356,15 +368,25 @@ public class DefaultClient implements Client {
             if (exception != null) {
                 throw new AssertionError(appendCommand(new StringBuilder("Build failed: ")).toString(), exception);
             }
+            if (exitCode != 0) {
+                throw new AssertionError(
+                        appendCommand(new StringBuilder("Build exited with non-zero exit code " + exitCode + ": ")).toString(),
+                        exception);
+            }
             return this;
         }
 
         @Override
         public ExecutionResult assertFailure() {
-            if (exception == null) {
+            if (exception == null && exitCode == 0) {
                 throw new AssertionError(appendCommand(new StringBuilder("Build did not fail: ")));
             }
             return this;
+        }
+
+        @Override
+        public int getExitCode() {
+            return exitCode;
         }
 
         @Override

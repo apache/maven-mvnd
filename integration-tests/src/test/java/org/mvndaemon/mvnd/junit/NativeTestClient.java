@@ -121,6 +121,7 @@ public class NativeTestClient implements Client {
 
         }
 
+        @Override
         public Result assertFailure() {
             if (exitCode == 0) {
                 throw new AssertionError(appendCommand(
@@ -129,6 +130,7 @@ public class NativeTestClient implements Client {
             return this;
         }
 
+        @Override
         public Result assertSuccess() {
             if (exitCode != 0) {
                 final StringBuilder sb = appendCommand(new StringBuilder("mvnd returned ").append(exitCode));
@@ -145,10 +147,12 @@ public class NativeTestClient implements Client {
             return this;
         }
 
+        @Override
         public int getExitCode() {
             return exitCode;
         }
 
+        @Override
         public boolean isSuccess() {
             return exitCode == 0;
         }
