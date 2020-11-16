@@ -75,6 +75,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResult;
+import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 
 /**
@@ -86,6 +87,7 @@ import org.eclipse.sisu.Typed;
 @Named
 @Singleton
 @Typed(ProjectBuilder.class)
+@Priority(10)
 public class CachingProjectBuilder
         implements ProjectBuilder {
 

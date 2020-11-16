@@ -83,7 +83,7 @@ public class NewManagedModuleNativeIT {
         {
             final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e", "-B", "-ntp")
-                    .assertFailure(); // Switch back to assertSuccess() once https://github.com/mvndaemon/mvnd/issues/218 is fixed
+                    .assertSuccess();
         }
         Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
 
