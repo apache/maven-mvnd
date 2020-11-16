@@ -26,28 +26,41 @@ import java.util.Properties;
 /**
  * Collects system properties and environment variables used by mvnd client or server.
  *
- * Duration properties such as {@link #DAEMON_IDLE_TIMEOUT}, {@link #DAEMON_KEEP_ALIVE},
- * {@link #DAEMON_EXPIRATION_CHECK_DELAY} or {@link #MVND_LOG_PURGE_PERIOD} are expressed
+ * Duration properties such as {@link #MVND_IDLE_TIMEOUT}, {@link #MVND_KEEP_ALIVE},
+ * {@link #MVND_EXPIRATION_CHECK_DELAY} or {@link #MVND_LOG_PURGE_PERIOD} are expressed
  * in a human readable format such as {@code 2h30m}, {@code 600ms} or {@code 10 seconds}.
  * The available units are <i>d/day/days</i>, <i>h/hour/hours</i>, <i>m/min/minute/minutes</i>,
  * <i>s/sec/second/seconds</i> and <i>ms/millis/msec/milliseconds</i>.
  */
 public enum Environment {
+
     //
     // Log properties
     //
+
+    /**
+     * The location of the logback configuration file
+     */
     LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null, null, false),
+
     //
     // System properties
     //
+    /** java home directory */
     JAVA_HOME("java.home", "JAVA_HOME", null, false),
+    /** mvnd home directory */
     MVND_HOME("mvnd.home", "MVND_HOME", null, false),
+    /** user home directory */
     USER_HOME("user.home", null, null, false),
+    /** user current dir */
     USER_DIR("user.dir", null, null, false),
+
     //
     // Maven properties
     //
+    /** path to the maven local repository */
     MAVEN_REPO_LOCAL("maven.repo.local", null, null, false),
+    /** location of the maven settings file */
     MAVEN_SETTINGS("maven.settings", null, null, false) {
         @Override
         public boolean hasCommandLineProperty(Collection<String> args) {
@@ -59,12 +72,25 @@ public enum Environment {
             return "--settings=" + value;
         }
     },
+    /** root directory of a multi module project */
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, false),
+
     //
     // mvnd properties
     //
-    MVND_PROPERTIES_PATH("mvnd.properties.path", "MVND_PROPERTIES_PATH", null, false),
-    MVND_DAEMON_STORAGE("mvnd.daemon.storage", null, null, false),
+
+    /**
+     * Location of the user supplied mvnd properties
+     */
+    MVND_PROPERTIES_PATH("mvnd.propertiesPath", "MVND_PROPERTIES_PATH", null, false),
+    /**
+     * Directory where mvnd stores its files (the registry and the daemon logs).
+     */
+    MVND_DAEMON_STORAGE("mvnd.daemonStorage", null, null, false),
+    /**
+     * The path to the daemon registry, defaults to <code>${mvnd.daemonStorage}/registry.bin</code>
+     */
+    MVND_REGISTRY("mvnd.registry", null, null, false),
     /**
      * Property that can be set to avoid buffering the output and display events continuously, closer to the usual maven
      * display. Passing {@code -B} or {@code --batch-mode} on the command line enables this too for the given build.
@@ -75,18 +101,32 @@ public enum Environment {
      */
     MVND_ROLLING_WINDOW_SIZE("mvnd.rollingWindowSize", null, "0", false),
     /**
-     * The automatic log purge period
+     * The automatic log purge period.
      */
     MVND_LOG_PURGE_PERIOD("mvnd.logPurgePeriod", null, "7d", false),
     /**
-     * The path to the daemon registry
+     * Property to disable using a daemon (usefull for debugging, and only available in non native mode).
      */
-    DAEMON_REGISTRY("daemon.registry", null, null, false),
     MVND_NO_DAEMON("mvnd.noDaemon", "MVND_NO_DAEMON", "false", true),
-    DAEMON_DEBUG("daemon.debug", null, false, true),
-    DAEMON_IDLE_TIMEOUT("daemon.idleTimeout", null, "3 hours", true),
-    DAEMON_KEEP_ALIVE("daemon.keepAlive", null, "1 sec", true),
-    DAEMON_MAX_LOST_KEEP_ALIVE("daemon.maxLostKeepAlive", null, 3, false),
+    /**
+     * Property to launch the daemon in debug mode with the following JVM argument
+     * <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000</code>
+     */
+    MVND_DEBUG("mvnd.debug", null, false, true),
+    /**
+     * Duration after which an usused daemon will shut down.
+     */
+    MVND_IDLE_TIMEOUT("mvnd.idleTimeout", null, "3 hours", true),
+    /**
+     * Time after which a daemon will send a keep-alive message to the client if the current build
+     * has produced no output.
+     */
+    MVND_KEEP_ALIVE("mvnd.keepAlive", null, "1 sec", true),
+    /**
+     * The maximum number of keep alive message that can be lost before the client considers the daemon
+     * as having had a failure.
+     */
+    MVND_MAX_LOST_KEEP_ALIVE("mvnd.maxLostKeepAlive", null, 3, false),
     /**
      * The minimum number of threads to use when constructing the default {@code -T} parameter for the daemon.
      * This value is ignored if the user passes @{@code -T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
@@ -128,39 +168,39 @@ public enum Environment {
     /**
      * Internal system property set by the client when starting the daemon to identify its id
      */
-    DAEMON_UID("daemon.uid", null, null, false),
+    MVND_UID("mvnd.uid", null, null, false),
     /**
      * Internal option to specify the maven extension classpath
      */
-    DAEMON_EXT_CLASSPATH("daemon.ext.classpath", null, null, true),
+    MVND_EXT_CLASSPATH("mvnd.extClasspath", null, null, true),
     /**
      * Internal option to specify the list of maven extension to register
      */
-    DAEMON_CORE_EXTENSIONS("daemon.core.extensions", null, null, true),
+    MVND_CORE_EXTENSIONS("mvnd.coreExtensions", null, null, true),
     /**
      * JVM options for the daemon
      */
-    DAEMON_MIN_HEAP_SIZE("daemon.minHeapSize", null, "128M", true),
+    MVND_MIN_HEAP_SIZE("mvnd.minHeapSize", null, "128M", true),
     /**
      * JVM options for the daemon
      */
-    DAEMON_MAX_HEAP_SIZE("daemon.maxHeapSize", null, "2G", true),
+    MVND_MAX_HEAP_SIZE("mvnd.maxHeapSize", null, "2G", true),
     /**
      * Additional JVM args for the daemon
      */
-    DAEMON_JVM_ARGS("daemon.jvmArgs", null, "", true),
+    MVND_JVM_ARGS("mvnd.jvmArgs", null, "", true),
     /**
      * JVM options for the daemon
      */
-    DAEMON_ENABLE_ASSERTIONS("daemon.enableAssertions", null, false, true),
+    MVND_ENABLE_ASSERTIONS("mvnd.enableAssertions", null, false, true),
     /**
      * Interval to check if the daemon should expire
      */
-    DAEMON_EXPIRATION_CHECK_DELAY("daemon.expirationCheckDelay", null, "10 seconds", true),
+    MVND_EXPIRATION_CHECK_DELAY("mvnd.expirationCheckDelay", null, "10 seconds", true),
     /**
      * Period after which idle daemons will shut down
      */
-    DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD("daemon.duplicateDaemonGracePeriod", null, "10 seconds", true),
+    MVND_DUPLICATE_DAEMON_GRACE_PERIOD("mvnd.duplicateDaemonGracePeriod", null, "10 seconds", true),
     ;
 
     static Properties properties = System.getProperties();

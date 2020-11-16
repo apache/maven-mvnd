@@ -209,15 +209,15 @@ public class DaemonParameters {
     }
 
     public String minHeapSize() {
-        return property(Environment.DAEMON_MIN_HEAP_SIZE).asString();
+        return property(Environment.MVND_MIN_HEAP_SIZE).asString();
     }
 
     public String maxHeapSize() {
-        return property(Environment.DAEMON_MAX_HEAP_SIZE).asString();
+        return property(Environment.MVND_MAX_HEAP_SIZE).asString();
     }
 
     public String jvmArgs() {
-        return property(Environment.DAEMON_JVM_ARGS).asString();
+        return property(Environment.MVND_JVM_ARGS).asString();
     }
 
     /**
@@ -273,11 +273,11 @@ public class DaemonParameters {
     }
 
     public Duration keepAlive() {
-        return property(Environment.DAEMON_KEEP_ALIVE).orFail().asDuration();
+        return property(Environment.MVND_KEEP_ALIVE).orFail().asDuration();
     }
 
     public int maxLostKeepAlive() {
-        return property(Environment.DAEMON_MAX_LOST_KEEP_ALIVE).orFail().asInt();
+        return property(Environment.MVND_MAX_LOST_KEEP_ALIVE).orFail().asInt();
     }
 
     public boolean noBuffering() {
@@ -337,10 +337,10 @@ public class DaemonParameters {
     }
 
     private String defaultValue(Environment env) {
-        if (env == Environment.DAEMON_EXT_CLASSPATH) {
+        if (env == Environment.MVND_EXT_CLASSPATH) {
             List<String> cp = parseExtClasspath(userHome());
             return String.join(",", cp);
-        } else if (env == Environment.DAEMON_CORE_EXTENSIONS) {
+        } else if (env == Environment.MVND_CORE_EXTENSIONS) {
             try {
                 List<String> extensions = readCoreExtensionsDescriptor(multiModuleProjectDirectory()).stream()
                         .map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())

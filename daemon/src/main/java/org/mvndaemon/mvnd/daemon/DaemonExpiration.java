@@ -54,7 +54,7 @@ public class DaemonExpiration {
         return any(
                 any(gcTrashing(), lowHeapSpace(), lowNonHeap()),
                 all(compatible(), duplicateGracePeriod(), notMostRecentlyUsed()),
-                idleTimeout(Environment.DAEMON_IDLE_TIMEOUT.asDuration()),
+                idleTimeout(Environment.MVND_IDLE_TIMEOUT.asDuration()),
                 all(duplicateGracePeriod(), notMostRecentlyUsed(), lowMemory(0.05)),
                 registryUnavailable());
     }
@@ -83,7 +83,7 @@ public class DaemonExpiration {
     }
 
     static DaemonExpirationStrategy duplicateGracePeriod() {
-        return idleTimeout(Environment.DAEMON_DUPLICATE_DAEMON_GRACE_PERIOD.asDuration());
+        return idleTimeout(Environment.MVND_DUPLICATE_DAEMON_GRACE_PERIOD.asDuration());
     }
 
     static DaemonExpirationStrategy idleTimeout(Duration timeout) {

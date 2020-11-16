@@ -105,11 +105,11 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.warn("Unable to ignore INT and TSTP signals", t);
         }
-        this.uid = Environment.DAEMON_UID.asString();
+        this.uid = Environment.MVND_UID.asString();
         this.noDaemon = Environment.MVND_NO_DAEMON.asBoolean();
         try {
             cli = new DaemonMavenCli();
-            registry = new DaemonRegistry(Environment.DAEMON_REGISTRY.asPath());
+            registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
             socket = ServerSocketChannel.open().bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
@@ -184,7 +184,7 @@ public class Server implements AutoCloseable, Runnable {
 
     public void run() {
         try {
-            Duration expirationCheckDelay = Environment.DAEMON_EXPIRATION_CHECK_DELAY.asDuration();
+            Duration expirationCheckDelay = Environment.MVND_EXPIRATION_CHECK_DELAY.asDuration();
             executor.scheduleAtFixedRate(this::expirationCheck,
                     expirationCheckDelay.toMillis(), expirationCheckDelay.toMillis(), TimeUnit.MILLISECONDS);
             LOGGER.info("Daemon started");
@@ -424,7 +424,7 @@ public class Server implements AutoCloseable, Runnable {
     private void handle(DaemonConnection connection, BuildRequest buildRequest) {
         updateState(Busy);
         try {
-            Duration keepAlive = Environment.DAEMON_KEEP_ALIVE.asDuration();
+            Duration keepAlive = Environment.MVND_KEEP_ALIVE.asDuration();
 
             LOGGER.info("Executing request");
 
