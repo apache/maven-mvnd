@@ -10,11 +10,13 @@
 
 **Closed issues:**
 
+- Exit code not propagated from the daemon to mvnd client [\#220](https://github.com/mvndaemon/mvnd/issues/220)
 - Messages associated with projectId from the previous build in the terminal and daemon log [\#216](https://github.com/mvndaemon/mvnd/issues/216)
 - Provide an automatic purge of daemon logs [\#196](https://github.com/mvndaemon/mvnd/issues/196)
 
 **Merged pull requests:**
 
+- Exit code not propagated from the daemon to mvnd client [\#222](https://github.com/mvndaemon/mvnd/pull/222) ([ppalaga](https://github.com/ppalaga))
 - Messages associated with projectId from the previous build in the ter… [\#217](https://github.com/mvndaemon/mvnd/pull/217) ([ppalaga](https://github.com/ppalaga))
 - Ignore INT and TSTP signals in the daemon [\#214](https://github.com/mvndaemon/mvnd/pull/214) ([gnodet](https://github.com/gnodet))
 - Automatic purge of daemon logs [\#213](https://github.com/mvndaemon/mvnd/pull/213) ([gnodet](https://github.com/gnodet))
