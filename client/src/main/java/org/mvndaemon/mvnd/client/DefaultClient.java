@@ -366,11 +366,13 @@ public class DefaultClient implements Client {
         @Override
         public ExecutionResult assertSuccess() {
             if (exception != null) {
-                throw new AssertionError(ExecutionResult.appendCommand(new StringBuilder("Build failed: "), args).toString(), exception);
+                throw new AssertionError(ExecutionResult.appendCommand(new StringBuilder("Build failed: "), args).toString(),
+                        exception);
             }
             if (exitCode != 0) {
                 throw new AssertionError(
-                        ExecutionResult.appendCommand(new StringBuilder("Build exited with non-zero exit code " + exitCode + ": "), args).toString(),
+                        ExecutionResult.appendCommand(
+                                new StringBuilder("Build exited with non-zero exit code " + exitCode + ": "), args).toString(),
                         exception);
             }
             return this;
