@@ -236,7 +236,6 @@ limitations under the License.</inlineHeader>
                             <exclude>**/README.*</exclude>
                             <exclude>**/.cache/**</exclude>
                             <exclude>**/.gitkeep</exclude>
-                            <exclude>**/conf/logging/logback.xml</exclude>
                             <exclude>**/mvnd.properties.template</exclude>
                             <exclude>**/m2.conf</exclude>
                             <exclude>**/mvnd</exclude>
