@@ -177,7 +177,7 @@ set CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
   %MAVEN_OPTS% ^
   %MAVEN_DEBUG_OPTS% ^
   -classpath %CLASSWORLDS_JAR% ^
-  "-Dlogback.configurationFile=%MAVEN_HOME%\conf\logging\logback-mvn.xml" ^
+  "-Dlogback.configurationFile=%MAVEN_HOME%\conf\logging\logback.xml" ^
   "-Dclassworlds.conf=%MAVEN_HOME%\bin\m2.conf" ^
   "-Dmvnd.home=%MAVEN_HOME%" ^
   "-Dmaven.home=%MAVEN_HOME%" ^

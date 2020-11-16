@@ -193,7 +193,7 @@ exec "$JAVACMD" \
   $MAVEN_OPTS \
   $MAVEN_DEBUG_OPTS \
   -classpath "${DAEMON_JAR}" \
-  "-Dlogback.configurationFile=${MVND_HOME}/mvn/conf/logging/logback.xml" \
+  "-Dlogback.configurationFile=${MVND_HOME}/conf/logback.xml" \
   "-Dmvnd.home=${MVND_HOME}" \
   "-Dmaven.home=${MVND_HOME}/mvn" \
   "-Dlibrary.jansi.path=${MVND_HOME}/mvn/lib/jansi-native" \
