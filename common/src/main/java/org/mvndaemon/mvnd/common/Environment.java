@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * Collects system properties and environment variables used by mvnd client or server.
@@ -61,17 +62,7 @@ public enum Environment {
     /** path to the maven local repository */
     MAVEN_REPO_LOCAL("maven.repo.local", null, null, false),
     /** location of the maven settings file */
-    MAVEN_SETTINGS("maven.settings", null, null, false) {
-        @Override
-        public boolean hasCommandLineProperty(Collection<String> args) {
-            return args.stream().anyMatch(arg -> arg.startsWith("-s") || arg.startsWith("--settings"));
-        }
-
-        @Override
-        public String asCommandLineProperty(String value) {
-            return "--settings=" + value;
-        }
-    },
+    MAVEN_SETTINGS("maven.settings", null, null, false, new String[] { "--settings", "-s" }),
     /** root directory of a multi module project */
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, false),
 
@@ -103,7 +94,7 @@ public enum Environment {
     /**
      * The automatic log purge period.
      */
-    MVND_LOG_PURGE_PERIOD("mvnd.logPurgePeriod", null, "7d", false),
+    MVND_LOG_PURGE_PERIOD("mvnd.logPurgePeriod", null, "7d", false, true),
     /**
      * Property to disable using a daemon (usefull for debugging, and only available in non native mode).
      */
@@ -116,12 +107,12 @@ public enum Environment {
     /**
      * Duration after which an usused daemon will shut down.
      */
-    MVND_IDLE_TIMEOUT("mvnd.idleTimeout", null, "3 hours", true),
+    MVND_IDLE_TIMEOUT("mvnd.idleTimeout", null, "3 hours", true, true),
     /**
      * Time after which a daemon will send a keep-alive message to the client if the current build
      * has produced no output.
      */
-    MVND_KEEP_ALIVE("mvnd.keepAlive", null, "100 ms", true),
+    MVND_KEEP_ALIVE("mvnd.keepAlive", null, "100 ms", true, true),
     /**
      * The maximum number of keep alive message that can be lost before the client considers the daemon
      * as having had a failure.
@@ -138,33 +129,13 @@ public enum Environment {
      * if the user passes @{@code -T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
      * line.
      */
-    MVND_THREADS("mvnd.threads", null, null, false) {
-        @Override
-        public boolean hasCommandLineProperty(Collection<String> args) {
-            return args.stream().anyMatch(arg -> arg.startsWith("-T") || arg.startsWith("--threads"));
-        }
-
-        @Override
-        public String asCommandLineProperty(String value) {
-            return "--threads=" + value;
-        }
-    },
+    MVND_THREADS("mvnd.threads", null, null, false, new String[] { "--threads", "-T" }),
     /**
      * The maven builder name to use. Ignored if the user passes
      *
      * {@code -b} or {@code --builder} on the command line
      */
-    MVND_BUILDER("mvnd.builder", null, "smart", false) {
-        @Override
-        public boolean hasCommandLineProperty(Collection<String> args) {
-            return args.stream().anyMatch(arg -> arg.startsWith("-b") || arg.startsWith("--builder"));
-        }
-
-        @Override
-        public String asCommandLineProperty(String value) {
-            return "--builder=" + value;
-        }
-    },
+    MVND_BUILDER("mvnd.builder", null, "smart", false, new String[] { "--builder", "-b" }),
     /**
      * Internal system property set by the client when starting the daemon to identify its id
      */
@@ -196,11 +167,11 @@ public enum Environment {
     /**
      * Interval to check if the daemon should expire
      */
-    MVND_EXPIRATION_CHECK_DELAY("mvnd.expirationCheckDelay", null, "10 seconds", true),
+    MVND_EXPIRATION_CHECK_DELAY("mvnd.expirationCheckDelay", null, "10 seconds", true, true),
     /**
      * Period after which idle daemons will shut down
      */
-    MVND_DUPLICATE_DAEMON_GRACE_PERIOD("mvnd.duplicateDaemonGracePeriod", null, "10 seconds", true),
+    MVND_DUPLICATE_DAEMON_GRACE_PERIOD("mvnd.duplicateDaemonGracePeriod", null, "10 seconds", true, true),
     ;
 
     static Properties properties = System.getProperties();
@@ -217,12 +188,29 @@ public enum Environment {
     private final String environmentVariable;
     private final String def;
     private final boolean discriminating;
+    private final boolean duration;
+    private final String[] options;
 
     Environment(String property, String environmentVariable, Object def, boolean discriminating) {
+        this(property, environmentVariable, def, discriminating, false, null);
+    }
+
+    Environment(String property, String environmentVariable, Object def, boolean discriminating, boolean duration) {
+        this(property, environmentVariable, def, discriminating, duration, null);
+    }
+
+    Environment(String property, String environmentVariable, Object def, boolean discriminating, String[] options) {
+        this(property, environmentVariable, def, discriminating, false, options);
+    }
+
+    Environment(String property, String environmentVariable, Object def, boolean discriminating, boolean duration,
+            String[] options) {
         this.property = Objects.requireNonNull(property);
         this.environmentVariable = environmentVariable;
         this.def = def != null ? def.toString() : null;
         this.discriminating = discriminating;
+        this.duration = duration;
+        this.options = options;
     }
 
     public String getProperty() {
@@ -269,17 +257,22 @@ public enum Environment {
         return TimeUtils.toDuration(asString());
     }
 
-    public String asCommandLineProperty(String value) {
-        return "-D" + property + "=" + value;
+    protected String prepareValue(String value) {
+        // For durations, we need to make sure spaces are removed, so reformat the value
+        return duration ? TimeUtils.printDuration(TimeUtils.toMilliSeconds(value)) : value;
     }
 
     public String asDaemonOpt(String value) {
-        return property + "=" + value;
+        return property + "=" + prepareValue(value);
+    }
+
+    public String asCommandLineProperty(String value) {
+        return (options != null ? options[0] : "-D" + property) + "=" + prepareValue(value);
     }
 
     public boolean hasCommandLineProperty(Collection<String> args) {
-        final String prefix = "-D" + getProperty() + "=";
-        return args.stream().anyMatch(s -> s.startsWith(prefix));
+        final String[] prefixes = options != null ? options : new String[] { "-D" + property + "=" };
+        return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
     }
 
     public static String cygpath(String result) {
