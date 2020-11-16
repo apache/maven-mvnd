@@ -424,14 +424,14 @@ public class DaemonMavenCli {
         }
 
         List<File> extClassPath = Stream
-                .of(Environment.DAEMON_EXT_CLASSPATH.asString().split(","))
+                .of(Environment.MVND_EXT_CLASSPATH.asString().split(","))
                 .map(File::new)
                 .collect(Collectors.toList());
 
         CoreExtensionEntry coreEntry = CoreExtensionEntry.discoverFrom(coreRealm);
 
         List<CoreExtension> extensions = Stream
-                .of(Environment.DAEMON_CORE_EXTENSIONS.asString().split(","))
+                .of(Environment.MVND_CORE_EXTENSIONS.asString().split(","))
                 .filter(s -> s != null && !s.isEmpty())
                 .map(s -> {
                     String[] parts = s.split(":");

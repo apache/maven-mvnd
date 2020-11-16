@@ -127,9 +127,9 @@ public class DaemonConnector {
         properties.put(Environment.USER_DIR.getProperty(), parameters.userDir().toString());
         properties.put(Environment.USER_HOME.getProperty(), parameters.userHome().toString());
         properties.put(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
-        properties.put(Environment.DAEMON_UID.getProperty(), daemon);
+        properties.put(Environment.MVND_UID.getProperty(), daemon);
         properties.put(Environment.MVND_DAEMON_STORAGE.getProperty(), parameters.daemonStorage().toString());
-        properties.put(Environment.DAEMON_REGISTRY.getProperty(), parameters.registry().toString());
+        properties.put(Environment.MVND_REGISTRY.getProperty(), parameters.registry().toString());
         properties.putAll(parameters.getDaemonOptsMap());
         Environment.setProperties(properties);
         AtomicReference<Throwable> throwable = new AtomicReference<>();
@@ -305,7 +305,7 @@ public class DaemonConnector {
             final String classpath = mvndHome.resolve(mvndCommonPath).toString();
             args.add(classpath);
             // debug options
-            if (parameters.property(Environment.DAEMON_DEBUG).asBoolean()) {
+            if (parameters.property(Environment.MVND_DEBUG).asBoolean()) {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
             }
             // jvm args
@@ -330,9 +330,9 @@ public class DaemonConnector {
             args.add(Environment.MVND_HOME.asCommandLineProperty(mvndHome.toString()));
             args.add(Environment.LOGBACK_CONFIGURATION_FILE
                     .asCommandLineProperty(parameters.logbackConfigurationPath().toString()));
-            args.add(Environment.DAEMON_UID.asCommandLineProperty(uid));
+            args.add(Environment.MVND_UID.asCommandLineProperty(uid));
             args.add(Environment.MVND_DAEMON_STORAGE.asCommandLineProperty(parameters.daemonStorage().toString()));
-            args.add(Environment.DAEMON_REGISTRY.asCommandLineProperty(parameters.registry().toString()));
+            args.add(Environment.MVND_REGISTRY.asCommandLineProperty(parameters.registry().toString()));
             args.addAll(parameters.getDaemonCommandLineProperties());
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);

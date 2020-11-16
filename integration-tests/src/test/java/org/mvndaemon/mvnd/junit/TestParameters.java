@@ -38,9 +38,9 @@ public class TestParameters extends DaemonParameters {
                 .put(Environment.MAVEN_REPO_LOCAL, localMavenRepository)
                 .put(Environment.MAVEN_SETTINGS, settings)
                 .put(Environment.LOGBACK_CONFIGURATION_FILE, logbackConfigurationPath)
-                .put(Environment.DAEMON_IDLE_TIMEOUT, TimeUtils.printDuration(idleTimeout))
-                .put(Environment.DAEMON_KEEP_ALIVE, TimeUtils.printDuration(keepAlive))
-                .put(Environment.DAEMON_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
+                .put(Environment.MVND_IDLE_TIMEOUT, TimeUtils.printDuration(idleTimeout))
+                .put(Environment.MVND_KEEP_ALIVE, TimeUtils.printDuration(keepAlive))
+                .put(Environment.MVND_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
                 .put(Environment.MVND_MIN_THREADS, TEST_MIN_THREADS));
         this.testDir = testDir;
 
