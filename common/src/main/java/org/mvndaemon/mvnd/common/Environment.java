@@ -121,12 +121,12 @@ public enum Environment {
      * Time after which a daemon will send a keep-alive message to the client if the current build
      * has produced no output.
      */
-    MVND_KEEP_ALIVE("mvnd.keepAlive", null, "1 sec", true),
+    MVND_KEEP_ALIVE("mvnd.keepAlive", null, "100 ms", true),
     /**
      * The maximum number of keep alive message that can be lost before the client considers the daemon
      * as having had a failure.
      */
-    MVND_MAX_LOST_KEEP_ALIVE("mvnd.maxLostKeepAlive", null, 3, false),
+    MVND_MAX_LOST_KEEP_ALIVE("mvnd.maxLostKeepAlive", null, 30, false),
     /**
      * The minimum number of threads to use when constructing the default {@code -T} parameter for the daemon.
      * This value is ignored if the user passes @{@code -T}, @{@code --threads} or {@code -Dmvnd.threads} on the command
