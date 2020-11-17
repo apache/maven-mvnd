@@ -10,12 +10,18 @@
 
 **Closed issues:**
 
+- Move mvnd logback config file into \[MVND\_HOME\]/conf and use the standard name for the mvn specific config file [\#226](https://github.com/mvndaemon/mvnd/issues/226)
+- Duration properties are not passed correctly to the daemon [\#225](https://github.com/mvndaemon/mvnd/issues/225)
+- When the build does not produce any output, the elapsed time can be sluggish [\#224](https://github.com/mvndaemon/mvnd/issues/224)
+- Clean the names of properties [\#221](https://github.com/mvndaemon/mvnd/issues/221)
 - Exit code not propagated from the daemon to mvnd client [\#220](https://github.com/mvndaemon/mvnd/issues/220)
 - Messages associated with projectId from the previous build in the terminal and daemon log [\#216](https://github.com/mvndaemon/mvnd/issues/216)
 - Provide an automatic purge of daemon logs [\#196](https://github.com/mvndaemon/mvnd/issues/196)
 
 **Merged pull requests:**
 
+- Move mvnd logback config file into \[MVND\_HOME\]/conf and use the stand… [\#227](https://github.com/mvndaemon/mvnd/pull/227) ([gnodet](https://github.com/gnodet))
+- Clean the names of properties, fixes \#221 [\#223](https://github.com/mvndaemon/mvnd/pull/223) ([gnodet](https://github.com/gnodet))
 - Exit code not propagated from the daemon to mvnd client [\#222](https://github.com/mvndaemon/mvnd/pull/222) ([ppalaga](https://github.com/ppalaga))
 - Messages associated with projectId from the previous build in the ter… [\#217](https://github.com/mvndaemon/mvnd/pull/217) ([ppalaga](https://github.com/ppalaga))
 - Ignore INT and TSTP signals in the daemon [\#214](https://github.com/mvndaemon/mvnd/pull/214) ([gnodet](https://github.com/gnodet))
