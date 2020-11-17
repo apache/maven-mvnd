@@ -61,6 +61,15 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 $ brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
+=== Note for oh-my-zsh users ===
+
+Users that use `oh-my-zsh` often use completion for maven.  The default maven completion plugin defines `mvnd` as an alias to `mvn deploy`. So before being able to use `mvnd`, you need to unalias using the following command:
+[source,shell]
+----
+$ unalias mvnd
+----
+
+
 === Install manually
 
 * Download the latest ZIP suitable for your platform from https://github.com/mvndaemon/mvnd/releases
