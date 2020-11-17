@@ -53,6 +53,7 @@ public class DaemonClientConnection implements Closeable {
     private final Thread receiver;
     private final AtomicBoolean running = new AtomicBoolean(true);
     private final AtomicReference<Exception> exception = new AtomicReference<>();
+    private final long maxKeepAliveMs;
     private final DaemonParameters parameters;
 
     public DaemonClientConnection(DaemonConnection connection, DaemonInfo daemon,
@@ -64,6 +65,7 @@ public class DaemonClientConnection implements Closeable {
         this.receiver = new Thread(this::doReceive);
         this.receiver.start();
         this.parameters = parameters;
+        this.maxKeepAliveMs = parameters.keepAlive().toMillis() * parameters.maxLostKeepAlive();
     }
 
     public void dispatch(Message message) throws DaemonException.ConnectException {
@@ -94,7 +96,6 @@ public class DaemonClientConnection implements Closeable {
     }
 
     public List<Message> receive() throws ConnectException, StaleAddressException {
-        long maxKeepAliveMs = parameters.keepAlive().toMillis() * parameters.maxLostKeepAlive();
         while (true) {
             try {
                 final Message m = queue.poll(maxKeepAliveMs, TimeUnit.MILLISECONDS);
