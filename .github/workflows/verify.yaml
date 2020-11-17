@@ -33,7 +33,7 @@ jobs:
       run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
     - name: setup-graalvm-ce
-      uses: DeLaGuardo/setup-graalvm@3
+      uses: DeLaGuardo/setup-graalvm@8bbfe44ef9c6f5c07e5af036a1bffd561c037d18
       with:
         graalvm-version: ${{ env.GRAALVM_VERSION }}
 
@@ -66,7 +66,7 @@ jobs:
     steps:
 
     - name: setup-graalvm-ce
-      uses: DeLaGuardo/setup-graalvm@3
+      uses: DeLaGuardo/setup-graalvm@8bbfe44ef9c6f5c07e5af036a1bffd561c037d18
       with:
         graalvm-version: ${{ env.GRAALVM_VERSION }}
 
@@ -138,7 +138,7 @@ jobs:
       run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
     - name: setup-graalvm-ce
-      uses: DeLaGuardo/setup-graalvm@3
+      uses: DeLaGuardo/setup-graalvm@8bbfe44ef9c6f5c07e5af036a1bffd561c037d18
       with:
         graalvm-version: ${{ env.GRAALVM_VERSION }}
 
