@@ -89,6 +89,7 @@ public class Server implements AutoCloseable, Runnable {
     private final Lock stateLock = new ReentrantLock();
     private final Condition condition = stateLock.newCondition();
     private final DaemonMemoryStatus memoryStatus;
+    private final long keepAliveMs;
 
     public Server() throws IOException {
         // When spawning a new process, the child process is create within
@@ -107,6 +108,8 @@ public class Server implements AutoCloseable, Runnable {
         }
         this.uid = Environment.MVND_UID.asString();
         this.noDaemon = Environment.MVND_NO_DAEMON.asBoolean();
+        this.keepAliveMs = Environment.MVND_KEEP_ALIVE.asDuration().toMillis();
+
         try {
             cli = new DaemonMavenCli();
             registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
@@ -424,7 +427,6 @@ public class Server implements AutoCloseable, Runnable {
     private void handle(DaemonConnection connection, BuildRequest buildRequest) {
         updateState(Busy);
         try {
-            Duration keepAlive = Environment.MVND_KEEP_ALIVE.asDuration();
 
             LOGGER.info("Executing request");
 
@@ -440,7 +442,7 @@ public class Server implements AutoCloseable, Runnable {
                     while (true) {
                         Message m;
                         if (flushed) {
-                            m = sendQueue.poll(keepAlive.toMillis(), TimeUnit.MILLISECONDS);
+                            m = sendQueue.poll(keepAliveMs, TimeUnit.MILLISECONDS);
                             if (m == null) {
                                 m = Message.KEEP_ALIVE_SINGLETON;
                             }
