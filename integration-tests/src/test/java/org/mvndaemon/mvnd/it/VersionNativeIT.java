@@ -40,11 +40,15 @@ public class VersionNativeIT {
         client.execute(output, "-v").assertSuccess();
 
         output.assertContainsMatchingSubsequence(
-                "\\QMaven Daemon "
+                "\\Qmvnd " + (isNative() ? "native client " : "JVM client ")
                         + System.getProperty("project.version")
                         + "-" + System.getProperty("os.detected.name")
                         + "-" + System.getProperty("os.detected.arch")
                         + "\\E",
                 "\\QMaven home: " + parameters.mvndHome() + "\\E");
+    }
+
+    protected boolean isNative() {
+        return true;
     }
 }
