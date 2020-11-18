@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.1.0](https://github.com/mvndaemon/mvnd/tree/0.1.0) (2020-11-18)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.12...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.12...0.1.0)
 
 **Implemented enhancements:**
 
@@ -10,6 +10,8 @@
 
 **Closed issues:**
 
+- Performance regression after 668d4e4 [\#231](https://github.com/mvndaemon/mvnd/issues/231)
+- The daemon is probably leaking memory [\#18](https://github.com/mvndaemon/mvnd/issues/18)
 - Move mvnd logback config file into \[MVND\_HOME\]/conf and use the standard name for the mvn specific config file [\#226](https://github.com/mvndaemon/mvnd/issues/226)
 - Duration properties are not passed correctly to the daemon [\#225](https://github.com/mvndaemon/mvnd/issues/225)
 - When the build does not produce any output, the elapsed time can be sluggish [\#224](https://github.com/mvndaemon/mvnd/issues/224)
@@ -20,10 +22,12 @@
 - Provide an automatic purge of daemon logs [\#196](https://github.com/mvndaemon/mvnd/issues/196)
 - Document that mvnd may conflict with oh-my-zsh's alias for `mvn deploy` [\#148](https://github.com/mvndaemon/mvnd/issues/148)
 - ${my.property:-default} style defaults defined in logback.xml do not work [\#39](https://github.com/mvndaemon/mvnd/issues/39)
-- The daemon is probably leaking memory [\#18](https://github.com/mvndaemon/mvnd/issues/18)
 
 **Merged pull requests:**
 
+- Upgrade to GraalVM 20.3.0 [\#235](https://github.com/mvndaemon/mvnd/pull/235) ([ppalaga](https://github.com/ppalaga))
+- Output revision with -v/--version [\#233](https://github.com/mvndaemon/mvnd/pull/233) ([ppalaga](https://github.com/ppalaga))
+- Avoid environment lookups and value conversions on hot paths [\#232](https://github.com/mvndaemon/mvnd/pull/232) ([ppalaga](https://github.com/ppalaga))
 - Use more recent version of DeLaGuardo/setup-graalvm action [\#230](https://github.com/mvndaemon/mvnd/pull/230) ([gnodet](https://github.com/gnodet))
 - Make sure our CachingProjectBuilder is used, fixes \#218 [\#228](https://github.com/mvndaemon/mvnd/pull/228) ([gnodet](https://github.com/gnodet))
 - Move mvnd logback config file into \[MVND\_HOME\]/conf and use the stand… [\#227](https://github.com/mvndaemon/mvnd/pull/227) ([gnodet](https://github.com/gnodet))
