@@ -124,9 +124,9 @@ mvnd clean install
 [source,shell]
 ----
 $ $JAVA_HOME/bin/java -version
-openjdk version "11.0.7" 2020-04-14
-OpenJDK Runtime Environment GraalVM CE 20.1.0 (build 11.0.7+10-jvmci-20.1-b02)
-OpenJDK 64-Bit Server VM GraalVM CE 20.1.0 (build 11.0.7+10-jvmci-20.1-b02, mixed mode, sharing)
+openjdk version "11.0.9" 2020-10-20
+OpenJDK Runtime Environment GraalVM CE 20.3.0 (build 11.0.9+10-jvmci-20.3-b06)
+OpenJDK 64-Bit Server VM GraalVM CE 20.3.0 (build 11.0.9+10-jvmci-20.3-b06, mixed mode, sharing)
 ----
 +
 * Install the `native-image` tool:
