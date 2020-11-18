@@ -49,6 +49,10 @@ public class UpgradesInBomNativeIT {
             final Client cl = clientFactory.newClient(parameters.cd(parameters.getTestDir().resolve(artifactDir)));
             final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e").assertSuccess();
+
+            final DaemonInfo d = registry.getAll().get(0);
+            /* Wait, till the instance becomes idle */
+            registry.awaitIdle(d.getUid());
             registry.killAll();
         }
         Assertions.assertThat(registry.getAll().size()).isEqualTo(0);
