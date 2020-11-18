@@ -13,13 +13,19 @@
 - Move mvnd logback config file into \[MVND\_HOME\]/conf and use the standard name for the mvn specific config file [\#226](https://github.com/mvndaemon/mvnd/issues/226)
 - Duration properties are not passed correctly to the daemon [\#225](https://github.com/mvndaemon/mvnd/issues/225)
 - When the build does not produce any output, the elapsed time can be sluggish [\#224](https://github.com/mvndaemon/mvnd/issues/224)
-- Clean the names of properties [\#221](https://github.com/mvndaemon/mvnd/issues/221)
+- Use the `mvnd.` prefix for all property names [\#221](https://github.com/mvndaemon/mvnd/issues/221)
 - Exit code not propagated from the daemon to mvnd client [\#220](https://github.com/mvndaemon/mvnd/issues/220)
+- pom.xml changes not honored \(post 0.0.10 regression\) [\#218](https://github.com/mvndaemon/mvnd/issues/218)
 - Messages associated with projectId from the previous build in the terminal and daemon log [\#216](https://github.com/mvndaemon/mvnd/issues/216)
 - Provide an automatic purge of daemon logs [\#196](https://github.com/mvndaemon/mvnd/issues/196)
+- Document that mvnd may conflict with oh-my-zsh's alias for `mvn deploy` [\#148](https://github.com/mvndaemon/mvnd/issues/148)
+- ${my.property:-default} style defaults defined in logback.xml do not work [\#39](https://github.com/mvndaemon/mvnd/issues/39)
+- The daemon is probably leaking memory [\#18](https://github.com/mvndaemon/mvnd/issues/18)
 
 **Merged pull requests:**
 
+- Use more recent version of DeLaGuardo/setup-graalvm action [\#230](https://github.com/mvndaemon/mvnd/pull/230) ([gnodet](https://github.com/gnodet))
+- Make sure our CachingProjectBuilder is used, fixes \#218 [\#228](https://github.com/mvndaemon/mvnd/pull/228) ([gnodet](https://github.com/gnodet))
 - Move mvnd logback config file into \[MVND\_HOME\]/conf and use the stand… [\#227](https://github.com/mvndaemon/mvnd/pull/227) ([gnodet](https://github.com/gnodet))
 - Clean the names of properties, fixes \#221 [\#223](https://github.com/mvndaemon/mvnd/pull/223) ([gnodet](https://github.com/gnodet))
 - Exit code not propagated from the daemon to mvnd client [\#222](https://github.com/mvndaemon/mvnd/pull/222) ([ppalaga](https://github.com/ppalaga))
