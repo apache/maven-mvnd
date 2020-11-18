@@ -36,6 +36,7 @@ public class BuildProperties {
         }
         return new BuildProperties(
                 buildProperties.getProperty("version"),
+                buildProperties.getProperty("revision"),
                 buildProperties.getProperty("os.detected.name"),
                 buildProperties.getProperty("os.detected.arch"));
     }
@@ -43,9 +44,11 @@ public class BuildProperties {
     private final String version;
     private final String osName;
     private final String osArch;
+    private final String revision;
 
-    public BuildProperties(String version, String os, String arch) {
+    public BuildProperties(String version, String revision, String os, String arch) {
         this.version = version;
+        this.revision = revision;
         this.osName = os;
         this.osArch = arch;
     }
@@ -60,5 +63,9 @@ public class BuildProperties {
 
     public String getOsArch() {
         return osArch;
+    }
+
+    public String getRevision() {
+        return revision;
     }
 }

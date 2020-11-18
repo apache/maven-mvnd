@@ -108,6 +108,7 @@ public class DefaultClient implements Client {
         boolean version = false;
         boolean showVersion = false;
         boolean debug = false;
+        boolean batchMode = false;
         for (String arg : argv) {
             switch (arg) {
             case "-v":
@@ -124,6 +125,11 @@ public class DefaultClient implements Client {
             case "-X":
             case "--debug":
                 debug = true;
+                args.add(arg);
+                break;
+            case "-B":
+            case "--batch-mode":
+                batchMode = true;
                 args.add(arg);
                 break;
             default:
@@ -144,14 +150,16 @@ public class DefaultClient implements Client {
         if (version || showVersion || debug) {
             // Print mvnd version
             BuildProperties buildProperties = BuildProperties.getInstance();
-            final String nativeSuffix = Environment.isNative() ? " (native)" : "";
-            final String v = Ansi.ansi().bold().a(
-                    "Maven Daemon "
-                            + buildProperties.getVersion()
-                            + "-" + buildProperties.getOsName()
-                            + "-" + buildProperties.getOsArch()
-                            + nativeSuffix)
-                    .reset().toString();
+            final String mvndVersionString = "mvnd "
+                    + (Environment.isNative() ? "native client " : "JVM client ")
+                    + buildProperties.getVersion()
+                    + "-" + buildProperties.getOsName()
+                    + "-" + buildProperties.getOsArch()
+                    + " (" + buildProperties.getRevision() + ")";
+
+            final String v = batchMode
+                    ? mvndVersionString
+                    : Ansi.ansi().bold().a(mvndVersionString).reset().toString();
             output.accept(Message.log(v));
             // Print terminal information
             output.describeTerminal();

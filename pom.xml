@@ -48,6 +48,7 @@
         <takari-local-repository.version>0.11.2</takari-local-repository.version>
 
         <!-- plugin versions a..z -->
+        <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
         <compiler.version>3.8.1</compiler.version>
         <formatter-maven-plugin.version>2.12.1</formatter-maven-plugin.version>
         <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
@@ -70,6 +71,13 @@
         <module>dist</module>
         <module>integration-tests</module>
     </modules>
+
+    <scm>
+        <connection>scm:git:git@github.com:mvndaemon/mvnd.git</connection>
+        <developerConnection>scm:git:git@github.com:mvndaemon/mvnd.git</developerConnection>
+        <url>https://github.com/mvndaemon/mvnd</url>
+        <tag>head</tag>
+    </scm>
 
     <dependencyManagement>
         <dependencies>
@@ -347,6 +355,11 @@ limitations under the License.</inlineHeader>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>mrm-maven-plugin</artifactId>
                     <version>${mrm.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>buildnumber-maven-plugin</artifactId>
+                    <version>${buildnumber-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.graalvm.nativeimage</groupId>

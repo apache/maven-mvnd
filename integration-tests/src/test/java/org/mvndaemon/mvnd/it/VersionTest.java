@@ -20,5 +20,8 @@ import org.mvndaemon.mvnd.junit.MvndTestExtension;
 
 @MvndTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
 public class VersionTest extends VersionNativeIT {
+    protected boolean isNative() {
+        return false;
+    }
 
 }
