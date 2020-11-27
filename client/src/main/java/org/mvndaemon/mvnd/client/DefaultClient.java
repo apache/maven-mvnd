@@ -71,6 +71,16 @@ public class DefaultClient implements Client {
                 } else {
                     throw new IllegalArgumentException("-l and --log-file need to be followed by a path");
                 }
+
+            } else if (arg.startsWith("-D")) {
+                /* This needs to be done very early, otherwise various DeamonParameters do not work properly */
+                final int eqPos = arg.indexOf('=');
+                if (eqPos >= 0) {
+                    System.setProperty(arg.substring(2, eqPos), arg.substring(eqPos + 1));
+                } else {
+                    System.setProperty(arg.substring(2), "");
+                }
+                args.add(arg);
             } else {
                 if (!batchMode && ("-B".equals(arg) || "--batch-mode".equals(arg))) {
                     batchMode = true;
