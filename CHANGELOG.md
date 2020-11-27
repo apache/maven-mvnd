@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.1](https://github.com/mvndaemon/mvnd/tree/0.1.1) (2020-11-27)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.1.0...0.1.1)
+
+**Closed issues:**
+
+- mvn -Dmvnd.noBuffering=true has no effect [\#239](https://github.com/mvndaemon/mvnd/issues/239)
+
+**Merged pull requests:**
+
+- mvn -Dmvnd.noBuffering=true has no effect  [\#240](https://github.com/mvndaemon/mvnd/pull/240) ([ppalaga](https://github.com/ppalaga))
+
 ## [0.1.0](https://github.com/mvndaemon/mvnd/tree/0.1.0) (2020-11-18)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.12...0.1.0)
