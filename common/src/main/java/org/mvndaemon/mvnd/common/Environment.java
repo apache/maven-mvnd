@@ -174,14 +174,18 @@ public enum Environment {
     MVND_DUPLICATE_DAEMON_GRACE_PERIOD("mvnd.duplicateDaemonGracePeriod", null, "10 seconds", true, true),
     ;
 
-    static Properties properties = System.getProperties();
+    static Properties properties;
 
     public static void setProperties(Properties properties) {
         Environment.properties = properties;
     }
 
     public static String getProperty(String property) {
-        return properties.getProperty(property);
+        Properties props = Environment.properties;
+        if (props == null) {
+            props = System.getProperties();
+        }
+        return props.getProperty(property);
     }
 
     private final String property;
