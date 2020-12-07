@@ -19,10 +19,12 @@
 package org.apache.maven.cli;
 
 import com.google.inject.AbstractModule;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -267,7 +269,11 @@ public class DaemonMavenCli {
         }
 
         if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
-            cliManager.displayHelp(System.out);
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8.name())) {
+                cliManager.displayHelp(out);
+            }
+            AbstractLoggingSpy.instance().append(null, new String(baos.toByteArray(), StandardCharsets.UTF_8));
             throw new ExitException(0);
         }
 
