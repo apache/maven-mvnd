@@ -191,7 +191,10 @@ public enum Environment {
      */
     MVND_DUPLICATE_DAEMON_GRACE_PERIOD("mvnd.duplicateDaemonGracePeriod", null, "10 seconds", OptionType.DURATION,
             Flags.DISCRIMINATING),
-            ;
+    /**
+     * Internal property to tell the daemon the width of the terminal
+     */
+    MVND_TERMINAL_WIDTH("mvnd.terminalWidth", null, 0, OptionType.INTEGER, Flags.INTERNAL);
 
     static Properties properties;
 

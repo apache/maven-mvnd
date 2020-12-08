@@ -355,6 +355,11 @@ public class TerminalOutput implements ClientOutput {
         this.accept(Message.log(sb.toString()));
     }
 
+    @Override
+    public int getTerminalWidth() {
+        return terminal.getWidth();
+    }
+
     void readInputLoop() {
         try {
             while (!closing) {

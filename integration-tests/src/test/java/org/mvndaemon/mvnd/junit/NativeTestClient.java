@@ -70,6 +70,7 @@ public class NativeTestClient implements Client {
             final String threads = parameters.threads();
             Environment.MVND_THREADS.appendAsCommandLineOption(cmd::add, threads);
         }
+        Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(cmd::add, Integer.toString(output.getTerminalWidth()));
 
         final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
                 .directory(parameters.userDir().toFile()) //

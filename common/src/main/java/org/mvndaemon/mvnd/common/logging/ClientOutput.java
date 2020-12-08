@@ -33,4 +33,6 @@ public interface ClientOutput extends AutoCloseable {
     void accept(List<Message> messages);
 
     void describeTerminal();
+
+    int getTerminalWidth();
 }
