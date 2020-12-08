@@ -83,6 +83,19 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.mvndaemon.mvnd</groupId>
+                <artifactId>mvnd-build-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>doc</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>io.takari.maven.plugins</groupId>
                 <artifactId>takari-lifecycle-plugin</artifactId>
                 <executions>

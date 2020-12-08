@@ -17,19 +17,11 @@ package org.mvndaemon.mvnd.logging.smart;
 
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 public class LoggingExecutionListener implements ExecutionListener {
 
     private final ExecutionListener delegate;
-
-    static {
-        Logger logger = LoggerFactory.getLogger("org.mvndaemon.mvnd");
-        System.setOut(new LoggingOutputStream(s -> logger.info("[stdout] " + s)).printStream());
-        System.setErr(new LoggingOutputStream(s -> logger.info("[stderr] " + s)).printStream());
-    }
 
     public LoggingExecutionListener(ExecutionListener delegate) {
         this.delegate = delegate;

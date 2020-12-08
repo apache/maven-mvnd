@@ -34,9 +34,19 @@ public abstract class AbstractLoggingSpy {
         AbstractLoggingSpy.instance = instance;
     }
 
+    public void append(String event) {
+        append(null, event);
+    }
+
     public void append(String projectId, String event) {
         String msg = event.endsWith("\n") ? event.substring(0, event.length() - 1) : event;
         onProjectLog(projectId, msg);
+    }
+
+    public void finish(int exitCode) throws Exception {
+    }
+
+    public void fail(Throwable t) throws Exception {
     }
 
     protected void notifySessionStart(ExecutionEvent event) {

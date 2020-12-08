@@ -52,23 +52,23 @@ public class NativeTestClient implements Client {
         final List<String> cmd = new ArrayList<String>(args.size() + 1);
         cmd.add(mvndNativeExecutablePath.toString());
         cmd.addAll(args);
-        if (!Environment.MVND_DAEMON_STORAGE.hasCommandLineProperty(args)) {
+        if (!Environment.MVND_DAEMON_STORAGE.hasCommandOption(args)) {
             Path daemonStorage = parameters.daemonStorage();
-            cmd.add(Environment.MVND_DAEMON_STORAGE.asCommandLineProperty(daemonStorage.toString()));
+            Environment.MVND_DAEMON_STORAGE.appendAsCommandLineOption(cmd::add, daemonStorage.toString());
         }
-        if (!Environment.MAVEN_REPO_LOCAL.hasCommandLineProperty(args)) {
+        if (!Environment.MAVEN_REPO_LOCAL.hasCommandOption(args)) {
             Path mavenRepoLocal = parameters.mavenRepoLocal();
-            cmd.add(Environment.MAVEN_REPO_LOCAL.asCommandLineProperty(mavenRepoLocal.toString()));
+            Environment.MAVEN_REPO_LOCAL.appendAsCommandLineOption(cmd::add, mavenRepoLocal.toString());
         }
-        if (!Environment.MAVEN_SETTINGS.hasCommandLineProperty(args)) {
+        if (!Environment.MAVEN_SETTINGS.hasCommandOption(args)) {
             final Path settings = parameters.settings();
             if (settings != null) {
-                cmd.add(Environment.MAVEN_SETTINGS.asCommandLineProperty(settings.toString()));
+                Environment.MAVEN_SETTINGS.appendAsCommandLineOption(cmd::add, settings.toString());
             }
         }
-        if (!Environment.MVND_THREADS.hasCommandLineProperty(args)) {
+        if (!Environment.MVND_THREADS.hasCommandOption(args)) {
             final String threads = parameters.threads();
-            cmd.add(Environment.MVND_THREADS.asCommandLineProperty(threads));
+            Environment.MVND_THREADS.appendAsCommandLineOption(cmd::add, threads);
         }
 
         final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
@@ -76,10 +76,10 @@ public class NativeTestClient implements Client {
                 .redirectErrorStream(true);
 
         final Map<String, String> env = builder.environment();
-        if (!Environment.MVND_HOME.hasCommandLineProperty(args)) {
+        if (!Environment.MVND_HOME.hasCommandOption(args)) {
             env.put("MVND_HOME", System.getProperty("mvnd.home"));
         }
-        if (!Environment.JAVA_HOME.hasCommandLineProperty(args)) {
+        if (!Environment.JAVA_HOME.hasCommandOption(args)) {
             env.put("JAVA_HOME", System.getProperty("java.home"));
         }
         final String cmdString = String.join(" ", cmd);

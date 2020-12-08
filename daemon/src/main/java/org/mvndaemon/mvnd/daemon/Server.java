@@ -121,8 +121,7 @@ public class Server implements AutoCloseable, Runnable {
             List<String> opts = new ArrayList<>();
             Arrays.stream(Environment.values())
                     .filter(Environment::isDiscriminating)
-                    .map(v -> v.getProperty() + "=" + v.asString())
-                    .forEach(opts::add);
+                    .forEach(envKey -> envKey.asOptional().ifPresent(val -> opts.add(envKey.getProperty() + "=" + val)));
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(opts.stream().collect(Collectors.joining(
                         "\n     ", "Initializing daemon with properties:\n     ", "\n")));
@@ -638,11 +637,13 @@ public class Server implements AutoCloseable, Runnable {
             this.queue = queue;
         }
 
+        @Override
         public void finish(int exitCode) throws Exception {
             queue.add(new Message.BuildFinished(exitCode));
             queue.add(Message.STOP_SINGLETON);
         }
 
+        @Override
         public void fail(Throwable t) throws Exception {
             queue.add(new BuildException(t));
             queue.add(Message.STOP_SINGLETON);
