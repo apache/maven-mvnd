@@ -17,6 +17,7 @@ package org.apache.maven.cli;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -47,9 +48,15 @@ public class MvndHelpFormatter {
      * @return            the string containing the help message
      */
     public static String displayHelp(CLIManager cliManager) {
+        int terminalWidth = Environment.MVND_TERMINAL_WIDTH.asInt();
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8.name())) {
-            cliManager.displayHelp(out);
+            out.println();
+            PrintWriter pw = new PrintWriter(out);
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp(pw, terminalWidth, "mvn [options] [<goal(s)>] [<phase(s)>]", "\nOptions:", cliManager.options,
+                    1, 3, "\n", false);
+            pw.flush();
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
@@ -68,7 +75,7 @@ public class MvndHelpFormatter {
                     final Environment env = entry.getEntry();
                     help.append(lineSeparator);
                     int indentPos = help.length() + indent.length();
-                    int lineEnd = help.length() + HelpFormatter.DEFAULT_WIDTH;
+                    int lineEnd = help.length() + terminalWidth;
                     spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
                     final String property = env.getProperty();
                     if (property != null) {
@@ -108,7 +115,7 @@ public class MvndHelpFormatter {
                     help.append(' ');
 
                     spaces(help, indentPos - help.length());
-                    wrap(help, toPlainText(entry.getJavaDoc()), HelpFormatter.DEFAULT_WIDTH, lineEnd, indent);
+                    wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
 
                     indentedLine(help, "Default", env.getDefault(), indent);
                     indentedLine(help, "Env. variable", env.getEnvironmentVariable(), indent);
@@ -126,11 +133,11 @@ public class MvndHelpFormatter {
                     final OptionType type = entry.getEntry();
                     help.append(lineSeparator);
                     int indentPos = help.length() + indent.length();
-                    int lineEnd = help.length() + HelpFormatter.DEFAULT_WIDTH;
+                    int lineEnd = help.length() + terminalWidth;
                     spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
                     help.append(type.name().toLowerCase(Locale.ROOT));
                     spaces(help, indentPos - help.length());
-                    wrap(help, toPlainText(entry.getJavaDoc()), HelpFormatter.DEFAULT_WIDTH, lineEnd, indent);
+                    wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
                 });
 
         return help.toString();
@@ -139,11 +146,12 @@ public class MvndHelpFormatter {
     private static void indentedLine(final StringBuilder stringBuilder, String key, final String value, final String indent) {
         int lineEnd;
         if (value != null) {
-            lineEnd = stringBuilder.length() + HelpFormatter.DEFAULT_WIDTH;
+            int terminalWidth = Environment.MVND_TERMINAL_WIDTH.asInt();
+            lineEnd = stringBuilder.length() + terminalWidth;
             stringBuilder
                     .append(System.lineSeparator())
                     .append(indent);
-            wrap(stringBuilder, key + ": " + value, HelpFormatter.DEFAULT_WIDTH, lineEnd, indent);
+            wrap(stringBuilder, key + ": " + value, terminalWidth, lineEnd, indent);
         }
     }
 

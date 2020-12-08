@@ -57,6 +57,11 @@ public class TestClientOutput implements ClientOutput {
         accept(Message.display("Test terminal"));
     }
 
+    @Override
+    public int getTerminalWidth() {
+        return 74;
+    }
+
     public List<Message> getMessages() {
         return messages;
     }

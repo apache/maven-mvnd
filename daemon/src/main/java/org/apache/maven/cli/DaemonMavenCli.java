@@ -182,6 +182,7 @@ public class DaemonMavenCli {
             initialize(cliRequest);
             cli(cliRequest);
             properties(cliRequest);
+            help(cliRequest);
             logging(cliRequest);
             container(cliRequest);
             configure(cliRequest);
@@ -266,9 +267,11 @@ public class DaemonMavenCli {
             AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(cliManager));
             throw e;
         }
+    }
 
+    private void help(CliRequest cliRequest) throws Exception {
         if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
-            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(cliManager));
+            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(new CLIManager()));
             throw new ExitException(0);
         }
 
