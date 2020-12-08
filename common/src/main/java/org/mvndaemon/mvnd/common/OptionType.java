@@ -49,7 +49,9 @@ public enum OptionType {
     /** A local file system path */
     PATH,
     /** A string */
-    STRING;
+    STRING,
+    /** No value */
+    VOID;
 
     public String normalize(String value) {
         return value;
@@ -65,6 +67,7 @@ public enum OptionType {
             throw new RuntimeException("Could not read " + cliOptionsPath, e);
         }
         return Stream.of(values)
+                .filter(opt -> opt != VOID)
                 .sorted(Comparator.comparing(OptionType::name))
                 .map(env -> new DocumentedEnumEntry<>(env, props.getProperty(env.name())));
     }

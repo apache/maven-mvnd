@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -42,6 +41,15 @@ import java.util.stream.Stream;
  * <i>s/sec/second/seconds</i> and <i>ms/millis/msec/milliseconds</i>.
  */
 public enum Environment {
+
+    /**
+     * Delete log files under the <code>mvnd.registry</code> directory that are older than <code>mvnd.logPurgePeriod</code>
+     */
+    PURGE(null, null, null, OptionType.VOID, Flags.OPTIONAL, "--purge"),
+    /** Prints the status of daemon instances registered in the registry specified by <code>mvnd.registry</code> */
+    STATUS(null, null, null, OptionType.VOID, Flags.OPTIONAL, "--status"),
+    /** Stop all daemon instances registered in the registry specified by <code>mvnd.registry</code> */
+    STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "--stop"),
 
     //
     // Log properties
@@ -216,7 +224,11 @@ public enum Environment {
 
     Environment(String property, String environmentVariable, Object default_, OptionType type, int flags,
             String... options) {
-        this.property = Objects.requireNonNull(property);
+        if (property == null && options.length == 0) {
+            throw new IllegalArgumentException(
+                    "An " + Environment.class.getSimpleName() + " entry must have property or options set");
+        }
+        this.property = property;
         this.environmentVariable = environmentVariable;
         this.default_ = default_ != null ? default_.toString() : null;
         this.flags = flags;
@@ -346,7 +358,8 @@ public enum Environment {
         }
         return Stream.of(values)
                 .filter(env -> !env.isInternal())
-                .sorted(Comparator.comparing(Environment::getProperty))
+                .sorted(Comparator.<Environment, String> comparing(env -> env.property != null ? env.property : "")
+                        .thenComparing(env -> !env.options.isEmpty() ? env.options.get(0) : ""))
                 .map(env -> new DocumentedEnumEntry<>(env, props.getProperty(env.name())));
     }
 

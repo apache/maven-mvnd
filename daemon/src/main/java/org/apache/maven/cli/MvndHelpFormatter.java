@@ -70,24 +70,40 @@ public class MvndHelpFormatter {
                     int indentPos = help.length() + indent.length();
                     int lineEnd = help.length() + HelpFormatter.DEFAULT_WIDTH;
                     spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
-                    help
-                            .append("-D")
-                            .append(env.getProperty())
-                            .append("=<")
-                            .append(env.getType().name().toLowerCase(Locale.ROOT))
-                            .append('>');
+                    final String property = env.getProperty();
+                    if (property != null) {
+                        help
+                                .append("-D")
+                                .append(property);
+                        if (env.getType() != OptionType.VOID) {
+                            help
+                                    .append("=<")
+                                    .append(env.getType().name().toLowerCase(Locale.ROOT))
+                                    .append('>');
+
+                        }
+                    }
 
                     final List<String> opts = env.getOptions();
                     if (!opts.isEmpty()) {
-                        for (String opt : opts) {
-                            help
-                                    .append(',')
-                                    .append(opt);
+                        if (property != null) {
+                            help.append(';');
                         }
-                        help
-                                .append(" <")
-                                .append(env.getType().name().toLowerCase(Locale.ROOT))
-                                .append('>');
+                        boolean first = true;
+                        for (String opt : opts) {
+                            if (first) {
+                                first = false;
+                            } else {
+                                help.append(',');
+                            }
+                            help.append(opt);
+                        }
+                        if (env.getType() != OptionType.VOID) {
+                            help
+                                    .append(" <")
+                                    .append(env.getType().name().toLowerCase(Locale.ROOT))
+                                    .append('>');
+                        }
                     }
                     help.append(' ');
 
