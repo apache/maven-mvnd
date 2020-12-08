@@ -17,6 +17,10 @@ package org.mvndaemon.mvnd.junit;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 import org.assertj.core.api.Assertions;
 import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.common.DaemonRegistry;
@@ -38,7 +42,13 @@ public class TestRegistry extends DaemonRegistry {
         while (!(daemons = getAll()).isEmpty()) {
             for (DaemonInfo di : daemons) {
                 try {
-                    ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
+                    final Optional<ProcessHandle> maybeHandle = ProcessHandle.of(di.getPid());
+                    if (maybeHandle.isPresent()) {
+                        final ProcessHandle handle = maybeHandle.get();
+                        final CompletableFuture<ProcessHandle> exit = handle.onExit();
+                        handle.destroyForcibly();
+                        exit.get(5, TimeUnit.SECONDS);
+                    }
                 } catch (Exception t) {
                     System.out.println("Daemon " + di.getUid() + ": " + t);
                 } finally {
