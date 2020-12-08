@@ -32,7 +32,7 @@ import java.util.stream.Collector;
  */
 public class DaemonDiagnostics {
 
-    private final static int TAIL_SIZE = 20;
+    private final static int TAIL_SIZE = 200;
 
     private final String uid;
     private final DaemonParameters parameters;
