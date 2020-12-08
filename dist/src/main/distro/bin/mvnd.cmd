@@ -177,7 +177,7 @@ set DAEMON_LAUNCHER=org.mvndaemon.mvnd.client.DefaultClient
   %MAVEN_OPTS% ^
   %MAVEN_DEBUG_OPTS% ^
   -classpath %DAEMON_JAR% ^
-  "-Dlogback.configurationFile=%MVND_HOME%\conf\logging\logback.xml" ^
+  "-Dlogback.configurationFile=%MVND_HOME%\conf\logging\logback-client.xml" ^
   "-Dmvnd.home=%MAVEN_HOME%" ^
   "-Dmaven.home=%MAVEN_HOME%" ^
   "-Dlibrary.jansi.path=%MAVEN_HOME%\lib\jansi-native" ^
