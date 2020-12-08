@@ -650,7 +650,7 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         protected void onStartSession(MavenSession session) {
-            queue.add(new BuildStarted(session.getTopLevelProject().getName(), session.getAllProjects().size(),
+            queue.add(new BuildStarted(session.getCurrentProject().getName(), session.getProjects().size(),
                     session.getRequest().getDegreeOfConcurrency()));
         }
 
