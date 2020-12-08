@@ -19,15 +19,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import org.apache.maven.artifact.repository.metadata.io.MetadataReader;
+import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.version.PluginVersionRequest;
 import org.apache.maven.plugin.version.PluginVersionResolutionException;
 import org.apache.maven.plugin.version.PluginVersionResolver;
 import org.apache.maven.plugin.version.PluginVersionResult;
 import org.apache.maven.plugin.version.internal.DefaultPluginVersionResolver;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.SessionData;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.version.VersionScheme;
 import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 
@@ -38,6 +43,12 @@ import org.eclipse.sisu.Typed;
 public class CachingPluginVersionResolver extends DefaultPluginVersionResolver {
 
     private static final Object CACHE_KEY = new Object();
+
+    @Inject
+    public CachingPluginVersionResolver(RepositorySystem repositorySystem, MetadataReader metadataReader,
+            MavenPluginManager pluginManager, VersionScheme versionScheme) {
+        super(repositorySystem, metadataReader, pluginManager, versionScheme);
+    }
 
     @Override
     public PluginVersionResult resolve(PluginVersionRequest request) throws PluginVersionResolutionException {

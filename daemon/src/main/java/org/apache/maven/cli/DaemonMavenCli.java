@@ -24,8 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -101,9 +99,6 @@ import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
 import org.mvndaemon.mvnd.cli.EnvHelper;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
-import org.mvndaemon.mvnd.execution.BuildResumptionPersistenceException;
-import org.mvndaemon.mvnd.execution.DefaultBuildResumptionAnalyzer;
-import org.mvndaemon.mvnd.execution.DefaultBuildResumptionDataRepository;
 import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
@@ -354,12 +349,12 @@ public class DaemonMavenCli {
      */
     void logging(CliRequest cliRequest) {
         // LOG LEVEL
-        cliRequest.debug = cliRequest.commandLine.hasOption(CLIManager.DEBUG);
-        cliRequest.quiet = !cliRequest.debug && cliRequest.commandLine.hasOption(CLIManager.QUIET);
-        cliRequest.showErrors = cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.ERRORS);
+        cliRequest.verbose = cliRequest.commandLine.hasOption(CLIManager.DEBUG);
+        cliRequest.quiet = !cliRequest.verbose && cliRequest.commandLine.hasOption(CLIManager.QUIET);
+        cliRequest.showErrors = cliRequest.verbose || cliRequest.commandLine.hasOption(CLIManager.ERRORS);
 
         ch.qos.logback.classic.Level level;
-        if (cliRequest.debug) {
+        if (cliRequest.verbose) {
             level = ch.qos.logback.classic.Level.DEBUG;
         } else if (cliRequest.quiet) {
             level = ch.qos.logback.classic.Level.WARN;
@@ -413,7 +408,7 @@ public class DaemonMavenCli {
     }
 
     private void version(CliRequest cliRequest) throws ExitException {
-        if (cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
+        if (cliRequest.verbose || cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
             buildEventListener.log(CLIReportingUtils.showVersion());
             if (cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
                 throw new ExitException(0);
@@ -729,18 +724,7 @@ public class DaemonMavenCli {
                 }
             }
 
-            boolean canResume = new DefaultBuildResumptionAnalyzer().determineBuildResumptionData(result).map(resumption -> {
-                try {
-                    Path directory = Paths.get(request.getBaseDirectory()).resolve("target");
-                    new DefaultBuildResumptionDataRepository().persistResumptionData(directory, resumption);
-                    return true;
-                } catch (BuildResumptionPersistenceException e) {
-                    slf4jLogger.warn("Could not persist build resumption data", e);
-                }
-                return false;
-            }).orElse(false);
-
-            if (canResume) {
+            if (result.canResume()) {
                 logBuildResumeHint("mvn <args> -r");
             } else if (!failedProjects.isEmpty()) {
                 List<MavenProject> sortedProjects = result.getTopologicallySortedProjects();
@@ -763,8 +747,6 @@ public class DaemonMavenCli {
                 return 1;
             }
         } else {
-            Path directory = Paths.get(request.getBaseDirectory()).resolve("target");
-            new DefaultBuildResumptionDataRepository().removeResumptionData(directory);
             return 0;
         }
     }
@@ -1034,7 +1016,7 @@ public class DaemonMavenCli {
         }
 
         boolean noSnapshotUpdates = false;
-        if (commandLine.hasOption(CLIManager.SUPRESS_SNAPSHOT_UPDATES)) {
+        if (commandLine.hasOption(CLIManager.SUPPRESS_SNAPSHOT_UPDATES)) {
             noSnapshotUpdates = true;
         }
 
@@ -1155,9 +1137,8 @@ public class DaemonMavenCli {
             request.setBaseDirectory(request.getPom().getParentFile());
         }
 
-        if (commandLine.hasOption(RESUME)) {
-            new DefaultBuildResumptionDataRepository()
-                    .applyResumptionData(request, Paths.get(request.getBaseDirectory()).resolve("target"));
+        if (commandLine.hasOption(CLIManager.RESUME)) {
+            request.setResume(true);
         }
 
         if (commandLine.hasOption(CLIManager.RESUME_FROM)) {
