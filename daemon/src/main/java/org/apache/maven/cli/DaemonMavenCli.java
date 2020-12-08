@@ -19,12 +19,10 @@
 package org.apache.maven.cli;
 
 import com.google.inject.AbstractModule;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,6 +94,7 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.AbstractLoggingSpy;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
+import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -252,7 +251,7 @@ public class DaemonMavenCli {
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse maven.config: " + e.getMessage());
-            cliManager.displayHelp(System.out);
+            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(cliManager));
             throw e;
         }
 
@@ -264,16 +263,12 @@ public class DaemonMavenCli {
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse command line options: " + e.getMessage());
-            cliManager.displayHelp(System.out);
+            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(cliManager));
             throw e;
         }
 
         if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8.name())) {
-                cliManager.displayHelp(out);
-            }
-            AbstractLoggingSpy.instance().append(null, new String(baos.toByteArray(), StandardCharsets.UTF_8));
+            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(cliManager));
             throw new ExitException(0);
         }
 
@@ -342,6 +337,11 @@ public class DaemonMavenCli {
             MessageUtils.setColorEnabled(false);
         }
 
+        // Workaround for https://github.com/mvndaemon/mvnd/issues/39
+        final ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
+                .getLogger("org.mvndaemon.mvnd");
+        mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level", "INFO")));
+
         // LOG STREAMS
         if (cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
             File logFile = new File(cliRequest.commandLine.getOptionValue(CLIManager.LOG_FILE));
@@ -357,17 +357,16 @@ public class DaemonMavenCli {
                 // Ignore
                 //
             }
+        } else {
+            System.setOut(new LoggingOutputStream(s -> mvndLogger.info("[stdout] " + s)).printStream());
+            System.setErr(new LoggingOutputStream(s -> mvndLogger.error("[stderr] " + s)).printStream());
         }
 
-        // Workaround for https://github.com/mvndaemon/mvnd/issues/39
-        ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
-                .getLogger("org.mvndaemon.mvnd");
-        mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level", "INFO")));
     }
 
     private void version(CliRequest cliRequest) throws ExitException {
         if (cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
-            AbstractLoggingSpy.instance().append(null, CLIReportingUtils.showVersion());
+            AbstractLoggingSpy.instance().append(CLIReportingUtils.showVersion());
             if (cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
                 throw new ExitException(0);
             }

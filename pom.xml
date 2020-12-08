@@ -65,6 +65,7 @@
     </properties>
 
     <modules>
+        <module>build-plugin</module>
         <module>common</module>
         <module>client</module>
         <module>daemon</module>

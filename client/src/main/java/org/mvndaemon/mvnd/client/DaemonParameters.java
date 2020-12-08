@@ -31,10 +31,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3Reader;
 import org.codehaus.plexus.util.StringUtils;
@@ -71,24 +73,28 @@ public class DaemonParameters {
     }
 
     public List<String> getDaemonOpts() {
-        return Arrays.stream(Environment.values())
-                .filter(Environment::isDiscriminating)
-                .map(v -> v.asDaemonOpt(property(v).orFail().asString()))
+        return discriminatingValues()
+                .map(envValue -> envValue.envKey.asDaemonOpt(envValue.asString()))
                 .collect(Collectors.toList());
     }
 
     public Map<String, String> getDaemonOptsMap() {
-        return Arrays.stream(Environment.values())
-                .filter(Environment::isDiscriminating)
-                .collect(Collectors.toMap(Environment::getProperty,
-                        v -> property(v).orFail().asString()));
+        return discriminatingValues()
+                .collect(Collectors.toMap(
+                        envValue -> envValue.envKey.getProperty(),
+                        EnvValue::asString));
     }
 
-    public List<String> getDaemonCommandLineProperties() {
+    Stream<EnvValue> discriminatingValues() {
         return Arrays.stream(Environment.values())
                 .filter(Environment::isDiscriminating)
-                .map(v -> v.asCommandLineProperty(property(v).orFail().asString()))
-                .collect(Collectors.toList());
+                .map(env -> property(env))
+                .filter(EnvValue::isSet);
+    }
+
+    public void discriminatingCommandLineOptions(Consumer<String> args) {
+        discriminatingValues()
+                .forEach(envValue -> envValue.envKey.appendAsCommandLineOption(args, envValue.asString()));
     }
 
     public Path mvndHome() {
@@ -350,7 +356,7 @@ public class DaemonParameters {
                 throw new RuntimeException("Unable to parse core extensions", e);
             }
         } else {
-            return env.getDef();
+            return env.getDefault();
         }
     }
 
@@ -506,7 +512,7 @@ public class DaemonParameters {
         }
 
         public EnvValue orDefault() {
-            return orDefault(envKey::getDef);
+            return orDefault(envKey::getDefault);
         }
 
         public EnvValue orDefault(Supplier<String> defaultSupplier) {
@@ -516,26 +522,30 @@ public class DaemonParameters {
 
         public EnvValue orFail() {
             return new EnvValue(this, envKey, new ValueSource(sb -> sb, () -> {
-                final StringBuilder sb = new StringBuilder("Could not get value for ")
-                        .append(Environment.class.getSimpleName())
-                        .append(".").append(envKey.name()).append(" from any of the following sources: ");
-
-                /*
-                 * Compose the description functions to invert the order thus getting the resolution order in the
-                 * message
-                 */
-                Function<StringBuilder, StringBuilder> description = (s -> s);
-                EnvValue val = this;
-                while (val != null) {
-                    description = description.compose(val.valueSource.descriptionFunction);
-                    val = val.previous;
-                    if (val != null) {
-                        description = description.compose(s -> s.append(", "));
-                    }
-                }
-                description.apply(sb);
-                throw new IllegalStateException(sb.toString());
+                throw couldNotgetValue();
             }));
+        }
+
+        IllegalStateException couldNotgetValue() {
+            EnvValue val = this;
+            final StringBuilder sb = new StringBuilder("Could not get value for ")
+                    .append(Environment.class.getSimpleName())
+                    .append(".").append(envKey.name()).append(" from any of the following sources: ");
+
+            /*
+             * Compose the description functions to invert the order thus getting the resolution order in the
+             * message
+             */
+            Function<StringBuilder, StringBuilder> description = (s -> s);
+            while (val != null) {
+                description = description.compose(val.valueSource.descriptionFunction);
+                val = val.previous;
+                if (val != null) {
+                    description = description.compose(s -> s.append(", "));
+                }
+            }
+            description.apply(sb);
+            return new IllegalStateException(sb.toString());
         }
 
         String get() {
@@ -589,6 +599,16 @@ public class DaemonParameters {
 
         public Duration asDuration() {
             return TimeUtils.toDuration(get());
+        }
+
+        public boolean isSet() {
+            if (get() != null) {
+                return true;
+            } else if (envKey.isOptional()) {
+                return false;
+            } else {
+                throw couldNotgetValue();
+            }
         }
 
     }
