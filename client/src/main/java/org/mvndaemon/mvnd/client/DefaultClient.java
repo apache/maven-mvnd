@@ -135,44 +135,29 @@ public class DefaultClient implements Client {
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
         LOGGER.debug("Starting client");
 
-        final List<String> args = new ArrayList<>(argv.size());
+        final List<String> args = new ArrayList<>(argv);
         boolean version = false;
         boolean showVersion = false;
         boolean debug = false;
         boolean batchMode = false;
-        for (String arg : argv) {
+        for (String arg : args) {
             switch (arg) {
             case "-v":
             case "-version":
             case "--version":
                 version = true;
-                args.add(arg);
                 break;
             case "-V":
             case "--show-version":
                 showVersion = true;
-                args.add(arg);
                 break;
             case "-X":
             case "--debug":
                 debug = true;
-                args.add(arg);
                 break;
             case "-B":
             case "--batch-mode":
                 batchMode = true;
-                args.add(arg);
-                break;
-            default:
-                if (arg.startsWith("-D")) {
-                    final int eqPos = arg.indexOf('=');
-                    if (eqPos >= 0) {
-                        System.setProperty(arg.substring(2, eqPos), arg.substring(eqPos + 1));
-                    } else {
-                        System.setProperty(arg.substring(2), "");
-                    }
-                }
-                args.add(arg);
                 break;
             }
         }
