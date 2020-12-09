@@ -327,13 +327,13 @@ public class DaemonConnector {
                 args.add("-Xmx" + maxHeapSize);
             }
 
-            Environment.MVND_HOME.appendAsCommandLineOption(args::add, mvndHome.toString());
+            Environment.MVND_HOME.appendAsCommandLineOption(args, mvndHome.toString());
             Environment.LOGBACK_CONFIGURATION_FILE
-                    .appendAsCommandLineOption(args::add, parameters.logbackConfigurationPath().toString());
-            Environment.MVND_UID.appendAsCommandLineOption(args::add, uid);
-            Environment.MVND_DAEMON_STORAGE.appendAsCommandLineOption(args::add, parameters.daemonStorage().toString());
-            Environment.MVND_REGISTRY.appendAsCommandLineOption(args::add, parameters.registry().toString());
-            parameters.discriminatingCommandLineOptions(args::add);
+                    .appendAsCommandLineOption(args, parameters.logbackConfigurationPath().toString());
+            Environment.MVND_UID.appendAsCommandLineOption(args, uid);
+            Environment.MVND_DAEMON_STORAGE.appendAsCommandLineOption(args, parameters.daemonStorage().toString());
+            Environment.MVND_REGISTRY.appendAsCommandLineOption(args, parameters.registry().toString());
+            parameters.discriminatingCommandLineOptions(args);
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 

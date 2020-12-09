@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
@@ -92,7 +91,7 @@ public class DaemonParameters {
                 .filter(EnvValue::isSet);
     }
 
-    public void discriminatingCommandLineOptions(Consumer<String> args) {
+    public void discriminatingCommandLineOptions(List<String> args) {
         discriminatingValues()
                 .forEach(envValue -> envValue.envKey.appendAsCommandLineOption(args, envValue.asString()));
     }

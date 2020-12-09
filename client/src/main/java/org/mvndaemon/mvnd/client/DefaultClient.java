@@ -242,7 +242,7 @@ public class DefaultClient implements Client {
             if (localMavenRepository != null && args.stream().noneMatch(arg -> arg.startsWith("-Dmaven.repo.local="))) {
                 args.add("-Dmaven.repo.local=" + localMavenRepository.toString());
             }
-            Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(args::add, Integer.toString(output.getTerminalWidth()));
+            Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
