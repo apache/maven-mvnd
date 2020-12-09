@@ -87,7 +87,7 @@ public class DaemonParameters {
     Stream<EnvValue> discriminatingValues() {
         return Arrays.stream(Environment.values())
                 .filter(Environment::isDiscriminating)
-                .map(env -> property(env))
+                .map(this::property)
                 .filter(EnvValue::isSet);
     }
 
