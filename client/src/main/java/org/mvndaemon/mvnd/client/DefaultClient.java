@@ -72,6 +72,11 @@ public class DefaultClient implements Client {
             }
         }
 
+        // Serial
+        if (Environment.SERIAL.removeCommandLineOption(args) != null) {
+            System.setProperty(Environment.SERIAL.getProperty(), Boolean.toString(true));
+        }
+
         // Batch mode
         boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandOption(args);
 
@@ -100,6 +105,12 @@ public class DefaultClient implements Client {
         }
 
         DaemonParameters parameters = new DaemonParameters();
+        if (parameters.serial()) {
+            System.setProperty(Environment.MVND_THREADS.getProperty(), Integer.toString(1));
+            System.setProperty(Environment.MVND_BUILDER.getProperty(), "singlethreaded");
+            System.setProperty(Environment.MVND_NO_BUFERING.getProperty(), Boolean.toString(true));
+        }
+
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();
         try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
