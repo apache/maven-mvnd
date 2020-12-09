@@ -37,7 +37,7 @@ public class TestParameters extends DaemonParameters {
                 .put(Environment.JAVA_HOME, javaHome)
                 .put(Environment.MAVEN_REPO_LOCAL, localMavenRepository)
                 .put(Environment.MAVEN_SETTINGS, settings)
-                .put(Environment.LOGBACK_CONFIGURATION_FILE, logbackConfigurationPath)
+                .put(Environment.MVND_LOGBACK, logbackConfigurationPath)
                 .put(Environment.MVND_IDLE_TIMEOUT, TimeUtils.printDuration(idleTimeout))
                 .put(Environment.MVND_KEEP_ALIVE, TimeUtils.printDuration(keepAlive))
                 .put(Environment.MVND_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)

@@ -60,7 +60,9 @@ public enum Environment {
     /**
      * The location of the Logback configuration file the daemon should use to configure its logging.
      */
-    LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null, null, OptionType.PATH, Flags.NONE),
+    MVND_LOGBACK("mvnd.logback", null, null, OptionType.PATH, Flags.NONE),
+    /** The system property expected by logback to set the configuration file */
+    LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null, null, OptionType.PATH, Flags.INTERNAL),
 
     //
     // System properties
