@@ -29,6 +29,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -83,24 +84,18 @@ public class DefaultClient implements Client {
         // System properties
         for (Iterator<String> it = args.iterator(); it.hasNext();) {
             String arg = it.next();
-            String val;
-            if (arg.startsWith("-D")) {
-                val = arg.substring(2);
-            } else if (arg.equals("--define")) {
-                if (it.hasNext()) {
-                    val = it.next();
-                } else {
-                    throw new IllegalArgumentException("Missing argument for option --define");
+            String val = Environment.MAVEN_DEFINE.removeCommandLineOption(new ArrayList<>(Collections.singletonList(arg)));
+            if (val != null) {
+                if (val.isEmpty()) {
+                    throw new IllegalArgumentException("Missing argument for option " + arg);
                 }
-            } else {
-                continue;
-            }
-            /* This needs to be done very early, otherwise various DaemonParameters do not work properly */
-            final int eqPos = val.indexOf('=');
-            if (eqPos >= 0) {
-                System.setProperty(val.substring(2, eqPos), val.substring(eqPos + 1));
-            } else {
-                System.setProperty(val.substring(2), "");
+                /* This needs to be done very early, otherwise various DaemonParameters do not work properly */
+                final int eqPos = val.indexOf('=');
+                if (eqPos >= 0) {
+                    System.setProperty(val.substring(2, eqPos), val.substring(eqPos + 1));
+                } else {
+                    System.setProperty(val.substring(2), "");
+                }
             }
         }
 
@@ -136,31 +131,10 @@ public class DefaultClient implements Client {
         LOGGER.debug("Starting client");
 
         final List<String> args = new ArrayList<>(argv);
-        boolean version = false;
-        boolean showVersion = false;
-        boolean debug = false;
-        boolean batchMode = false;
-        for (String arg : args) {
-            switch (arg) {
-            case "-v":
-            case "-version":
-            case "--version":
-                version = true;
-                break;
-            case "-V":
-            case "--show-version":
-                showVersion = true;
-                break;
-            case "-X":
-            case "--debug":
-                debug = true;
-                break;
-            case "-B":
-            case "--batch-mode":
-                batchMode = true;
-                break;
-            }
-        }
+        boolean version = Environment.MAVEN_VERSION.hasCommandLineOption(args);
+        boolean showVersion = Environment.MAVEN_SHOW_VERSION.hasCommandLineOption(args);
+        boolean debug = Environment.MAVEN_DEBUG.hasCommandLineOption(args);
+        boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args);
 
         // Print version if needed
         if (version || showVersion || debug) {

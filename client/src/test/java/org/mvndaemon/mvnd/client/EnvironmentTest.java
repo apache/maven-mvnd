@@ -16,20 +16,46 @@
 package org.mvndaemon.mvnd.client;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Environment;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class EnvironmentTest {
+
+    @Test
+    void arguments() {
+        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-Dfoo=bar")));
+        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D", "foo=bar")));
+        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("--define", "foo=bar")));
+        assertEquals("foo=bar", Environment.MAVEN_DEFINE.removeCommandLineOption(list("--define=foo=bar")));
+
+        assertEquals("foo", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D=foo")));
+        assertEquals("foo", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-Dfoo")));
+        assertEquals("foo", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D", "foo")));
+
+        assertEquals("foo=", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-Dfoo=")));
+
+        assertEquals("", Environment.MAVEN_DEFINE.removeCommandLineOption(list("-D")));
+        assertEquals("", Environment.MAVEN_DEFINE.removeCommandLineOption(list("--define")));
+    }
+
+    private List<String> list(String... items) {
+        return new ArrayList<>(Arrays.asList(items));
+    }
 
     @Test
     void prop() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.props("mvnd.home", "/maven/home/prop");
-            Assertions.assertEquals("/maven/home/prop", DaemonParameters.systemProperty(Environment.MVND_HOME).asString());
+            assertEquals("/maven/home/prop", DaemonParameters.systemProperty(Environment.MVND_HOME).asString());
         }
     }
 
@@ -37,7 +63,7 @@ public class EnvironmentTest {
     void env() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.env("MVND_HOME", "/maven/home/env");
-            Assertions.assertEquals("/maven/home/env", DaemonParameters.environmentVariable(Environment.MVND_HOME).asString());
+            assertEquals("/maven/home/env", DaemonParameters.environmentVariable(Environment.MVND_HOME).asString());
         }
     }
 
@@ -46,7 +72,7 @@ public class EnvironmentTest {
         try (EnvironmentResource env = new EnvironmentResource()) {
             final Properties localProps = new Properties();
             localProps.put("mvnd.home", "/maven/home/local");
-            Assertions.assertEquals(Paths.get("/maven/home/local"),
+            assertEquals(Paths.get("/maven/home/local"),
                     DaemonParameters
                             .environmentVariable(Environment.MVND_HOME)
                             .orSystemProperty()
@@ -61,7 +87,7 @@ public class EnvironmentTest {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.props("mvnd.home", "/maven/home/prop");
             env.env("MVND_HOME", "/maven/home/env");
-            Assertions.assertEquals("/maven/home/env",
+            assertEquals("/maven/home/env",
                     DaemonParameters
                             .environmentVariable(Environment.MVND_HOME)
                             .orSystemProperty()
@@ -73,7 +99,7 @@ public class EnvironmentTest {
     void fail() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             try {
-                Assertions.assertEquals("/maven/home/env",
+                assertEquals("/maven/home/env",
                         DaemonParameters
                                 .environmentVariable(Environment.MVND_HOME)
                                 .orSystemProperty()
@@ -81,7 +107,7 @@ public class EnvironmentTest {
                                 .asString());
                 Assertions.fail("IllegalStateException expected");
             } catch (IllegalStateException e) {
-                Assertions.assertEquals(
+                assertEquals(
                         "Could not get value for Environment.MVND_HOME from any of the following sources: environment variable MVND_HOME, system property mvnd.home",
                         e.getMessage());
             }
@@ -90,7 +116,7 @@ public class EnvironmentTest {
 
     @Test
     void cygwin() {
-        Assertions.assertEquals("C:\\jdk-11.0.2\\", Environment.cygpath("/cygdrive/c/jdk-11.0.2/"));
+        assertEquals("C:\\jdk-11.0.2\\", Environment.cygpath("/cygdrive/c/jdk-11.0.2/"));
     }
 
     static class EnvironmentResource implements AutoCloseable {

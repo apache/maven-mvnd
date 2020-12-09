@@ -92,6 +92,14 @@ public enum Environment {
     MAVEN_LOG_FILE(null, null, null, OptionType.PATH, Flags.INTERNAL, "-l", "--log-file"),
     /** Batch mode */
     MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-B", "--batch-mode"),
+    /** Debug */
+    MAVEN_DEBUG(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-X", "--debug"),
+    /** Version */
+    MAVEN_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-v", "-version", "--version"),
+    /** Show version */
+    MAVEN_SHOW_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-V", "--show-version"),
+    /** Define */
+    MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "-D", "--define"),
 
     //
     // mvnd properties
@@ -342,20 +350,21 @@ public enum Environment {
         for (Iterator<String> it = args.iterator(); it.hasNext();) {
             String arg = it.next();
             if (Stream.of(prefixes).anyMatch(arg::startsWith)) {
+                it.remove();
                 if (type == OptionType.VOID) {
                     value = "";
-                    it.remove();
                 } else {
-                    int idx = arg.indexOf('=');
-                    if (idx >= 0) {
-                        value = arg.substring(idx + 1);
-                        it.remove();
-                    } else {
-                        value = "";
-                        it.remove();
+                    String opt = Stream.of(prefixes).filter(arg::startsWith)
+                            .max(Comparator.comparing(String::length)).get();
+                    value = arg.substring(opt.length());
+                    if (value.isEmpty()) {
                         if (it.hasNext()) {
                             value = it.next();
                             it.remove();
+                        }
+                    } else {
+                        if (value.charAt(0) == '=') {
+                            value = value.substring(1);
                         }
                     }
                 }
