@@ -268,6 +268,17 @@ public class DaemonParameters {
     }
 
     /**
+     *
+     * @return if mvnd should behave as maven
+     */
+    public boolean serial() {
+        return value(Environment.SERIAL)
+                .orSystemProperty()
+                .orDefault()
+                .asBoolean();
+    }
+
+    /**
      * @param  newUserDir where to change the current directory to
      * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
