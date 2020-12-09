@@ -52,35 +52,35 @@ public class NativeTestClient implements Client {
         final List<String> cmd = new ArrayList<String>(args.size() + 1);
         cmd.add(mvndNativeExecutablePath.toString());
         cmd.addAll(args);
-        if (!Environment.MVND_DAEMON_STORAGE.hasCommandOption(args)) {
+        if (!Environment.MVND_DAEMON_STORAGE.hasCommandLineOption(args)) {
             Path daemonStorage = parameters.daemonStorage();
-            Environment.MVND_DAEMON_STORAGE.appendAsCommandLineOption(cmd, daemonStorage.toString());
+            Environment.MVND_DAEMON_STORAGE.addCommandLineOption(cmd, daemonStorage.toString());
         }
-        if (!Environment.MAVEN_REPO_LOCAL.hasCommandOption(args)) {
+        if (!Environment.MAVEN_REPO_LOCAL.hasCommandLineOption(args)) {
             Path mavenRepoLocal = parameters.mavenRepoLocal();
-            Environment.MAVEN_REPO_LOCAL.appendAsCommandLineOption(cmd, mavenRepoLocal.toString());
+            Environment.MAVEN_REPO_LOCAL.addCommandLineOption(cmd, mavenRepoLocal.toString());
         }
-        if (!Environment.MAVEN_SETTINGS.hasCommandOption(args)) {
+        if (!Environment.MAVEN_SETTINGS.hasCommandLineOption(args)) {
             final Path settings = parameters.settings();
             if (settings != null) {
-                Environment.MAVEN_SETTINGS.appendAsCommandLineOption(cmd, settings.toString());
+                Environment.MAVEN_SETTINGS.addCommandLineOption(cmd, settings.toString());
             }
         }
-        if (!Environment.MVND_THREADS.hasCommandOption(args)) {
+        if (!Environment.MVND_THREADS.hasCommandLineOption(args)) {
             final String threads = parameters.threads();
-            Environment.MVND_THREADS.appendAsCommandLineOption(cmd, threads);
+            Environment.MVND_THREADS.addCommandLineOption(cmd, threads);
         }
-        Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(cmd, Integer.toString(output.getTerminalWidth()));
+        Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(cmd, Integer.toString(output.getTerminalWidth()));
 
         final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
                 .directory(parameters.userDir().toFile()) //
                 .redirectErrorStream(true);
 
         final Map<String, String> env = builder.environment();
-        if (!Environment.MVND_HOME.hasCommandOption(args)) {
+        if (!Environment.MVND_HOME.hasCommandLineOption(args)) {
             env.put("MVND_HOME", System.getProperty("mvnd.home"));
         }
-        if (!Environment.JAVA_HOME.hasCommandOption(args)) {
+        if (!Environment.JAVA_HOME.hasCommandLineOption(args)) {
             env.put("JAVA_HOME", System.getProperty("java.home"));
         }
         final String cmdString = String.join(" ", cmd);

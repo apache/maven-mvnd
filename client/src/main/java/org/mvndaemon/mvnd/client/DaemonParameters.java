@@ -93,7 +93,7 @@ public class DaemonParameters {
 
     public void discriminatingCommandLineOptions(List<String> args) {
         discriminatingValues()
-                .forEach(envValue -> envValue.envKey.appendAsCommandLineOption(args, envValue.asString()));
+                .forEach(envValue -> envValue.envKey.addCommandLineOption(args, envValue.asString()));
     }
 
     public Path mvndHome() {
