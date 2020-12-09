@@ -322,7 +322,7 @@ public enum Environment {
         return property + "=" + type.normalize(value);
     }
 
-    public void appendAsCommandLineOption(List<String> args, String value) {
+    public void addCommandLineOption(Collection<String> args, String value) {
         if (!options.isEmpty()) {
             args.add(options.get(0));
             args.add(type.normalize(value));
@@ -331,26 +331,12 @@ public enum Environment {
         }
     }
 
-    public boolean hasCommandOption(Collection<String> args) {
+    public boolean hasCommandLineOption(Collection<String> args) {
         final String[] prefixes = getPrefixes();
         return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
     }
 
-    private String[] getPrefixes() {
-        final String[] prefixes;
-        if (options.isEmpty()) {
-            prefixes = new String[] { "-D" + property + "=" };
-        } else if (property != null) {
-            prefixes = new String[options.size() + 1];
-            options.toArray(prefixes);
-            prefixes[options.size()] = "-D" + property + "=";
-        } else {
-            prefixes = options.toArray(new String[0]);
-        }
-        return prefixes;
-    }
-
-    public String removeCommandLineOption(List<String> args) {
+    public String removeCommandLineOption(Collection<String> args) {
         final String[] prefixes = getPrefixes();
         String value = null;
         for (Iterator<String> it = args.iterator(); it.hasNext();) {
@@ -376,6 +362,20 @@ public enum Environment {
             }
         }
         return value;
+    }
+
+    private String[] getPrefixes() {
+        final String[] prefixes;
+        if (options.isEmpty()) {
+            prefixes = new String[] { "-D" + property + "=" };
+        } else if (property != null) {
+            prefixes = new String[options.size() + 1];
+            options.toArray(prefixes);
+            prefixes[options.size()] = "-D" + property + "=";
+        } else {
+            prefixes = options.toArray(new String[0]);
+        }
+        return prefixes;
     }
 
     public static String cygpath(String result) {

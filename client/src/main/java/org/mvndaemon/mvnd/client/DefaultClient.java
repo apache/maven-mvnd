@@ -78,7 +78,7 @@ public class DefaultClient implements Client {
         }
 
         // Batch mode
-        boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandOption(args);
+        boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args);
 
         // System properties
         for (Iterator<String> it = args.iterator(); it.hasNext();) {
@@ -228,21 +228,21 @@ public class DefaultClient implements Client {
                 return DefaultResult.success(argv);
             }
 
-            if (!Environment.MVND_THREADS.hasCommandOption(args)) {
-                Environment.MVND_THREADS.appendAsCommandLineOption(args, parameters.threads());
+            if (!Environment.MVND_THREADS.hasCommandLineOption(args)) {
+                Environment.MVND_THREADS.addCommandLineOption(args, parameters.threads());
             }
-            if (!Environment.MVND_BUILDER.hasCommandOption(args)) {
-                Environment.MVND_BUILDER.appendAsCommandLineOption(args, parameters.builder());
+            if (!Environment.MVND_BUILDER.hasCommandLineOption(args)) {
+                Environment.MVND_BUILDER.addCommandLineOption(args, parameters.builder());
             }
             final Path settings = parameters.settings();
-            if (settings != null && !Environment.MAVEN_SETTINGS.hasCommandOption(args)) {
-                Environment.MAVEN_SETTINGS.appendAsCommandLineOption(args, settings.toString());
+            if (settings != null && !Environment.MAVEN_SETTINGS.hasCommandLineOption(args)) {
+                Environment.MAVEN_SETTINGS.addCommandLineOption(args, settings.toString());
             }
             final Path localMavenRepository = parameters.mavenRepoLocal();
-            if (localMavenRepository != null && !Environment.MAVEN_REPO_LOCAL.hasCommandOption(args)) {
-                Environment.MAVEN_REPO_LOCAL.appendAsCommandLineOption(args, localMavenRepository.toString());
+            if (localMavenRepository != null && !Environment.MAVEN_REPO_LOCAL.hasCommandLineOption(args)) {
+                Environment.MAVEN_REPO_LOCAL.addCommandLineOption(args, localMavenRepository.toString());
             }
-            Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
+            Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
