@@ -4,12 +4,25 @@
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.1.1...HEAD)
 
+**Implemented enhancements:**
+
+- Let -h/--help display also mvnd specific options [\#243](https://github.com/mvndaemon/mvnd/issues/243)
+
 **Closed issues:**
 
+- Use client terminal width to format help [\#251](https://github.com/mvndaemon/mvnd/issues/251)
+- Document --status, --stop and --purge in -h/--help [\#249](https://github.com/mvndaemon/mvnd/issues/249)
+- The mvnd client creates a mvnd.daemonStorage\_IS\_UNDEFINED folder [\#246](https://github.com/mvndaemon/mvnd/issues/246)
 - mvnd --help produces no output [\#238](https://github.com/mvndaemon/mvnd/issues/238)
+- Wrong display of number of projects to build [\#236](https://github.com/mvndaemon/mvnd/issues/236)
 
 **Merged pull requests:**
 
+- Use client terminal width to format help [\#252](https://github.com/mvndaemon/mvnd/pull/252) ([gnodet](https://github.com/gnodet))
+- Document --status, --stop and --purge in -h/--help  [\#250](https://github.com/mvndaemon/mvnd/pull/250) ([ppalaga](https://github.com/ppalaga))
+- Fix the mvnd.sh client log configuration, fixes \#246 [\#247](https://github.com/mvndaemon/mvnd/pull/247) ([gnodet](https://github.com/gnodet))
+- Fix project name and number of projects displayed on the client, fixe… [\#245](https://github.com/mvndaemon/mvnd/pull/245) ([gnodet](https://github.com/gnodet))
+- Let -h/--help display also mvnd specific options \#243 [\#244](https://github.com/mvndaemon/mvnd/pull/244) ([ppalaga](https://github.com/ppalaga))
 - mvnd --help produces no output \#238 [\#242](https://github.com/mvndaemon/mvnd/pull/242) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.1.1](https://github.com/mvndaemon/mvnd/tree/0.1.1) (2020-11-27)
