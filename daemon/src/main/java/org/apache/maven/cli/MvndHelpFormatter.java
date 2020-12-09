@@ -67,8 +67,7 @@ public class MvndHelpFormatter {
         final String lineSeparator = System.lineSeparator();
         final StringBuilder help = new StringBuilder(mvnHelp)
                 .append(lineSeparator)
-                .append("mvnd specific options:")
-                .append(lineSeparator);
+                .append("mvnd specific options:");
 
         Environment.documentedEntries()
                 .forEach(entry -> {
@@ -125,8 +124,7 @@ public class MvndHelpFormatter {
         help
                 .append(lineSeparator)
                 .append(lineSeparator)
-                .append("mvnd value types:")
-                .append(lineSeparator);
+                .append("mvnd value types:");
 
         OptionType.documentedEntries()
                 .forEach(entry -> {
