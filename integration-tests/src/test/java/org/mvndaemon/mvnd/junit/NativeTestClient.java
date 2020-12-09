@@ -54,23 +54,23 @@ public class NativeTestClient implements Client {
         cmd.addAll(args);
         if (!Environment.MVND_DAEMON_STORAGE.hasCommandOption(args)) {
             Path daemonStorage = parameters.daemonStorage();
-            Environment.MVND_DAEMON_STORAGE.appendAsCommandLineOption(cmd::add, daemonStorage.toString());
+            Environment.MVND_DAEMON_STORAGE.appendAsCommandLineOption(cmd, daemonStorage.toString());
         }
         if (!Environment.MAVEN_REPO_LOCAL.hasCommandOption(args)) {
             Path mavenRepoLocal = parameters.mavenRepoLocal();
-            Environment.MAVEN_REPO_LOCAL.appendAsCommandLineOption(cmd::add, mavenRepoLocal.toString());
+            Environment.MAVEN_REPO_LOCAL.appendAsCommandLineOption(cmd, mavenRepoLocal.toString());
         }
         if (!Environment.MAVEN_SETTINGS.hasCommandOption(args)) {
             final Path settings = parameters.settings();
             if (settings != null) {
-                Environment.MAVEN_SETTINGS.appendAsCommandLineOption(cmd::add, settings.toString());
+                Environment.MAVEN_SETTINGS.appendAsCommandLineOption(cmd, settings.toString());
             }
         }
         if (!Environment.MVND_THREADS.hasCommandOption(args)) {
             final String threads = parameters.threads();
-            Environment.MVND_THREADS.appendAsCommandLineOption(cmd::add, threads);
+            Environment.MVND_THREADS.appendAsCommandLineOption(cmd, threads);
         }
-        Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(cmd::add, Integer.toString(output.getTerminalWidth()));
+        Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(cmd, Integer.toString(output.getTerminalWidth()));
 
         final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
                 .directory(parameters.userDir().toFile()) //

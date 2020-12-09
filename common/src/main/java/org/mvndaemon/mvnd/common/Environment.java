@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 /**
@@ -314,12 +313,12 @@ public enum Environment {
         return property + "=" + type.normalize(value);
     }
 
-    public void appendAsCommandLineOption(Consumer<String> args, String value) {
+    public void appendAsCommandLineOption(List<String> args, String value) {
         if (!options.isEmpty()) {
-            args.accept(options.get(0));
-            args.accept(type.normalize(value));
+            args.add(options.get(0));
+            args.add(type.normalize(value));
         } else {
-            args.accept("-D" + property + "=" + type.normalize(value));
+            args.add("-D" + property + "=" + type.normalize(value));
         }
     }
 
