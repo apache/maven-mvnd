@@ -331,7 +331,7 @@ public enum Environment {
             options.toArray(prefixes);
             prefixes[options.size()] = "-D" + property + "=";
         } else {
-            prefixes = options.toArray(new String[options.size()]);
+            prefixes = options.toArray(new String[0]);
         }
         return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
     }
