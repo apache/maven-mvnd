@@ -29,6 +29,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.fusesource.jansi.Ansi;
@@ -58,41 +59,50 @@ public class DefaultClient implements Client {
     private final DaemonParameters parameters;
 
     public static void main(String[] argv) throws Exception {
-        final List<String> args = new ArrayList<>(argv.length);
+        final List<String> args = new ArrayList<>(Arrays.asList(argv));
 
+        // Log file
         Path logFile = null;
-        int i = 0;
-        boolean batchMode = false;
-        while (i < argv.length) {
-            final String arg = argv[i++];
-            if ("-l".equals(arg) || "--log-file".equals(arg)) {
-                if (i < argv.length) {
-                    logFile = Paths.get(argv[i++]);
-                } else {
-                    throw new IllegalArgumentException("-l and --log-file need to be followed by a path");
-                }
-
-            } else if (arg.startsWith("-D")) {
-                /* This needs to be done very early, otherwise various DeamonParameters do not work properly */
-                final int eqPos = arg.indexOf('=');
-                if (eqPos >= 0) {
-                    System.setProperty(arg.substring(2, eqPos), arg.substring(eqPos + 1));
-                } else {
-                    System.setProperty(arg.substring(2), "");
-                }
-                args.add(arg);
+        String sLogFile = Environment.MAVEN_LOG_FILE.removeCommandLineOption(args);
+        if (sLogFile != null) {
+            if (sLogFile.isEmpty()) {
+                throw new IllegalArgumentException("-l and --log-file need to be followed by a path");
             } else {
-                if (!batchMode && ("-B".equals(arg) || "--batch-mode".equals(arg))) {
-                    batchMode = true;
+                logFile = Paths.get(sLogFile);
+            }
+        }
+
+        // Batch mode
+        boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandOption(args);
+
+        // System properties
+        for (Iterator<String> it = args.iterator(); it.hasNext();) {
+            String arg = it.next();
+            String val;
+            if (arg.startsWith("-D")) {
+                val = arg.substring(2);
+            } else if (arg.equals("--define")) {
+                if (it.hasNext()) {
+                    val = it.next();
+                } else {
+                    throw new IllegalArgumentException("Missing argument for option --define");
                 }
-                args.add(arg);
+            } else {
+                continue;
+            }
+            /* This needs to be done very early, otherwise various DaemonParameters do not work properly */
+            final int eqPos = val.indexOf('=');
+            if (eqPos >= 0) {
+                System.setProperty(val.substring(2, eqPos), val.substring(eqPos + 1));
+            } else {
+                System.setProperty(val.substring(2), "");
             }
         }
 
         DaemonParameters parameters = new DaemonParameters();
         int exitCode = 0;
-        try (TerminalOutput output = new TerminalOutput(batchMode || parameters.noBuffering(), parameters.rollingWindowSize(),
-                logFile)) {
+        boolean noBuffering = batchMode || parameters.noBuffering();
+        try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
             try {
                 final ExecutionResult result = new DefaultClient(parameters).execute(output, args);
                 exitCode = result.getExitCode();
@@ -180,8 +190,7 @@ public class DefaultClient implements Client {
         }
 
         try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
-            boolean status = args.remove("--status");
-            if (status) {
+            if (Environment.STATUS.removeCommandLineOption(args) != null) {
                 final String template = "    %36s  %7s  %5s  %7s  %5s  %23s  %s";
                 output.accept(Message.log(String.format(template,
                         "UUID", "PID", "Port", "Status", "RSS", "Last activity", "Java home")));
@@ -201,8 +210,7 @@ public class DefaultClient implements Client {
                 }
                 return DefaultResult.success(argv);
             }
-            boolean stop = args.remove("--stop");
-            if (stop) {
+            if (Environment.STOP.removeCommandLineOption(args) != null) {
                 DaemonInfo[] dis = registry.getAll().toArray(new DaemonInfo[0]);
                 if (dis.length > 0) {
                     output.accept(Message.display("Stopping " + dis.length + " running daemons"));
@@ -218,29 +226,25 @@ public class DefaultClient implements Client {
                 }
                 return DefaultResult.success(argv);
             }
-            boolean purge = args.remove("--purge");
-            if (purge) {
+            if (Environment.PURGE.removeCommandLineOption(args) != null) {
                 String result = purgeLogs();
                 output.accept(Message.display(result != null ? result : "Nothing to purge"));
                 return DefaultResult.success(argv);
             }
 
-            if (args.stream().noneMatch(arg -> arg.startsWith("-T") || arg.equals("--threads"))) {
-                args.add("--threads");
-                args.add(parameters.threads());
+            if (!Environment.MVND_THREADS.hasCommandOption(args)) {
+                Environment.MVND_THREADS.appendAsCommandLineOption(args, parameters.threads());
             }
-            if (args.stream().noneMatch(arg -> arg.startsWith("-b") || arg.equals("--builder"))) {
-                args.add("--builder");
-                args.add(parameters.builder());
+            if (!Environment.MVND_BUILDER.hasCommandOption(args)) {
+                Environment.MVND_BUILDER.appendAsCommandLineOption(args, parameters.builder());
             }
             final Path settings = parameters.settings();
-            if (settings != null && args.stream().noneMatch(arg -> arg.equals("-s") || arg.equals("--settings"))) {
-                args.add("--settings");
-                args.add(settings.toString());
+            if (settings != null && !Environment.MAVEN_SETTINGS.hasCommandOption(args)) {
+                Environment.MAVEN_SETTINGS.appendAsCommandLineOption(args, settings.toString());
             }
             final Path localMavenRepository = parameters.mavenRepoLocal();
-            if (localMavenRepository != null && args.stream().noneMatch(arg -> arg.startsWith("-Dmaven.repo.local="))) {
-                args.add("-Dmaven.repo.local=" + localMavenRepository.toString());
+            if (localMavenRepository != null && !Environment.MAVEN_REPO_LOCAL.hasCommandOption(args)) {
+                Environment.MAVEN_REPO_LOCAL.appendAsCommandLineOption(args, localMavenRepository.toString());
             }
             Environment.MVND_TERMINAL_WIDTH.appendAsCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
 

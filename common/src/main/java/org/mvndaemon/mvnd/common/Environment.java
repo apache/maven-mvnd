@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -83,6 +84,10 @@ public enum Environment {
     MAVEN_SETTINGS("maven.settings", null, null, OptionType.PATH, Flags.NONE, "-s", "--settings"),
     /** The root directory of the current multi module Maven project */
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, OptionType.PATH, Flags.NONE),
+    /** Log file */
+    MAVEN_LOG_FILE(null, null, null, OptionType.PATH, Flags.INTERNAL, "-l", "--log-file"),
+    /** Batch mode */
+    MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-B", "--batch-mode"),
 
     //
     // mvnd properties
@@ -323,6 +328,11 @@ public enum Environment {
     }
 
     public boolean hasCommandOption(Collection<String> args) {
+        final String[] prefixes = getPrefixes();
+        return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
+    }
+
+    private String[] getPrefixes() {
         final String[] prefixes;
         if (options.isEmpty()) {
             prefixes = new String[] { "-D" + property + "=" };
@@ -333,7 +343,35 @@ public enum Environment {
         } else {
             prefixes = options.toArray(new String[0]);
         }
-        return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
+        return prefixes;
+    }
+
+    public String removeCommandLineOption(List<String> args) {
+        final String[] prefixes = getPrefixes();
+        String value = null;
+        for (Iterator<String> it = args.iterator(); it.hasNext();) {
+            String arg = it.next();
+            if (Stream.of(prefixes).anyMatch(arg::startsWith)) {
+                if (type == OptionType.VOID) {
+                    value = "";
+                    it.remove();
+                } else {
+                    int idx = arg.indexOf('=');
+                    if (idx >= 0) {
+                        value = arg.substring(idx + 1);
+                        it.remove();
+                    } else {
+                        value = "";
+                        it.remove();
+                        if (it.hasNext()) {
+                            value = it.next();
+                            it.remove();
+                        }
+                    }
+                }
+            }
+        }
+        return value;
     }
 
     public static String cygpath(String result) {
