@@ -30,7 +30,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.fusesource.jansi.Ansi;
@@ -82,22 +81,7 @@ public class DefaultClient implements Client {
         boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args);
 
         // System properties
-        for (Iterator<String> it = args.iterator(); it.hasNext();) {
-            String arg = it.next();
-            String val = Environment.MAVEN_DEFINE.removeCommandLineOption(new ArrayList<>(Collections.singletonList(arg)));
-            if (val != null) {
-                if (val.isEmpty()) {
-                    throw new IllegalArgumentException("Missing argument for option " + arg);
-                }
-                /* This needs to be done very early, otherwise various DaemonParameters do not work properly */
-                final int eqPos = val.indexOf('=');
-                if (eqPos >= 0) {
-                    System.setProperty(val.substring(2, eqPos), val.substring(eqPos + 1));
-                } else {
-                    System.setProperty(val.substring(2), "");
-                }
-            }
-        }
+        setSystemPropertiesFromCommandLine(args);
 
         DaemonParameters parameters = new DaemonParameters();
         if (parameters.serial()) {
@@ -120,6 +104,24 @@ public class DefaultClient implements Client {
             }
         }
         System.exit(exitCode);
+    }
+
+    public static void setSystemPropertiesFromCommandLine(List<String> args) {
+        for (String arg : args) {
+            String val = Environment.MAVEN_DEFINE.removeCommandLineOption(new ArrayList<>(Collections.singletonList(arg)));
+            if (val != null) {
+                if (val.isEmpty()) {
+                    throw new IllegalArgumentException("Missing argument for option " + arg);
+                }
+                /* This needs to be done very early, otherwise various DaemonParameters do not work properly */
+                final int eqPos = val.indexOf('=');
+                if (eqPos >= 0) {
+                    System.setProperty(val.substring(0, eqPos), val.substring(eqPos + 1));
+                } else {
+                    System.setProperty(val, "");
+                }
+            }
+        }
     }
 
     public DefaultClient(DaemonParameters parameters) {

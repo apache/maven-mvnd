@@ -30,6 +30,7 @@ public class JvmTestClient extends DefaultClient {
 
     @Override
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
+        setSystemPropertiesFromCommandLine(argv);
         final ExecutionResult delegate = super.execute(output, argv);
         if (output instanceof TestClientOutput) {
             return new JvmTestResult(delegate, ((TestClientOutput) output).messagesToString());
