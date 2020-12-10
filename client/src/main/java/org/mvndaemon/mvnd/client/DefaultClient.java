@@ -78,7 +78,8 @@ public class DefaultClient implements Client {
         }
 
         // Batch mode
-        boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args);
+        boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args)
+                || Environment.COMPLETION.hasCommandLineOption(args);
 
         // System properties
         setSystemPropertiesFromCommandLine(args);
@@ -133,6 +134,12 @@ public class DefaultClient implements Client {
         LOGGER.debug("Starting client");
 
         final List<String> args = new ArrayList<>(argv);
+        final String completionShell = Environment.COMPLETION.removeCommandLineOption(args);
+        if (completionShell != null) {
+            output.accept(Message.log(Completion.getCompletion(completionShell)));
+            return DefaultResult.success(argv);
+        }
+
         boolean version = Environment.MAVEN_VERSION.hasCommandLineOption(args);
         boolean showVersion = Environment.MAVEN_SHOW_VERSION.hasCommandLineOption(args);
         boolean debug = Environment.MAVEN_DEBUG.hasCommandLineOption(args);

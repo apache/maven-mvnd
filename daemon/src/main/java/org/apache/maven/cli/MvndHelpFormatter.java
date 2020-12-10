@@ -20,8 +20,8 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,7 +90,7 @@ public class MvndHelpFormatter {
                         }
                     }
 
-                    final List<String> opts = env.getOptions();
+                    final Set<String> opts = env.getOptions();
                     if (!opts.isEmpty()) {
                         if (property != null) {
                             help.append(';');

@@ -95,6 +95,15 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <project.basedir>${project.basedir}</project.basedir>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -124,6 +133,7 @@
                                 --no-fallback
                                 --allow-incomplete-classpath
                                 -H:IncludeResources=org/mvndaemon/mvnd/.*
+                                -H:IncludeResources=mvnd-bash-completion.bash
                                 -H:-ParseRuntimeOptions
                                 -ea
                             </buildArgs>
