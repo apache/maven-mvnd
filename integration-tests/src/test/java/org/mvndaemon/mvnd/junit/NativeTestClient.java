@@ -18,9 +18,11 @@ package org.mvndaemon.mvnd.junit;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.client.ExecutionResult;
@@ -47,41 +49,37 @@ public class NativeTestClient implements Client {
         this.timeoutMs = timeoutMs;
     }
 
-    @Override
-    public ExecutionResult execute(ClientOutput output, List<String> args) throws InterruptedException {
-        final List<String> cmd = new ArrayList<String>(args.size() + 1);
-        cmd.add(mvndNativeExecutablePath.toString());
-        cmd.addAll(args);
-        if (!Environment.MVND_DAEMON_STORAGE.hasCommandLineOption(args)) {
-            Path daemonStorage = parameters.daemonStorage();
-            Environment.MVND_DAEMON_STORAGE.addCommandLineOption(cmd, daemonStorage.toString());
-        }
-        if (!Environment.MAVEN_REPO_LOCAL.hasCommandLineOption(args)) {
-            Path mavenRepoLocal = parameters.mavenRepoLocal();
-            Environment.MAVEN_REPO_LOCAL.addCommandLineOption(cmd, mavenRepoLocal.toString());
-        }
-        if (!Environment.MAVEN_SETTINGS.hasCommandLineOption(args)) {
-            final Path settings = parameters.settings();
-            if (settings != null) {
-                Environment.MAVEN_SETTINGS.addCommandLineOption(cmd, settings.toString());
+    private void add(Environment env, Collection<String> args, Supplier<Object> supplier) {
+        if (!env.hasCommandLineOption(args)) {
+            Object value = supplier.get();
+            if (value != null) {
+                env.addCommandLineOption(args, value.toString());
             }
         }
-        if (!Environment.MVND_THREADS.hasCommandLineOption(args)) {
-            final String threads = parameters.threads();
-            Environment.MVND_THREADS.addCommandLineOption(cmd, threads);
-        }
-        Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(cmd, Integer.toString(output.getTerminalWidth()));
+    }
 
-        final ProcessBuilder builder = new ProcessBuilder(cmd.toArray(new String[0]))
-                .directory(parameters.userDir().toFile()) //
+    @Override
+    public ExecutionResult execute(ClientOutput output, List<String> args) throws InterruptedException {
+        final List<String> cmd = new ArrayList<>(args.size() + 6);
+        cmd.add(mvndNativeExecutablePath.toString());
+        cmd.addAll(args);
+        add(Environment.MVND_DAEMON_STORAGE, cmd, parameters::daemonStorage);
+        add(Environment.MAVEN_REPO_LOCAL, cmd, parameters::mavenRepoLocal);
+        add(Environment.MAVEN_SETTINGS, cmd, parameters::settings);
+        add(Environment.MVND_THREADS, cmd, parameters::threads);
+        add(Environment.MVND_TERMINAL_WIDTH, cmd, output::getTerminalWidth);
+
+        final ProcessBuilder builder = new ProcessBuilder()
+                .command(cmd)
+                .directory(parameters.userDir().toFile())
                 .redirectErrorStream(true);
 
         final Map<String, String> env = builder.environment();
         if (!Environment.MVND_HOME.hasCommandLineOption(args)) {
-            env.put("MVND_HOME", System.getProperty("mvnd.home"));
+            env.put(Environment.MVND_HOME.getEnvironmentVariable(), Environment.MVND_HOME.asString());
         }
         if (!Environment.JAVA_HOME.hasCommandLineOption(args)) {
-            env.put("JAVA_HOME", System.getProperty("java.home"));
+            env.put(Environment.JAVA_HOME.getEnvironmentVariable(), Environment.JAVA_HOME.asString());
         }
         final String cmdString = String.join(" ", cmd);
         output.accept(Message.log("Executing " + cmdString));
