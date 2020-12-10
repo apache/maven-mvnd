@@ -44,18 +44,20 @@ public class UpgradesInBomNativeIT {
 
     @Test
     void upgrade() throws IOException, InterruptedException {
+        assertDaemonRegistrySize(0);
         /* Install the dependencies */
         for (String artifactDir : Arrays.asList("project/hello-0.0.1", "project/hello-0.0.2-SNAPSHOT")) {
             final Client cl = clientFactory.newClient(parameters.cd(parameters.getTestDir().resolve(artifactDir)));
             final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e").assertSuccess();
 
+            assertDaemonRegistrySize(1);
             final DaemonInfo d = registry.getAll().get(0);
             /* Wait, till the instance becomes idle */
             registry.awaitIdle(d.getUid());
             registry.killAll();
         }
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(0);
+        assertDaemonRegistrySize(0);
 
         /* Build the initial state of the test project */
         final Path parentDir = parameters.getTestDir().resolve("project/parent");
@@ -64,7 +66,7 @@ public class UpgradesInBomNativeIT {
             final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e").assertSuccess();
         }
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
 
         final DaemonInfo d = registry.getAll().get(0);
         /* Wait, till the instance becomes idle */
@@ -83,7 +85,13 @@ public class UpgradesInBomNativeIT {
             cl.execute(output, "clean", "install", "-e")
                     .assertSuccess();
         }
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
 
+    }
+
+    private void assertDaemonRegistrySize(int size) {
+        Assertions.assertThat(registry.getAll().size())
+                .as("Daemon registry size should be " + size)
+                .isEqualTo(size);
     }
 }

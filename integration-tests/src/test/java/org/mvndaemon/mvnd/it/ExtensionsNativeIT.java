@@ -43,18 +43,24 @@ public class ExtensionsNativeIT {
     @Test
     void version() throws IOException, InterruptedException {
         registry.killAll();
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(0);
+        assertDaemonRegistrySize(0);
 
         final TestClientOutput o = new TestClientOutput();
         client.execute(o, "-v").assertSuccess();
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
         DaemonInfo daemon = registry.getAll().iterator().next();
         assertTrue(daemon.getOptions().contains("mvnd.coreExtensions=io.takari.aether:takari-local-repository:0.11.3"));
 
         registry.awaitIdle(daemon.getUid());
 
         client.execute(o, "-v").assertSuccess();
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
+    }
+
+    private void assertDaemonRegistrySize(int size) {
+        Assertions.assertThat(registry.getAll().size())
+                .as("Daemon registry size should be " + size)
+                .isEqualTo(size);
     }
 
 }
