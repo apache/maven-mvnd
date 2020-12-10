@@ -20,15 +20,17 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -43,15 +45,19 @@ import java.util.stream.Stream;
 public enum Environment {
 
     /**
+     * Print the completion for the given shell to stdout. Only <code>--completion bash</code> is supported at this time.
+     */
+    COMPLETION(null, null, null, OptionType.STRING, Flags.OPTIONAL, "mvnd:--completion"),
+    /**
      * Delete log files under the <code>mvnd.registry</code> directory that are older than <code>mvnd.logPurgePeriod</code>
      */
-    PURGE(null, null, null, OptionType.VOID, Flags.OPTIONAL, "--purge"),
+    PURGE(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--purge"),
     /** Prints the status of daemon instances registered in the registry specified by <code>mvnd.registry</code> */
-    STATUS(null, null, null, OptionType.VOID, Flags.OPTIONAL, "--status"),
+    STATUS(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--status"),
     /** Stop all daemon instances registered in the registry specified by <code>mvnd.registry</code> */
-    STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "--stop"),
+    STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--stop"),
     /** Use one thread, no log buffering and the default project builder to behave like a standard maven */
-    SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "--serial"),
+    SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:-1", "mvnd:--serial"),
 
     //
     // Log properties
@@ -85,21 +91,21 @@ public enum Environment {
     /** The path to the Maven local repository */
     MAVEN_REPO_LOCAL("maven.repo.local", null, null, OptionType.PATH, Flags.NONE),
     /** The location of the maven settings file */
-    MAVEN_SETTINGS("maven.settings", null, null, OptionType.PATH, Flags.NONE, "-s", "--settings"),
+    MAVEN_SETTINGS("maven.settings", null, null, OptionType.PATH, Flags.NONE, "mvn:-s", "mvn:--settings"),
     /** The root directory of the current multi module Maven project */
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, OptionType.PATH, Flags.NONE),
     /** Log file */
-    MAVEN_LOG_FILE(null, null, null, OptionType.PATH, Flags.INTERNAL, "-l", "--log-file"),
+    MAVEN_LOG_FILE(null, null, null, OptionType.PATH, Flags.INTERNAL, "mvn:-l", "mvn:--log-file"),
     /** Batch mode */
-    MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-B", "--batch-mode"),
+    MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-B", "mvn:--batch-mode"),
     /** Debug */
-    MAVEN_DEBUG(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-X", "--debug"),
+    MAVEN_DEBUG(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--debug"),
     /** Version */
-    MAVEN_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-v", "-version", "--version"),
+    MAVEN_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-v", "mvn:-version", "mvn:--version"),
     /** Show version */
-    MAVEN_SHOW_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "-V", "--show-version"),
+    MAVEN_SHOW_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-V", "mvn:--show-version"),
     /** Define */
-    MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "-D", "--define"),
+    MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "mvn:-D", "mvn:--define"),
 
     //
     // mvnd properties
@@ -171,11 +177,11 @@ public enum Environment {
      * The number of threads to pass to the daemon; same syntax as Maven's <code>-T</code>/<code>--threads</code>
      * option.
      */
-    MVND_THREADS("mvnd.threads", null, null, OptionType.STRING, Flags.NONE, "-T", "--threads"),
+    MVND_THREADS("mvnd.threads", null, null, OptionType.STRING, Flags.NONE, "mvn:-T", "mvn:--threads"),
     /**
      * The builder implementation the daemon should use
      */
-    MVND_BUILDER("mvnd.builder", null, "smart", OptionType.STRING, Flags.NONE, "-b", "--builder"),
+    MVND_BUILDER("mvnd.builder", null, "smart", OptionType.STRING, Flags.NONE, "mvn:-b", "mvn:--builder"),
     /**
      * An ID for a newly started daemon
      */
@@ -239,7 +245,7 @@ public enum Environment {
     private final String default_;
     private final int flags;
     private final OptionType type;
-    private final List<String> options;
+    private final Map<String, OptionOrigin> options;
 
     Environment(String property, String environmentVariable, Object default_, OptionType type, int flags,
             String... options) {
@@ -252,7 +258,25 @@ public enum Environment {
         this.default_ = default_ != null ? default_.toString() : null;
         this.flags = flags;
         this.type = type;
-        this.options = options.length == 0 ? Collections.emptyList() : Collections.unmodifiableList(Arrays.asList(options));
+        if (options.length == 0) {
+            this.options = Collections.emptyMap();
+        } else {
+            final Map<String, OptionOrigin> optMap = new LinkedHashMap<>();
+            for (String opt : options) {
+                OPTION_ORIGIN_SEARCH: {
+                    for (OptionOrigin oo : OptionOrigin.values()) {
+                        if (opt.startsWith(oo.prefix)) {
+                            optMap.put(opt.substring(oo.prefix.length()), oo);
+                            break OPTION_ORIGIN_SEARCH;
+                        }
+                    }
+                    throw new IllegalArgumentException(
+                            "Unexpected option prefix: '" + opt + "'; Options should start with any of "
+                                    + Stream.of(OptionOrigin.values()).map(oo -> oo.prefix).collect(Collectors.joining(",")));
+                }
+            }
+            this.options = Collections.unmodifiableMap(optMap);
+        }
     }
 
     public String getProperty() {
@@ -267,7 +291,11 @@ public enum Environment {
         return default_;
     }
 
-    public List<String> getOptions() {
+    public Set<String> getOptions() {
+        return options.keySet();
+    }
+
+    public Map<String, OptionOrigin> getOptionMap() {
         return options;
     }
 
@@ -332,7 +360,7 @@ public enum Environment {
 
     public void addCommandLineOption(Collection<String> args, String value) {
         if (!options.isEmpty()) {
-            args.add(options.get(0));
+            args.add(options.keySet().iterator().next());
             args.add(type.normalize(value));
         } else {
             args.add("-D" + property + "=" + type.normalize(value));
@@ -379,10 +407,10 @@ public enum Environment {
             prefixes = new String[] { "-D" + property + "=" };
         } else if (property != null) {
             prefixes = new String[options.size() + 1];
-            options.toArray(prefixes);
+            options.keySet().toArray(prefixes);
             prefixes[options.size()] = "-D" + property + "=";
         } else {
-            prefixes = options.toArray(new String[0]);
+            prefixes = options.keySet().toArray(new String[0]);
         }
         return prefixes;
     }
@@ -412,8 +440,18 @@ public enum Environment {
         return Stream.of(values)
                 .filter(env -> !env.isInternal())
                 .sorted(Comparator.<Environment, String> comparing(env -> env.property != null ? env.property : "")
-                        .thenComparing(env -> !env.options.isEmpty() ? env.options.get(0) : ""))
+                        .thenComparing(env -> !env.options.isEmpty() ? env.options.keySet().iterator().next() : ""))
                 .map(env -> new DocumentedEnumEntry<>(env, props.getProperty(env.name())));
+    }
+
+    public enum OptionOrigin {
+        mvn, mvnd;
+
+        private final String prefix;
+
+        private OptionOrigin() {
+            this.prefix = name() + ":";
+        }
     }
 
     public static class DocumentedEnumEntry<E> {
@@ -439,7 +477,7 @@ public enum Environment {
         private static final int NONE = 0b0;
         private static final int DISCRIMINATING = 0b1;
         private static final int INTERNAL = 0b10;
-        public static final int OPTIONAL = 0b100;
+        private static final int OPTIONAL = 0b100;
     }
 
 }

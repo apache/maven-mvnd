@@ -259,6 +259,7 @@ limitations under the License.</inlineHeader>
                             <exclude>pom.xml.versionsBackup</exclude>
                         </excludes>
                         <mapping>
+                            <bash>SCRIPT_STYLE</bash>
                             <groovy>SLASHSTAR_STYLE</groovy>
                             <java>SLASHSTAR_STYLE</java>
                             <mvn>SCRIPT_STYLE</mvn>
