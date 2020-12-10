@@ -39,11 +39,11 @@ public class StopStatusTest {
     void stopStatus() throws IOException, InterruptedException {
 
         /* The registry should be empty before we run anything */
-        Assertions.assertThat(registry.getAll()).isEmpty();
+        assertDaemonRegistrySize(0);
 
         client.execute(new TestClientOutput(), "clean").assertSuccess();
         /* There should be exactly one item in the registry after the first build */
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
 
         final DaemonInfo d = registry.getAll().get(0);
         {
@@ -58,11 +58,11 @@ public class StopStatusTest {
 
         client.execute(new TestClientOutput(), "clean").assertSuccess();
         /* There should still be exactly one item in the registry after the second build */
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
 
         client.execute(new TestClientOutput(), "--stop").assertSuccess();
         /* No items in the registry after we have killed all daemons */
-        Assertions.assertThat(registry.getAll()).isEmpty();
+        assertDaemonRegistrySize(0);
 
         {
             /* After --stop, the output of --status may not contain the UID we have seen before */
@@ -76,5 +76,11 @@ public class StopStatusTest {
                     .isEmpty();
         }
 
+    }
+
+    private void assertDaemonRegistrySize(int size) {
+        Assertions.assertThat(registry.getAll().size())
+                .as("Daemon registry size should be " + size)
+                .isEqualTo(size);
     }
 }

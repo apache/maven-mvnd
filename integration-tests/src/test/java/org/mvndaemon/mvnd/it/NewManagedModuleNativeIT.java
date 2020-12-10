@@ -45,7 +45,7 @@ public class NewManagedModuleNativeIT {
 
     @Test
     void upgrade() throws IOException, InterruptedException {
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(0);
+        assertDaemonRegistrySize(0);
 
         /* Build the initial state of the test project */
         final Path parentDir = parameters.getTestDir().resolve("project/parent");
@@ -54,7 +54,7 @@ public class NewManagedModuleNativeIT {
             final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e", "-B", "-ntp").assertSuccess();
         }
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
 
         final DaemonInfo d = registry.getAll().get(0);
         /* Wait, till the instance becomes idle */
@@ -85,7 +85,12 @@ public class NewManagedModuleNativeIT {
             cl.execute(output, "clean", "install", "-e", "-B", "-ntp")
                     .assertSuccess();
         }
-        Assertions.assertThat(registry.getAll().size()).isEqualTo(1);
+        assertDaemonRegistrySize(1);
+    }
 
+    private void assertDaemonRegistrySize(int size) {
+        Assertions.assertThat(registry.getAll().size())
+                .as("Daemon registry size should be " + size)
+                .isEqualTo(size);
     }
 }
