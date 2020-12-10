@@ -45,7 +45,7 @@ public class TestRegistry extends DaemonRegistry {
                     if (maybeHandle.isPresent()) {
                         final ProcessHandle handle = maybeHandle.get();
                         final CompletableFuture<ProcessHandle> exit = handle.onExit();
-                        handle.destroyForcibly();
+                        handle.destroy();
                         exit.get(5, TimeUnit.SECONDS);
                     }
                 } catch (Exception t) {

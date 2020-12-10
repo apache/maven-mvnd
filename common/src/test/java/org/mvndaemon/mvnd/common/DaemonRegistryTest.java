@@ -31,25 +31,26 @@ public class DaemonRegistryTest {
     @Test
     public void testReadWrite() throws IOException {
         Path temp = File.createTempFile("reg", ".data").toPath();
-        DaemonRegistry reg1 = new DaemonRegistry(temp);
-        DaemonRegistry reg2 = new DaemonRegistry(temp);
+        try (DaemonRegistry reg1 = new DaemonRegistry(temp);
+                DaemonRegistry reg2 = new DaemonRegistry(temp)) {
+            assertNotNull(reg1.getAll());
+            assertEquals(0, reg1.getAll().size());
+            assertNotNull(reg2.getAll());
+            assertEquals(0, reg2.getAll().size());
 
-        assertNotNull(reg1.getAll());
-        assertEquals(0, reg1.getAll().size());
-        assertNotNull(reg2.getAll());
-        assertEquals(0, reg2.getAll().size());
+            byte[] token = new byte[16];
+            new Random().nextBytes(token);
+            reg1.store(new DaemonInfo("the-uid", "/java/home/",
+                    "/data/reg/", 0x12345678, 7502,
+                    Locale.getDefault().toLanguageTag(), Arrays.asList("-Xmx"),
+                    DaemonState.Idle, System.currentTimeMillis(), System.currentTimeMillis()));
 
-        byte[] token = new byte[16];
-        new Random().nextBytes(token);
-        reg1.store(new DaemonInfo("the-uid", "/java/home/",
-                "/data/reg/", 0x12345678, 7502,
-                Locale.getDefault().toLanguageTag(), Arrays.asList("-Xmx"),
-                DaemonState.Idle, System.currentTimeMillis(), System.currentTimeMillis()));
+            assertNotNull(reg1.getAll());
+            assertEquals(1, reg1.getAll().size());
+            assertNotNull(reg2.getAll());
+            assertEquals(1, reg2.getAll().size());
+        }
 
-        assertNotNull(reg1.getAll());
-        assertEquals(1, reg1.getAll().size());
-        assertNotNull(reg2.getAll());
-        assertEquals(1, reg2.getAll().size());
     }
 
 }
