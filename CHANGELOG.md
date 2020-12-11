@@ -12,12 +12,17 @@
 
 - Use client terminal width to format help [\#251](https://github.com/mvndaemon/mvnd/issues/251)
 - Document --status, --stop and --purge in -h/--help [\#249](https://github.com/mvndaemon/mvnd/issues/249)
+- Add a simple command option to toggle maven-like behavior [\#248](https://github.com/mvndaemon/mvnd/issues/248)
 - The mvnd client creates a mvnd.daemonStorage\_IS\_UNDEFINED folder [\#246](https://github.com/mvndaemon/mvnd/issues/246)
 - mvnd --help produces no output [\#238](https://github.com/mvndaemon/mvnd/issues/238)
 - Wrong display of number of projects to build [\#236](https://github.com/mvndaemon/mvnd/issues/236)
+- Bash completion [\#215](https://github.com/mvndaemon/mvnd/issues/215)
 
 **Merged pull requests:**
 
+- Fix SERIAL command line option [\#257](https://github.com/mvndaemon/mvnd/pull/257) ([gnodet](https://github.com/gnodet))
+- Bash completion  [\#255](https://github.com/mvndaemon/mvnd/pull/255) ([ppalaga](https://github.com/ppalaga))
+- Maven like behaviour and other small improvements [\#253](https://github.com/mvndaemon/mvnd/pull/253) ([gnodet](https://github.com/gnodet))
 - Use client terminal width to format help [\#252](https://github.com/mvndaemon/mvnd/pull/252) ([gnodet](https://github.com/gnodet))
 - Document --status, --stop and --purge in -h/--help  [\#250](https://github.com/mvndaemon/mvnd/pull/250) ([ppalaga](https://github.com/ppalaga))
 - Fix the mvnd.sh client log configuration, fixes \#246 [\#247](https://github.com/mvndaemon/mvnd/pull/247) ([gnodet](https://github.com/gnodet))
