@@ -22,6 +22,7 @@
 
 - Fix SERIAL command line option [\#257](https://github.com/mvndaemon/mvnd/pull/257) ([gnodet](https://github.com/gnodet))
 - Bash completion  [\#255](https://github.com/mvndaemon/mvnd/pull/255) ([ppalaga](https://github.com/ppalaga))
+- Bump groovy.version from 3.0.0 to 3.0.7 [\#254](https://github.com/mvndaemon/mvnd/pull/254) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Maven like behaviour and other small improvements [\#253](https://github.com/mvndaemon/mvnd/pull/253) ([gnodet](https://github.com/gnodet))
 - Use client terminal width to format help [\#252](https://github.com/mvndaemon/mvnd/pull/252) ([gnodet](https://github.com/gnodet))
 - Document --status, --stop and --purge in -h/--help  [\#250](https://github.com/mvndaemon/mvnd/pull/250) ([ppalaga](https://github.com/ppalaga))
