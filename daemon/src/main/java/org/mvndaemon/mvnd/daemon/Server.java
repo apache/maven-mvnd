@@ -657,6 +657,7 @@ public class Server implements AutoCloseable, Runnable {
         }
 
         private MavenProject getCurrentProject(MavenSession mavenSession) {
+            // Workaround for https://issues.apache.org/jira/browse/MNG-6979
             // MavenSession.getCurrentProject() does not return the correct value in some cases
             String executionRootDirectory = mavenSession.getExecutionRootDirectory();
             if (executionRootDirectory == null) {
