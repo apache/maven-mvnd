@@ -42,6 +42,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.maven.cli.DaemonMavenCli;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.project.MavenProject;
 import org.mvndaemon.mvnd.builder.SmartBuilder;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
@@ -651,8 +652,20 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         protected void onStartSession(MavenSession session) {
-            queue.add(new BuildStarted(session.getCurrentProject().getName(), session.getProjects().size(),
+            queue.add(new BuildStarted(getCurrentProject(session).getName(), session.getProjects().size(),
                     session.getRequest().getDegreeOfConcurrency()));
+        }
+
+        private MavenProject getCurrentProject(MavenSession mavenSession) {
+            // MavenSession.getCurrentProject() does not return the correct value in some cases
+            String executionRootDirectory = mavenSession.getExecutionRootDirectory();
+            if (executionRootDirectory == null) {
+                return mavenSession.getCurrentProject();
+            }
+            return mavenSession.getProjects().stream()
+                    .filter(p -> (p.getFile() != null && executionRootDirectory.equals(p.getFile().getParent())))
+                    .findFirst()
+                    .orElse(mavenSession.getCurrentProject());
         }
 
         @Override
