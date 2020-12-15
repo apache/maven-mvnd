@@ -328,6 +328,7 @@ public class DaemonConnector {
             }
 
             Environment.MVND_HOME.addCommandLineOption(args, mvndHome.toString());
+            Environment.MVND_JAVA_HOME.addCommandLineOption(args, parameters.javaHome().toString());
             Environment.LOGBACK_CONFIGURATION_FILE
                     .addCommandLineOption(args, parameters.logbackConfigurationPath().toString());
             Environment.MVND_UID.addCommandLineOption(args, uid);

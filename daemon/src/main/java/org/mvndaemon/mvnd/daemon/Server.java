@@ -129,7 +129,7 @@ public class Server implements AutoCloseable, Runnable {
             }
             long cur = System.currentTimeMillis();
             info = new DaemonInfo(uid,
-                    Environment.JAVA_HOME.asString(),
+                    Environment.MVND_JAVA_HOME.asString(),
                     Environment.MVND_HOME.asString(),
                     DaemonRegistry.getProcessId(),
                     socket.socket().getLocalPort(),
