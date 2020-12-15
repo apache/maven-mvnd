@@ -56,6 +56,7 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildRequest;
 import org.mvndaemon.mvnd.common.Message.BuildStarted;
+import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.mvndaemon.mvnd.logging.smart.AbstractLoggingSpy;
@@ -103,7 +104,9 @@ public class Server implements AutoCloseable, Runnable {
         // also interrupt and kill the daemon.
         try {
             Signal.handle(new Signal("INT"), SignalHandler.SIG_IGN);
-            Signal.handle(new Signal("TSTP"), SignalHandler.SIG_IGN);
+            if (Os.current() != Os.WINDOWS) {
+                Signal.handle(new Signal("TSTP"), SignalHandler.SIG_IGN);
+            }
         } catch (Throwable t) {
             LOGGER.warn("Unable to ignore INT and TSTP signals", t);
         }
