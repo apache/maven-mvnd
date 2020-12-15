@@ -40,6 +40,7 @@
         <graalvm.version>20.3.0</graalvm.version>
         <groovy.version>3.0.7</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
+        <jansi.version>2.1.1</jansi.version>
         <jline.version>3.18.0</jline.version>
         <junit.jupiter.version>5.6.0</junit.jupiter.version>
         <logback.version>1.2.3</logback.version>
@@ -198,6 +199,11 @@
                 <groupId>org.jline</groupId>
                 <artifactId>jline-terminal-jansi</artifactId>
                 <version>${jline.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.fusesource.jansi</groupId>
+                <artifactId>jansi</artifactId>
+                <version>${jansi.version}</version>
             </dependency>
 
             <dependency>
