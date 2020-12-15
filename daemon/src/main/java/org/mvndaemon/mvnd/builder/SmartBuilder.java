@@ -111,6 +111,9 @@ public class SmartBuilder implements Builder {
         String providerUrl = session.getTopLevelProject().getProperties()
                 .getProperty(MVND_BUILDER_RULES_PROVIDER_URL);
         if (providerUrl != null) {
+            logger.warn(MVND_BUILDER_RULES_PROVIDER_URL
+                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
+
             URL url;
             try {
                 url = new URL(providerUrl);
@@ -141,6 +144,9 @@ public class SmartBuilder implements Builder {
                     .getProperty(MVND_BUILDER_RULES_PROVIDER_SCRIPT);
         }
         if (providerScript != null) {
+            logger.warn(MVND_BUILDER_RULES_PROVIDER_SCRIPT
+                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
+
             Binding binding = new Binding();
             GroovyShell shell = new GroovyShell(binding);
             binding.setProperty("session", session);
@@ -160,12 +166,16 @@ public class SmartBuilder implements Builder {
         String topRule = session.getTopLevelProject().getProperties()
                 .getProperty(MVND_BUILDER_RULES);
         if (topRule != null) {
+            logger.warn(MVND_BUILDER_RULES
+                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
             list.add(topRule);
         }
 
         session.getAllProjects().forEach(p -> {
             String rule = p.getProperties().getProperty(MVND_BUILDER_RULE);
             if (rule != null) {
+                logger.warn(MVND_BUILDER_RULE
+                        + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
                 rule = rule.trim();
                 if (!rule.isEmpty()) {
                     rule = mvndRuleSanitizerPattern.matcher(rule).replaceAll(",");
