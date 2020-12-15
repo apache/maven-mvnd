@@ -224,7 +224,12 @@ public enum Environment {
     /**
      * Internal property to tell the daemon the width of the terminal
      */
-    MVND_TERMINAL_WIDTH("mvnd.terminalWidth", null, 0, OptionType.INTEGER, Flags.INTERNAL);
+    MVND_TERMINAL_WIDTH("mvnd.terminalWidth", null, 0, OptionType.INTEGER, Flags.INTERNAL),
+    /**
+     * Internal property to tell the daemon which JAVA_HOME was used to start it. It needs to be passed explicitly
+     * because the value may differ from what the daemon sees through <code>System.getProperty("java.home")</code>.
+     */
+    MVND_JAVA_HOME("mvnd.java.home", null, null, OptionType.PATH, Flags.INTERNAL);
 
     static Properties properties;
 
