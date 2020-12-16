@@ -22,7 +22,7 @@
 
     <groupId>org.mvndaemon.mvnd</groupId>
     <artifactId>mvnd</artifactId>
-    <version>0.1.2-SNAPSHOT</version>
+    <version>0.2.0</version>
 
     <packaging>pom</packaging>
     <name>Maven Daemon - Parent</name>
@@ -171,23 +171,23 @@
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-client</artifactId>
-                <version>0.1.2-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-common</artifactId>
-                <version>0.1.2-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
-                <version>0.1.2-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-daemon</artifactId>
-                <version>0.1.2-SNAPSHOT</version>
+                <version>0.2.0</version>
             </dependency>
 
             <dependency>
