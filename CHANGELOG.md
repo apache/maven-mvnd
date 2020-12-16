@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.2.0](https://github.com/mvndaemon/mvnd/tree/0.2.0) (2020-12-16)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.1.1...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.1.1...0.2.0)
 
 **Implemented enhancements:**
 
@@ -13,6 +13,9 @@
 
 **Closed issues:**
 
+- mvnd.rb not support mac now [\#273](https://github.com/mvndaemon/mvnd/issues/273)
+- Maven-like rolling output when the build happens to be linear [\#269](https://github.com/mvndaemon/mvnd/issues/269)
+- Support Homebrew on Linux [\#268](https://github.com/mvndaemon/mvnd/issues/268)
 - A new daemon is always started with OpenJDK 8 [\#266](https://github.com/mvndaemon/mvnd/issues/266)
 - Fix `getCurrentProject\(\)` [\#262](https://github.com/mvndaemon/mvnd/issues/262)
 - No reuse of daemons, no build speedup. [\#261](https://github.com/mvndaemon/mvnd/issues/261)
@@ -25,13 +28,12 @@
 
 **Merged pull requests:**
 
+- Maven-like rolling output when the build happens to be linear [\#271](https://github.com/mvndaemon/mvnd/pull/271) ([ppalaga](https://github.com/ppalaga))
 - A new daemon is always started on Java 8  [\#267](https://github.com/mvndaemon/mvnd/pull/267) ([ppalaga](https://github.com/ppalaga))
 - Deprecate mvnd.builder.rule\* and mvnd.builder.rules.provider.\* features [\#265](https://github.com/mvndaemon/mvnd/pull/265) ([ppalaga](https://github.com/ppalaga))
 - Fix getCurrentProject, \#fixes \#262 [\#263](https://github.com/mvndaemon/mvnd/pull/263) ([gnodet](https://github.com/gnodet))
-- Upgrade JLine [\#258](https://github.com/mvndaemon/mvnd/pull/258) ([gnodet](https://github.com/gnodet))
 - Fix SERIAL command line option [\#257](https://github.com/mvndaemon/mvnd/pull/257) ([gnodet](https://github.com/gnodet))
 - Bash completion  [\#255](https://github.com/mvndaemon/mvnd/pull/255) ([ppalaga](https://github.com/ppalaga))
-- Bump groovy.version from 3.0.0 to 3.0.7 [\#254](https://github.com/mvndaemon/mvnd/pull/254) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Maven like behaviour and other small improvements [\#253](https://github.com/mvndaemon/mvnd/pull/253) ([gnodet](https://github.com/gnodet))
 - Use client terminal width to format help [\#252](https://github.com/mvndaemon/mvnd/pull/252) ([gnodet](https://github.com/gnodet))
 - Document --status, --stop and --purge in -h/--help  [\#250](https://github.com/mvndaemon/mvnd/pull/250) ([ppalaga](https://github.com/ppalaga))
@@ -39,6 +41,8 @@
 - Fix project name and number of projects displayed on the client, fixe… [\#245](https://github.com/mvndaemon/mvnd/pull/245) ([gnodet](https://github.com/gnodet))
 - Let -h/--help display also mvnd specific options \#243 [\#244](https://github.com/mvndaemon/mvnd/pull/244) ([ppalaga](https://github.com/ppalaga))
 - mvnd --help produces no output \#238 [\#242](https://github.com/mvndaemon/mvnd/pull/242) ([ppalaga](https://github.com/ppalaga))
+- Upgrade JLine [\#258](https://github.com/mvndaemon/mvnd/pull/258) ([gnodet](https://github.com/gnodet))
+- Bump groovy.version from 3.0.0 to 3.0.7 [\#254](https://github.com/mvndaemon/mvnd/pull/254) ([dependabot[bot]](https://github.com/apps/dependabot))
 
 ## [0.1.1](https://github.com/mvndaemon/mvnd/tree/0.1.1) (2020-11-27)
 
@@ -141,7 +145,6 @@
 - Separate BuildStarted message to avoid serializing via Propertries.\[l… [\#178](https://github.com/mvndaemon/mvnd/pull/178) ([ppalaga](https://github.com/ppalaga))
 - More fine grained status on build start [\#177](https://github.com/mvndaemon/mvnd/pull/177) ([ppalaga](https://github.com/ppalaga))
 - User's preference for -T can be stored as mvnd.threads in ~/.m2/mvnd.… [\#176](https://github.com/mvndaemon/mvnd/pull/176) ([ppalaga](https://github.com/ppalaga))
-- Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.11](https://github.com/mvndaemon/mvnd/tree/0.0.11) (2020-10-29)
 
@@ -167,6 +170,7 @@
 
 **Merged pull requests:**
 
+- Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 - Improve terminal output [\#172](https://github.com/mvndaemon/mvnd/pull/172) ([ppalaga](https://github.com/ppalaga))
 - Fixup 67d5b4b Remove leftovers [\#170](https://github.com/mvndaemon/mvnd/pull/170) ([ppalaga](https://github.com/ppalaga))
 - Improvements [\#169](https://github.com/mvndaemon/mvnd/pull/169) ([gnodet](https://github.com/gnodet))
@@ -175,6 +179,7 @@
 - Killed or crashed daemon process kept in the registry until mvnd --st… [\#164](https://github.com/mvndaemon/mvnd/pull/164) ([ppalaga](https://github.com/ppalaga))
 - mvnd native executable is not passing -Dkey=val to the daemon [\#159](https://github.com/mvndaemon/mvnd/pull/159) ([ppalaga](https://github.com/ppalaga))
 - Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
+- Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
@@ -187,7 +192,6 @@
 
 **Merged pull requests:**
 
-- Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 - mvnd --status throws NumberFormatException in 0.0.9 [\#149](https://github.com/mvndaemon/mvnd/pull/149) ([ppalaga](https://github.com/ppalaga))
 - Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
 - Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
