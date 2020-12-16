@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 import org.apache.maven.cli.DaemonMavenCli;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.mvndaemon.mvnd.builder.DependencyGraph;
 import org.mvndaemon.mvnd.builder.SmartBuilder;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
@@ -655,8 +656,12 @@ public class Server implements AutoCloseable, Runnable {
 
         @Override
         protected void onStartSession(MavenSession session) {
-            queue.add(new BuildStarted(getCurrentProject(session).getName(), session.getProjects().size(),
-                    session.getRequest().getDegreeOfConcurrency()));
+            final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
+            final DependencyGraph<MavenProject> dependencyGraph = DependencyGraph.fromMaven(session);
+            session.getRequest().getData().put(DependencyGraph.class.getName(), dependencyGraph);
+
+            final int maxThreads = degreeOfConcurrency == 1 ? 1 : dependencyGraph.computeMaxWidth(degreeOfConcurrency, 1000);
+            queue.add(new BuildStarted(getCurrentProject(session).getName(), session.getProjects().size(), maxThreads));
         }
 
         private MavenProject getCurrentProject(MavenSession mavenSession) {

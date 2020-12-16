@@ -173,6 +173,11 @@ public class TerminalOutput implements ClientOutput {
             this.maxThreads = bs.getMaxThreads();
             final int maxThreadsDigits = (int) (Math.log10(maxThreads) + 1);
             this.threadsFormat = "%" + (maxThreadsDigits * 3 + 2) + "s";
+            if (maxThreads <= 1 || totalProjects <= 1) {
+                this.noBuffering = true;
+                display.update(Collections.emptyList(), 0);
+                applyNoBuffering();
+            }
             break;
         }
         case Message.CANCEL_BUILD: {
@@ -322,8 +327,7 @@ public class TerminalOutput implements ClientOutput {
             case CTRL_B:
                 noBuffering = !noBuffering;
                 if (noBuffering) {
-                    projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                    projects.clear();
+                    applyNoBuffering();
                 } else {
                     clearDisplay();
                 }
@@ -343,6 +347,11 @@ public class TerminalOutput implements ClientOutput {
         }
 
         return true;
+    }
+
+    private void applyNoBuffering() {
+        projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
+        projects.clear();
     }
 
     @Override

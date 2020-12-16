@@ -15,14 +15,6 @@
  */
 package org.mvndaemon.mvnd.builder;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -105,96 +97,15 @@ public class SmartBuilder implements Builder {
     public synchronized void build(final MavenSession session, final ReactorContext reactorContext,
             ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
             ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
-        List<String> list = new ArrayList<>();
 
-        String providerScript = null;
-        String providerUrl = session.getTopLevelProject().getProperties()
-                .getProperty(MVND_BUILDER_RULES_PROVIDER_URL);
-        if (providerUrl != null) {
-            logger.warn(MVND_BUILDER_RULES_PROVIDER_URL
-                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-
-            URL url;
-            try {
-                url = new URL(providerUrl);
-            } catch (MalformedURLException e) {
-                try {
-                    url = new File(providerUrl).toURI().toURL();
-                } catch (MalformedURLException ex) {
-                    url = null;
-                }
-            }
-            if (url == null) {
-                throw new ExecutionException("Bad syntax for " + MVND_BUILDER_RULES_PROVIDER_URL, null);
-            }
-            try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()))) {
-                StringBuilder sb = new StringBuilder();
-                char[] buf = new char[8192];
-                int l;
-                while ((l = r.read(buf)) >= 0) {
-                    sb.append(buf, 0, l);
-                }
-                providerScript = sb.toString();
-            } catch (IOException e) {
-                throw new ExecutionException("Unable to read provider url " + MVND_BUILDER_RULES_PROVIDER_URL, e);
-            }
-        }
-        if (providerScript == null) {
-            providerScript = session.getTopLevelProject().getProperties()
-                    .getProperty(MVND_BUILDER_RULES_PROVIDER_SCRIPT);
-        }
-        if (providerScript != null) {
-            logger.warn(MVND_BUILDER_RULES_PROVIDER_SCRIPT
-                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-
-            Binding binding = new Binding();
-            GroovyShell shell = new GroovyShell(binding);
-            binding.setProperty("session", session);
-            Object result = shell.evaluate(providerScript);
-            if (result instanceof Iterable) {
-                for (Object r : (Iterable) result) {
-                    list.add(r.toString());
-                }
-            } else if (result != null) {
-                list.add(result.toString());
-            } else {
-                throw new ExecutionException("The provider script did not return a valid string or string collection", null);
-            }
-            list.add(result.toString());
-        }
-
-        String topRule = session.getTopLevelProject().getProperties()
-                .getProperty(MVND_BUILDER_RULES);
-        if (topRule != null) {
-            logger.warn(MVND_BUILDER_RULES
-                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-            list.add(topRule);
-        }
-
-        session.getAllProjects().forEach(p -> {
-            String rule = p.getProperties().getProperty(MVND_BUILDER_RULE);
-            if (rule != null) {
-                logger.warn(MVND_BUILDER_RULE
-                        + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-                rule = rule.trim();
-                if (!rule.isEmpty()) {
-                    rule = mvndRuleSanitizerPattern.matcher(rule).replaceAll(",");
-                    list.add(rule + " before " + p.getGroupId() + ":" + p.getArtifactId());
-                }
-            }
-        });
-        String rules = null;
-        if (!list.isEmpty()) {
-            rules = String.join("\n", list);
-        }
-
-        DependencyGraph<MavenProject> graph = DependencyGraph.fromMaven(session.getProjectDependencyGraph(), rules);
+        DependencyGraph<MavenProject> graph = (DependencyGraph<MavenProject>) session.getRequest().getData()
+                .get(DependencyGraph.class.getName());
 
         // log overall build info
         final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
         logger.info("Task segments : " + taskSegments.stream().map(Object::toString).collect(Collectors.joining(" ")));
         logger.info("Build maximum degree of concurrency is " + degreeOfConcurrency);
-        logger.info("Total number of projects is " + graph.getProjects().count());
+        logger.info("Total number of projects is " + session.getProjects().size());
 
         // the actual build execution
         List<Map.Entry<TaskSegment, ReactorBuildStats>> allstats = new ArrayList<>();
