@@ -6,20 +6,29 @@
 
 **Implemented enhancements:**
 
+- Use client terminal width to format help [\#251](https://github.com/mvndaemon/mvnd/issues/251)
+- Add a `--serial/-1` command option to toggle maven-like behavior [\#248](https://github.com/mvndaemon/mvnd/issues/248)
 - Let -h/--help display also mvnd specific options [\#243](https://github.com/mvndaemon/mvnd/issues/243)
+- Bash completion [\#215](https://github.com/mvndaemon/mvnd/issues/215)
 
 **Closed issues:**
 
-- Use client terminal width to format help [\#251](https://github.com/mvndaemon/mvnd/issues/251)
+- A new daemon is always started with OpenJDK 8 [\#266](https://github.com/mvndaemon/mvnd/issues/266)
+- Fix `getCurrentProject\(\)` [\#262](https://github.com/mvndaemon/mvnd/issues/262)
+- No reuse of daemons, no build speedup. [\#261](https://github.com/mvndaemon/mvnd/issues/261)
+- No reuse of daemons - error on daemon creation - unknown signal TSTP \(Windows 10, Bellsoft Liberica JDK\) [\#260](https://github.com/mvndaemon/mvnd/issues/260)
+- mvnd is affected by CVE-2020-17521 vulnerability [\#259](https://github.com/mvndaemon/mvnd/issues/259)
 - Document --status, --stop and --purge in -h/--help [\#249](https://github.com/mvndaemon/mvnd/issues/249)
-- Add a simple command option to toggle maven-like behavior [\#248](https://github.com/mvndaemon/mvnd/issues/248)
 - The mvnd client creates a mvnd.daemonStorage\_IS\_UNDEFINED folder [\#246](https://github.com/mvndaemon/mvnd/issues/246)
 - mvnd --help produces no output [\#238](https://github.com/mvndaemon/mvnd/issues/238)
 - Wrong display of number of projects to build [\#236](https://github.com/mvndaemon/mvnd/issues/236)
-- Bash completion [\#215](https://github.com/mvndaemon/mvnd/issues/215)
 
 **Merged pull requests:**
 
+- A new daemon is always started on Java 8  [\#267](https://github.com/mvndaemon/mvnd/pull/267) ([ppalaga](https://github.com/ppalaga))
+- Deprecate mvnd.builder.rule\* and mvnd.builder.rules.provider.\* features [\#265](https://github.com/mvndaemon/mvnd/pull/265) ([ppalaga](https://github.com/ppalaga))
+- Fix getCurrentProject, \#fixes \#262 [\#263](https://github.com/mvndaemon/mvnd/pull/263) ([gnodet](https://github.com/gnodet))
+- Upgrade JLine [\#258](https://github.com/mvndaemon/mvnd/pull/258) ([gnodet](https://github.com/gnodet))
 - Fix SERIAL command line option [\#257](https://github.com/mvndaemon/mvnd/pull/257) ([gnodet](https://github.com/gnodet))
 - Bash completion  [\#255](https://github.com/mvndaemon/mvnd/pull/255) ([ppalaga](https://github.com/ppalaga))
 - Bump groovy.version from 3.0.0 to 3.0.7 [\#254](https://github.com/mvndaemon/mvnd/pull/254) ([dependabot[bot]](https://github.com/apps/dependabot))
@@ -132,6 +141,7 @@
 - Separate BuildStarted message to avoid serializing via Propertries.\[l… [\#178](https://github.com/mvndaemon/mvnd/pull/178) ([ppalaga](https://github.com/ppalaga))
 - More fine grained status on build start [\#177](https://github.com/mvndaemon/mvnd/pull/177) ([ppalaga](https://github.com/ppalaga))
 - User's preference for -T can be stored as mvnd.threads in ~/.m2/mvnd.… [\#176](https://github.com/mvndaemon/mvnd/pull/176) ([ppalaga](https://github.com/ppalaga))
+- Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.11](https://github.com/mvndaemon/mvnd/tree/0.0.11) (2020-10-29)
 
@@ -157,7 +167,6 @@
 
 **Merged pull requests:**
 
-- Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 - Improve terminal output [\#172](https://github.com/mvndaemon/mvnd/pull/172) ([ppalaga](https://github.com/ppalaga))
 - Fixup 67d5b4b Remove leftovers [\#170](https://github.com/mvndaemon/mvnd/pull/170) ([ppalaga](https://github.com/ppalaga))
 - Improvements [\#169](https://github.com/mvndaemon/mvnd/pull/169) ([gnodet](https://github.com/gnodet))
@@ -166,7 +175,6 @@
 - Killed or crashed daemon process kept in the registry until mvnd --st… [\#164](https://github.com/mvndaemon/mvnd/pull/164) ([ppalaga](https://github.com/ppalaga))
 - mvnd native executable is not passing -Dkey=val to the daemon [\#159](https://github.com/mvndaemon/mvnd/pull/159) ([ppalaga](https://github.com/ppalaga))
 - Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
-- Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
@@ -179,6 +187,7 @@
 
 **Merged pull requests:**
 
+- Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 - mvnd --status throws NumberFormatException in 0.0.9 [\#149](https://github.com/mvndaemon/mvnd/pull/149) ([ppalaga](https://github.com/ppalaga))
 - Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
 - Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
