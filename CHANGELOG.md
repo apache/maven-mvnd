@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.2.0...HEAD)
+
+**Closed issues:**
+
+- mvnd 0.2.0 can no longer resolve our Artifactory server \(works for 0.1.1 in same shell\) [\#274](https://github.com/mvndaemon/mvnd/issues/274)
+
 ## [0.2.0](https://github.com/mvndaemon/mvnd/tree/0.2.0) (2020-12-16)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.1.1...0.2.0)
