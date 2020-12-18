@@ -439,7 +439,7 @@ public class DaemonMavenCli {
         CoreExtensionEntry coreEntry = CoreExtensionEntry.discoverFrom(coreRealm);
 
         List<CoreExtension> extensions = Stream
-                .of(Environment.MVND_CORE_EXTENSIONS.asString().split(","))
+                .of(Environment.MVND_CORE_EXTENSIONS.asString().split(";"))
                 .filter(s -> s != null && !s.isEmpty())
                 .map(s -> {
                     String[] parts = s.split(":");

@@ -361,7 +361,7 @@ public class DaemonParameters {
                 List<String> extensions = readCoreExtensionsDescriptor(multiModuleProjectDirectory()).stream()
                         .map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
                         .collect(Collectors.toList());
-                return String.join(",", extensions);
+                return String.join(";", extensions);
             } catch (IOException | XmlPullParserException e) {
                 throw new RuntimeException("Unable to parse core extensions", e);
             }
