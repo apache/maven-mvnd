@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- mvnd fails when version range is used in extensions.xml [\#275](https://github.com/mvndaemon/mvnd/issues/275)
 - mvnd 0.2.0 can no longer resolve our Artifactory server \(works for 0.1.1 in same shell\) [\#274](https://github.com/mvndaemon/mvnd/issues/274)
 
 ## [0.2.0](https://github.com/mvndaemon/mvnd/tree/0.2.0) (2020-12-16)
