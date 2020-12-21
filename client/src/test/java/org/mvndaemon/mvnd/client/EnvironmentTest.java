@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mvndaemon.mvnd.client.DaemonParameters.EnvValue;
+import org.mvndaemon.mvnd.client.DaemonParameters.ValueSource;
 import org.mvndaemon.mvnd.common.Environment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -117,6 +119,14 @@ public class EnvironmentTest {
     @Test
     void cygwin() {
         assertEquals("C:\\jdk-11.0.2\\", Environment.cygpath("/cygdrive/c/jdk-11.0.2/"));
+    }
+
+    @Test
+    void emptyBooleanEnvValueIsTrue() {
+        final String EMPTY_STRING = "";
+        final EnvValue envVal = new EnvValue(Environment.MVND_NO_BUFERING,
+                new ValueSource(sb -> sb.append("envValueAsBoolean"), () -> EMPTY_STRING));
+        assertEquals(true, envVal.asBoolean());
     }
 
     static class EnvironmentResource implements AutoCloseable {

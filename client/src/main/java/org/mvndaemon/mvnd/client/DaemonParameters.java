@@ -596,7 +596,8 @@ public class DaemonParameters {
         }
 
         public boolean asBoolean() {
-            return Boolean.parseBoolean(get());
+            final String val = get();
+            return "".equals(val) || Boolean.parseBoolean(val);
         }
 
         public int asInt() {
