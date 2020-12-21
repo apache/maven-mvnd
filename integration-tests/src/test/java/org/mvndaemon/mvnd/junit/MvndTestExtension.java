@@ -16,6 +16,7 @@
 package org.mvndaemon.mvnd.junit;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -191,8 +192,21 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                                 + mvndHome);
             }
             final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
+
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
-            final Path settingsPath = createSettings(testDir.resolve("settings.xml"));
+            String mrmRepoUrl = System.getProperty("mrm.repository.url");
+            if ("".equals(mrmRepoUrl)) {
+                mrmRepoUrl = null;
+            }
+            final Path settingsPath;
+            if (mrmRepoUrl == null) {
+                LOG.info("Building without mrm-maven-plugin");
+                settingsPath = null;
+                prefillLocalRepo(localMavenRepository);
+            } else {
+                LOG.info("Building with mrm-maven-plugin");
+                settingsPath = createSettings(testDir.resolve("settings.xml"), mrmRepoUrl);
+            }
             final Path logback = Paths.get("src/test/resources/logback/logback.xml").toAbsolutePath();
             final Path home = deleteDir(testDir.resolve("home"));
             final TestParameters parameters = new TestParameters(
@@ -213,13 +227,28 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             return new MvndResource(parameters, registry, isNative, timeoutMs);
         }
 
-        static Path createSettings(Path settingsPath) {
-            final String mrmRepoUrl = System.getProperty("mrm.repository.url");
-            if (mrmRepoUrl == null || mrmRepoUrl.isEmpty()) {
-                LOG.info("Building without mrm-maven-plugin");
-                return null;
-            }
-            LOG.info("Building with mrm-maven-plugin");
+        private static void prefillLocalRepo(final Path localMavenRepository) {
+            /* Workaround for https://github.com/mvndaemon/mvnd/issues/281 */
+            final String surefireVersion = System.getProperty("surefire.version");
+            final Path hostLocalMavenRepo = Paths.get(System.getProperty("mvnd.test.hostLocalMavenRepo"));
+            Stream.of(
+                    "org/apache/maven/surefire/surefire-providers/" + surefireVersion + "/surefire-providers-"
+                            + surefireVersion + ".pom",
+                    "org/apache/maven/surefire/surefire-providers/" + surefireVersion + "/surefire-providers-"
+                            + surefireVersion + ".pom.sha1")
+                    .forEach(relPath -> {
+                        final Path src = hostLocalMavenRepo.resolve(relPath);
+                        final Path dest = localMavenRepository.resolve(relPath);
+                        try {
+                            Files.createDirectories(dest.getParent());
+                            Files.copy(src, dest);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    });
+        }
+
+        static Path createSettings(Path settingsPath, String mrmRepoUrl) {
             final Path settingsTemplatePath = Paths.get("src/test/resources/settings-template.xml");
             try {
                 final String template = Files.readString(settingsTemplatePath);
