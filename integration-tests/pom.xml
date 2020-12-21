@@ -87,6 +87,8 @@
                         <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
                         <os.detected.name>${os.detected.name}</os.detected.name>
                         <os.detected.arch>${os.detected.arch}</os.detected.arch>
+                        <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
+                        <surefire.version>${surefire.version}</surefire.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -168,6 +170,8 @@
                                         <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
                                         <os.detected.name>${os.detected.name}</os.detected.name>
                                         <os.detected.arch>${os.detected.arch}</os.detected.arch>
+                                        <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
+                                        <surefire.version>${surefire.version}</surefire.version>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

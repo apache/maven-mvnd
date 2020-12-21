@@ -59,7 +59,7 @@
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
         <maven-install-plugin.version>2.4</maven-install-plugin.version>
         <mrm.version>1.2.0</mrm.version>
-        <surefire.version>3.0.0-M5</surefire.version>
+        <surefire.version>2.22.2</surefire.version>
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
         <takari-provisio.version>1.0.15</takari-provisio.version>
 
