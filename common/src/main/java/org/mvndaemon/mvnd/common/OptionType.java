@@ -23,7 +23,10 @@ import java.util.stream.Stream;
 import org.mvndaemon.mvnd.common.Environment.DocumentedEnumEntry;
 
 public enum OptionType {
-    /** <code>true</code> or <code>false</code> */
+    /**
+     * <code>true</code> or <code>false</code>; empty string is also interpreted as <code>true</code> - so
+     * <code>-Dmvnd.noBuffering</code> is equivalent to <code>-Dmvnd.noBuffering=true</code>
+     */
     BOOLEAN,
     /**
      * An unlabeled whole number of milliseconds or a whole number followed by an optional space and a unit
