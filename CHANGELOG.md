@@ -6,8 +6,15 @@
 
 **Closed issues:**
 
+- Support short variants of boolean properties [\#279](https://github.com/mvndaemon/mvnd/issues/279)
+- \[ENHANCEMENT\] mvnd failed while I purposely disabled ~/.m2 directory [\#278](https://github.com/mvndaemon/mvnd/issues/278)
 - mvnd fails when version range is used in extensions.xml [\#275](https://github.com/mvndaemon/mvnd/issues/275)
 - mvnd 0.2.0 can no longer resolve our Artifactory server \(works for 0.1.1 in same shell\) [\#274](https://github.com/mvndaemon/mvnd/issues/274)
+- Crash with Java 17 [\#272](https://github.com/mvndaemon/mvnd/issues/272)
+
+**Merged pull requests:**
+
+- Support short variants of boolean properties [\#280](https://github.com/mvndaemon/mvnd/pull/280) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.2.0](https://github.com/mvndaemon/mvnd/tree/0.2.0) (2020-12-16)
 
@@ -253,6 +260,7 @@
 
 - Upload the artifacts from the correct directory [\#109](https://github.com/mvndaemon/mvnd/pull/109) ([ppalaga](https://github.com/ppalaga))
 - Unnecessary directory in the 0.0.7 zip archive \#107 [\#108](https://github.com/mvndaemon/mvnd/pull/108) ([ppalaga](https://github.com/ppalaga))
+- Re-layout the distro so that mvn is not in bin [\#96](https://github.com/mvndaemon/mvnd/pull/96) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.7](https://github.com/mvndaemon/mvnd/tree/0.0.7) (2020-10-19)
 
@@ -278,7 +286,6 @@
 - Isolate the integration tests from the local environment [\#101](https://github.com/mvndaemon/mvnd/pull/101) ([ppalaga](https://github.com/ppalaga))
 - Partial revert to fix windows integration test [\#99](https://github.com/mvndaemon/mvnd/pull/99) ([gnodet](https://github.com/gnodet))
 - Add NOTICE LICENSE and README to the distro [\#98](https://github.com/mvndaemon/mvnd/pull/98) ([ppalaga](https://github.com/ppalaga))
-- Re-layout the distro so that mvn is not in bin [\#96](https://github.com/mvndaemon/mvnd/pull/96) ([ppalaga](https://github.com/ppalaga))
 - Test a scenario using mvn \#92 [\#95](https://github.com/mvndaemon/mvnd/pull/95) ([ppalaga](https://github.com/ppalaga))
 - Improvements [\#94](https://github.com/mvndaemon/mvnd/pull/94) ([gnodet](https://github.com/gnodet))
 - Honor the -X / --debug / --quiet arguments on the command line [\#90](https://github.com/mvndaemon/mvnd/pull/90) ([gnodet](https://github.com/gnodet))
