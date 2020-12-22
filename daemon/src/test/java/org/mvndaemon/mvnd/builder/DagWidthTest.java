@@ -33,14 +33,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DagWidthTest {
 
+    /**
+     * <pre>
+     *   A   B
+     *  /|\ / \
+     * C D E   F
+     *  \|
+     *   G
+     * </pre>
+     */
     @Test
     void testSimpleGraph() {
         //
-        // A B
-        // / | \ / \
-        // C D E F
-        // \/
-        // G
         Map<String, List<String>> upstreams = new HashMap<>();
         upstreams.put("A", Collections.emptyList());
         upstreams.put("B", Collections.emptyList());
@@ -54,11 +58,77 @@ public class DagWidthTest {
         assertEquals(4, new DagWidth<>(graph).getMaxWidth(12));
     }
 
+    /**
+     * <pre>
+     *   A
+     *  /|
+     * B |
+     *  \|
+     *   C
+     * </pre>
+     */
+    @Test
+    void tripleLinearGraph() {
+        Map<String, List<String>> upstreams = new HashMap<>();
+        upstreams.put("A", Collections.emptyList());
+        upstreams.put("B", Collections.singletonList("A"));
+        upstreams.put("C", Arrays.asList("A", "B"));
+        DependencyGraph<String> graph = newGraph(upstreams);
+        assertEquals(1, new DagWidth<>(graph).getMaxWidth());
+    }
+
+    /**
+     * <pre>
+     *     A
+     *    /|\
+     *   B C D
+     *  /|\ \|
+     * E F G H
+     * </pre>
+     */
+    @Test
+    void multilevelSum() {
+        Map<String, List<String>> upstreams = new HashMap<>();
+        upstreams.put("A", Collections.emptyList());
+        upstreams.put("B", Collections.singletonList("A"));
+        upstreams.put("C", Collections.singletonList("A"));
+        upstreams.put("D", Collections.singletonList("A"));
+        upstreams.put("E", Collections.singletonList("B"));
+        upstreams.put("F", Collections.singletonList("B"));
+        upstreams.put("G", Collections.singletonList("B"));
+        upstreams.put("H", Arrays.asList("C", "D"));
+        DependencyGraph<String> graph = newGraph(upstreams);
+        assertEquals(5, new DagWidth<>(graph).getMaxWidth());
+    }
+
+    /**
+     * <pre>
+     *     A
+     *    /|\
+     *   B C D
+     *       |
+     *       E
+     * </pre>
+     */
+    @Test
+    void wide() {
+        Map<String, List<String>> upstreams = new HashMap<>();
+        upstreams.put("A", Collections.emptyList());
+        upstreams.put("B", Collections.singletonList("A"));
+        upstreams.put("C", Collections.singletonList("A"));
+        upstreams.put("D", Collections.singletonList("A"));
+        upstreams.put("E", Collections.singletonList("D"));
+        DependencyGraph<String> graph = newGraph(upstreams);
+        assertEquals(3, new DagWidth<>(graph).getMaxWidth());
+    }
+
+    /**
+     * <pre>
+     * A
+     * </pre>
+     */
     @Test
     void testSingle() {
-        //
-        // A
-        //
         Map<String, List<String>> upstreams = new HashMap<>();
         upstreams.put("A", Collections.emptyList());
         DependencyGraph<String> graph = newGraph(upstreams);
