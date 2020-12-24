@@ -57,6 +57,7 @@ public class DependencyGraph<K> {
 
     private final List<K> projects;
     private final Map<K, List<K>> upstreams;
+    private final Map<K, Set<K>> transitiveUpstreams;
     private final Map<K, List<K>> downstreams;
 
     public static DependencyGraph<MavenProject> fromMaven(MavenSession session) {
@@ -116,7 +117,7 @@ public class DependencyGraph<K> {
             binding.setProperty("session", session);
             Object result = shell.evaluate(providerScript);
             if (result instanceof Iterable) {
-                for (Object r : (Iterable) result) {
+                for (Object r : (Iterable<?>) result) {
                     list.add(r.toString());
                 }
             } else if (result != null) {
@@ -210,6 +211,17 @@ public class DependencyGraph<K> {
         this.projects = projects;
         this.upstreams = upstreams;
         this.downstreams = downstreams;
+
+        this.transitiveUpstreams = new HashMap<>();
+        projects.forEach(this::transitiveUpstreams); // topological ordering of projects matters
+    }
+
+    DependencyGraph(List<K> projects, Map<K, List<K>> upstreams, Map<K, List<K>> downstreams,
+            Map<K, Set<K>> transitiveUpstreams) {
+        this.projects = projects;
+        this.upstreams = upstreams;
+        this.downstreams = downstreams;
+        this.transitiveUpstreams = transitiveUpstreams;
     }
 
     public Stream<K> getDownstreamProjects(K project) {
@@ -234,29 +246,157 @@ public class DependencyGraph<K> {
 
     public void store(Function<K, String> toString, Path path) {
         try (Writer w = Files.newBufferedWriter(path)) {
-            getProjects().forEach(k -> {
-                try {
-                    w.write(toString.apply(k));
-                    w.write(" = ");
-                    w.write(getUpstreamProjects(k).map(toString).collect(Collectors.joining(",")));
-                    w.write(System.lineSeparator());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            store(toString, w);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public void store(Function<K, String> toString, Appendable w) {
+        getProjects().forEach(k -> {
+            try {
+                w.append(toString.apply(k));
+                w.append(" = ");
+                w.append(getUpstreamProjects(k).map(toString).collect(Collectors.joining(",")));
+                w.append(System.lineSeparator());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        store(k -> k.toString(), sb);
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((downstreams == null) ? 0 : downstreams.hashCode());
+        result = prime * result + ((projects == null) ? 0 : projects.hashCode());
+        result = prime * result + ((upstreams == null) ? 0 : upstreams.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        @SuppressWarnings("unchecked")
+        DependencyGraph<K> other = (DependencyGraph<K>) obj;
+        if (downstreams == null) {
+            if (other.downstreams != null)
+                return false;
+        } else if (!downstreams.equals(other.downstreams))
+            return false;
+        if (projects == null) {
+            if (other.projects != null)
+                return false;
+        } else if (!projects.equals(other.projects))
+            return false;
+        if (upstreams == null) {
+            if (other.upstreams != null)
+                return false;
+        } else if (!upstreams.equals(other.upstreams))
+            return false;
+        return true;
+    }
+
+    /**
+     * Creates a new {@link DependencyGraph} which is a <a href="https://en.wikipedia.org/wiki/Transitive_reduction">
+     * transitive reduction</a> of this {@link DependencyGraph}. The reduction operation keeps the set of graph nodes
+     * unchanged and it reduces the set of edges in the following way: An edge {@code C -> A} is removed if an edge
+     * {@code C -> B} exists such that {@code A != B} and the set of nodes reachable from {@code B} contains {@code A};
+     * otherwise the edge {@code C -> A} is kept in the reduced graph.
+     * <p>
+     * Examples:
+     *
+     * <pre>
+     * Original     Reduced
+     *
+     *    A           A
+     *   /|          /
+     *  B |         B
+     *   \|          \
+     *    C           C
+     *
+     *
+     *    A           A
+     *   /|\         /
+     *  B | |       B
+     *   \| |        \
+     *    C |         C
+     *     \|          \
+     *      D           D
+     *
+     * </pre>
+     *
+     *
+     * @return a transitive reduction of this {@link DependencyGraph}
+     */
+    DependencyGraph<K> reduce() {
+        final Map<K, List<K>> newUpstreams = new HashMap<>();
+        final Map<K, List<K>> newDownstreams = new HashMap<>();
+        for (K node : projects) {
+            final List<K> oldNodeUpstreams = upstreams.get(node);
+            final List<K> newNodeUpstreams;
+            newDownstreams.computeIfAbsent(node, k -> new ArrayList<>());
+            if (oldNodeUpstreams.size() == 0) {
+                newNodeUpstreams = new ArrayList<>(oldNodeUpstreams);
+            } else if (oldNodeUpstreams.size() == 1) {
+                newNodeUpstreams = new ArrayList<>(oldNodeUpstreams);
+                newDownstreams.computeIfAbsent(newNodeUpstreams.get(0), k -> new ArrayList<>()).add(node);
+            } else {
+                newNodeUpstreams = new ArrayList<>(oldNodeUpstreams.size());
+                for (K leftNode : oldNodeUpstreams) {
+                    if (oldNodeUpstreams.stream()
+                            .filter(rightNode -> leftNode != rightNode)
+                            .noneMatch(rightNode -> transitiveUpstreams.get(rightNode).contains(leftNode))) {
+
+                        newNodeUpstreams.add(leftNode);
+                        newDownstreams.computeIfAbsent(leftNode, k -> new ArrayList<>()).add(node);
+                    }
+                }
+            }
+            newUpstreams.put(node, newNodeUpstreams);
+        }
+        return new DependencyGraph<K>(projects, newUpstreams, newDownstreams, transitiveUpstreams);
+    }
+
+    /**
+     * Compute the set of nodes reachable from the given {@code node} through the {@code is upstream of} relation. The
+     * {@code node} itself is not a part of the returned set.
+     *
+     * @param node the node for which the transitive upstream should be computed
+     * @return the set of transitive upstreams
+     */
+    Set<K> transitiveUpstreams(K node) {
+        Set<K> result = transitiveUpstreams.get(node);
+        if (result == null) {
+            final List<K> firstOrderUpstreams = this.upstreams.get(node);
+            result = new HashSet<>(firstOrderUpstreams);
+            firstOrderUpstreams.stream()
+                    .map(this::transitiveUpstreams)
+                    .forEach(result::addAll);
+            transitiveUpstreams.put(node, result);
+        }
+        return result;
+    }
+
     static class DagWidth<K> {
 
         private final DependencyGraph<K> graph;
-        private final Map<K, Set<K>> allUpstreams = new HashMap<>();
 
         public DagWidth(DependencyGraph<K> graph) {
-            this.graph = graph;
-            graph.getProjects().forEach(this::allUpstreams);
+            this.graph = graph.reduce();
         }
 
         public int getMaxWidth() {
@@ -269,10 +409,10 @@ public class DependencyGraph<K> {
 
         public int getMaxWidth(int maxmax, long maxTimeMillis) {
             int max = 0;
-            if (maxmax < allUpstreams.size()) {
+            if (maxmax < graph.transitiveUpstreams.size()) {
                 // try inverted upstream bound
                 Map<Set<K>, Set<K>> mapByUpstreams = new HashMap<>();
-                allUpstreams.forEach((k, ups) -> {
+                graph.transitiveUpstreams.forEach((k, ups) -> {
                     mapByUpstreams.computeIfAbsent(ups, n -> new HashSet<>()).add(k);
                 });
                 max = mapByUpstreams.values().stream()
@@ -327,36 +467,15 @@ public class DependencyGraph<K> {
                     .collect(Collectors.toList());
         }
 
-        /**
-         * Get a stream of all subset of descendants of the given nodes
-         */
-        private Stream<List<K>> childEnsembles(List<K> list) {
-            return Stream.concat(
-                    Stream.of(list),
-                    list.parallelStream()
-                            .map(node -> ensembleWithChildrenOf(list, node))
-                            .flatMap(this::childEnsembles));
-        }
-
         List<K> ensembleWithChildrenOf(List<K> list, K node) {
-            return Stream.concat(
+            final List<K> result = Stream.concat(
                     list.stream().filter(k -> !Objects.equals(k, node)),
                     graph.getDownstreamProjects(node)
-                            .filter(k -> allUpstreams(k).stream()
+                            .filter(k -> graph.transitiveUpstreams.get(k)
+                                    .stream()
                                     .noneMatch(k2 -> !Objects.equals(k2, node) && list.contains(k2))))
                     .distinct().collect(Collectors.toList());
-        }
-
-        private Set<K> allUpstreams(K node) {
-            Set<K> aups = allUpstreams.get(node);
-            if (aups == null) {
-                aups = Stream.concat(
-                        graph.getUpstreamProjects(node),
-                        graph.getUpstreamProjects(node).map(this::allUpstreams).flatMap(Set::stream))
-                        .collect(Collectors.toSet());
-                allUpstreams.put(node, aups);
-            }
-            return aups;
+            return result;
         }
 
     }
