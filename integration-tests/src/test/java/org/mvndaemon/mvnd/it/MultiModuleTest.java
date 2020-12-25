@@ -31,6 +31,7 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.ProjectEvent;
+import org.mvndaemon.mvnd.common.Message.StringMessage;
 import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
@@ -97,7 +98,7 @@ public class MultiModuleTest {
         {
             final List<String> filteredMessages = output.getMessages().stream()
                     .filter(m -> m.getType() == Message.PROJECT_STARTED)
-                    .map(m -> ((ProjectEvent) m).getProjectId())
+                    .map(m -> ((StringMessage) m).getMessage())
                     .collect(Collectors.toList());
 
             Assertions.assertThat(filteredMessages)

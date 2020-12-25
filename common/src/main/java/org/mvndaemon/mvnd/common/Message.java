@@ -32,7 +32,9 @@ public abstract class Message {
     public static final int BUILD_REQUEST = 0;
     public static final int BUILD_STARTED = 1;
     public static final int BUILD_FINISHED = 2;
+    /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just started */
     public static final int PROJECT_STARTED = 3;
+    /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just finished */
     public static final int PROJECT_STOPPED = 4;
     public static final int MOJO_STARTED = 5;
     public static final int PROJECT_LOG_MESSAGE = 6;
@@ -69,9 +71,8 @@ public abstract class Message {
             return BuildStarted.read(input);
         case BUILD_FINISHED:
             return BuildFinished.read(input);
-        case PROJECT_STARTED:
-        case PROJECT_STOPPED:
         case MOJO_STARTED:
+            return MojoStartedEvent.read(input);
         case PROJECT_LOG_MESSAGE:
         case DISPLAY:
             return ProjectEvent.read(type, input);
@@ -85,6 +86,8 @@ public abstract class Message {
             return Prompt.read(input);
         case PROMPT_RESPONSE:
             return PromptResponse.read(input);
+        case PROJECT_STARTED:
+        case PROJECT_STOPPED:
         case BUILD_STATUS:
         case BUILD_LOG_MESSAGE:
             return StringMessage.read(type, input);
@@ -420,12 +423,6 @@ public abstract class Message {
 
         private String mnemonic() {
             switch (type) {
-            case PROJECT_STARTED:
-                return "ProjectStarted";
-            case PROJECT_STOPPED:
-                return "ProjectStopped";
-            case MOJO_STARTED:
-                return "MojoStarted";
             case PROJECT_LOG_MESSAGE:
                 return "ProjectLogMessage";
             default:
@@ -441,24 +438,104 @@ public abstract class Message {
         }
     }
 
+    public static class MojoStartedEvent extends Message {
+        final String artifactId;
+        final String pluginGroupId;
+        final String pluginArtifactId;
+        final String pluginVersion;
+        final String mojo;
+        final String executionId;
+
+        public static MojoStartedEvent read(DataInputStream input) throws IOException {
+            final String artifactId = readUTF(input);
+            final String pluginGroupId = readUTF(input);
+            final String pluginArtifactId = readUTF(input);
+            final String pluginVersion = readUTF(input);
+            final String mojo = readUTF(input);
+            final String executionId = readUTF(input);
+            return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+        }
+
+        public MojoStartedEvent(String artifactId, String pluginGroupId, String pluginArtifactId,
+                String pluginVersion, String mojo, String executionId) {
+            super(Message.MOJO_STARTED);
+            this.artifactId = Objects.requireNonNull(artifactId, "artifactId cannot be null");
+            this.pluginGroupId = Objects.requireNonNull(pluginGroupId, "pluginGroupId cannot be null");
+            this.pluginArtifactId = Objects.requireNonNull(pluginArtifactId, "pluginArtifactId cannot be null");
+            this.pluginVersion = Objects.requireNonNull(pluginVersion, "pluginVersion cannot be null");
+            this.mojo = Objects.requireNonNull(mojo, "mojo cannot be null");
+            this.executionId = Objects.requireNonNull(executionId, "executionId cannot be null");
+        }
+
+        public String getArtifactId() {
+            return artifactId;
+        }
+
+        public String getPluginGroupId() {
+            return pluginGroupId;
+        }
+
+        public String getPluginArtifactId() {
+            return pluginArtifactId;
+        }
+
+        public String getPluginVersion() {
+            return pluginVersion;
+        }
+
+        public String getExecutionId() {
+            return executionId;
+        }
+
+        public String getMojo() {
+            return mojo;
+        }
+
+        @Override
+        public String toString() {
+            return "MojoStarted{" +
+                    "artifactId='" + artifactId + '\'' +
+                    ", pluginGroupId='" + pluginGroupId + '\'' +
+                    ", pluginArtifactId='" + pluginArtifactId + '\'' +
+                    ", pluginVersion='" + pluginVersion + '\'' +
+                    ", mojo='" + mojo + '\'' +
+                    ", executionId='" + executionId + '\'' +
+                    '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, artifactId);
+            writeUTF(output, pluginGroupId);
+            writeUTF(output, pluginArtifactId);
+            writeUTF(output, pluginVersion);
+            writeUTF(output, mojo);
+            writeUTF(output, executionId);
+        }
+    }
+
     public static class BuildStarted extends Message {
 
         final String projectId;
         final int projectCount;
         final int maxThreads;
+        final int artifactIdDisplayLength;
 
         public static BuildStarted read(DataInputStream input) throws IOException {
             final String projectId = readUTF(input);
             final int projectCount = input.readInt();
             final int maxThreads = input.readInt();
-            return new BuildStarted(projectId, projectCount, maxThreads);
+            final int artifactIdDisplayLength = input.readInt();
+            return new BuildStarted(projectId, projectCount, maxThreads, artifactIdDisplayLength);
         }
 
-        public BuildStarted(String projectId, int projectCount, int maxThreads) {
+        public BuildStarted(String projectId, int projectCount, int maxThreads, int artifactIdDisplayLength) {
             super(BUILD_STARTED);
             this.projectId = projectId;
             this.projectCount = projectCount;
             this.maxThreads = maxThreads;
+            this.artifactIdDisplayLength = artifactIdDisplayLength;
         }
 
         public String getProjectId() {
@@ -473,11 +550,15 @@ public abstract class Message {
             return maxThreads;
         }
 
+        public int getArtifactIdDisplayLength() {
+            return artifactIdDisplayLength;
+        }
+
         @Override
         public String toString() {
             return "BuildStarted{" +
                     "projectId='" + projectId + "', projectCount=" + projectCount +
-                    ", maxThreads='" + maxThreads + "'}";
+                    ", maxThreads=" + maxThreads + ", artifactIdDisplayLength=" + artifactIdDisplayLength + "}";
         }
 
         @Override
@@ -486,6 +567,7 @@ public abstract class Message {
             writeUTF(output, projectId);
             output.writeInt(projectCount);
             output.writeInt(maxThreads);
+            output.writeInt(artifactIdDisplayLength);
         }
 
     }
@@ -545,6 +627,10 @@ public abstract class Message {
 
         private String mnemonic() {
             switch (type) {
+            case PROJECT_STARTED:
+                return "ProjectStarted";
+            case PROJECT_STOPPED:
+                return "ProjectStopped";
             case BUILD_STATUS:
                 return "BuildStatus";
             case KEYBOARD_INPUT:
@@ -698,16 +784,18 @@ public abstract class Message {
         return new StringMessage(KEYBOARD_INPUT, String.valueOf(keyStroke));
     }
 
-    public static ProjectEvent projectStarted(String projectId, String display) {
-        return new ProjectEvent(Message.PROJECT_STARTED, projectId, display);
+    public static StringMessage projectStarted(String projectId) {
+        return new StringMessage(Message.PROJECT_STARTED, projectId);
     }
 
-    public static ProjectEvent projectStopped(String projectId, String display) {
-        return new ProjectEvent(PROJECT_STOPPED, projectId, display);
+    public static StringMessage projectStopped(String projectId) {
+        return new StringMessage(PROJECT_STOPPED, projectId);
     }
 
-    public static Message mojoStarted(String projectId, String display) {
-        return new ProjectEvent(Message.MOJO_STARTED, projectId, display);
+    public static Message mojoStarted(String artifactId, String pluginGroupId, String pluginArtifactId,
+            String pluginVersion, String mojo, String executionId) {
+        return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+
     }
 
     public static ProjectEvent display(String projectId, String message) {

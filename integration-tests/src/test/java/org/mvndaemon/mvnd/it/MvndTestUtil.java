@@ -29,10 +29,6 @@ public class MvndTestUtil {
     private MvndTestUtil() {
     }
 
-    public static String plugin(Properties props, String artifactId) {
-        return artifactId + ":" + props.getProperty(artifactId + ".version");
-    }
-
     public static Properties properties(Path pomXmlPath) {
         try (Reader runtimeReader = Files.newBufferedReader(pomXmlPath, StandardCharsets.UTF_8)) {
             final MavenXpp3Reader rxppReader = new MavenXpp3Reader();

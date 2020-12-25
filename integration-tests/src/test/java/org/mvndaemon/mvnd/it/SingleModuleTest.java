@@ -35,21 +35,19 @@ public class SingleModuleTest extends SingleModuleNativeIT {
 
         Assertions.assertThat(filteredMessages)
                 .is(new MatchInOrderAmongOthers<>(
-                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-clean-plugin")
-                                + ":clean {execution: default-clean}\\E",
-                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
-                                + ":resources {execution: default-resources}\\E",
-                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
-                                + ":compile {execution: default-compile}\\E",
-                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-resources-plugin")
-                                + ":testResources {execution: default-testResources}\\E",
-                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-compiler-plugin")
-                                + ":testCompile {execution: default-testCompile}\\E",
-                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-surefire-plugin")
-                                + ":test {execution: default-test}\\E",
-                        "\\Q:single-module:org.apache.maven.plugins:" + MvndTestUtil.plugin(props, "maven-install-plugin")
-                                + ":install {execution: default-install}\\E"));
+                        mojoStarted(props, "maven-clean-plugin", "clean", "default-clean"),
+                        mojoStarted(props, "maven-resources-plugin", "resources", "default-resources"),
+                        mojoStarted(props, "maven-compiler-plugin", "compile", "default-compile"),
+                        mojoStarted(props, "maven-resources-plugin", "testResources", "default-testResources"),
+                        mojoStarted(props, "maven-compiler-plugin", "testCompile", "default-testCompile"),
+                        mojoStarted(props, "maven-surefire-plugin", "test", "default-test"),
+                        mojoStarted(props, "maven-install-plugin", "install", "default-install")));
 
+    }
+
+    String mojoStarted(Properties props, String pluginArtifactId, String mojo, String executionId) {
+        return "\\Q" + Message.mojoStarted("single-module", "org.apache.maven.plugins", pluginArtifactId,
+                props.getProperty(pluginArtifactId + ".version"), mojo, executionId).toString() + "\\E";
     }
 
 }
