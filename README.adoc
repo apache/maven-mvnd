@@ -61,6 +61,15 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 $ brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
+=== Set up completion
+
+Optionally, you can set up completion as follows:
+[source,shell]
+----
+$ echo 'source <(mvnd --completion bash)' >> ~/.bashrc
+----
+`bash` is the only shell supported at this time.
+
 === Note for oh-my-zsh users ===
 
 Users that use `oh-my-zsh` often use completion for maven.  The default maven completion plugin defines `mvnd` as an alias to `mvn deploy`. So before being able to use `mvnd`, you need to unalias using the following command:
