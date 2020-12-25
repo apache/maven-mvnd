@@ -16,8 +16,13 @@
 package org.mvndaemon.mvnd.daemon;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.mvndaemon.mvnd.builder.DependencyGraph;
 import org.mvndaemon.mvnd.common.Message;
@@ -42,11 +47,34 @@ public class ClientDispatcher extends BuildEventListener {
         session.getRequest().getData().put(DependencyGraph.class.getName(), dependencyGraph);
 
         final int maxThreads = degreeOfConcurrency == 1 ? 1 : dependencyGraph.computeMaxWidth(degreeOfConcurrency, 1000);
-        queue.add(new BuildStarted(getCurrentProject(session).getName(), session.getProjects().size(), maxThreads));
+        final List<MavenProject> projects = session.getProjects();
+        final int _90thArtifactIdLengthPercentile = artifactIdLength90thPercentile(projects);
+        queue.add(new BuildStarted(getCurrentProject(session).getArtifactId(), projects.size(), maxThreads,
+                _90thArtifactIdLengthPercentile));
+    }
+
+    static int artifactIdLength90thPercentile(List<MavenProject> projects) {
+        if (projects.size() == 1) {
+            return projects.get(0).getArtifactId().length();
+        }
+        Map<Integer, Integer> frequencyDistribution = new TreeMap<>();
+        for (MavenProject p : projects) {
+            frequencyDistribution.compute(p.getArtifactId().length(),
+                    (k, v) -> (v == null) ? Integer.valueOf(1) : Integer.valueOf(v.intValue() + 1));
+        }
+        int _90PercCount = Math.round(0.9f * projects.size());
+        int cnt = 0;
+        for (Entry<Integer, Integer> en : frequencyDistribution.entrySet()) {
+            cnt += en.getValue().intValue();
+            if (cnt >= _90PercCount) {
+                return en.getKey().intValue();
+            }
+        }
+        throw new IllegalStateException("Could not compute the 90th percentile of the projects length from " + projects);
     }
 
     public void projectStarted(ExecutionEvent event) {
-        queue.add(Message.projectStarted(getProjectId(event), getProjectDisplay(event)));
+        queue.add(Message.projectStarted(event.getProject().getArtifactId()));
     }
 
     public void projectLogMessage(String projectId, String event) {
@@ -55,11 +83,18 @@ public class ClientDispatcher extends BuildEventListener {
     }
 
     public void projectFinished(ExecutionEvent event) {
-        queue.add(Message.projectStopped(getProjectId(event), getProjectDisplay(event)));
+        queue.add(Message.projectStopped(event.getProject().getArtifactId()));
     }
 
     public void mojoStarted(ExecutionEvent event) {
-        queue.add(Message.mojoStarted(getProjectId(event), getProjectDisplay(event)));
+        final MojoExecution execution = event.getMojoExecution();
+        queue.add(Message.mojoStarted(
+                event.getProject().getArtifactId(),
+                execution.getGroupId(),
+                execution.getArtifactId(),
+                execution.getVersion(),
+                execution.getGoal(),
+                execution.getExecutionId()));
     }
 
     public void finish(int exitCode) throws Exception {
@@ -87,17 +122,6 @@ public class ClientDispatcher extends BuildEventListener {
                 .filter(p -> (p.getFile() != null && executionRootDirectory.equals(p.getFile().getParent())))
                 .findFirst()
                 .orElse(mavenSession.getCurrentProject());
-    }
-
-    private String getProjectId(ExecutionEvent event) {
-        return event.getProject().getArtifactId();
-    }
-
-    private String getProjectDisplay(ExecutionEvent event) {
-        String projectId = getProjectId(event);
-        return event.getMojoExecution() != null
-                ? ":" + projectId + ":" + event.getMojoExecution().toString()
-                : ":" + projectId;
     }
 
 }

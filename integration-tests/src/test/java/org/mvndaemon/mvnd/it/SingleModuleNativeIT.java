@@ -55,7 +55,7 @@ public class SingleModuleNativeIT {
         Assertions.assertThat(installedJar).doesNotExist();
 
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "clean", "install", "-e").assertSuccess();
+        client.execute(o, "clean", "install", "-e", "-B").assertSuccess();
         final Properties props = MvndTestUtil.properties(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
 
         final List<String> messages = o.getMessages().stream()
@@ -65,11 +65,13 @@ public class SingleModuleNativeIT {
         Assertions.assertThat(messages)
                 .is(new MatchInOrderAmongOthers<>(
                         "Building single-module",
-                        MvndTestUtil.plugin(props, "maven-clean-plugin") + ":clean",
-                        MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":compile",
-                        MvndTestUtil.plugin(props, "maven-compiler-plugin") + ":testCompile",
-                        MvndTestUtil.plugin(props, "maven-surefire-plugin") + ":test",
-                        MvndTestUtil.plugin(props, "maven-install-plugin") + ":install",
+                        mojoStartedLogMessage(props, "maven-clean-plugin", "clean", "default-clean"),
+                        mojoStartedLogMessage(props, "maven-resources-plugin", "resources", "default-resources"),
+                        mojoStartedLogMessage(props, "maven-compiler-plugin", "compile", "default-compile"),
+                        mojoStartedLogMessage(props, "maven-resources-plugin", "testResources", "default-testResources"),
+                        mojoStartedLogMessage(props, "maven-compiler-plugin", "testCompile", "default-testCompile"),
+                        mojoStartedLogMessage(props, "maven-surefire-plugin", "test", "default-test"),
+                        mojoStartedLogMessage(props, "maven-install-plugin", "install", "default-install"),
                         "BUILD SUCCESS"));
 
         assertJVM(o, props);
@@ -84,4 +86,10 @@ public class SingleModuleNativeIT {
     protected void assertJVM(TestClientOutput o, Properties props) {
         /* implemented in the subclass */
     }
+
+    String mojoStartedLogMessage(Properties props, String pluginArtifactId, String mojo, String executionId) {
+        return "\\Q--- " + pluginArtifactId + ":" + props.getProperty(pluginArtifactId + ".version") + ":" + mojo + " ("
+                + executionId + ") @ single-module ---\\E";
+    }
+
 }

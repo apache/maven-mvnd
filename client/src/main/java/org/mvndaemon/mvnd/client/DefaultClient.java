@@ -231,7 +231,6 @@ public class DefaultClient implements Client {
             try (DaemonClientConnection daemon = connector.connect(output)) {
                 output.setDaemonDispatch(daemon::dispatch);
                 output.setDaemonReceive(daemon::enqueue);
-                output.accept(Message.buildStatus("Connected to daemon"));
 
                 daemon.dispatch(new Message.BuildRequest(
                         args,
@@ -239,7 +238,7 @@ public class DefaultClient implements Client {
                         parameters.multiModuleProjectDirectory().toString(),
                         System.getenv()));
 
-                output.accept(Message.buildStatus("Build request sent"));
+                output.accept(Message.buildStatus("Daemon started, scanning for projects..."));
 
                 // We've sent the request, so it gives us a bit of time to purge the logs
                 AtomicReference<String> purgeMessage = new AtomicReference<>();

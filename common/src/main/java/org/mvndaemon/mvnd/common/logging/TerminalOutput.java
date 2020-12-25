@@ -44,6 +44,7 @@ import org.jline.utils.Display;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildStarted;
+import org.mvndaemon.mvnd.common.Message.MojoStartedEvent;
 import org.mvndaemon.mvnd.common.Message.ProjectEvent;
 import org.mvndaemon.mvnd.common.Message.StringMessage;
 
@@ -55,6 +56,8 @@ public class TerminalOutput implements ClientOutput {
     public static final int CTRL_B = 'B' & 0x1f;
     public static final int CTRL_L = 'L' & 0x1f;
     public static final int CTRL_M = 'M' & 0x1f;
+    private static final AttributedStyle GREEN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.GREEN);
+    private static final AttributedStyle CYAN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.CYAN);
 
     private final Terminal terminal;
     private final Terminal.SignalHandler previousIntHandler;
@@ -85,6 +88,7 @@ public class TerminalOutput implements ClientOutput {
     /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
     private String projectsDoneFomat;
     private int maxThreads;
+    private String artifactIdFormat;
     /** String format for formatting the actual/hidden/max thread counts */
     private String threadsFormat;
     private int linesPerProject = 0;
@@ -99,7 +103,7 @@ public class TerminalOutput implements ClientOutput {
      */
     static class Project {
         final String id;
-        String status;
+        MojoStartedEvent runningExecution;
         final List<String> log = new ArrayList<>();
 
         public Project(String id) {
@@ -171,6 +175,7 @@ public class TerminalOutput implements ClientOutput {
             final int totalProjectsDigits = (int) (Math.log10(totalProjects) + 1);
             this.projectsDoneFomat = "%" + totalProjectsDigits + "d";
             this.maxThreads = bs.getMaxThreads();
+            this.artifactIdFormat = "%-" + bs.getArtifactIdDisplayLength() + "s ";
             final int maxThreadsDigits = (int) (Math.log10(maxThreads) + 1);
             this.threadsFormat = "%" + (maxThreadsDigits * 3 + 2) + "s";
             if (maxThreads <= 1 || totalProjects <= 1) {
@@ -213,16 +218,22 @@ public class TerminalOutput implements ClientOutput {
             terminal.flush();
             return false;
         }
-        case Message.PROJECT_STARTED:
+        case Message.PROJECT_STARTED: {
+            StringMessage be = (StringMessage) entry;
+            final String artifactId = be.getMessage();
+            projects.put(artifactId, new Project(artifactId));
+            break;
+        }
         case Message.MOJO_STARTED: {
-            ProjectEvent be = (ProjectEvent) entry;
-            Project prj = projects.computeIfAbsent(be.getProjectId(), Project::new);
-            prj.status = be.getMessage();
+            final MojoStartedEvent execution = (MojoStartedEvent) entry;
+            final Project prj = projects.get(execution.getArtifactId());
+            prj.runningExecution = execution;
             break;
         }
         case Message.PROJECT_STOPPED: {
-            ProjectEvent be = (ProjectEvent) entry;
-            Project prj = projects.remove(be.getProjectId());
+            StringMessage be = (StringMessage) entry;
+            final String artifactId = be.getMessage();
+            Project prj = projects.remove(artifactId);
             if (prj != null) {
                 prj.log.forEach(log);
             }
@@ -444,7 +455,8 @@ public class TerminalOutput implements ClientOutput {
         }
         final List<AttributedString> lines = new ArrayList<>(rows);
         int dispLines = rows - 1; // for the build status line
-        dispLines--; // there's a bug which sometimes make the cursor goes one line below, so keep one more line empty at the end
+        dispLines--; // there's a bug which sometimes make the cursor goes one line below, so keep one more line empty
+                     // at the end
         final int projectsCount = projects.size();
 
         addStatusLine(lines, dispLines, projectsCount);
@@ -481,7 +493,6 @@ public class TerminalOutput implements ClientOutput {
     private void addStatusLine(final List<AttributedString> lines, int dispLines, final int projectsCount) {
         if (name != null || buildStatus != null) {
             AttributedStringBuilder asb = new AttributedStringBuilder();
-            StringBuilder statusLine = new StringBuilder(64);
             if (name != null) {
                 asb.append("Building ");
                 asb.style(AttributedStyle.BOLD);
@@ -489,8 +500,9 @@ public class TerminalOutput implements ClientOutput {
                 asb.style(AttributedStyle.DEFAULT);
 
                 /* Threads */
-                statusLine
+                asb
                         .append("  threads used/hidden/max: ")
+                        .style(AttributedStyle.BOLD)
                         .append(
                                 String.format(
                                         threadsFormat,
@@ -499,50 +511,63 @@ public class TerminalOutput implements ClientOutput {
                                                 .append('/')
                                                 .append(Math.max(0, projectsCount - dispLines))
                                                 .append('/')
-                                                .append(maxThreads).toString()));
+                                                .append(maxThreads).toString()))
+                        .style(AttributedStyle.DEFAULT);
 
                 /* Progress */
-                statusLine
+                asb
                         .append("  progress: ")
+                        .style(AttributedStyle.BOLD)
                         .append(String.format(projectsDoneFomat, doneProjects))
                         .append('/')
-                        .append(totalProjects)
+                        .append(String.valueOf(totalProjects))
                         .append(' ')
                         .append(String.format("%3d", doneProjects * 100 / totalProjects))
-                        .append('%');
+                        .append('%')
+                        .style(AttributedStyle.DEFAULT);
 
             } else if (buildStatus != null) {
-                statusLine.append(buildStatus);
+                asb
+                        .style(AttributedStyle.BOLD)
+                        .append(buildStatus)
+                        .style(AttributedStyle.DEFAULT);
             }
 
             /* Time */
-            statusLine.append("  time: ");
             long sec = (System.currentTimeMillis() - this.start) / 1000;
-            statusLine.append(String.format("%02d:%02d", sec / 60, sec % 60));
+            asb
+                    .append("  time: ")
+                    .style(AttributedStyle.BOLD)
+                    .append(String.format("%02d:%02d", sec / 60, sec % 60))
+                    .style(AttributedStyle.DEFAULT);
 
-            asb.append(statusLine.toString());
             lines.add(asb.toAttributedString());
         }
     }
 
     private void addProjectLine(final List<AttributedString> lines, Project prj) {
-        String str = prj.status != null ? prj.status : ":" + prj.id + ":<unknown>";
-        if (str.length() >= 1 && str.charAt(0) == ':') {
-            int ce = str.indexOf(':', 1);
-            final AttributedStringBuilder asb = new AttributedStringBuilder();
-            asb.append(":");
-            asb.style(AttributedStyle.BOLD);
-            if (ce > 0) {
-                asb.append(str, 1, ce);
-                asb.style(AttributedStyle.DEFAULT);
-                asb.append(str, ce, str.length());
-            } else {
-                asb.append(str, 1, str.length());
-            }
-            lines.add(asb.toAttributedString());
+        final MojoStartedEvent execution = prj.runningExecution;
+        final AttributedStringBuilder asb = new AttributedStringBuilder();
+        if (execution == null) {
+            asb
+                    .append(':')
+                    .append(prj.id);
         } else {
-            lines.add(AttributedString.fromAnsi(str));
+            asb
+                    .append(':')
+                    .append(String.format(artifactIdFormat, prj.id))
+                    .style(GREEN_FOREGROUND);
+            asb
+                    .append(execution.getPluginArtifactId())
+                    .append(':')
+                    .append(execution.getMojo())
+                    .style(AttributedStyle.DEFAULT)
+                    .append(" @ ")
+                    .style(CYAN_FOREGROUND)
+                    .append(execution.getExecutionId())
+                    .style(AttributedStyle.DEFAULT);
         }
+        lines.add(asb.toAttributedString());
     }
 
     private static <T> List<T> lastN(List<T> list, int n) {
