@@ -58,7 +58,7 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 
 [source,shell]
 ----
-$ brew install mvndaemon/homebrew-mvnd/mvnd
+$ brew install --HEAD mvndaemon/homebrew-mvnd/mvnd
 ----
 
 === Set up completion
