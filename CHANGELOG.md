@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- Enable some output per module or globally [\#292](https://github.com/mvndaemon/mvnd/issues/292)
 - Support short variants of boolean properties [\#279](https://github.com/mvndaemon/mvnd/issues/279)
 - \[ENHANCEMENT\] mvnd failed while I purposely disabled ~/.m2 directory [\#278](https://github.com/mvndaemon/mvnd/issues/278)
 - mvnd fails when version range is used in extensions.xml [\#275](https://github.com/mvndaemon/mvnd/issues/275)
