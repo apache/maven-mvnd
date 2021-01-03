@@ -109,6 +109,7 @@
 - Exit code not propagated from the daemon to mvnd client [\#222](https://github.com/mvndaemon/mvnd/pull/222) ([ppalaga](https://github.com/ppalaga))
 - Messages associated with projectId from the previous build in the ter… [\#217](https://github.com/mvndaemon/mvnd/pull/217) ([ppalaga](https://github.com/ppalaga))
 - Ignore INT and TSTP signals in the daemon [\#214](https://github.com/mvndaemon/mvnd/pull/214) ([gnodet](https://github.com/gnodet))
+- Automatic purge of daemon logs [\#213](https://github.com/mvndaemon/mvnd/pull/213) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.12](https://github.com/mvndaemon/mvnd/tree/0.0.12) (2020-11-12)
 
@@ -139,7 +140,6 @@
 
 **Merged pull requests:**
 
-- Automatic purge of daemon logs [\#213](https://github.com/mvndaemon/mvnd/pull/213) ([gnodet](https://github.com/gnodet))
 - Store registry under ~/.m2 where we already have mvnd.properties [\#211](https://github.com/mvndaemon/mvnd/pull/211) ([ppalaga](https://github.com/ppalaga))
 - Make TerminalOutput.dumb final, activate TerminalOutput.noBuffering with -B/--batch-mode, mvnd.rollingWindowSize default 0 [\#209](https://github.com/mvndaemon/mvnd/pull/209) ([ppalaga](https://github.com/ppalaga))
 - Fix the readInputLoop so that messages are all delivered and processe… [\#205](https://github.com/mvndaemon/mvnd/pull/205) ([gnodet](https://github.com/gnodet))
