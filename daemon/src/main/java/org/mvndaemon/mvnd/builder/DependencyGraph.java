@@ -375,8 +375,8 @@ public class DependencyGraph<K> {
      * Compute the set of nodes reachable from the given {@code node} through the {@code is upstream of} relation. The
      * {@code node} itself is not a part of the returned set.
      *
-     * @param node the node for which the transitive upstream should be computed
-     * @return the set of transitive upstreams
+     * @param  node the node for which the transitive upstream should be computed
+     * @return      the set of transitive upstreams
      */
     Set<K> transitiveUpstreams(K node) {
         Set<K> result = transitiveUpstreams.get(node);
