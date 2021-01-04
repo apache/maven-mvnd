@@ -89,6 +89,7 @@
                         <os.detected.arch>${os.detected.arch}</os.detected.arch>
                         <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
                         <surefire.version>${surefire.version}</surefire.version>
+                        <junit-platform-launcher.version>${junit-platform-launcher.version}</junit-platform-launcher.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -172,6 +173,7 @@
                                         <os.detected.arch>${os.detected.arch}</os.detected.arch>
                                         <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
                                         <surefire.version>${surefire.version}</surefire.version>
+                                        <junit-platform-launcher.version>${junit-platform-launcher.version}</junit-platform-launcher.version>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>

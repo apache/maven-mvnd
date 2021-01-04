@@ -230,20 +230,28 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         private static void prefillLocalRepo(final Path localMavenRepository) {
             /* Workaround for https://github.com/mvndaemon/mvnd/issues/281 */
             final String surefireVersion = System.getProperty("surefire.version");
+            final String junitPlatformLauncherVersion = System.getProperty("junit-platform-launcher.version");
             final Path hostLocalMavenRepo = Paths.get(System.getProperty("mvnd.test.hostLocalMavenRepo"));
             Stream.of(
-                    "org/apache/maven/surefire/surefire-providers/" + surefireVersion + "/surefire-providers-"
-                            + surefireVersion + ".pom",
-                    "org/apache/maven/surefire/surefire-providers/" + surefireVersion + "/surefire-providers-"
-                            + surefireVersion + ".pom.sha1")
+                    "org/apache/maven/surefire/surefire-providers/" + surefireVersion,
+                    "org/junit/platform/junit-platform-launcher/" + junitPlatformLauncherVersion)
                     .forEach(relPath -> {
                         final Path src = hostLocalMavenRepo.resolve(relPath);
-                        final Path dest = localMavenRepository.resolve(relPath);
-                        try {
-                            Files.createDirectories(dest.getParent());
-                            Files.copy(src, dest);
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
+                        if (Files.isDirectory(src)) {
+                            try (Stream<Path> files = Files.list(src)) {
+                                files.forEach(file -> {
+                                    final Path dest = localMavenRepository.resolve(relPath).resolve(file.getFileName());
+                                    try {
+                                        Files.createDirectories(dest.getParent());
+                                        Files.copy(src, dest);
+                                    } catch (IOException e) {
+                                        throw new UncheckedIOException(e);
+                                    }
+
+                                });
+                            } catch (IOException e) {
+                                throw new UncheckedIOException(e);
+                            }
                         }
                     });
         }
