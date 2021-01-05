@@ -16,6 +16,7 @@
 **Merged pull requests:**
 
 - Document how to install bash completion [\#290](https://github.com/mvndaemon/mvnd/pull/290) ([famod](https://github.com/famod))
+- DAG width wrong for parent runtime deployment triple [\#286](https://github.com/mvndaemon/mvnd/pull/286) ([ppalaga](https://github.com/ppalaga))
 - Support short variants of boolean properties [\#280](https://github.com/mvndaemon/mvnd/pull/280) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.2.0](https://github.com/mvndaemon/mvnd/tree/0.2.0) (2020-12-16)
