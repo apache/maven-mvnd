@@ -1,6 +1,6 @@
 <!--
 
-    Copyright 2019-2021 the original author or authors.
+    Copyright 2021 the original author or authors.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,44 +25,52 @@
         <version>0.2.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>mvnd-dist</artifactId>
+    <artifactId>mvnd-agent</artifactId>
 
-    <packaging>pom</packaging>
-    <name>Maven Daemon - Distribution</name>
+    <packaging>jar</packaging>
+    <name>Maven Daemon - Agent</name>
 
     <dependencies>
+
         <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
-            <artifactId>mvnd-agent</artifactId>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
-            <artifactId>mvnd-helper-agent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
-            <artifactId>mvnd-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
-            <artifactId>mvnd-daemon</artifactId>
-        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
-                <artifactId>provisio-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Premain-Class>org.mvndaemon.mvnd.agent.Agent</Premain-Class>
+                            <Boot-Class-Path>mvnd-helper-agent-${project.version}.jar</Boot-Class-Path>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>maven-distro</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>provision</goal>
+                            <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</outputDirectory>
+                            <filters>
+                                <filter>
+                                    <artifact>org.javassist:javassist</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>

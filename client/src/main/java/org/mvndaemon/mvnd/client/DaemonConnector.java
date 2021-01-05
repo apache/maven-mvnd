@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
  */
 package org.mvndaemon.mvnd.client;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +34,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import org.mvndaemon.mvnd.common.BuildProperties;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -300,10 +301,27 @@ public class DaemonConnector {
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
             args.add(parameters.javaHome().resolve(java).toString());
             // classpath
+            String mvndCommonPath = null;
+            String mvndAgentPath = null;
+            for (Path jar : Files.newDirectoryStream(mvndHome.resolve("mvn/lib/ext"))) {
+                String s = jar.getFileName().toString();
+                if (s.endsWith(".jar")) {
+                    if (s.startsWith("mvnd-common-")) {
+                        mvndCommonPath = jar.toString();
+                    } else if (s.startsWith("mvnd-agent-")) {
+                        mvndAgentPath = jar.toString();
+                    }
+                }
+            }
+            if (mvndCommonPath == null) {
+                throw new IllegalStateException("Could not find mvnd-common jar in mvn/lib/ext/");
+            }
+            if (mvndAgentPath == null) {
+                throw new IllegalStateException("Could not find mvnd-agent jar in mvn/lib/ext/");
+            }
             args.add("-classpath");
-            final String mvndCommonPath = "mvn/lib/ext/mvnd-common-" + BuildProperties.getInstance().getVersion() + ".jar";
-            final String classpath = mvndHome.resolve(mvndCommonPath).toString();
-            args.add(classpath);
+            args.add(mvndCommonPath + File.pathSeparator + mvndAgentPath);
+            args.add("-javaagent:" + mvndAgentPath);
             // debug options
             if (parameters.property(Environment.MVND_DEBUG).asBoolean()) {
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000");
