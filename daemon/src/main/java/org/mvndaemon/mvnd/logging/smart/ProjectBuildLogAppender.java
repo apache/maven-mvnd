@@ -23,13 +23,39 @@ import ch.qos.logback.core.AppenderBase;
 import java.util.Map;
 import org.apache.maven.shared.utils.logging.LoggerLevelRenderer;
 import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.slf4j.MDC;
 
 /**
  * This Maven-specific appender outputs project build log messages
  * to the smart logging system.
  */
 public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
-    public static final String KEY_PROJECT_ID = "maven.project.id";
+
+    private static final String KEY_PROJECT_ID = "maven.project.id";
+    private static final ThreadLocal<String> PROJECT_ID = new InheritableThreadLocal<>();
+
+    public static String getProjectId() {
+        return PROJECT_ID.get();
+    }
+
+    public static void setProjectId(String projectId) {
+        if (projectId != null) {
+            PROJECT_ID.set(projectId);
+            MDC.put(KEY_PROJECT_ID, projectId);
+        } else {
+            PROJECT_ID.remove();
+            MDC.remove(KEY_PROJECT_ID);
+        }
+    }
+
+    public static void updateMdc() {
+        String id = getProjectId();
+        if (id != null) {
+            MDC.put(KEY_PROJECT_ID, id);
+        } else {
+            MDC.remove(KEY_PROJECT_ID);
+        }
+    }
 
     private String pattern;
     private PatternLayout layout;

@@ -34,7 +34,6 @@ import org.mvndaemon.mvnd.daemon.Connection;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 @Named
 @Priority(10)
@@ -147,7 +146,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
     private void doDisplay(String message) throws IOException {
         try {
             Connection con = Objects.requireNonNull(Connection.getCurrent());
-            String projectId = MDC.get(ProjectBuildLogAppender.KEY_PROJECT_ID);
+            String projectId = ProjectBuildLogAppender.getProjectId();
             Message.ProjectEvent msg = Message.display(projectId, message);
             LOGGER.info("Sending display request: " + msg);
             con.dispatch(msg);
@@ -159,7 +158,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
     private String doPrompt(String message, boolean password) throws IOException {
         try {
             Connection con = Objects.requireNonNull(Connection.getCurrent());
-            String projectId = MDC.get(ProjectBuildLogAppender.KEY_PROJECT_ID);
+            String projectId = ProjectBuildLogAppender.getProjectId();
             String uid = UUID.randomUUID().toString();
             Message.Prompt msg = new Message.Prompt(projectId, uid, message, password);
             LOGGER.info("Requesting prompt: " + msg);
