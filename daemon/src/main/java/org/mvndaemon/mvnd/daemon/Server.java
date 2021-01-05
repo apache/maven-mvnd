@@ -64,7 +64,6 @@ import org.mvndaemon.mvnd.logging.smart.AbstractLoggingSpy;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -547,7 +546,7 @@ public class Server implements AutoCloseable, Runnable {
                 loggingSpy.fail(t);
             } finally {
                 sender.join();
-                MDC.remove(ProjectBuildLogAppender.KEY_PROJECT_ID);
+                ProjectBuildLogAppender.setProjectId(null);
             }
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);

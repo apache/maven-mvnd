@@ -20,7 +20,6 @@ package org.mvndaemon.mvnd.logging.internal;
 
 import org.codehaus.plexus.logging.Logger;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
-import org.slf4j.MDC;
 
 /**
  * Adapt an SLF4J logger to a Plexus logger, ignoring Plexus logger API parts that are not classical and
@@ -42,7 +41,7 @@ public class Slf4jLogger
 
     public Slf4jLogger(org.slf4j.Logger logger) {
         this.logger = logger;
-        this.projectId = MDC.get(ProjectBuildLogAppender.KEY_PROJECT_ID);
+        this.projectId = ProjectBuildLogAppender.getProjectId();
     }
 
     public void debug(String message) {
@@ -140,8 +139,8 @@ public class Slf4jLogger
     }
 
     private void setMdc() {
-        if (projectId != null && MDC.get(ProjectBuildLogAppender.KEY_PROJECT_ID) == null) {
-            MDC.put(ProjectBuildLogAppender.KEY_PROJECT_ID, projectId);
+        if (projectId != null && ProjectBuildLogAppender.getProjectId() == null) {
+            ProjectBuildLogAppender.setProjectId(projectId);
         }
     }
 

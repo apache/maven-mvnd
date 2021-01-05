@@ -17,7 +17,6 @@ package org.mvndaemon.mvnd.logging.smart;
 
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
-import org.slf4j.MDC;
 
 public class LoggingExecutionListener implements ExecutionListener {
 
@@ -141,7 +140,7 @@ public class LoggingExecutionListener implements ExecutionListener {
 
     private void setMdc(ExecutionEvent event) {
         if (event.getProject() != null) {
-            MDC.put(ProjectBuildLogAppender.KEY_PROJECT_ID, event.getProject().getArtifactId());
+            ProjectBuildLogAppender.setProjectId(event.getProject().getArtifactId());
         }
     }
 }
