@@ -85,9 +85,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <useMavenLogger>false</useMavenLogger>
                             <executable>java</executable>
-                            <longClasspath>true</longClasspath>
                             <arguments>
                                 <argument>-classpath</argument>
                                 <classpath/>
