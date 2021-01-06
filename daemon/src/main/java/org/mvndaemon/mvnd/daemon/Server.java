@@ -41,9 +41,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.apache.maven.cli.DaemonMavenCli;
-import org.apache.maven.execution.MavenSession;
-import org.apache.maven.project.MavenProject;
-import org.mvndaemon.mvnd.builder.DependencyGraph;
 import org.mvndaemon.mvnd.builder.SmartBuilder;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
@@ -54,9 +51,7 @@ import org.mvndaemon.mvnd.common.DaemonState;
 import org.mvndaemon.mvnd.common.DaemonStopEvent;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Message;
-import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildRequest;
-import org.mvndaemon.mvnd.common.Message.BuildStarted;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
@@ -429,16 +424,14 @@ public class Server implements AutoCloseable, Runnable {
 
     private void handle(DaemonConnection connection, BuildRequest buildRequest) {
         updateState(Busy);
-        try {
+        final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64,
+                Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
+        final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
+        final AbstractLoggingSpy loggingSpy = new AbstractLoggingSpy(sendQueue);
+        try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(loggingSpy)) {
 
             LOGGER.info("Executing request");
 
-            BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64,
-                    Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
-            BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
-
-            DaemonLoggingSpy loggingSpy = new DaemonLoggingSpy(sendQueue);
-            AbstractLoggingSpy.instance(loggingSpy);
             Thread sender = new Thread(() -> {
                 try {
                     boolean flushed = true;
@@ -538,7 +531,8 @@ public class Server implements AutoCloseable, Runnable {
                         buildRequest.getArgs(),
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
-                        buildRequest.getEnv());
+                        buildRequest.getEnv(),
+                        loggingSpy);
                 LOGGER.info("Build finished, finishing message dispatch");
                 loggingSpy.finish(exitCode);
             } catch (Throwable t) {
@@ -632,69 +626,5 @@ public class Server implements AutoCloseable, Runnable {
     @Override
     public String toString() {
         return info.toString();
-    }
-
-    private static class DaemonLoggingSpy extends AbstractLoggingSpy {
-        private final BlockingQueue<Message> queue;
-
-        public DaemonLoggingSpy(BlockingQueue<Message> queue) {
-            this.queue = queue;
-        }
-
-        @Override
-        public void finish(int exitCode) throws Exception {
-            queue.add(new Message.BuildFinished(exitCode));
-            queue.add(Message.STOP_SINGLETON);
-        }
-
-        @Override
-        public void fail(Throwable t) throws Exception {
-            queue.add(new BuildException(t));
-            queue.add(Message.STOP_SINGLETON);
-        }
-
-        @Override
-        protected void onStartSession(MavenSession session) {
-            final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
-            final DependencyGraph<MavenProject> dependencyGraph = DependencyGraph.fromMaven(session);
-            session.getRequest().getData().put(DependencyGraph.class.getName(), dependencyGraph);
-
-            final int maxThreads = degreeOfConcurrency == 1 ? 1 : dependencyGraph.computeMaxWidth(degreeOfConcurrency, 1000);
-            queue.add(new BuildStarted(getCurrentProject(session).getName(), session.getProjects().size(), maxThreads));
-        }
-
-        private MavenProject getCurrentProject(MavenSession mavenSession) {
-            // Workaround for https://issues.apache.org/jira/browse/MNG-6979
-            // MavenSession.getCurrentProject() does not return the correct value in some cases
-            String executionRootDirectory = mavenSession.getExecutionRootDirectory();
-            if (executionRootDirectory == null) {
-                return mavenSession.getCurrentProject();
-            }
-            return mavenSession.getProjects().stream()
-                    .filter(p -> (p.getFile() != null && executionRootDirectory.equals(p.getFile().getParent())))
-                    .findFirst()
-                    .orElse(mavenSession.getCurrentProject());
-        }
-
-        @Override
-        protected void onStartProject(String projectId, String display) {
-            queue.add(Message.projectStarted(projectId, display));
-        }
-
-        @Override
-        protected void onStopProject(String projectId, String display) {
-            queue.add(Message.projectStopped(projectId, display));
-        }
-
-        @Override
-        protected void onStartMojo(String projectId, String display) {
-            queue.add(Message.mojoStarted(projectId, display));
-        }
-
-        @Override
-        protected void onProjectLog(String projectId, String message) {
-            queue.add(projectId == null ? Message.log(message) : Message.log(projectId, message));
-        }
-
     }
 }

@@ -154,6 +154,9 @@ public class DaemonMavenCli {
 
     private final Map<String, ConfigurationProcessor> configurationProcessors;
 
+    /** Non-volatile, assuming that it is accessed only from the main thread */
+    private AbstractLoggingSpy loggingSpy = AbstractLoggingSpy.dummy();
+
     public DaemonMavenCli() throws Exception {
         slf4jLoggerFactory = LoggerFactory.getILoggerFactory();
         slf4jLogger = slf4jLoggerFactory.getLogger(this.getClass().getName());
@@ -177,12 +180,18 @@ public class DaemonMavenCli {
     public int main(List<String> arguments,
             String workingDirectory,
             String projectDirectory,
-            Map<String, String> clientEnv) throws Exception {
-        CliRequest req = new CliRequest(null, null);
-        req.args = arguments.toArray(new String[0]);
-        req.workingDirectory = workingDirectory;
-        req.multiModuleProjectDirectory = new File(projectDirectory);
-        return doMain(req, clientEnv);
+            Map<String, String> clientEnv,
+            AbstractLoggingSpy loggingSpy) throws Exception {
+        this.loggingSpy = loggingSpy;
+        try {
+            CliRequest req = new CliRequest(null, null);
+            req.args = arguments.toArray(new String[0]);
+            req.workingDirectory = workingDirectory;
+            req.multiModuleProjectDirectory = new File(projectDirectory);
+            return doMain(req, clientEnv);
+        } finally {
+            this.loggingSpy = AbstractLoggingSpy.dummy();
+        }
     }
 
     public int doMain(CliRequest cliRequest, Map<String, String> clientEnv) throws Exception {
@@ -261,7 +270,7 @@ public class DaemonMavenCli {
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse maven.config: " + e.getMessage());
-            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(cliManager));
+            loggingSpy.log(MvndHelpFormatter.displayHelp(cliManager));
             throw e;
         }
 
@@ -273,14 +282,14 @@ public class DaemonMavenCli {
             }
         } catch (ParseException e) {
             System.err.println("Unable to parse command line options: " + e.getMessage());
-            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(cliManager));
+            loggingSpy.log(MvndHelpFormatter.displayHelp(cliManager));
             throw e;
         }
     }
 
     private void help(CliRequest cliRequest) throws Exception {
         if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
-            AbstractLoggingSpy.instance().append(MvndHelpFormatter.displayHelp(new CLIManager()));
+            loggingSpy.log(MvndHelpFormatter.displayHelp(new CLIManager()));
             throw new ExitException(0);
         }
 
@@ -378,7 +387,7 @@ public class DaemonMavenCli {
 
     private void version(CliRequest cliRequest) throws ExitException {
         if (cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
-            AbstractLoggingSpy.instance().append(CLIReportingUtils.showVersion());
+            loggingSpy.log(CLIReportingUtils.showVersion());
             if (cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
                 throw new ExitException(0);
             }
@@ -534,7 +543,7 @@ public class DaemonMavenCli {
                 final EventSpyDispatcher eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
                 configure(cliRequest, eventSpyDispatcher, configurationProcessors);
                 populateRequest(cliRequest, cliRequest.request, slf4jLogger, eventSpyDispatcher,
-                        container.lookup(ModelProcessor.class), createTransferListener(cliRequest));
+                        container.lookup(ModelProcessor.class), createTransferListener(cliRequest), loggingSpy);
                 executionRequestPopulator.populateDefaults(cliRequest.request);
                 BootstrapCoreExtensionManager resolver = container.lookup(BootstrapCoreExtensionManager.class);
                 return Collections
@@ -941,7 +950,7 @@ public class DaemonMavenCli {
 
     private void populateRequest(CliRequest cliRequest) {
         populateRequest(cliRequest, cliRequest.request, slf4jLogger, eventSpyDispatcher, modelProcessor,
-                createTransferListener(cliRequest));
+                createTransferListener(cliRequest), loggingSpy);
     }
 
     private static void populateRequest(
@@ -950,7 +959,8 @@ public class DaemonMavenCli {
             Logger slf4jLogger,
             EventSpyDispatcher eventSpyDispatcher,
             ModelProcessor modelProcessor,
-            TransferListener transferListener) {
+            TransferListener transferListener,
+            AbstractLoggingSpy loggingSpy) {
         CommandLine commandLine = cliRequest.commandLine;
         String workingDirectory = cliRequest.workingDirectory;
         boolean showErrors = cliRequest.showErrors;
@@ -1051,7 +1061,9 @@ public class DaemonMavenCli {
 
         ExecutionListener executionListener = new ExecutionEventLogger();
         if (eventSpyDispatcher != null) {
-            executionListener = new LoggingExecutionListener(eventSpyDispatcher.chainListener(executionListener));
+            executionListener = new LoggingExecutionListener(
+                    eventSpyDispatcher.chainListener(executionListener),
+                    loggingSpy);
         }
 
         String alternatePomFile = null;
