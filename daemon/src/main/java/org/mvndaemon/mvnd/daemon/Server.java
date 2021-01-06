@@ -55,7 +55,7 @@ import org.mvndaemon.mvnd.common.Message.BuildRequest;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
-import org.mvndaemon.mvnd.logging.smart.AbstractLoggingSpy;
+import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -427,8 +427,8 @@ public class Server implements AutoCloseable, Runnable {
         final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64,
                 Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
-        final AbstractLoggingSpy loggingSpy = new AbstractLoggingSpy(sendQueue);
-        try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(loggingSpy)) {
+        final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
+        try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(buildEventListener)) {
 
             LOGGER.info("Executing request");
 
@@ -532,12 +532,12 @@ public class Server implements AutoCloseable, Runnable {
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
                         buildRequest.getEnv(),
-                        loggingSpy);
+                        buildEventListener);
                 LOGGER.info("Build finished, finishing message dispatch");
-                loggingSpy.finish(exitCode);
+                buildEventListener.finish(exitCode);
             } catch (Throwable t) {
                 LOGGER.error("Error while building project", t);
-                loggingSpy.fail(t);
+                buildEventListener.fail(t);
             } finally {
                 sender.join();
                 ProjectBuildLogAppender.setProjectId(null);

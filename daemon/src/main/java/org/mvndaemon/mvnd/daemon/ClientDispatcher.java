@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.logging.smart;
+package org.mvndaemon.mvnd.daemon;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
@@ -24,27 +23,15 @@ import org.mvndaemon.mvnd.builder.DependencyGraph;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildStarted;
+import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 
 /**
  * Sends events back to the client.
  */
-public class AbstractLoggingSpy {
-    private static final AbstractLoggingSpy DUMMY = new AbstractLoggingSpy(m -> {
-    });
-    private final Consumer<Message> queue;
+public class ClientDispatcher extends BuildEventListener {
+    private final Collection<Message> queue;
 
-    /**
-     * @return a dummy {@link AbstractLoggingSpy} that just swallows the messages and does not send them anywhere
-     */
-    public static AbstractLoggingSpy dummy() {
-        return DUMMY;
-    }
-
-    public AbstractLoggingSpy(Collection<Message> queue) {
-        this(queue::add);
-    }
-
-    public AbstractLoggingSpy(Consumer<Message> queue) {
+    public ClientDispatcher(Collection<Message> queue) {
         this.queue = queue;
     }
 
@@ -55,38 +42,38 @@ public class AbstractLoggingSpy {
         session.getRequest().getData().put(DependencyGraph.class.getName(), dependencyGraph);
 
         final int maxThreads = degreeOfConcurrency == 1 ? 1 : dependencyGraph.computeMaxWidth(degreeOfConcurrency, 1000);
-        queue.accept(new BuildStarted(getCurrentProject(session).getName(), session.getProjects().size(), maxThreads));
+        queue.add(new BuildStarted(getCurrentProject(session).getName(), session.getProjects().size(), maxThreads));
     }
 
     public void projectStarted(ExecutionEvent event) {
-        queue.accept(Message.projectStarted(getProjectId(event), getProjectDisplay(event)));
+        queue.add(Message.projectStarted(getProjectId(event), getProjectDisplay(event)));
     }
 
     public void projectLogMessage(String projectId, String event) {
         String msg = event.endsWith("\n") ? event.substring(0, event.length() - 1) : event;
-        queue.accept(projectId == null ? Message.log(msg) : Message.log(projectId, msg));
+        queue.add(projectId == null ? Message.log(msg) : Message.log(projectId, msg));
     }
 
     public void projectFinished(ExecutionEvent event) {
-        queue.accept(Message.projectStopped(getProjectId(event), getProjectDisplay(event)));
+        queue.add(Message.projectStopped(getProjectId(event), getProjectDisplay(event)));
     }
 
     public void mojoStarted(ExecutionEvent event) {
-        queue.accept(Message.mojoStarted(getProjectId(event), getProjectDisplay(event)));
+        queue.add(Message.mojoStarted(getProjectId(event), getProjectDisplay(event)));
     }
 
     public void finish(int exitCode) throws Exception {
-        queue.accept(new Message.BuildFinished(exitCode));
-        queue.accept(Message.STOP_SINGLETON);
+        queue.add(new Message.BuildFinished(exitCode));
+        queue.add(Message.STOP_SINGLETON);
     }
 
     public void fail(Throwable t) throws Exception {
-        queue.accept(new BuildException(t));
-        queue.accept(Message.STOP_SINGLETON);
+        queue.add(new BuildException(t));
+        queue.add(Message.STOP_SINGLETON);
     }
 
     public void log(String msg) {
-        queue.accept(Message.log(msg));
+        queue.add(Message.log(msg));
     }
 
     private MavenProject getCurrentProject(MavenSession mavenSession) {
