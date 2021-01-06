@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- Associate standard output/error streams to a particular plugin execution to have it in the rolling windows [\#295](https://github.com/mvndaemon/mvnd/issues/295)
 - Enable some output per module or globally [\#292](https://github.com/mvndaemon/mvnd/issues/292)
 - Support short variants of boolean properties [\#279](https://github.com/mvndaemon/mvnd/issues/279)
 - \[ENHANCEMENT\] mvnd failed while I purposely disabled ~/.m2 directory [\#278](https://github.com/mvndaemon/mvnd/issues/278)
@@ -15,6 +16,7 @@
 
 **Merged pull requests:**
 
+- Fix logging to use an inheritable thread local, fixes \#295 [\#297](https://github.com/mvndaemon/mvnd/pull/297) ([gnodet](https://github.com/gnodet))
 - Document how to install bash completion [\#290](https://github.com/mvndaemon/mvnd/pull/290) ([famod](https://github.com/famod))
 - DAG width wrong for parent runtime deployment triple [\#286](https://github.com/mvndaemon/mvnd/pull/286) ([ppalaga](https://github.com/ppalaga))
 - Support short variants of boolean properties [\#280](https://github.com/mvndaemon/mvnd/pull/280) ([ppalaga](https://github.com/ppalaga))
