@@ -541,6 +541,7 @@ public class DaemonMavenCli {
                 final Map<String, ConfigurationProcessor> configurationProcessors = container
                         .lookupMap(ConfigurationProcessor.class);
                 final EventSpyDispatcher eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
+                properties(cliRequest);
                 configure(cliRequest, eventSpyDispatcher, configurationProcessors);
                 populateRequest(cliRequest, cliRequest.request, slf4jLogger, eventSpyDispatcher,
                         container.lookup(ModelProcessor.class), createTransferListener(cliRequest), loggingSpy);
