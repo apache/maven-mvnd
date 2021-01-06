@@ -25,13 +25,6 @@
 <configuration>
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator" />
 
-  <!--
-    | write project-specific build log messages to ${project.build.directory}/build.log files
-   -->
-  <appender name="MEM" class="org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender">
-    <pattern>[%level] %msg%n</pattern>
-  </appender>
-
   <appender name="DAEMON" class="ch.qos.logback.core.FileAppender">
     <file>${mvnd.daemonStorage}/daemon-${mvnd.uid}.log</file>
     <encoder>
@@ -49,7 +42,4 @@
   <logger name="org.apache.maven.lifecycle.internal.builder.BuilderCommon" level="ERROR" />
   <logger name="org.eclipse.aether.internal.impl.WarnChecksumPolicy" level="ERROR" />
 
-  <root level="${consoleLevel:-info}">
-    <appender-ref ref="MEM" />
-  </root>
 </configuration>

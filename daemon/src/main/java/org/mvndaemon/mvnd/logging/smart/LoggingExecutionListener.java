@@ -21,9 +21,11 @@ import org.apache.maven.execution.ExecutionListener;
 public class LoggingExecutionListener implements ExecutionListener {
 
     private final ExecutionListener delegate;
+    private final AbstractLoggingSpy loggingSpy;
 
-    public LoggingExecutionListener(ExecutionListener delegate) {
+    public LoggingExecutionListener(ExecutionListener delegate, AbstractLoggingSpy loggingSpy) {
         this.delegate = delegate;
+        this.loggingSpy = loggingSpy;
     }
 
     @Override
@@ -35,7 +37,7 @@ public class LoggingExecutionListener implements ExecutionListener {
     @Override
     public void sessionStarted(ExecutionEvent event) {
         setMdc(event);
-        AbstractLoggingSpy.instance().notifySessionStart(event);
+        loggingSpy.sessionStarted(event);
         delegate.sessionStarted(event);
     }
 
@@ -43,13 +45,12 @@ public class LoggingExecutionListener implements ExecutionListener {
     public void sessionEnded(ExecutionEvent event) {
         setMdc(event);
         delegate.sessionEnded(event);
-        AbstractLoggingSpy.instance().notifySessionFinish(event);
     }
 
     @Override
     public void projectStarted(ExecutionEvent event) {
         setMdc(event);
-        AbstractLoggingSpy.instance().notifyProjectBuildStart(event);
+        loggingSpy.projectStarted(event);
         delegate.projectStarted(event);
     }
 
@@ -57,27 +58,27 @@ public class LoggingExecutionListener implements ExecutionListener {
     public void projectSucceeded(ExecutionEvent event) {
         setMdc(event);
         delegate.projectSucceeded(event);
-        AbstractLoggingSpy.instance().notifyProjectBuildFinish(event);
+        loggingSpy.projectFinished(event);
     }
 
     @Override
     public void projectFailed(ExecutionEvent event) {
         setMdc(event);
         delegate.projectFailed(event);
-        AbstractLoggingSpy.instance().notifyProjectBuildFinish(event);
+        loggingSpy.projectFinished(event);
     }
 
     @Override
     public void projectSkipped(ExecutionEvent event) {
         setMdc(event);
         delegate.projectSkipped(event);
-        AbstractLoggingSpy.instance().notifyProjectBuildFinish(event);
+        loggingSpy.projectFinished(event);
     }
 
     @Override
     public void mojoStarted(ExecutionEvent event) {
         setMdc(event);
-        AbstractLoggingSpy.instance().notifyMojoExecutionStart(event);
+        loggingSpy.mojoStarted(event);
         delegate.mojoStarted(event);
     }
 
@@ -85,21 +86,18 @@ public class LoggingExecutionListener implements ExecutionListener {
     public void mojoSucceeded(ExecutionEvent event) {
         setMdc(event);
         delegate.mojoSucceeded(event);
-        AbstractLoggingSpy.instance().notifyMojoExecutionFinish(event);
     }
 
     @Override
     public void mojoFailed(ExecutionEvent event) {
         setMdc(event);
         delegate.mojoFailed(event);
-        AbstractLoggingSpy.instance().notifyMojoExecutionFinish(event);
     }
 
     @Override
     public void mojoSkipped(ExecutionEvent event) {
         setMdc(event);
         delegate.mojoSkipped(event);
-        AbstractLoggingSpy.instance().notifyMojoExecutionFinish(event);
     }
 
     @Override

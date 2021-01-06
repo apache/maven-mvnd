@@ -16,20 +16,22 @@
 package org.mvndaemon.mvnd.logging.smart;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.Context;
 import java.util.Map;
 import org.apache.maven.shared.utils.logging.LoggerLevelRenderer;
 import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 /**
- * This Maven-specific appender outputs project build log messages
- * to the smart logging system.
+ * Forwards log messages to the client.
  */
-public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
+public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> implements AutoCloseable {
 
     private static final String KEY_PROJECT_ID = "maven.project.id";
     private static final ThreadLocal<String> PROJECT_ID = new InheritableThreadLocal<>();
@@ -57,21 +59,33 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
         }
     }
 
-    private String pattern;
-    private PatternLayout layout;
+    private static final String pattern = "[%level] %msg%n";
+    private final PatternLayout layout;
+    private final AbstractLoggingSpy loggingSpy;
+
+    public ProjectBuildLogAppender(AbstractLoggingSpy loggingSpy) {
+        this.loggingSpy = loggingSpy;
+        this.name = ProjectBuildLogAppender.class.getName();
+        this.context = (Context) LoggerFactory.getILoggerFactory();
+
+        final PatternLayout l = new PatternLayout();
+        l.setContext(context);
+        l.setPattern(pattern);
+        final Map<String, String> instanceConverterMap = l.getInstanceConverterMap();
+        final String levelConverterClassName = LevelConverter.class.getName();
+        instanceConverterMap.put("level", levelConverterClassName);
+        instanceConverterMap.put("le", levelConverterClassName);
+        instanceConverterMap.put("p", levelConverterClassName);
+        this.layout = l;
+
+        final Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.addAppender(this);
+
+        start();
+    }
 
     @Override
     public void start() {
-        if (pattern == null) {
-            addError("\"Pattern\" property not set for appender named [" + name + "].");
-            return;
-        }
-        layout = new PatternLayout();
-        layout.setContext(context);
-        layout.setPattern(pattern);
-        layout.getInstanceConverterMap().put("level", LevelConverter.class.getName());
-        layout.getInstanceConverterMap().put("le", LevelConverter.class.getName());
-        layout.getInstanceConverterMap().put("p", LevelConverter.class.getName());
         layout.start();
         super.start();
     }
@@ -80,11 +94,7 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
     protected void append(ILoggingEvent event) {
         Map<String, String> mdc = event.getMDCPropertyMap();
         String projectId = mdc != null ? mdc.get(KEY_PROJECT_ID) : null;
-        AbstractLoggingSpy.instance().append(projectId, layout.doLayout(event));
-    }
-
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
+        loggingSpy.projectLogMessage(projectId, layout.doLayout(event));
     }
 
     public static class LevelConverter extends ClassicConverter {
@@ -103,5 +113,18 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> {
                 return llr.debug(level.toString());
             }
         }
+    }
+
+    @Override
+    public void close() {
+        stop();
+        final Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.detachAppender(this);
+    }
+
+    @Override
+    public void stop() {
+        layout.stop();
+        super.stop();
     }
 }
