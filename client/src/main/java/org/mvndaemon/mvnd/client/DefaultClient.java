@@ -136,7 +136,7 @@ public class DefaultClient implements Client {
         final List<String> args = new ArrayList<>(argv);
         final String completionShell = Environment.COMPLETION.removeCommandLineOption(args);
         if (completionShell != null) {
-            output.accept(Message.log(Completion.getCompletion(completionShell)));
+            output.accept(Message.log(Completion.getCompletion(completionShell, parameters)));
             return DefaultResult.success(argv);
         }
 
