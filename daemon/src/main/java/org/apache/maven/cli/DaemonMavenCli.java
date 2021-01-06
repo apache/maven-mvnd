@@ -138,21 +138,21 @@ public class DaemonMavenCli {
 
     private final ClassWorld classWorld;
 
-    private DefaultPlexusContainer container;
+    private final DefaultPlexusContainer container;
 
-    private EventSpyDispatcher eventSpyDispatcher;
+    private final EventSpyDispatcher eventSpyDispatcher;
 
-    private ModelProcessor modelProcessor;
+    private final ModelProcessor modelProcessor;
 
-    private Maven maven;
+    private final Maven maven;
 
-    private MavenExecutionRequestPopulator executionRequestPopulator;
+    private final MavenExecutionRequestPopulator executionRequestPopulator;
 
-    private ToolchainsBuilder toolchainsBuilder;
+    private final ToolchainsBuilder toolchainsBuilder;
 
-    private DefaultSecDispatcher dispatcher;
+    private final DefaultSecDispatcher dispatcher;
 
-    private Map<String, ConfigurationProcessor> configurationProcessors;
+    private final Map<String, ConfigurationProcessor> configurationProcessors;
 
     public DaemonMavenCli() throws Exception {
         slf4jLoggerFactory = LoggerFactory.getILoggerFactory();
@@ -162,7 +162,16 @@ public class DaemonMavenCli {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         classWorld = new ClassWorld("plexus.core", cl);
 
-        container();
+        container = container();
+
+        eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
+        maven = container.lookup(Maven.class);
+        executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
+        modelProcessor = createModelProcessor(container);
+        configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
+        toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
+        dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
+
     }
 
     public int main(List<String> arguments,
@@ -185,7 +194,7 @@ public class DaemonMavenCli {
             help(cliRequest);
             logging(cliRequest);
             container(cliRequest);
-            configure(cliRequest);
+            configure(cliRequest, eventSpyDispatcher, configurationProcessors);
             version(cliRequest);
             toolchains(cliRequest);
             populateRequest(cliRequest);
@@ -424,7 +433,7 @@ public class DaemonMavenCli {
 
     }
 
-    void container()
+    DefaultPlexusContainer container()
             throws Exception {
         ClassRealm coreRealm = classWorld.getClassRealm("plexus.core");
         if (coreRealm == null) {
@@ -470,7 +479,7 @@ public class DaemonMavenCli {
 
         final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);
 
-        container = new DefaultPlexusContainer(cc, new AbstractModule() {
+        final DefaultPlexusContainer container = new DefaultPlexusContainer(cc, new AbstractModule() {
             @Override
             protected void configure() {
                 bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
@@ -488,20 +497,7 @@ public class DaemonMavenCli {
             container.discoverComponents(extension.getClassRealm(), new SessionScopeModule(container),
                     new MojoExecutionScopeModule(container));
         }
-
-        eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
-
-        maven = container.lookup(Maven.class);
-
-        executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
-
-        modelProcessor = createModelProcessor(container);
-
-        configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
-
-        toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
-
-        dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
+        return container;
     }
 
     private List<CoreExtensionEntry> loadCoreExtensions(List<CoreExtension> extensions, ClassRealm containerRealm,
@@ -524,7 +520,7 @@ public class DaemonMavenCli {
                     bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
                 }
             });
-
+            MavenExecutionRequestPopulator executionRequestPopulator = null;
             try {
                 CliRequest cliRequest = new CliRequest(new String[0], classWorld);
                 cliRequest.commandLine = new CommandLine.Builder().build();
@@ -533,9 +529,12 @@ public class DaemonMavenCli {
                 container.getLoggerManager().setThresholds(cliRequest.request.getLoggingLevel());
                 Thread.currentThread().setContextClassLoader(container.getContainerRealm());
                 executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
-                configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
-                configure(cliRequest);
-                populateRequest(cliRequest, cliRequest.request);
+                final Map<String, ConfigurationProcessor> configurationProcessors = container
+                        .lookupMap(ConfigurationProcessor.class);
+                final EventSpyDispatcher eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
+                configure(cliRequest, eventSpyDispatcher, configurationProcessors);
+                populateRequest(cliRequest, cliRequest.request, slf4jLogger, eventSpyDispatcher,
+                        container.lookup(ModelProcessor.class), createTransferListener(cliRequest));
                 executionRequestPopulator.populateDefaults(cliRequest.request);
                 BootstrapCoreExtensionManager resolver = container.lookup(BootstrapCoreExtensionManager.class);
                 return Collections
@@ -808,7 +807,10 @@ public class DaemonMavenCli {
 
     private static final String ANSI_RESET = "\u001B\u005Bm";
 
-    private void configure(CliRequest cliRequest)
+    private static void configure(
+            CliRequest cliRequest,
+            EventSpyDispatcher eventSpyDispatcher,
+            Map<String, ConfigurationProcessor> configurationProcessors)
             throws Exception {
         //
         // This is not ideal but there are events specifically for configuration from the CLI which I don't
@@ -938,13 +940,19 @@ public class DaemonMavenCli {
     }
 
     private void populateRequest(CliRequest cliRequest) {
-        populateRequest(cliRequest, cliRequest.request);
+        populateRequest(cliRequest, cliRequest.request, slf4jLogger, eventSpyDispatcher, modelProcessor,
+                createTransferListener(cliRequest));
     }
 
-    private void populateRequest(CliRequest cliRequest, MavenExecutionRequest request) {
+    private static void populateRequest(
+            CliRequest cliRequest,
+            MavenExecutionRequest request,
+            Logger slf4jLogger,
+            EventSpyDispatcher eventSpyDispatcher,
+            ModelProcessor modelProcessor,
+            TransferListener transferListener) {
         CommandLine commandLine = cliRequest.commandLine;
         String workingDirectory = cliRequest.workingDirectory;
-        boolean quiet = cliRequest.quiet;
         boolean showErrors = cliRequest.showErrors;
 
         String[] deprecatedOptions = { "up", "npu", "cpu", "npr" };
@@ -1039,20 +1047,6 @@ public class DaemonMavenCli {
                     }
                 }
             }
-        }
-
-        TransferListener transferListener;
-
-        if (quiet || cliRequest.commandLine.hasOption(CLIManager.NO_TRANSFER_PROGRESS)) {
-            transferListener = new QuietMavenTransferListener();
-        } else if (request.isInteractiveMode() && !cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
-            //
-            // If we're logging to a file then we don't want the console transfer listener as it will spew
-            // download progress all over the place
-            //
-            transferListener = getConsoleTransferListener(cliRequest.commandLine.hasOption(CLIManager.DEBUG));
-        } else {
-            transferListener = getBatchTransferListener();
         }
 
         ExecutionListener executionListener = new ExecutionEventLogger();
@@ -1189,7 +1183,7 @@ public class DaemonMavenCli {
         }
     }
 
-    int calculateDegreeOfConcurrencyWithCoreMultiplier(String threadConfiguration) {
+    static int calculateDegreeOfConcurrencyWithCoreMultiplier(String threadConfiguration) {
         int procs = Runtime.getRuntime().availableProcessors();
         return (int) (Float.parseFloat(threadConfiguration.replace("C", "")) * procs);
     }
@@ -1286,6 +1280,20 @@ public class DaemonMavenCli {
     //
     // Customizations available via the CLI
     //
+
+    protected TransferListener createTransferListener(CliRequest cliRequest) {
+        if (cliRequest.quiet || cliRequest.commandLine.hasOption(CLIManager.NO_TRANSFER_PROGRESS)) {
+            return new QuietMavenTransferListener();
+        } else if (cliRequest.request.isInteractiveMode() && !cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
+            //
+            // If we're logging to a file then we don't want the console transfer listener as it will spew
+            // download progress all over the place
+            //
+            return getConsoleTransferListener(cliRequest.commandLine.hasOption(CLIManager.DEBUG));
+        } else {
+            return getBatchTransferListener();
+        }
+    }
 
     protected TransferListener getConsoleTransferListener(boolean printResourceNames) {
         return new ConsoleMavenTransferListener(System.out, printResourceNames);
