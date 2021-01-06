@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
@@ -35,6 +36,7 @@ import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
  */
 public class ClientDispatcher extends BuildEventListener {
     private final Collection<Message> queue;
+    private static final Pattern TRAILING_EOLS_PATTERN = Pattern.compile("[\r\n]+$");
 
     public ClientDispatcher(Collection<Message> queue) {
         this.queue = queue;
@@ -78,8 +80,7 @@ public class ClientDispatcher extends BuildEventListener {
     }
 
     public void projectLogMessage(String projectId, String event) {
-        String msg = event.endsWith("\n") ? event.substring(0, event.length() - 1) : event;
-        queue.add(projectId == null ? Message.log(msg) : Message.log(projectId, msg));
+        queue.add(projectId == null ? Message.log(trimTrailingEols(event)) : Message.log(projectId, trimTrailingEols(event)));
     }
 
     public void projectFinished(ExecutionEvent event) {
@@ -108,7 +109,7 @@ public class ClientDispatcher extends BuildEventListener {
     }
 
     public void log(String msg) {
-        queue.add(Message.log(msg));
+        queue.add(Message.log(trimTrailingEols(msg)));
     }
 
     private MavenProject getCurrentProject(MavenSession mavenSession) {
@@ -122,6 +123,10 @@ public class ClientDispatcher extends BuildEventListener {
                 .filter(p -> (p.getFile() != null && executionRootDirectory.equals(p.getFile().getParent())))
                 .findFirst()
                 .orElse(mavenSession.getCurrentProject());
+    }
+
+    static String trimTrailingEols(String message) {
+        return message == null ? null : TRAILING_EOLS_PATTERN.matcher(message).replaceFirst("");
     }
 
 }
