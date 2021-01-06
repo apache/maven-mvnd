@@ -61,10 +61,10 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> impleme
 
     private static final String pattern = "[%level] %msg%n";
     private final PatternLayout layout;
-    private final AbstractLoggingSpy loggingSpy;
+    private final BuildEventListener buildEventListener;
 
-    public ProjectBuildLogAppender(AbstractLoggingSpy loggingSpy) {
-        this.loggingSpy = loggingSpy;
+    public ProjectBuildLogAppender(BuildEventListener buildEventListener) {
+        this.buildEventListener = buildEventListener;
         this.name = ProjectBuildLogAppender.class.getName();
         this.context = (Context) LoggerFactory.getILoggerFactory();
 
@@ -94,7 +94,7 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> impleme
     protected void append(ILoggingEvent event) {
         Map<String, String> mdc = event.getMDCPropertyMap();
         String projectId = mdc != null ? mdc.get(KEY_PROJECT_ID) : null;
-        loggingSpy.projectLogMessage(projectId, layout.doLayout(event));
+        buildEventListener.projectLogMessage(projectId, layout.doLayout(event));
     }
 
     public static class LevelConverter extends ClassicConverter {
