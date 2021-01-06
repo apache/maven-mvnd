@@ -29,7 +29,7 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Environment.OptionOrigin;
 import org.mvndaemon.mvnd.common.IoUtils;
 
-public class CompletionGenerator {
+public class CompletionGeneratorTest {
 
     @Test
     void generate() throws IOException {
@@ -70,8 +70,7 @@ public class CompletionGenerator {
         final Path baseDir = Paths.get(System.getProperty("project.basedir", "."));
 
         final byte[] bytes = template.getBytes(StandardCharsets.UTF_8);
-        Files.write(baseDir.resolve("src/main/resources/mvnd-bash-completion.bash"), bytes);
-        Files.write(baseDir.resolve("target/classes/mvnd-bash-completion.bash"), bytes);
+        Files.write(baseDir.resolve("../dist/src/main/distro/bin/mvnd-bash-completion.bash"), bytes);
 
     }
 
