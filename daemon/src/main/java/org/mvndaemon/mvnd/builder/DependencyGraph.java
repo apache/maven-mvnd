@@ -15,19 +15,11 @@
  */
 package org.mvndaemon.mvnd.builder;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,23 +29,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.MavenProject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * File origin:
  * https://github.com/takari/takari-smart-builder/blob/takari-smart-builder-0.6.1/src/main/java/io/takari/maven/builder/smart/DependencyGraph.java
  */
 public class DependencyGraph<K> {
-
-    private static final Logger logger = LoggerFactory.getLogger(DependencyGraph.class);
-    static final Pattern mvndRuleSanitizerPattern = Pattern.compile("[,\\s]+");
 
     private final List<K> projects;
     private final Map<K, List<K>> upstreams;
@@ -63,147 +49,16 @@ public class DependencyGraph<K> {
     public static DependencyGraph<MavenProject> fromMaven(MavenSession session) {
 
         final ProjectDependencyGraph graph = session.getProjectDependencyGraph();
-        final List<MavenProject> projects = graph.getSortedProjects();
-        return fromMaven(graph, getRules(projects, session));
+        return fromMaven(graph);
     }
 
-    static String getRules(List<MavenProject> projects, MavenSession session) {
-        List<String> list = new ArrayList<>();
-
-        String providerScript = null;
-        final MavenProject topLevelProject = projects.get(0);
-        String providerUrl = topLevelProject.getProperties()
-                .getProperty(SmartBuilder.MVND_BUILDER_RULES_PROVIDER_URL);
-        if (providerUrl != null) {
-            logger.warn(SmartBuilder.MVND_BUILDER_RULES_PROVIDER_URL
-                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-
-            URL url;
-            try {
-                url = new URL(providerUrl);
-            } catch (MalformedURLException e) {
-                try {
-                    url = new File(providerUrl).toURI().toURL();
-                } catch (MalformedURLException ex) {
-                    url = null;
-                }
-            }
-            if (url == null) {
-                throw new RuntimeException("Bad syntax for " + SmartBuilder.MVND_BUILDER_RULES_PROVIDER_URL, null);
-            }
-            try (BufferedReader r = new BufferedReader(new InputStreamReader(url.openStream()))) {
-                StringBuilder sb = new StringBuilder();
-                char[] buf = new char[8192];
-                int l;
-                while ((l = r.read(buf)) >= 0) {
-                    sb.append(buf, 0, l);
-                }
-                providerScript = sb.toString();
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to read provider url " + SmartBuilder.MVND_BUILDER_RULES_PROVIDER_URL,
-                        e);
-            }
-        }
-        if (providerScript == null) {
-            providerScript = topLevelProject.getProperties()
-                    .getProperty(SmartBuilder.MVND_BUILDER_RULES_PROVIDER_SCRIPT);
-        }
-        if (providerScript != null) {
-            logger.warn(SmartBuilder.MVND_BUILDER_RULES_PROVIDER_SCRIPT
-                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-
-            Binding binding = new Binding();
-            GroovyShell shell = new GroovyShell(binding);
-            binding.setProperty("session", session);
-            Object result = shell.evaluate(providerScript);
-            if (result instanceof Iterable) {
-                for (Object r : (Iterable<?>) result) {
-                    list.add(r.toString());
-                }
-            } else if (result != null) {
-                list.add(result.toString());
-            } else {
-                throw new RuntimeException("The provider script did not return a valid string or string collection", null);
-            }
-            list.add(result.toString());
-        }
-
-        String topRule = topLevelProject.getProperties().getProperty(SmartBuilder.MVND_BUILDER_RULES);
-        if (topRule != null) {
-            logger.warn(SmartBuilder.MVND_BUILDER_RULES
-                    + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-            list.add(topRule);
-        }
-
-        projects.forEach(p -> {
-            String rule = p.getProperties().getProperty(SmartBuilder.MVND_BUILDER_RULE);
-            if (rule != null) {
-                logger.warn(SmartBuilder.MVND_BUILDER_RULE
-                        + " property is deprecated and the support for it will be removed in mvnd 0.3. See https://github.com/mvndaemon/mvnd/issues/264");
-                rule = rule.trim();
-                if (!rule.isEmpty()) {
-                    rule = mvndRuleSanitizerPattern.matcher(rule).replaceAll(",");
-                    list.add(rule + " before " + p.getGroupId() + ":" + p.getArtifactId());
-                }
-            }
-        });
-        String rules = null;
-        if (!list.isEmpty()) {
-            rules = String.join("\n", list);
-        }
-        return rules;
-    }
-
-    static DependencyGraph<MavenProject> fromMaven(ProjectDependencyGraph graph, String rules) {
+    static DependencyGraph<MavenProject> fromMaven(ProjectDependencyGraph graph) {
         final List<MavenProject> projects = graph.getSortedProjects();
         Map<MavenProject, List<MavenProject>> upstreams = projects.stream()
                 .collect(Collectors.toMap(p -> p, p -> graph.getUpstreamProjects(p, false)));
         Map<MavenProject, List<MavenProject>> downstreams = projects.stream()
                 .collect(
                         Collectors.toMap(p -> p, p -> graph.getDownstreamProjects(p, false)));
-
-        if (rules != null) {
-            for (String rule : rules.split("\\s*;\\s*|\n")) {
-                if (rule.trim().isEmpty()) {
-                    continue;
-                }
-                String[] parts = rule.split("\\s*->\\s*|\\s+before\\s+");
-                if (parts.length != 2) {
-                    throw new IllegalArgumentException("Invalid rule: " + rule);
-                }
-                List<Set<MavenProject>> deps = Stream.of(parts).map(s -> Pattern.compile(
-                        Arrays.stream(s.split("\\s*,\\s*|\\s+and\\s+"))
-                                .map(String::trim)
-                                .map(r -> r.contains(":") ? r : "*:" + r)
-                                .map(r -> r.replaceAll("\\.", "\\.")
-                                        .replaceAll("\\*", ".*"))
-                                .collect(Collectors.joining("|"))))
-                        .map(t -> projects.stream()
-                                .filter(p -> t.matcher(p.getGroupId() + ":" + p.getArtifactId()).matches())
-                                .collect(Collectors.toSet()))
-                        .collect(Collectors.toList());
-
-                Set<MavenProject> common = deps.get(0).stream().filter(deps.get(1)::contains).collect(Collectors.toSet());
-                if (!common.isEmpty()) {
-                    boolean leftWildcard = parts[0].contains("*");
-                    boolean rightWildcard = parts[1].contains("*");
-                    if (leftWildcard && rightWildcard) {
-                        throw new IllegalArgumentException("Invalid rule: " + rule
-                                + ".  Both left and right parts have wildcards and match the same project.");
-                    } else if (leftWildcard) {
-                        deps.get(0).removeAll(common);
-                    } else if (rightWildcard) {
-                        deps.get(1).removeAll(common);
-                    } else {
-                        throw new IllegalArgumentException(
-                                "Invalid rule: " + rule + ". Both left and right parts match the same project.");
-                    }
-                }
-
-                deps.get(1).forEach(p -> upstreams.get(p).addAll(deps.get(0)));
-                deps.get(0).forEach(p -> downstreams.get(p).addAll(deps.get(1)));
-            }
-        }
         return new DependencyGraph<MavenProject>(Collections.unmodifiableList(projects), upstreams, downstreams);
     }
 
