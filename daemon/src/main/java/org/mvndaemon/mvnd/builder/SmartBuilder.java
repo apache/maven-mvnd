@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
@@ -52,13 +51,8 @@ import org.slf4j.LoggerFactory;
 public class SmartBuilder implements Builder {
 
     public static final String PROP_PROFILING = "smartbuilder.profiling";
-    public static final String MVND_BUILDER_RULES = "mvnd.builder.rules";
-    public static final String MVND_BUILDER_RULE = "mvnd.builder.rule";
-    public static final String MVND_BUILDER_RULES_PROVIDER_URL = "mvnd.builder.rules.provider.url";
-    public static final String MVND_BUILDER_RULES_PROVIDER_SCRIPT = "mvnd.builder.rules.provider.script";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    static final Pattern mvndRuleSanitizerPattern = Pattern.compile("[,\\s]+");
 
     private final LifecycleModuleBuilder moduleBuilder;
 

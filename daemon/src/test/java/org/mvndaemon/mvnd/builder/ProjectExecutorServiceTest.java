@@ -39,7 +39,7 @@ public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest {
         final MavenProject c = newProject("c");
         TestProjectDependencyGraph graph = new TestProjectDependencyGraph(a, b, c);
         graph.addDependency(b, a);
-        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven(graph, null);
+        DependencyGraph<MavenProject> dp = DependencyGraph.fromMaven(graph);
 
         HashMap<String, AtomicLong> serviceTimes = new HashMap<>();
         serviceTimes.put(id(a), new AtomicLong(1L));
