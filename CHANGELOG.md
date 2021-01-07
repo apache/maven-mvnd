@@ -6,19 +6,32 @@
 
 **Closed issues:**
 
+- Messages sent from the server to the client should not end with a \r on windows [\#304](https://github.com/mvndaemon/mvnd/issues/304)
+- Extension support fails to resolve dependencies [\#300](https://github.com/mvndaemon/mvnd/issues/300)
 - Associate standard output/error streams to a particular plugin execution to have it in the rolling windows [\#295](https://github.com/mvndaemon/mvnd/issues/295)
 - Enable some output per module or globally [\#292](https://github.com/mvndaemon/mvnd/issues/292)
+- Right-pad projectIds to improve mojo readability in the threaded view [\#288](https://github.com/mvndaemon/mvnd/issues/288)
+- DAG width wrong for triple interdependent graph [\#287](https://github.com/mvndaemon/mvnd/issues/287)
 - Support short variants of boolean properties [\#279](https://github.com/mvndaemon/mvnd/issues/279)
 - \[ENHANCEMENT\] mvnd failed while I purposely disabled ~/.m2 directory [\#278](https://github.com/mvndaemon/mvnd/issues/278)
 - mvnd fails when version range is used in extensions.xml [\#275](https://github.com/mvndaemon/mvnd/issues/275)
 - mvnd 0.2.0 can no longer resolve our Artifactory server \(works for 0.1.1 in same shell\) [\#274](https://github.com/mvndaemon/mvnd/issues/274)
 - Crash with Java 17 [\#272](https://github.com/mvndaemon/mvnd/issues/272)
+- Support launching processes with inherited IO [\#241](https://github.com/mvndaemon/mvnd/issues/241)
 
 **Merged pull requests:**
 
+- The output of ConsoleMavenTransferListener looks ugly in the client  [\#306](https://github.com/mvndaemon/mvnd/pull/306) ([ppalaga](https://github.com/ppalaga))
+- Messages sent from the server to the client should not end with a \r … [\#305](https://github.com/mvndaemon/mvnd/pull/305) ([ppalaga](https://github.com/ppalaga))
+- Fix extension resolution that use jdk activation, fixes \#300 [\#303](https://github.com/mvndaemon/mvnd/pull/303) ([gnodet](https://github.com/gnodet))
+- Rename AbstractLoggingSpy to ClientDispatcher and move it to org.mvndaemon.mvnd.daemon [\#302](https://github.com/mvndaemon/mvnd/pull/302) ([ppalaga](https://github.com/ppalaga))
+- Eliminate mutable global state in AbstractLoggingSpy [\#301](https://github.com/mvndaemon/mvnd/pull/301) ([ppalaga](https://github.com/ppalaga))
+- Support launching processes with inherited IO, fixes \#241 [\#298](https://github.com/mvndaemon/mvnd/pull/298) ([gnodet](https://github.com/gnodet))
 - Fix logging to use an inheritable thread local, fixes \#295 [\#297](https://github.com/mvndaemon/mvnd/pull/297) ([gnodet](https://github.com/gnodet))
 - Document how to install bash completion [\#290](https://github.com/mvndaemon/mvnd/pull/290) ([famod](https://github.com/famod))
+- Right-pad projectIds to improve mojo readability in the threaded view  [\#289](https://github.com/mvndaemon/mvnd/pull/289) ([ppalaga](https://github.com/ppalaga))
 - DAG width wrong for parent runtime deployment triple [\#286](https://github.com/mvndaemon/mvnd/pull/286) ([ppalaga](https://github.com/ppalaga))
+- Less global and mutable state [\#285](https://github.com/mvndaemon/mvnd/pull/285) ([ppalaga](https://github.com/ppalaga))
 - Support short variants of boolean properties [\#280](https://github.com/mvndaemon/mvnd/pull/280) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.2.0](https://github.com/mvndaemon/mvnd/tree/0.2.0) (2020-12-16)
@@ -46,6 +59,7 @@
 - The mvnd client creates a mvnd.daemonStorage\_IS\_UNDEFINED folder [\#246](https://github.com/mvndaemon/mvnd/issues/246)
 - mvnd --help produces no output [\#238](https://github.com/mvndaemon/mvnd/issues/238)
 - Wrong display of number of projects to build [\#236](https://github.com/mvndaemon/mvnd/issues/236)
+- IllegalStateException: Failed to lock offset 0 of .../daemon/registry.bin within 20.0 seconds [\#102](https://github.com/mvndaemon/mvnd/issues/102)
 
 **Merged pull requests:**
 
