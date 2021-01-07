@@ -1,26 +1,29 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.3.0](https://github.com/mvndaemon/mvnd/tree/0.3.0) (2021-01-07)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.2.0...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.2.0...0.3.0)
 
 **Closed issues:**
 
+- Enable some output per module or globally [\#292](https://github.com/mvndaemon/mvnd/issues/292)
+- \[ENHANCEMENT\] mvnd failed while I purposely disabled ~/.m2 directory [\#278](https://github.com/mvndaemon/mvnd/issues/278)
+- mvnd 0.2.0 can no longer resolve our Artifactory server \(works for 0.1.1 in same shell\) [\#274](https://github.com/mvndaemon/mvnd/issues/274)
+- Cannot build Quarkus after removing ~/.m2/repository/io/quarkus/ or ~/.m2/repository/io/quarkus/gizmo [\#26](https://github.com/mvndaemon/mvnd/issues/26)
 - Messages sent from the server to the client should not end with a \r on windows [\#304](https://github.com/mvndaemon/mvnd/issues/304)
 - Extension support fails to resolve dependencies [\#300](https://github.com/mvndaemon/mvnd/issues/300)
+- Speed up bash completion loading by packaging it as a file in the ZIP distribution [\#296](https://github.com/mvndaemon/mvnd/issues/296)
 - Associate standard output/error streams to a particular plugin execution to have it in the rolling windows [\#295](https://github.com/mvndaemon/mvnd/issues/295)
-- Enable some output per module or globally [\#292](https://github.com/mvndaemon/mvnd/issues/292)
 - Right-pad projectIds to improve mojo readability in the threaded view [\#288](https://github.com/mvndaemon/mvnd/issues/288)
 - DAG width wrong for triple interdependent graph [\#287](https://github.com/mvndaemon/mvnd/issues/287)
 - Support short variants of boolean properties [\#279](https://github.com/mvndaemon/mvnd/issues/279)
-- \[ENHANCEMENT\] mvnd failed while I purposely disabled ~/.m2 directory [\#278](https://github.com/mvndaemon/mvnd/issues/278)
 - mvnd fails when version range is used in extensions.xml [\#275](https://github.com/mvndaemon/mvnd/issues/275)
-- mvnd 0.2.0 can no longer resolve our Artifactory server \(works for 0.1.1 in same shell\) [\#274](https://github.com/mvndaemon/mvnd/issues/274)
-- Crash with Java 17 [\#272](https://github.com/mvndaemon/mvnd/issues/272)
 - Support launching processes with inherited IO [\#241](https://github.com/mvndaemon/mvnd/issues/241)
 
 **Merged pull requests:**
 
+- Replace mvnd --completion by a plain source now the bash file is in t… [\#308](https://github.com/mvndaemon/mvnd/pull/308) ([rmannibucau](https://github.com/rmannibucau))
+- Speed up bash completion loading by packaging it as a file in the ZIP… [\#307](https://github.com/mvndaemon/mvnd/pull/307) ([ppalaga](https://github.com/ppalaga))
 - The output of ConsoleMavenTransferListener looks ugly in the client  [\#306](https://github.com/mvndaemon/mvnd/pull/306) ([ppalaga](https://github.com/ppalaga))
 - Messages sent from the server to the client should not end with a \r … [\#305](https://github.com/mvndaemon/mvnd/pull/305) ([ppalaga](https://github.com/ppalaga))
 - Fix extension resolution that use jdk activation, fixes \#300 [\#303](https://github.com/mvndaemon/mvnd/pull/303) ([gnodet](https://github.com/gnodet))
@@ -48,6 +51,7 @@
 **Closed issues:**
 
 - mvnd.rb not support mac now [\#273](https://github.com/mvndaemon/mvnd/issues/273)
+- Crash with Java 17 [\#272](https://github.com/mvndaemon/mvnd/issues/272)
 - Maven-like rolling output when the build happens to be linear [\#269](https://github.com/mvndaemon/mvnd/issues/269)
 - Support Homebrew on Linux [\#268](https://github.com/mvndaemon/mvnd/issues/268)
 - A new daemon is always started with OpenJDK 8 [\#266](https://github.com/mvndaemon/mvnd/issues/266)
@@ -76,6 +80,7 @@
 - Fix project name and number of projects displayed on the client, fixe… [\#245](https://github.com/mvndaemon/mvnd/pull/245) ([gnodet](https://github.com/gnodet))
 - Let -h/--help display also mvnd specific options \#243 [\#244](https://github.com/mvndaemon/mvnd/pull/244) ([ppalaga](https://github.com/ppalaga))
 - mvnd --help produces no output \#238 [\#242](https://github.com/mvndaemon/mvnd/pull/242) ([ppalaga](https://github.com/ppalaga))
+- Output revision with -v/--version [\#233](https://github.com/mvndaemon/mvnd/pull/233) ([ppalaga](https://github.com/ppalaga))
 - Upgrade JLine [\#258](https://github.com/mvndaemon/mvnd/pull/258) ([gnodet](https://github.com/gnodet))
 - Bump groovy.version from 3.0.0 to 3.0.7 [\#254](https://github.com/mvndaemon/mvnd/pull/254) ([dependabot[bot]](https://github.com/apps/dependabot))
 
@@ -117,7 +122,6 @@
 **Merged pull requests:**
 
 - Upgrade to GraalVM 20.3.0 [\#235](https://github.com/mvndaemon/mvnd/pull/235) ([ppalaga](https://github.com/ppalaga))
-- Output revision with -v/--version [\#233](https://github.com/mvndaemon/mvnd/pull/233) ([ppalaga](https://github.com/ppalaga))
 - Avoid environment lookups and value conversions on hot paths [\#232](https://github.com/mvndaemon/mvnd/pull/232) ([ppalaga](https://github.com/ppalaga))
 - Use more recent version of DeLaGuardo/setup-graalvm action [\#230](https://github.com/mvndaemon/mvnd/pull/230) ([gnodet](https://github.com/gnodet))
 - Make sure our CachingProjectBuilder is used, fixes \#218 [\#228](https://github.com/mvndaemon/mvnd/pull/228) ([gnodet](https://github.com/gnodet))
