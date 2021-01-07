@@ -35,7 +35,7 @@ This architecture brings the following advantages:
 we implemented a simplified a non-rolling view showing the status of each build thread on a separate line. This is
 what it looks like on a machine with 24 cores:
 +
-image::https://asciinema.org/a/BwsKoBYfW9jsXlDG3QcxSSBEw.svg[link="https://asciinema.org/a/BwsKoBYfW9jsXlDG3QcxSSBEw"]
+image::https://user-images.githubusercontent.com/1826249/103917178-94ee4500-510d-11eb-9abb-f52dae58a544.gif[]
 +
 Once the build is finshed, the complete Maven output is forwarded to the console.
 
