@@ -66,7 +66,8 @@ $ brew install mvndaemon/homebrew-mvnd/mvnd
 Optionally, you can set up completion as follows:
 [source,shell]
 ----
-$ echo 'source <(mvnd --completion bash)' >> ~/.bashrc
+# ensure to set MVND_HOME to point to your mvnd distribution, note that sdkman does it for you
+$ echo 'source $MVND_HOME/bin/mvnd-bash-completion.bash' >> ~/.bashrc
 ----
 `bash` is the only shell supported at this time.
 
