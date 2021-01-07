@@ -567,6 +567,15 @@ public class Server implements AutoCloseable, Runnable {
             return 3;
         case Message.MOJO_STARTED:
             return 4;
+        case Message.TRANSFER_INITIATED:
+        case Message.TRANSFER_STARTED:
+            return 40;
+        case Message.TRANSFER_PROGRESSED:
+            return 41;
+        case Message.TRANSFER_CORRUPTED:
+        case Message.TRANSFER_SUCCEEDED:
+        case Message.TRANSFER_FAILED:
+            return 42;
         case Message.PROJECT_LOG_MESSAGE:
             return 50;
         case Message.BUILD_LOG_MESSAGE:

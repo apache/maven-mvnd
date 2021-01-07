@@ -16,6 +16,7 @@
 package org.mvndaemon.mvnd.logging.smart;
 
 import org.apache.maven.execution.ExecutionEvent;
+import org.eclipse.aether.transfer.TransferEvent;
 
 /**
  * An abstract build event sink.
@@ -47,6 +48,8 @@ public abstract class BuildEventListener {
         public void log(String msg) {
         }
 
+        public void transfer(String projectId, TransferEvent e) {
+        }
     };
 
     /**
@@ -74,4 +77,6 @@ public abstract class BuildEventListener {
     public abstract void fail(Throwable t) throws Exception;
 
     public abstract void log(String msg);
+
+    public abstract void transfer(String projectId, TransferEvent e);
 }

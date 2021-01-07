@@ -48,6 +48,12 @@ public abstract class Message {
     public static final int BUILD_STATUS = 14;
     public static final int KEYBOARD_INPUT = 15;
     public static final int CANCEL_BUILD = 16;
+    public static final int TRANSFER_INITIATED = 17;
+    public static final int TRANSFER_STARTED = 18;
+    public static final int TRANSFER_PROGRESSED = 19;
+    public static final int TRANSFER_CORRUPTED = 20;
+    public static final int TRANSFER_SUCCEEDED = 21;
+    public static final int TRANSFER_FAILED = 22;
 
     public static final BareMessage KEEP_ALIVE_SINGLETON = new BareMessage(KEEP_ALIVE);
     public static final BareMessage STOP_SINGLETON = new BareMessage(STOP);
@@ -93,6 +99,13 @@ public abstract class Message {
             return StringMessage.read(type, input);
         case CANCEL_BUILD:
             return BareMessage.CANCEL_BUILD_SINGLETON;
+        case TRANSFER_INITIATED:
+        case TRANSFER_STARTED:
+        case TRANSFER_PROGRESSED:
+        case TRANSFER_CORRUPTED:
+        case TRANSFER_SUCCEEDED:
+        case TRANSFER_FAILED:
+            return TransferEvent.read(type, input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -760,6 +773,135 @@ public abstract class Message {
         }
     }
 
+    public static class TransferEvent extends Message {
+
+        public static final int INITIATED = 0;
+        public static final int STARTED = 1;
+        public static final int PROGRESSED = 2;
+        public static final int CORRUPTED = 3;
+        public static final int SUCCEEDED = 4;
+        public static final int FAILED = 5;
+
+        public static final int GET = 0;
+        public static final int GET_EXISTENCE = 1;
+        public static final int PUT = 2;
+
+        final String projectId;
+        final int request;
+        final String repositoryId;
+        final String repositoryUrl;
+        final String resourceName;
+        final long contentLength;
+        final long transferredBytes;
+        final String exception;
+
+        private TransferEvent(int type, String projectId, int request,
+                String repositoryId, String repositoryUrl,
+                String resourceName, long contentLength, long transferredBytes,
+                String exception) {
+            super(type);
+            this.projectId = projectId;
+            this.request = request;
+            this.repositoryId = repositoryId;
+            this.repositoryUrl = repositoryUrl;
+            this.resourceName = resourceName;
+            this.contentLength = contentLength;
+            this.transferredBytes = transferredBytes;
+            this.exception = exception;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        public int getRequest() {
+            return request;
+        }
+
+        public String getRepositoryId() {
+            return repositoryId;
+        }
+
+        public String getRepositoryUrl() {
+            return repositoryUrl;
+        }
+
+        public String getResourceName() {
+            return resourceName;
+        }
+
+        public long getContentLength() {
+            return contentLength;
+        }
+
+        public long getTransferredBytes() {
+            return transferredBytes;
+        }
+
+        public String getException() {
+            return exception;
+        }
+
+        @Override
+        public String toString() {
+            return mnemonic() + "{" +
+                    "projectId=" + projectId +
+                    ", request=" + request +
+                    ", repositoryId='" + repositoryId + '\'' +
+                    ", repositoryUrl='" + repositoryUrl + '\'' +
+                    ", resourceName='" + resourceName + '\'' +
+                    ", contentLength=" + contentLength +
+                    ", transferredBytes=" + transferredBytes +
+                    ", exception='" + exception + '\'' +
+                    '}';
+        }
+
+        private String mnemonic() {
+            switch (type) {
+            case TRANSFER_INITIATED:
+                return "TransferInitiated";
+            case TRANSFER_STARTED:
+                return "TransferStarted";
+            case TRANSFER_PROGRESSED:
+                return "TransferProgressed";
+            case TRANSFER_CORRUPTED:
+                return "TransferCorrupted";
+            case TRANSFER_SUCCEEDED:
+                return "TransferSucceeded";
+            case TRANSFER_FAILED:
+                return "TransferFailed";
+            default:
+                throw new IllegalStateException("Unexpected type " + type);
+            }
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, projectId);
+            output.writeByte(request);
+            writeUTF(output, repositoryId);
+            writeUTF(output, repositoryUrl);
+            writeUTF(output, resourceName);
+            output.writeLong(contentLength);
+            output.writeLong(transferredBytes);
+            writeUTF(output, exception);
+        }
+
+        public static TransferEvent read(int type, DataInputStream input) throws IOException {
+            String projectId = readUTF(input);
+            int request = input.readByte();
+            String repositoryId = readUTF(input);
+            String repositoryUrl = readUTF(input);
+            String resourceName = readUTF(input);
+            long contentLength = input.readLong();
+            long transferredBytes = input.readLong();
+            String exception = readUTF(input);
+            return new TransferEvent(type, projectId, request, repositoryId, repositoryUrl, resourceName,
+                    contentLength, transferredBytes, exception);
+        }
+    }
+
     public int getType() {
         return type;
     }
@@ -785,7 +927,7 @@ public abstract class Message {
     }
 
     public static StringMessage projectStarted(String projectId) {
-        return new StringMessage(Message.PROJECT_STARTED, projectId);
+        return new StringMessage(PROJECT_STARTED, projectId);
     }
 
     public static StringMessage projectStopped(String projectId) {
@@ -795,11 +937,18 @@ public abstract class Message {
     public static Message mojoStarted(String artifactId, String pluginGroupId, String pluginArtifactId,
             String pluginVersion, String mojo, String executionId) {
         return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
-
     }
 
     public static ProjectEvent display(String projectId, String message) {
         return new ProjectEvent(Message.DISPLAY, projectId, message);
+    }
+
+    public static TransferEvent transfer(String projectId, int event, int request,
+            String repositoryId, String repositoryUrl,
+            String resourceName, long contentLength, long transferredBytes,
+            String exception) {
+        return new TransferEvent(event + Message.TRANSFER_INITIATED, projectId, request,
+                repositoryId, repositoryUrl, resourceName, contentLength, transferredBytes, exception);
     }
 
 }

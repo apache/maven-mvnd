@@ -94,6 +94,7 @@ import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
+import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1301,14 +1302,14 @@ public class DaemonMavenCli {
             // If we're logging to a file then we don't want the console transfer listener as it will spew
             // download progress all over the place
             //
-            return getConsoleTransferListener(cliRequest.commandLine.hasOption(CLIManager.DEBUG));
+            return getDaemonTransferListener();
         } else {
             return getBatchTransferListener();
         }
     }
 
-    protected TransferListener getConsoleTransferListener(boolean printResourceNames) {
-        return new Slf4jMavenTransferListener(); // see https://github.com/mvndaemon/mvnd/issues/284
+    protected TransferListener getDaemonTransferListener() {
+        return new DaemonMavenTransferListener(buildEventListener);
     }
 
     protected TransferListener getBatchTransferListener() {
