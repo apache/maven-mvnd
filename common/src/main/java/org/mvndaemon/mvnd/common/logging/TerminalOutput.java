@@ -23,10 +23,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -47,6 +49,8 @@ import org.mvndaemon.mvnd.common.Message.BuildStarted;
 import org.mvndaemon.mvnd.common.Message.MojoStartedEvent;
 import org.mvndaemon.mvnd.common.Message.ProjectEvent;
 import org.mvndaemon.mvnd.common.Message.StringMessage;
+import org.mvndaemon.mvnd.common.Message.TransferEvent;
+import org.mvndaemon.mvnd.common.OsUtils;
 
 /**
  * A terminal {@link ClientOutput} based on JLine.
@@ -62,6 +66,7 @@ public class TerminalOutput implements ClientOutput {
     private final Terminal terminal;
     private final Terminal.SignalHandler previousIntHandler;
     private final Display display;
+    private final Map<String, Map<String, TransferEvent>> transfers = new LinkedHashMap<>();
     private final LinkedHashMap<String, Project> projects = new LinkedHashMap<>();
     private final ClientLog log;
     private final Thread reader;
@@ -353,11 +358,31 @@ public class TerminalOutput implements ClientOutput {
             }
             break;
         }
+        case Message.TRANSFER_INITIATED:
+        case Message.TRANSFER_STARTED:
+        case Message.TRANSFER_PROGRESSED: {
+            final TransferEvent te = (TransferEvent) entry;
+            transfers.computeIfAbsent(orEmpty(te.getProjectId()), p -> new LinkedHashMap<>())
+                    .put(te.getResourceName(), te);
+            break;
+        }
+        case Message.TRANSFER_CORRUPTED:
+        case Message.TRANSFER_SUCCEEDED:
+        case Message.TRANSFER_FAILED: {
+            final TransferEvent te = (TransferEvent) entry;
+            transfers.computeIfAbsent(orEmpty(te.getProjectId()), p -> new LinkedHashMap<>())
+                    .remove(te.getResourceName());
+            break;
+        }
         default:
             throw new IllegalStateException("Unexpected message " + entry);
         }
 
         return true;
+    }
+
+    private String orEmpty(String s) {
+        return s != null ? s : "";
     }
 
     private void applyNoBuffering() {
@@ -454,12 +479,22 @@ public class TerminalOutput implements ClientOutput {
             return;
         }
         final List<AttributedString> lines = new ArrayList<>(rows);
-        int dispLines = rows - 1; // for the build status line
-        dispLines--; // there's a bug which sometimes make the cursor goes one line below, so keep one more line empty
-                     // at the end
         final int projectsCount = projects.size();
 
+        int dispLines = rows;
+        // status line
+        dispLines--;
+        // there's a bug which sometimes make the cursor goes one line below,
+        // so keep one more line empty at the end
+        dispLines--;
+
+        AttributedString globalTransfer = formatTransfers("");
+        dispLines -= globalTransfer != null ? 1 : 0;
+
         addStatusLine(lines, dispLines, projectsCount);
+        if (globalTransfer != null) {
+            lines.add(globalTransfer);
+        }
 
         if (projectsCount <= dispLines) {
             int remLogLines = dispLines - projectsCount;
@@ -488,6 +523,74 @@ public class TerminalOutput implements ClientOutput {
                 .map(s -> s.columnSubSequence(0, cols))
                 .collect(Collectors.toList());
         display.update(trimmed, -1);
+    }
+
+    private AttributedString formatTransfers(String projectId) {
+        Collection<TransferEvent> transfers = this.transfers.getOrDefault(projectId, Collections.emptyMap()).values();
+        if (transfers.isEmpty()) {
+            return null;
+        }
+        TransferEvent event = transfers.iterator().next();
+        String action = event.getRequest() == TransferEvent.PUT ? "Uploading" : "Downloading";
+        if (transfers.size() == 1) {
+            String direction = event.getRequest() == TransferEvent.PUT ? "to" : "from";
+            long cur = event.getTransferredBytes();
+            long max = event.getContentLength();
+            String prg = OsUtils.kbTohumanReadable(cur / 1024) + " / " + OsUtils.kbTohumanReadable(max / 1024);
+            AttributedStringBuilder asb = new AttributedStringBuilder();
+            asb.append(action);
+            asb.append(" ");
+            asb.style(AttributedStyle.BOLD);
+            asb.append(pathToMaven(event.getResourceName()));
+            asb.style(AttributedStyle.DEFAULT);
+            asb.append(" ");
+            asb.append(direction);
+            asb.append(" ");
+            asb.append(event.getRepositoryId());
+            if (cur > 0 && cur < max) {
+                asb.append(": ");
+                asb.append(prg);
+            }
+            return asb.toAttributedString();
+        } else {
+            return new AttributedString(action + " " + transfers.size() + " files...");
+        }
+    }
+
+    public static String pathToMaven(String location) {
+        String[] p = location.split("/");
+        if (p.length >= 4 && p[p.length - 1].startsWith(p[p.length - 3] + "-" + p[p.length - 2])) {
+            String artifactId = p[p.length - 3];
+            String version = p[p.length - 2];
+            String classifier;
+            String type;
+            String artifactIdVersion = artifactId + "-" + version;
+            StringBuilder sb = new StringBuilder();
+            if (p[p.length - 1].charAt(artifactIdVersion.length()) == '-') {
+                classifier = p[p.length - 1].substring(artifactIdVersion.length() + 1, p[p.length - 1].lastIndexOf('.'));
+            } else {
+                classifier = null;
+            }
+            type = p[p.length - 1].substring(p[p.length - 1].lastIndexOf('.') + 1);
+            for (int j = 0; j < p.length - 3; j++) {
+                if (j > 0) {
+                    sb.append('.');
+                }
+                sb.append(p[j]);
+            }
+            sb.append(':').append(artifactId).append(':').append(version);
+            if (!"jar".equals(type) || classifier != null) {
+                sb.append(':');
+                if (!"jar".equals(type)) {
+                    sb.append(type);
+                }
+                if (classifier != null) {
+                    sb.append(':').append(classifier);
+                }
+            }
+            return sb.toString();
+        }
+        return location;
     }
 
     private void addStatusLine(final List<AttributedString> lines, int dispLines, final int projectsCount) {
@@ -548,7 +651,13 @@ public class TerminalOutput implements ClientOutput {
     private void addProjectLine(final List<AttributedString> lines, Project prj) {
         final MojoStartedEvent execution = prj.runningExecution;
         final AttributedStringBuilder asb = new AttributedStringBuilder();
-        if (execution == null) {
+        AttributedString transfer = formatTransfers(prj.id);
+        if (transfer != null) {
+            asb
+                    .append(':')
+                    .append(String.format(artifactIdFormat, prj.id))
+                    .append(transfer);
+        } else if (execution == null) {
             asb
                     .append(':')
                     .append(prj.id);
