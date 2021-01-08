@@ -27,7 +27,6 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.DaemonException;
 import org.mvndaemon.mvnd.junit.MvndTest;
-import org.mvndaemon.mvnd.junit.TestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 

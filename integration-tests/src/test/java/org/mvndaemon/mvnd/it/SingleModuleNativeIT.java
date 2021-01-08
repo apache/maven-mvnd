@@ -30,7 +30,6 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
-import org.mvndaemon.mvnd.junit.TestUtils;
 
 @MvndNativeTest(projectDir = "src/test/projects/single-module")
 public class SingleModuleNativeIT {
