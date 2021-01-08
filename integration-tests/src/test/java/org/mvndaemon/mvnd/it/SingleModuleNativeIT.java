@@ -49,7 +49,6 @@ public class SingleModuleNativeIT {
         }
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
-        TestUtils.deleteDir(localMavenRepo);
         final Path installedJar = localMavenRepo.resolve(
                 "org/mvndaemon/mvnd/test/single-module/single-module/0.0.1-SNAPSHOT/single-module-0.0.1-SNAPSHOT.jar");
         Assertions.assertThat(installedJar).doesNotExist();

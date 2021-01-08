@@ -229,12 +229,10 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
 
         private static void prefillLocalRepo(final Path localMavenRepository) {
             /* Workaround for https://github.com/mvndaemon/mvnd/issues/281 */
-            final String surefireVersion = System.getProperty("surefire.version");
-            final String junitPlatformLauncherVersion = System.getProperty("junit-platform-launcher.version");
+            final String preinstallArtifacts = System.getProperty("preinstall.artifacts").trim();
             final Path hostLocalMavenRepo = Paths.get(System.getProperty("mvnd.test.hostLocalMavenRepo"));
-            Stream.of(
-                    "org/apache/maven/surefire/surefire-providers/" + surefireVersion,
-                    "org/junit/platform/junit-platform-launcher/" + junitPlatformLauncherVersion)
+
+            Stream.of(preinstallArtifacts.split("[\\s,]+"))
                     .forEach(relPath -> {
                         final Path src = hostLocalMavenRepo.resolve(relPath);
                         if (Files.isDirectory(src)) {
@@ -243,7 +241,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                                     final Path dest = localMavenRepository.resolve(relPath).resolve(file.getFileName());
                                     try {
                                         Files.createDirectories(dest.getParent());
-                                        Files.copy(src, dest);
+                                        Files.copy(file, dest);
                                     } catch (IOException e) {
                                         throw new UncheckedIOException(e);
                                     }

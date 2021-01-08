@@ -50,7 +50,6 @@ public class DaemonCrashTest {
         }
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
-        TestUtils.deleteDir(localMavenRepo);
         final Path[] installedJars = {
                 localMavenRepo.resolve(
                         "org/mvndaemon/mvnd/test/daemon-crash/daemon-crash-maven-plugin/0.0.1-SNAPSHOT/daemon-crash-maven-plugin-0.0.1-SNAPSHOT.jar"),

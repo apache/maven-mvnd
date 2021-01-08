@@ -59,7 +59,6 @@ public class MultiModuleTest {
         });
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
-        TestUtils.deleteDir(localMavenRepo);
         final Path[] installedJars = {
                 localMavenRepo.resolve(
                         "org/mvndaemon/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),

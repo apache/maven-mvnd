@@ -51,7 +51,6 @@ public class ModuleAndPluginNativeIT {
         });
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
-        TestUtils.deleteDir(localMavenRepo);
         final Path[] installedJars = {
                 localMavenRepo.resolve(
                         "org/mvndaemon/mvnd/test/module-and-plugin/module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar"),
