@@ -947,7 +947,7 @@ public abstract class Message {
             String repositoryId, String repositoryUrl,
             String resourceName, long contentLength, long transferredBytes,
             String exception) {
-        return new TransferEvent(event + Message.TRANSFER_INITIATED, projectId, request,
+        return new TransferEvent(event, projectId, request,
                 repositoryId, repositoryUrl, resourceName, contentLength, transferredBytes, exception);
     }
 

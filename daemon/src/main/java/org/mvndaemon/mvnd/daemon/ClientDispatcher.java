@@ -114,7 +114,29 @@ public class ClientDispatcher extends BuildEventListener {
     }
 
     public void transfer(String projectId, TransferEvent e) {
-        int event = e.getType().ordinal();
+        int event;
+        switch (e.getType()) {
+            case INITIATED:
+                event = Message.TRANSFER_INITIATED;
+                break;
+            case STARTED:
+                event = Message.TRANSFER_STARTED;
+                break;
+            case PROGRESSED:
+                event = Message.TRANSFER_PROGRESSED;
+                break;
+            case CORRUPTED:
+                event = Message.TRANSFER_CORRUPTED;
+                break;
+            case SUCCEEDED:
+                event = Message.TRANSFER_SUCCEEDED;
+                break;
+            case FAILED:
+                event = Message.TRANSFER_FAILED;
+                break;
+            default:
+                throw new IllegalStateException();
+        }
         int request = e.getRequestType().ordinal();
         String repositoryId = e.getResource().getRepositoryId();
         String repositoryUrl = e.getResource().getRepositoryUrl();
