@@ -33,6 +33,15 @@
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>
         <mvnd.home>${project.basedir}/../dist/target/mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</mvnd.home>
+        <preinstall.artifacts>
+            org/apache/maven/surefire/surefire-providers/${surefire.version}
+            org/apache/maven/surefire/surefire-junit-platform/${surefire.version}
+            org/junit/platform/junit-platform-launcher/${junit-platform-launcher.version}
+            org/junit/platform/junit-platform-engine/${junit-platform-launcher.version}
+            org/junit/jupiter/junit-jupiter/${junit.jupiter.version}
+            org/junit/jupiter/junit-jupiter-api/${junit.jupiter.version}
+        </preinstall.artifacts>
+
     </properties>
 
     <dependencies>
@@ -88,8 +97,7 @@
                         <os.detected.name>${os.detected.name}</os.detected.name>
                         <os.detected.arch>${os.detected.arch}</os.detected.arch>
                         <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
-                        <surefire.version>${surefire.version}</surefire.version>
-                        <junit-platform-launcher.version>${junit-platform-launcher.version}</junit-platform-launcher.version>
+                        <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -172,8 +180,7 @@
                                         <os.detected.name>${os.detected.name}</os.detected.name>
                                         <os.detected.arch>${os.detected.arch}</os.detected.arch>
                                         <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
-                                        <surefire.version>${surefire.version}</surefire.version>
-                                        <junit-platform-launcher.version>${junit-platform-launcher.version}</junit-platform-launcher.version>
+                                        <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
