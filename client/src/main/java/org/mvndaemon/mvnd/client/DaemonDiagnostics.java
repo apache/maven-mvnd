@@ -34,27 +34,27 @@ public class DaemonDiagnostics {
 
     private final static int TAIL_SIZE = 200;
 
-    private final String uid;
+    private final String id;
     private final DaemonParameters parameters;
 
-    public DaemonDiagnostics(String uid, DaemonParameters parameters) {
-        this.uid = uid;
+    public DaemonDiagnostics(String id, DaemonParameters parameters) {
+        this.id = id;
         this.parameters = parameters;
     }
 
     @Override
     public String toString() {
         return "{"
-                + "uid=" + uid
+                + "id=" + id
                 + ", parameters=" + parameters
                 + '}';
     }
 
     public String describe() {
         StringBuilder sb = new StringBuilder();
-        sb.append("Daemon uid: ").append(uid).append("\n");
-        tail(sb, "log file", parameters.daemonLog(uid));
-        tail(sb, "output", parameters.daemonOutLog(uid));
+        sb.append("Daemon id: ").append(id).append("\n");
+        tail(sb, "log file", parameters.daemonLog(id));
+        tail(sb, "output", parameters.daemonOutLog(id));
         return sb.toString();
     }
 

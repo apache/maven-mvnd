@@ -185,7 +185,7 @@ public enum Environment {
     /**
      * An ID for a newly started daemon
      */
-    MVND_UID("mvnd.uid", null, null, OptionType.STRING, Flags.INTERNAL),
+    MVND_ID("mvnd.id", null, null, OptionType.STRING, Flags.INTERNAL),
     /**
      * Internal option to specify the maven extension classpath
      */

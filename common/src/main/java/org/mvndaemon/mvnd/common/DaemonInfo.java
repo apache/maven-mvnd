@@ -26,7 +26,7 @@ import static org.mvndaemon.mvnd.common.DaemonState.Idle;
  */
 public class DaemonInfo {
 
-    private final String uid;
+    private final String id;
     private final String javaHome;
     private final String mvndHome;
     private final int pid;
@@ -37,11 +37,11 @@ public class DaemonInfo {
     private final long lastIdle;
     private final long lastBusy;
 
-    public DaemonInfo(String uid, String javaHome, String mavenHome,
+    public DaemonInfo(String id, String javaHome, String mavenHome,
             int pid, int address,
             String locale, List<String> options,
             DaemonState state, long lastIdle, long lastBusy) {
-        this.uid = uid;
+        this.id = id;
         this.javaHome = javaHome;
         this.mvndHome = mavenHome;
         this.pid = pid;
@@ -53,8 +53,8 @@ public class DaemonInfo {
         this.lastBusy = lastBusy;
     }
 
-    public String getUid() {
-        return uid;
+    public String getId() {
+        return id;
     }
 
     public String getJavaHome() {
@@ -105,13 +105,13 @@ public class DaemonInfo {
             li = lastIdle;
             lb = lastBusy;
         }
-        return new DaemonInfo(uid, javaHome, mvndHome, pid, address,
+        return new DaemonInfo(id, javaHome, mvndHome, pid, address,
                 locale, options, state, li, lb);
     }
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("DaemonInfo{uid=").append(uid);
+        final StringBuilder sb = new StringBuilder("DaemonInfo{id=").append(id);
         appendNonKeyFields(sb);
         return sb.append('}').toString();
     }

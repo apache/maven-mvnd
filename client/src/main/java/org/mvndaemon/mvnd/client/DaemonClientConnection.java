@@ -121,7 +121,7 @@ public class DaemonClientConnection implements Closeable {
                 }
                 return result;
             } catch (Exception e) {
-                DaemonDiagnostics diag = new DaemonDiagnostics(daemon.getUid(), parameters);
+                DaemonDiagnostics diag = new DaemonDiagnostics(daemon.getId(), parameters);
                 LOG.debug("Problem receiving message to the daemon. Performing 'on failure' operation...");
                 if (!hasReceived && newDaemon) {
                     throw new ConnectException("Could not receive a message from the daemon.\n" + diag.describe(), e);

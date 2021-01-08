@@ -73,7 +73,7 @@ public class Server implements AutoCloseable, Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
     public static final int CANCEL_TIMEOUT = 10 * 1000;
 
-    private final String uid;
+    private final String daemonId;
     private final boolean noDaemon;
     private final ServerSocketChannel socket;
     private final DaemonMavenCli cli;
@@ -105,7 +105,7 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.warn("Unable to ignore INT and TSTP signals", t);
         }
-        this.uid = Environment.MVND_UID.asString();
+        this.daemonId = Environment.MVND_ID.asString();
         this.noDaemon = Environment.MVND_NO_DAEMON.asBoolean();
         this.keepAliveMs = Environment.MVND_KEEP_ALIVE.asDuration().toMillis();
 
@@ -126,7 +126,7 @@ public class Server implements AutoCloseable, Runnable {
                         "\n     ", "Initializing daemon with properties:\n     ", "\n")));
             }
             long cur = System.currentTimeMillis();
-            info = new DaemonInfo(uid,
+            info = new DaemonInfo(daemonId,
                     Environment.MVND_JAVA_HOME.asString(),
                     Environment.MVND_HOME.asString(),
                     DaemonRegistry.getProcessId(),
@@ -200,7 +200,7 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.error("Error running daemon loop", t);
         } finally {
-            registry.remove(uid);
+            registry.remove(daemonId);
         }
     }
 
@@ -283,7 +283,7 @@ public class Server implements AutoCloseable, Runnable {
 
     private void onExpire(String reason, DaemonExpirationStatus status) {
         LOGGER.debug("Storing daemon stop event: {}", reason);
-        registry.storeStopEvent(new DaemonStopEvent(uid, System.currentTimeMillis(), status, reason));
+        registry.storeStopEvent(new DaemonStopEvent(daemonId, System.currentTimeMillis(), status, reason));
     }
 
     boolean awaitStop() {
@@ -616,8 +616,8 @@ public class Server implements AutoCloseable, Runnable {
         return info;
     }
 
-    public String getUid() {
-        return info.getUid();
+    public String getDaemonId() {
+        return info.getId();
     }
 
     public DaemonState getState() {

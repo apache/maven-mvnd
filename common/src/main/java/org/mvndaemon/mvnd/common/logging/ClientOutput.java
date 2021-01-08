@@ -24,7 +24,7 @@ import org.mvndaemon.mvnd.common.Message;
  */
 public interface ClientOutput extends AutoCloseable {
 
-    void setDaemonId(String uid);
+    void setDaemonId(String daemonId);
 
     void setDaemonDispatch(Consumer<Message> sink);
 

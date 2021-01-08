@@ -100,7 +100,7 @@ public class DaemonExpiration {
     static DaemonExpirationStrategy notMostRecentlyUsed() {
         return daemon -> daemon.getRegistry().getIdle().stream()
                 .max(Comparator.comparingLong(DaemonInfo::getLastBusy))
-                .map(d -> Objects.equals(d.getUid(), daemon.getUid()))
+                .map(d -> Objects.equals(d.getId(), daemon.getDaemonId()))
                 .orElse(false)
                         ? new DaemonExpirationResult(GRACEFUL_EXPIRE, "not recently used")
                         : NOT_TRIGGERED;
@@ -111,7 +111,7 @@ public class DaemonExpiration {
             try {
                 if (!Files.isReadable(daemon.getRegistry().getRegistryFile())) {
                     return new DaemonExpirationResult(GRACEFUL_EXPIRE, "after the daemon registry became unreadable");
-                } else if (daemon.getRegistry().get(daemon.getUid()) == null) {
+                } else if (daemon.getRegistry().get(daemon.getDaemonId()) == null) {
                     return new DaemonExpirationResult(GRACEFUL_EXPIRE,
                             "after the daemon was no longer found in the daemon registry");
                 } else {

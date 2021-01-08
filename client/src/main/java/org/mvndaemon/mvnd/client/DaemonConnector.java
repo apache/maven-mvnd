@@ -112,9 +112,10 @@ public class DaemonConnector {
         }
 
         // No compatible daemons available - start a new daemon
-        String message = handleStopEvents(idleDaemons, busyDaemons);
+        final String daemonId = newId();
+        String message = handleStopEvents(daemonId, idleDaemons, busyDaemons);
         output.accept(Message.buildStatus(message));
-        return startDaemon();
+        return startDaemon(daemonId);
     }
 
     private DaemonClientConnection connectNoDaemon() {
@@ -128,7 +129,7 @@ public class DaemonConnector {
         properties.put(Environment.USER_DIR.getProperty(), parameters.userDir().toString());
         properties.put(Environment.USER_HOME.getProperty(), parameters.userHome().toString());
         properties.put(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
-        properties.put(Environment.MVND_UID.getProperty(), daemon);
+        properties.put(Environment.MVND_ID.getProperty(), daemon);
         properties.put(Environment.MVND_DAEMON_STORAGE.getProperty(), parameters.daemonStorage().toString());
         properties.put(Environment.MVND_REGISTRY.getProperty(), parameters.registry().toString());
         properties.putAll(parameters.getDaemonOptsMap());
@@ -160,7 +161,7 @@ public class DaemonConnector {
         throw new RuntimeException("Unable to connect to internal daemon", throwable.get());
     }
 
-    private String handleStopEvents(Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {
+    private String handleStopEvents(String daemonId, Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {
         final List<DaemonStopEvent> stopEvents = registry.getStopEvents();
 
         // Clean up old stop events
@@ -173,7 +174,7 @@ public class DaemonConnector {
 
         final List<DaemonStopEvent> recentStopEvents = stopEvents.stream()
                 .filter(e -> e.getTimestamp() >= time)
-                .collect(Collectors.groupingBy(DaemonStopEvent::getUid,
+                .collect(Collectors.groupingBy(DaemonStopEvent::getDaemonId,
                         Collectors.minBy(this::compare)))
                 .values()
                 .stream()
@@ -181,13 +182,13 @@ public class DaemonConnector {
                 .collect(Collectors.toList());
         for (DaemonStopEvent stopEvent : recentStopEvents) {
             LOGGER.debug("Previous Daemon ({}) stopped at {} {}",
-                    stopEvent.getUid(), stopEvent.getTimestamp(), stopEvent.getReason());
+                    stopEvent.getDaemonId(), stopEvent.getTimestamp(), stopEvent.getReason());
         }
 
-        return generate(busyDaemons.size(), idleDaemons.size(), recentStopEvents.size());
+        return generate(daemonId, busyDaemons.size(), idleDaemons.size(), recentStopEvents.size());
     }
 
-    public static String generate(final int numBusy, final int numIncompatible, final int numStopped) {
+    public static String generate(final String daemonId, final int numBusy, final int numIncompatible, final int numStopped) {
         final int totalUnavailableDaemons = numBusy + numIncompatible + numStopped;
         if (totalUnavailableDaemons > 0) {
             final List<String> reasons = new ArrayList<>();
@@ -200,11 +201,11 @@ public class DaemonConnector {
             if (numStopped > 0) {
                 reasons.add(numStopped + " stopped");
             }
-            return "Starting new daemon, "
+            return "Starting new daemon " + daemonId + ", "
                     + String.join(" and ", reasons) + " daemon" + (totalUnavailableDaemons > 1 ? "s" : "")
                     + " could not be reused, use --status for details";
         } else {
-            return "Starting new daemon (subsequent builds will be faster)...";
+            return "Starting new daemon " + daemonId + " (subsequent builds will be faster)...";
         }
     }
 
@@ -254,7 +255,7 @@ public class DaemonConnector {
                 compatibleDaemons.add(daemon);
             } else {
                 LOGGER.debug("{} daemon {} does not match the desired criteria: "
-                        + result.getWhy(), daemon.getState(), daemon.getUid());
+                        + result.getWhy(), daemon.getState(), daemon.getId());
             }
         }
         return compatibleDaemons;
@@ -271,13 +272,12 @@ public class DaemonConnector {
         return null;
     }
 
-    public DaemonClientConnection startDaemon() {
-        final String daemon = newUid();
-        final Process process = startDaemon(daemon);
-        LOGGER.debug("Started Maven daemon {}", daemon);
+    public DaemonClientConnection startDaemon(String daemonId) {
+        final Process process = startDaemonProcess(daemonId);
+        LOGGER.debug("Started Maven daemon {}", daemonId);
         long start = System.currentTimeMillis();
         do {
-            DaemonClientConnection daemonConnection = connectToDaemonWithId(daemon, true);
+            DaemonClientConnection daemonConnection = connectToDaemonWithId(daemonId, true);
             if (daemonConnection != null) {
                 return daemonConnection;
             }
@@ -287,15 +287,15 @@ public class DaemonConnector {
                 throw new DaemonException.InterruptedException(e);
             }
         } while (process.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
-        DaemonDiagnostics diag = new DaemonDiagnostics(daemon, parameters);
+        DaemonDiagnostics diag = new DaemonDiagnostics(daemonId, parameters);
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
-    static String newUid() {
+    static String newId() {
         return String.format("%08x", new Random().nextInt());
     }
 
-    private Process startDaemon(String uid) {
+    private Process startDaemonProcess(String daemonId) {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
@@ -353,15 +353,15 @@ public class DaemonConnector {
             Environment.MVND_JAVA_HOME.addCommandLineOption(args, parameters.javaHome().toString());
             Environment.LOGBACK_CONFIGURATION_FILE
                     .addCommandLineOption(args, parameters.logbackConfigurationPath().toString());
-            Environment.MVND_UID.addCommandLineOption(args, uid);
+            Environment.MVND_ID.addCommandLineOption(args, daemonId);
             Environment.MVND_DAEMON_STORAGE.addCommandLineOption(args, parameters.daemonStorage().toString());
             Environment.MVND_REGISTRY.addCommandLineOption(args, parameters.registry().toString());
             parameters.discriminatingCommandLineOptions(args);
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 
-            LOGGER.debug("Starting daemon process: uid = {}, workingDir = {}, daemonArgs: {}", uid, workingDir, command);
-            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(parameters.daemonOutLog(uid).toFile());
+            LOGGER.debug("Starting daemon process: id = {}, workingDir = {}, daemonArgs: {}", daemonId, workingDir, command);
+            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(parameters.daemonOutLog(daemonId).toFile());
             Process process = new ProcessBuilder()
                     .directory(workingDir.toFile())
                     .command(args)
@@ -371,8 +371,8 @@ public class DaemonConnector {
             return process;
         } catch (Exception e) {
             throw new DaemonException.StartException(
-                    String.format("Error starting daemon: uid = %s, workingDir = %s, daemonArgs: %s",
-                            uid, workingDir, command),
+                    String.format("Error starting daemon: id = %s, workingDir = %s, daemonArgs: %s",
+                            daemonId, workingDir, command),
                     e);
         }
     }
@@ -419,10 +419,10 @@ public class DaemonConnector {
         public boolean maybeStaleAddress(Exception failure) {
             LOGGER.debug("Removing daemon from the registry due to communication failure. Daemon information: {}", daemon);
             final long timestamp = System.currentTimeMillis();
-            final DaemonStopEvent stopEvent = new DaemonStopEvent(daemon.getUid(), timestamp, null,
+            final DaemonStopEvent stopEvent = new DaemonStopEvent(daemon.getId(), timestamp, null,
                     "by user or operating system");
             registry.storeStopEvent(stopEvent);
-            registry.remove(daemon.getUid());
+            registry.remove(daemon.getId());
             return true;
         }
     }

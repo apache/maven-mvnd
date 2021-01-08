@@ -58,7 +58,7 @@ public class NewManagedModuleNativeIT {
 
         final DaemonInfo d = registry.getAll().get(0);
         /* Wait, till the instance becomes idle */
-        registry.awaitIdle(d.getUid());
+        registry.awaitIdle(d.getId());
 
         /* Do the changes */
         final Path srcDir = parentDir.resolve("../changes").normalize();

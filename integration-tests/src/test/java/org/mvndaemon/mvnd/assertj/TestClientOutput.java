@@ -32,7 +32,7 @@ public class TestClientOutput implements ClientOutput {
     }
 
     @Override
-    public void setDaemonId(String uid) {
+    public void setDaemonId(String daemonId) {
     }
 
     @Override
