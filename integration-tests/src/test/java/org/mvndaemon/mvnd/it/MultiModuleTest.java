@@ -33,7 +33,6 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.ProjectEvent;
 import org.mvndaemon.mvnd.common.Message.StringMessage;
 import org.mvndaemon.mvnd.junit.MvndTest;
-import org.mvndaemon.mvnd.junit.TestUtils;
 
 @MvndTest(projectDir = "src/test/projects/multi-module")
 public class MultiModuleTest {
