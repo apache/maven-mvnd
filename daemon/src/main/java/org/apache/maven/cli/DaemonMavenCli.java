@@ -1302,14 +1302,14 @@ public class DaemonMavenCli {
             // If we're logging to a file then we don't want the console transfer listener as it will spew
             // download progress all over the place
             //
-            return getDaemonTransferListener();
+            return getConsoleTransferListener();
         } else {
             return getBatchTransferListener();
         }
     }
 
-    protected TransferListener getDaemonTransferListener() {
-        return new DaemonMavenTransferListener(buildEventListener);
+    protected TransferListener getConsoleTransferListener() {
+        return new DaemonMavenTransferListener(buildEventListener, new Slf4jMavenTransferListener());
     }
 
     protected TransferListener getBatchTransferListener() {
