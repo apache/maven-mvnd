@@ -229,6 +229,7 @@ public class DefaultClient implements Client {
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
+                output.setDaemonId(daemon.getDaemon().getUid());
                 output.setDaemonDispatch(daemon::dispatch);
                 output.setDaemonReceive(daemon::enqueue);
 

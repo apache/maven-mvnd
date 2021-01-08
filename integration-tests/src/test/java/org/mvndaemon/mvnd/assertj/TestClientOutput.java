@@ -32,6 +32,10 @@ public class TestClientOutput implements ClientOutput {
     }
 
     @Override
+    public void setDaemonId(String uid) {
+    }
+
+    @Override
     public void setDaemonDispatch(Consumer<Message> daemonDispatch) {
         this.daemonDispatch = daemonDispatch;
     }
