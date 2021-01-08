@@ -92,9 +92,9 @@ public class DaemonRegistry implements AutoCloseable {
         return registryFile;
     }
 
-    public DaemonInfo get(String uid) {
+    public DaemonInfo get(String daemonId) {
         read();
-        return infosMap.get(uid);
+        return infosMap.get(daemonId);
     }
 
     public List<DaemonInfo> getAll() {
@@ -122,13 +122,13 @@ public class DaemonRegistry implements AutoCloseable {
                 .collect(Collectors.toList());
     }
 
-    public void remove(final String uid) {
-        update(() -> infosMap.remove(uid));
+    public void remove(final String daemonId) {
+        update(() -> infosMap.remove(daemonId));
     }
 
-    public void markState(final String uid, final DaemonState state) {
-        LOGGER.debug("Marking busy by uid: {}", uid);
-        update(() -> infosMap.computeIfPresent(uid, (id, di) -> di.withState(state)));
+    public void markState(final String daemonId, final DaemonState state) {
+        LOGGER.debug("Marking busy by id: {}", daemonId);
+        update(() -> infosMap.computeIfPresent(daemonId, (id, di) -> di.withState(state)));
     }
 
     public void storeStopEvent(final DaemonStopEvent stopEvent) {
@@ -148,7 +148,7 @@ public class DaemonRegistry implements AutoCloseable {
 
     public void store(final DaemonInfo info) {
         LOGGER.debug("Storing daemon {}", info);
-        update(() -> infosMap.put(info.getUid(), info));
+        update(() -> infosMap.put(info.getId(), info));
     }
 
     public static int getProcessId() {
@@ -176,7 +176,7 @@ public class DaemonRegistry implements AutoCloseable {
                     infosMap.clear();
                     int nb = buffer.getInt();
                     for (int i = 0; i < nb; i++) {
-                        String uid = readString();
+                        String daemonId = readString();
                         String javaHome = readString();
                         String mavenHome = readString();
                         int pid = buffer.getInt();
@@ -190,19 +190,19 @@ public class DaemonRegistry implements AutoCloseable {
                         DaemonState state = DaemonState.values()[buffer.get()];
                         long lastIdle = buffer.getLong();
                         long lastBusy = buffer.getLong();
-                        DaemonInfo di = new DaemonInfo(uid, javaHome, mavenHome, pid, address, locale, opts, state,
+                        DaemonInfo di = new DaemonInfo(daemonId, javaHome, mavenHome, pid, address, locale, opts, state,
                                 lastIdle, lastBusy);
-                        infosMap.putIfAbsent(di.getUid(), di);
+                        infosMap.putIfAbsent(di.getId(), di);
                     }
                     stopEvents.clear();
                     nb = buffer.getInt();
                     for (int i = 0; i < nb; i++) {
-                        String uid = readString();
+                        String daemonId = readString();
                         long date = buffer.getLong();
                         int ord = buffer.get();
                         DaemonExpirationStatus des = ord >= 0 ? DaemonExpirationStatus.values()[ord] : null;
                         String reason = readString();
-                        DaemonStopEvent se = new DaemonStopEvent(uid, date, des, reason);
+                        DaemonStopEvent se = new DaemonStopEvent(daemonId, date, des, reason);
                         stopEvents.add(se);
                     }
 
@@ -211,7 +211,7 @@ public class DaemonRegistry implements AutoCloseable {
                         BufferCaster.cast(buffer).position((int) 0);
                         buffer.putInt(infosMap.size());
                         for (DaemonInfo di : infosMap.values()) {
-                            writeString(di.getUid());
+                            writeString(di.getId());
                             writeString(di.getJavaHome());
                             writeString(di.getMvndHome());
                             buffer.putInt(di.getPid());
@@ -227,7 +227,7 @@ public class DaemonRegistry implements AutoCloseable {
                         }
                         buffer.putInt(stopEvents.size());
                         for (DaemonStopEvent dse : stopEvents) {
-                            writeString(dse.getUid());
+                            writeString(dse.getDaemonId());
                             buffer.putLong(dse.getTimestamp());
                             buffer.put((byte) (dse.getStatus() == null ? -1 : dse.getStatus().ordinal()));
                             writeString(dse.getReason());

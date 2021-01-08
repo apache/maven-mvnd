@@ -54,7 +54,7 @@ public class UpgradesInBomNativeIT {
             assertDaemonRegistrySize(1);
             final DaemonInfo d = registry.getAll().get(0);
             /* Wait, till the instance becomes idle */
-            registry.awaitIdle(d.getUid());
+            registry.awaitIdle(d.getId());
             registry.killAll();
         }
         assertDaemonRegistrySize(0);
@@ -70,7 +70,7 @@ public class UpgradesInBomNativeIT {
 
         final DaemonInfo d = registry.getAll().get(0);
         /* Wait, till the instance becomes idle */
-        registry.awaitIdle(d.getUid());
+        registry.awaitIdle(d.getId());
 
         /* Upgrade the dependency  */
         final Path parentPomPath = parentDir.resolve("pom.xml");

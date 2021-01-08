@@ -29,20 +29,20 @@ import java.util.Objects;
  */
 public class DaemonStopEvent implements Serializable {
 
-    private final String uid;
+    private final String daemonId;
     private final long timestamp;
     private final DaemonExpirationStatus status;
     private final String reason;
 
-    public DaemonStopEvent(String uid, long timestamp, DaemonExpirationStatus status, String reason) {
-        this.uid = uid;
+    public DaemonStopEvent(String daemonId, long timestamp, DaemonExpirationStatus status, String reason) {
+        this.daemonId = daemonId;
         this.timestamp = timestamp;
         this.status = status;
         this.reason = reason != null ? reason : "";
     }
 
-    public String getUid() {
-        return uid;
+    public String getDaemonId() {
+        return daemonId;
     }
 
     public long getTimestamp() {
@@ -64,7 +64,7 @@ public class DaemonStopEvent implements Serializable {
         if (o == null || getClass() != o.getClass())
             return false;
         DaemonStopEvent that = (DaemonStopEvent) o;
-        return Objects.equals(uid, that.uid)
+        return Objects.equals(daemonId, that.daemonId)
                 && timestamp == that.timestamp
                 && status == that.status
                 && Objects.equals(reason, that.reason);
@@ -72,13 +72,13 @@ public class DaemonStopEvent implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(timestamp, uid, status, reason);
+        return Objects.hash(timestamp, daemonId, status, reason);
     }
 
     @Override
     public String toString() {
         return "DaemonStopEvent{"
-                + "uid=" + uid
+                + "daemonId=" + daemonId
                 + ", timestamp=" + DateFormat.getDateTimeInstance().format(new Date(timestamp))
                 + ", status=" + status
                 + ", reason=" + reason

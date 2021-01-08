@@ -63,7 +63,7 @@ public class DaemonCompatibilitySpec {
         final StringBuilder sb = new StringBuilder("Wanted: ");
         appendFields(sb);
         sb.append("\nActual: ");
-        context.appendNonKeyFields(sb).append("uid=").append(context.getUid()).append('\n');
+        context.appendNonKeyFields(sb).append("id=").append(context.getId()).append('\n');
         return sb.toString();
     }
 

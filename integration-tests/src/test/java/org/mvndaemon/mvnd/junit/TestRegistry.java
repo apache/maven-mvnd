@@ -49,9 +49,9 @@ public class TestRegistry extends DaemonRegistry {
                         exit.get(5, TimeUnit.SECONDS);
                     }
                 } catch (Exception t) {
-                    System.out.println("Daemon " + di.getUid() + ": " + t);
+                    System.out.println("Daemon " + di.getId() + ": " + t);
                 } finally {
-                    remove(di.getUid());
+                    remove(di.getId());
                 }
             }
             if (deadline < System.currentTimeMillis() && !getAll().isEmpty()) {
@@ -63,20 +63,20 @@ public class TestRegistry extends DaemonRegistry {
     /**
      * Poll the state of the daemon with the given {@code uid} until it becomes idle.
      *
-     * @param  uid                   the uid of the daemon to poll
+     * @param  daemonId              the ID of the daemon to poll
      * @throws IllegalStateException if the daemon is not available in the registry
      * @throws AssertionError        if the timeout is exceeded
      */
-    public void awaitIdle(String uid) {
+    public void awaitIdle(String daemonId) {
         final int timeoutMs = 5000;
         final long deadline = System.currentTimeMillis() + timeoutMs;
         while (getAll().stream()
-                .filter(di -> di.getUid().equals(uid))
+                .filter(di -> di.getId().equals(daemonId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Daemon " + uid + " is not available in the registry"))
+                .orElseThrow(() -> new IllegalStateException("Daemon " + daemonId + " is not available in the registry"))
                 .getState() != DaemonState.Idle) {
             Assertions.assertThat(deadline)
-                    .withFailMessage("Daemon %s should have become idle within %d", uid, timeoutMs)
+                    .withFailMessage("Daemon %s should have become idle within %d", daemonId, timeoutMs)
                     .isGreaterThan(System.currentTimeMillis());
         }
     }

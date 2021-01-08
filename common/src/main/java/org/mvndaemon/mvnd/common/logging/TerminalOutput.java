@@ -609,6 +609,13 @@ public class TerminalOutput implements ClientOutput {
                 asb.append(name);
                 asb.style(AttributedStyle.DEFAULT);
 
+                /* Daemon ID */
+                asb
+                        .append("  daemon: ")
+                        .style(AttributedStyle.BOLD)
+                        .append(daemonId)
+                        .style(AttributedStyle.DEFAULT);
+
                 /* Threads */
                 asb
                         .append("  threads used/hidden/max: ")
@@ -634,13 +641,6 @@ public class TerminalOutput implements ClientOutput {
                         .append(' ')
                         .append(String.format("%3d", doneProjects * 100 / totalProjects))
                         .append('%')
-                        .style(AttributedStyle.DEFAULT);
-
-                /* DaemonId */
-                asb
-                        .append("  daemon: ")
-                        .style(AttributedStyle.BOLD)
-                        .append(daemonId)
                         .style(AttributedStyle.DEFAULT);
 
             } else if (buildStatus != null) {

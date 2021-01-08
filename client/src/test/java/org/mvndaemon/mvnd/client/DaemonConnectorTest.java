@@ -23,9 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class DaemonConnectorTest {
 
     @Test
-    public void testUid() {
-        String uid = DaemonConnector.newUid();
-        assertNotNull(uid);
-        assertEquals(8, uid.length());
+    public void newId() {
+        String id = DaemonConnector.newId();
+        assertNotNull(id);
+        assertEquals(8, id.length());
     }
 }

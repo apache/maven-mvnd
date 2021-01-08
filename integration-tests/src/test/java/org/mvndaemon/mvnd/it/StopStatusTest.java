@@ -51,10 +51,10 @@ public class StopStatusTest {
             final TestClientOutput output = new TestClientOutput();
             client.execute(output, "--status").assertSuccess();
 
-            output.assertContainsMatchingSubsequence(d.getUid() + " +" + d.getPid() + " +" + d.getAddress());
+            output.assertContainsMatchingSubsequence(d.getId() + " +" + d.getPid() + " +" + d.getAddress());
         }
         /* Wait, till the instance becomes idle */
-        registry.awaitIdle(d.getUid());
+        registry.awaitIdle(d.getId());
 
         client.execute(new TestClientOutput(), "clean").assertSuccess();
         /* There should still be exactly one item in the registry after the second build */
@@ -65,13 +65,13 @@ public class StopStatusTest {
         assertDaemonRegistrySize(0);
 
         {
-            /* After --stop, the output of --status may not contain the UID we have seen before */
+            /* After --stop, the output of --status may not contain the daemon ID we have seen before */
             final TestClientOutput output = new TestClientOutput();
             client.execute(output, "--status").assertSuccess();
 
             Assertions.assertThat(
                     output.messagesToString().stream()
-                            .filter(m -> m.contains(d.getUid()))
+                            .filter(m -> m.contains(d.getId()))
                             .collect(Collectors.toList()))
                     .isEmpty();
         }

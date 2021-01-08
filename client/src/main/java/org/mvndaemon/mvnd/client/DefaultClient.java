@@ -170,16 +170,16 @@ public class DefaultClient implements Client {
 
         try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
             if (Environment.STATUS.removeCommandLineOption(args) != null) {
-                final String template = "    %36s  %7s  %5s  %7s  %5s  %23s  %s";
+                final String template = "%8s  %7s  %5s  %7s  %5s  %23s  %s";
                 output.accept(Message.log(String.format(template,
-                        "UUID", "PID", "Port", "Status", "RSS", "Last activity", "Java home")));
+                        "ID", "PID", "Port", "Status", "RSS", "Last activity", "Java home")));
                 for (DaemonInfo d : registry.getAll()) {
                     if (ProcessHandle.of(d.getPid()).isEmpty()) {
                         /* The process does not exist anymore - remove it from the registry */
-                        registry.remove(d.getUid());
+                        registry.remove(d.getId());
                     } else {
                         output.accept(Message.log(String.format(template,
-                                d.getUid(), d.getPid(), d.getAddress(), d.getState(),
+                                d.getId(), d.getPid(), d.getAddress(), d.getState(),
                                 OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
                                 LocalDateTime.ofInstant(
                                         Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
@@ -197,9 +197,9 @@ public class DefaultClient implements Client {
                         try {
                             ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
                         } catch (Exception t) {
-                            System.out.println("Daemon " + di.getUid() + ": " + t);
+                            System.out.println("Daemon " + di.getId() + ": " + t);
                         } finally {
-                            registry.remove(di.getUid());
+                            registry.remove(di.getId());
                         }
                     }
                 }
@@ -229,7 +229,7 @@ public class DefaultClient implements Client {
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
-                output.setDaemonId(daemon.getDaemon().getUid());
+                output.setDaemonId(daemon.getDaemon().getId());
                 output.setDaemonDispatch(daemon::dispatch);
                 output.setDaemonReceive(daemon::enqueue);
 
@@ -239,7 +239,8 @@ public class DefaultClient implements Client {
                         parameters.multiModuleProjectDirectory().toString(),
                         System.getenv()));
 
-                output.accept(Message.buildStatus("Daemon started, scanning for projects..."));
+                output.accept(Message
+                        .buildStatus("Connected to daemon " + daemon.getDaemon().getId() + ", scanning for projects..."));
 
                 // We've sent the request, so it gives us a bit of time to purge the logs
                 AtomicReference<String> purgeMessage = new AtomicReference<>();
