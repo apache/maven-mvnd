@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.UUID;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -272,7 +272,7 @@ public class DaemonConnector {
     }
 
     public DaemonClientConnection startDaemon() {
-        final String daemon = UUID.randomUUID().toString();
+        final String daemon = newUid();
         final Process process = startDaemon(daemon);
         LOGGER.debug("Started Maven daemon {}", daemon);
         long start = System.currentTimeMillis();
@@ -289,6 +289,10 @@ public class DaemonConnector {
         } while (process.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
         DaemonDiagnostics diag = new DaemonDiagnostics(daemon, parameters);
         throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
+    }
+
+    static String newUid() {
+        return String.format("%08x", new Random().nextInt());
     }
 
     private Process startDaemon(String uid) {

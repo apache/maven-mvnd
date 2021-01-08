@@ -68,6 +68,10 @@ public class DaemonClientConnection implements Closeable {
         this.maxKeepAliveMs = parameters.keepAlive().toMillis() * parameters.maxLostKeepAlive();
     }
 
+    public DaemonInfo getDaemon() {
+        return daemon;
+    }
+
     public void dispatch(Message message) throws DaemonException.ConnectException {
         LOG.debug("thread {}: dispatching {}", Thread.currentThread().getId(), message.getClass());
         try {

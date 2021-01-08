@@ -84,6 +84,7 @@ public class TerminalOutput implements ClientOutput {
      * Therefore, these fields do not need to be volatile
      */
     private String name;
+    private String daemonId;
     private int totalProjects;
     /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
     private String projectsDoneFomat;
@@ -135,6 +136,11 @@ public class TerminalOutput implements ClientOutput {
         } else {
             this.reader = null;
         }
+    }
+
+    @Override
+    public void setDaemonId(String daemonId) {
+        this.daemonId = daemonId;
     }
 
     @Override
@@ -524,6 +530,13 @@ public class TerminalOutput implements ClientOutput {
                         .append(' ')
                         .append(String.format("%3d", doneProjects * 100 / totalProjects))
                         .append('%')
+                        .style(AttributedStyle.DEFAULT);
+
+                /* DaemonId */
+                asb
+                        .append("  daemon: ")
+                        .style(AttributedStyle.BOLD)
+                        .append(daemonId)
                         .style(AttributedStyle.DEFAULT);
 
             } else if (buildStatus != null) {

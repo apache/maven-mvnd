@@ -13,28 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.common.logging;
+package org.mvndaemon.mvnd.client;
 
-import java.util.List;
-import java.util.function.Consumer;
-import org.mvndaemon.mvnd.common.Message;
+import org.junit.jupiter.api.Test;
 
-/**
- * A sink for various kinds of events sent by the daemon.
- */
-public interface ClientOutput extends AutoCloseable {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-    void setDaemonId(String uid);
+public class DaemonConnectorTest {
 
-    void setDaemonDispatch(Consumer<Message> sink);
-
-    void setDaemonReceive(Consumer<Message> sink);
-
-    void accept(Message message);
-
-    void accept(List<Message> messages);
-
-    void describeTerminal();
-
-    int getTerminalWidth();
+    @Test
+    public void testUid() {
+        String uid = DaemonConnector.newUid();
+        assertNotNull(uid);
+        assertEquals(8, uid.length());
+    }
 }

@@ -664,6 +664,9 @@ public class DaemonMavenCli {
 
         eventSpyDispatcher.onEvent(request);
 
+        slf4jLogger.info(buffer().a("Processing build on daemon ")
+                .strong(Environment.MVND_UID.asString()).toString());
+
         MavenExecutionResult result = maven.execute(request);
 
         eventSpyDispatcher.onEvent(result);
