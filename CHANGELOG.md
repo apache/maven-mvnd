@@ -80,7 +80,6 @@
 - Fix project name and number of projects displayed on the client, fixe… [\#245](https://github.com/mvndaemon/mvnd/pull/245) ([gnodet](https://github.com/gnodet))
 - Let -h/--help display also mvnd specific options \#243 [\#244](https://github.com/mvndaemon/mvnd/pull/244) ([ppalaga](https://github.com/ppalaga))
 - mvnd --help produces no output \#238 [\#242](https://github.com/mvndaemon/mvnd/pull/242) ([ppalaga](https://github.com/ppalaga))
-- Output revision with -v/--version [\#233](https://github.com/mvndaemon/mvnd/pull/233) ([ppalaga](https://github.com/ppalaga))
 - Upgrade JLine [\#258](https://github.com/mvndaemon/mvnd/pull/258) ([gnodet](https://github.com/gnodet))
 - Bump groovy.version from 3.0.0 to 3.0.7 [\#254](https://github.com/mvndaemon/mvnd/pull/254) ([dependabot[bot]](https://github.com/apps/dependabot))
 
@@ -122,6 +121,7 @@
 **Merged pull requests:**
 
 - Upgrade to GraalVM 20.3.0 [\#235](https://github.com/mvndaemon/mvnd/pull/235) ([ppalaga](https://github.com/ppalaga))
+- Output revision with -v/--version [\#233](https://github.com/mvndaemon/mvnd/pull/233) ([ppalaga](https://github.com/ppalaga))
 - Avoid environment lookups and value conversions on hot paths [\#232](https://github.com/mvndaemon/mvnd/pull/232) ([ppalaga](https://github.com/ppalaga))
 - Use more recent version of DeLaGuardo/setup-graalvm action [\#230](https://github.com/mvndaemon/mvnd/pull/230) ([gnodet](https://github.com/gnodet))
 - Make sure our CachingProjectBuilder is used, fixes \#218 [\#228](https://github.com/mvndaemon/mvnd/pull/228) ([gnodet](https://github.com/gnodet))
