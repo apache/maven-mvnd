@@ -237,7 +237,7 @@ public class TerminalOutput implements ClientOutput {
         }
         case Message.MOJO_STARTED: {
             final MojoStartedEvent execution = (MojoStartedEvent) entry;
-            final Project prj = projects.get(execution.getArtifactId());
+            final Project prj = projects.computeIfAbsent(execution.getArtifactId(), Project::new);
             prj.runningExecution = execution;
             break;
         }
