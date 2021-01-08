@@ -787,7 +787,7 @@ public abstract class Message {
         public static final int PUT = 2;
 
         final String projectId;
-        final int request;
+        final int requestType;
         final String repositoryId;
         final String repositoryUrl;
         final String resourceName;
@@ -795,13 +795,13 @@ public abstract class Message {
         final long transferredBytes;
         final String exception;
 
-        private TransferEvent(int type, String projectId, int request,
+        private TransferEvent(int type, String projectId, int requestType,
                 String repositoryId, String repositoryUrl,
                 String resourceName, long contentLength, long transferredBytes,
                 String exception) {
             super(type);
             this.projectId = projectId;
-            this.request = request;
+            this.requestType = requestType;
             this.repositoryId = repositoryId;
             this.repositoryUrl = repositoryUrl;
             this.resourceName = resourceName;
@@ -814,8 +814,8 @@ public abstract class Message {
             return projectId;
         }
 
-        public int getRequest() {
-            return request;
+        public int getRequestType() {
+            return requestType;
         }
 
         public String getRepositoryId() {
@@ -846,7 +846,7 @@ public abstract class Message {
         public String toString() {
             return mnemonic() + "{" +
                     "projectId=" + projectId +
-                    ", request=" + request +
+                    ", requestType=" + requestType +
                     ", repositoryId='" + repositoryId + '\'' +
                     ", repositoryUrl='" + repositoryUrl + '\'' +
                     ", resourceName='" + resourceName + '\'' +
@@ -879,7 +879,7 @@ public abstract class Message {
         public void write(DataOutputStream output) throws IOException {
             super.write(output);
             writeUTF(output, projectId);
-            output.writeByte(request);
+            output.writeByte(requestType);
             writeUTF(output, repositoryId);
             writeUTF(output, repositoryUrl);
             writeUTF(output, resourceName);
@@ -943,11 +943,11 @@ public abstract class Message {
         return new ProjectEvent(Message.DISPLAY, projectId, message);
     }
 
-    public static TransferEvent transfer(String projectId, int event, int request,
+    public static TransferEvent transfer(String projectId, int transferEventType, int requestType,
             String repositoryId, String repositoryUrl,
             String resourceName, long contentLength, long transferredBytes,
             String exception) {
-        return new TransferEvent(event, projectId, request,
+        return new TransferEvent(transferEventType, projectId, requestType,
                 repositoryId, repositoryUrl, resourceName, contentLength, transferredBytes, exception);
     }
 

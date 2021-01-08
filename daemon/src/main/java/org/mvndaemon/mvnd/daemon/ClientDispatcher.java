@@ -26,6 +26,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.transfer.TransferEvent;
+import org.eclipse.aether.transfer.TransferEvent.EventType;
+import org.eclipse.aether.transfer.TransferEvent.RequestType;
 import org.mvndaemon.mvnd.builder.DependencyGraph;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
@@ -114,37 +116,50 @@ public class ClientDispatcher extends BuildEventListener {
     }
 
     public void transfer(String projectId, TransferEvent e) {
-        int event;
+        final int event;
         switch (e.getType()) {
-            case INITIATED:
-                event = Message.TRANSFER_INITIATED;
-                break;
-            case STARTED:
-                event = Message.TRANSFER_STARTED;
-                break;
-            case PROGRESSED:
-                event = Message.TRANSFER_PROGRESSED;
-                break;
-            case CORRUPTED:
-                event = Message.TRANSFER_CORRUPTED;
-                break;
-            case SUCCEEDED:
-                event = Message.TRANSFER_SUCCEEDED;
-                break;
-            case FAILED:
-                event = Message.TRANSFER_FAILED;
-                break;
-            default:
-                throw new IllegalStateException();
+        case INITIATED:
+            event = Message.TRANSFER_INITIATED;
+            break;
+        case STARTED:
+            event = Message.TRANSFER_STARTED;
+            break;
+        case PROGRESSED:
+            event = Message.TRANSFER_PROGRESSED;
+            break;
+        case CORRUPTED:
+            event = Message.TRANSFER_CORRUPTED;
+            break;
+        case SUCCEEDED:
+            event = Message.TRANSFER_SUCCEEDED;
+            break;
+        case FAILED:
+            event = Message.TRANSFER_FAILED;
+            break;
+        default:
+            throw new IllegalStateException("Unexpected " + EventType.class.getSimpleName() + ": " + e.getType());
         }
-        int request = e.getRequestType().ordinal();
+        final int requestType;
+        switch (e.getRequestType()) {
+        case GET:
+            requestType = Message.TransferEvent.GET;
+            break;
+        case GET_EXISTENCE:
+            requestType = Message.TransferEvent.GET_EXISTENCE;
+            break;
+        case PUT:
+            requestType = Message.TransferEvent.PUT;
+            break;
+        default:
+            throw new IllegalStateException("Unexpected " + RequestType.class.getSimpleName() + ": " + e.getRequestType());
+        }
         String repositoryId = e.getResource().getRepositoryId();
         String repositoryUrl = e.getResource().getRepositoryUrl();
         String resourceName = e.getResource().getResourceName();
         long contentLength = e.getResource().getContentLength();
         long transferredBytes = e.getTransferredBytes();
         String exception = e.getException() != null ? e.getException().toString() : null;
-        queue.add(Message.transfer(projectId, event, request, repositoryId, repositoryUrl, resourceName,
+        queue.add(Message.transfer(projectId, event, requestType, repositoryId, repositoryUrl, resourceName,
                 contentLength, transferredBytes, exception));
     }
 

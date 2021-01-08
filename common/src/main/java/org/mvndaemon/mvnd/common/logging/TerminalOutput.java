@@ -531,25 +531,26 @@ public class TerminalOutput implements ClientOutput {
             return null;
         }
         TransferEvent event = transfers.iterator().next();
-        String action = event.getRequest() == TransferEvent.PUT ? "Uploading" : "Downloading";
+        String action = event.getRequestType() == TransferEvent.PUT ? "Uploading" : "Downloading";
         if (transfers.size() == 1) {
-            String direction = event.getRequest() == TransferEvent.PUT ? "to" : "from";
+            String direction = event.getRequestType() == TransferEvent.PUT ? "to" : "from";
             long cur = event.getTransferredBytes();
             long max = event.getContentLength();
-            String prg = OsUtils.kbTohumanReadable(cur / 1024) + " / " + OsUtils.kbTohumanReadable(max / 1024);
             AttributedStringBuilder asb = new AttributedStringBuilder();
             asb.append(action);
-            asb.append(" ");
+            asb.append(' ');
             asb.style(AttributedStyle.BOLD);
             asb.append(pathToMaven(event.getResourceName()));
             asb.style(AttributedStyle.DEFAULT);
-            asb.append(" ");
+            asb.append(' ');
             asb.append(direction);
-            asb.append(" ");
+            asb.append(' ');
             asb.append(event.getRepositoryId());
             if (cur > 0 && cur < max) {
-                asb.append(": ");
-                asb.append(prg);
+                asb.append(' ');
+                asb.append(OsUtils.bytesTohumanReadable(cur));
+                asb.append('/');
+                asb.append(OsUtils.bytesTohumanReadable(max));
             }
             return asb.toAttributedString();
         } else {

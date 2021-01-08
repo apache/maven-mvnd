@@ -33,14 +33,24 @@ public class OsUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OsUtils.class);
     private static final long KB = 1024;
-    private static final String UNITS = "kmgt";
+    private static final String UNITS = "Bkmgt";
 
     private OsUtils() {
 
     }
 
-    public static String kbTohumanReadable(long kb) {
+    public static String bytesTohumanReadable(long bytes) {
         int unit = 0;
+        while (bytes >= KB && unit < UNITS.length() - 1) {
+            bytes /= KB;
+            unit++;
+        }
+        String kbString = String.valueOf(bytes);
+        return new StringBuilder(kbString.length() + 1).append(kbString).append(UNITS.charAt(unit)).toString();
+    }
+
+    public static String kbTohumanReadable(long kb) {
+        int unit = 1;
         while (kb >= KB && unit < UNITS.length() - 1) {
             kb /= KB;
             unit++;
