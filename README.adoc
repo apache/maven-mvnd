@@ -1,6 +1,11 @@
 = `mvnd` - the Maven Daemon
+:toc: macro
 
 image::https://img.shields.io/twitter/url/https/twitter.com/mvndaemon.svg?style=social&label=Follow%20%40mvndaemon[link="https://twitter.com/mvndaemon"]
+
+toc::[]
+
+== Introduction
 
 This project aims at providing faster https://maven.apache.org/[Maven] builds using techniques known from Gradle and
 Takari.
