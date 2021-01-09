@@ -54,7 +54,7 @@ public class MvndHelpFormatter {
             out.println();
             PrintWriter pw = new PrintWriter(out);
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(pw, terminalWidth, "mvn [options] [<goal(s)>] [<phase(s)>]", "\nOptions:", cliManager.options,
+            formatter.printHelp(pw, terminalWidth, "mvnd [options] [<goal(s)>] [<phase(s)>]", "\nOptions:", cliManager.options,
                     1, 3, "\n", false);
             pw.flush();
         } catch (UnsupportedEncodingException e) {
