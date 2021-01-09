@@ -57,9 +57,35 @@ import org.mvndaemon.mvnd.common.OsUtils;
  */
 public class TerminalOutput implements ClientOutput {
 
-    public static final int CTRL_B = 'B' & 0x1f;
-    public static final int CTRL_L = 'L' & 0x1f;
-    public static final int CTRL_M = 'M' & 0x1f;
+    /**
+     * The '+' key is used to increase the number of lines displayed per project.
+     */
+    public static final int KEY_PLUS = '+';
+    /**
+     * The '-' key is used to decrease the number of lines displayed per project.
+     */
+    public static final int KEY_MINUS = '-';
+    /**
+     * The Ctrl+B key switches between the no-buffering / buffering modes.
+     * In no-buffering mode, the output of concurrent builds will be interleaved and
+     * each line will be prepended with the module name in order to distinguish them.
+     * In buffering mode, the list of modules being built is displayed and update
+     * continuously.  In this mode, pressing '+' one or more times will open a rolling
+     * window for each module with the related output.
+     */
+    public static final int KEY_CTRL_B = 'B' & 0x1f;
+    /**
+     * The Ctrl+L key forces a redisplay of the output.
+     */
+    public static final int KEY_CTRL_L = 'L' & 0x1f;
+    /**
+     * The Ctrl+M (or enter) switches between full-buffering and module-buffering.
+     * In the full-buffering mode, all the build output is buffered and displayed
+     * at the end of the build, while the module-buffering mode will output in
+     * the terminal the log for a given module once it's finished.
+     */
+    public static final int KEY_CTRL_M = 'M' & 0x1f;
+
     private static final AttributedStyle GREEN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.GREEN);
     private static final AttributedStyle CYAN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.CYAN);
 
@@ -340,13 +366,13 @@ public class TerminalOutput implements ClientOutput {
         case Message.KEYBOARD_INPUT: {
             char keyStroke = ((StringMessage) entry).getMessage().charAt(0);
             switch (keyStroke) {
-            case '+':
+            case KEY_PLUS:
                 linesPerProject = Math.min(10, linesPerProject + 1);
                 break;
-            case '-':
+            case KEY_MINUS:
                 linesPerProject = Math.max(0, linesPerProject - 1);
                 break;
-            case CTRL_B:
+            case KEY_CTRL_B:
                 noBuffering = !noBuffering;
                 if (noBuffering) {
                     applyNoBuffering();
@@ -354,10 +380,10 @@ public class TerminalOutput implements ClientOutput {
                     clearDisplay();
                 }
                 break;
-            case CTRL_L:
+            case KEY_CTRL_L:
                 clearDisplay();
                 break;
-            case CTRL_M:
+            case KEY_CTRL_M:
                 displayDone = !displayDone;
                 displayDone();
                 break;
@@ -419,7 +445,7 @@ public class TerminalOutput implements ClientOutput {
                     if (c == -1) {
                         break;
                     }
-                    if (c == '+' || c == '-' || c == CTRL_L || c == CTRL_M || c == CTRL_B) {
+                    if (c == KEY_PLUS || c == KEY_MINUS || c == KEY_CTRL_L || c == KEY_CTRL_M || c == KEY_CTRL_B) {
                         daemonReceive.accept(Message.keyboardInput((char) c));
                     }
                     readInput.readLock().unlock();
@@ -438,7 +464,6 @@ public class TerminalOutput implements ClientOutput {
         if (!noBuffering && !dumb) {
             display.update(Collections.emptyList(), 0);
         }
-
     }
 
     private void displayDone() {
