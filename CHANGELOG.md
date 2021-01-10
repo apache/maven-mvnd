@@ -12,12 +12,15 @@
 
 **Merged pull requests:**
 
+- Use mvnd instead of mvn in the help output [\#327](https://github.com/mvndaemon/mvnd/pull/327) ([ppalaga](https://github.com/ppalaga))
+- Add a bit of doc for the various supported keys, \#293 [\#326](https://github.com/mvndaemon/mvnd/pull/326) ([gnodet](https://github.com/gnodet))
 - NPE after pressing CTRL+B in the client \#324 [\#325](https://github.com/mvndaemon/mvnd/pull/325) ([ppalaga](https://github.com/ppalaga))
 - Fixup 143f4f13 Display the daemon id and shorten it a bit [\#323](https://github.com/mvndaemon/mvnd/pull/323) ([ppalaga](https://github.com/ppalaga))
 - Fixup 28ffaea Send transfer events to the client for better display [\#322](https://github.com/mvndaemon/mvnd/pull/322) ([ppalaga](https://github.com/ppalaga))
 - Fix TestUtils imports [\#321](https://github.com/mvndaemon/mvnd/pull/321) ([famod](https://github.com/famod))
 - Display the daemon id and shorten it a bit, fixes \#314 [\#318](https://github.com/mvndaemon/mvnd/pull/318) ([gnodet](https://github.com/gnodet))
 - One more attempt to workaround \#281 [\#317](https://github.com/mvndaemon/mvnd/pull/317) ([ppalaga](https://github.com/ppalaga))
+- Add TOC to README.adoc [\#315](https://github.com/mvndaemon/mvnd/pull/315) ([famod](https://github.com/famod))
 - Send transfer events to the client for better display, \#284 [\#313](https://github.com/mvndaemon/mvnd/pull/313) ([gnodet](https://github.com/gnodet))
 
 ## [0.3.0](https://github.com/mvndaemon/mvnd/tree/0.3.0) (2021-01-07)
@@ -42,7 +45,6 @@
 
 **Merged pull requests:**
 
-- Add TOC to README.adoc [\#315](https://github.com/mvndaemon/mvnd/pull/315) ([famod](https://github.com/famod))
 - Replace mvnd --completion by a plain source now the bash file is in t… [\#308](https://github.com/mvndaemon/mvnd/pull/308) ([rmannibucau](https://github.com/rmannibucau))
 - Speed up bash completion loading by packaging it as a file in the ZIP… [\#307](https://github.com/mvndaemon/mvnd/pull/307) ([ppalaga](https://github.com/ppalaga))
 - The output of ConsoleMavenTransferListener looks ugly in the client  [\#306](https://github.com/mvndaemon/mvnd/pull/306) ([ppalaga](https://github.com/ppalaga))
