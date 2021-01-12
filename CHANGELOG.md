@@ -173,6 +173,7 @@
 
 **Closed issues:**
 
+- exec-maven-plugin fails to run maven wrapper when run via maven daemon [\#171](https://github.com/mvndaemon/mvnd/issues/171)
 - NoClassDefFoundError: org.slf4j.LoggerFactory [\#200](https://github.com/mvndaemon/mvnd/issues/200)
 - Support multiple level of properties file, discriminate between daemons, allow configuring min/max memory [\#188](https://github.com/mvndaemon/mvnd/issues/188)
 - Support for interactive sessions [\#180](https://github.com/mvndaemon/mvnd/issues/180)
@@ -219,7 +220,6 @@
 
 **Closed issues:**
 
-- exec-maven-plugin fails to run maven wrapper when run via maven daemon [\#171](https://github.com/mvndaemon/mvnd/issues/171)
 - Error when using axistools-maven-plugin [\#87](https://github.com/mvndaemon/mvnd/issues/87)
 - Support for failsafe? [\#86](https://github.com/mvndaemon/mvnd/issues/86)
 - ProjectBuildLogAppender not found when starting the daemon [\#165](https://github.com/mvndaemon/mvnd/issues/165)
