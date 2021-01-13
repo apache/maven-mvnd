@@ -70,7 +70,11 @@ import org.apache.maven.extension.internal.CoreExports;
 import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
+import org.apache.maven.plugin.ExtensionRealmCache;
+import org.apache.maven.plugin.PluginArtifactsCache;
+import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.artifact.ProjectArtifactsCache;
 import org.apache.maven.properties.internal.EnvironmentUtils;
 import org.apache.maven.properties.internal.SystemProperties;
 import org.apache.maven.session.scope.internal.SessionScopeModule;
@@ -89,6 +93,10 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
+import org.mvndaemon.mvnd.cache.impl.CliExtensionRealmCache;
+import org.mvndaemon.mvnd.cache.impl.CliPluginArtifactsCache;
+import org.mvndaemon.mvnd.cache.impl.CliPluginRealmCache;
+import org.mvndaemon.mvnd.cache.impl.CliProjectArtifactsCache;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
@@ -493,6 +501,10 @@ public class DaemonMavenCli {
             protected void configure() {
                 bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
                 bind(CoreExports.class).toInstance(exports);
+                bind(ExtensionRealmCache.class).to(CliExtensionRealmCache.class);
+                bind(PluginArtifactsCache.class).to(CliPluginArtifactsCache.class);
+                bind(PluginRealmCache.class).to(CliPluginRealmCache.class);
+                bind(ProjectArtifactsCache.class).to(CliProjectArtifactsCache.class);
             }
         });
 

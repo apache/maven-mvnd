@@ -38,9 +38,13 @@ public class TestUtils {
     }
 
     public static Path deleteDir(Path dir) {
+        return deleteDir(dir, true);
+    }
+
+    public static Path deleteDir(Path dir, boolean failOnError) {
         if (Files.exists(dir)) {
             try (Stream<Path> files = Files.walk(dir)) {
-                files.sorted(Comparator.reverseOrder()).forEach(TestUtils::deleteFile);
+                files.sorted(Comparator.reverseOrder()).forEach(f -> deleteFile(f, failOnError));
             } catch (Exception e) {
                 throw new RuntimeException("Could not walk " + dir, e);
             }
@@ -48,11 +52,15 @@ public class TestUtils {
         return dir;
     }
 
-    private static void deleteFile(Path f) {
+    private static void deleteFile(Path f, boolean failOnError) {
         try {
             Files.delete(f);
         } catch (Exception e) {
-            throw new RuntimeException("Could not delete " + f, e);
+            if (failOnError) {
+                throw new RuntimeException("Could not delete " + f, e);
+            } else {
+                System.err.println("Error deleting " + f + ": " + e);
+            }
         }
     }
 
