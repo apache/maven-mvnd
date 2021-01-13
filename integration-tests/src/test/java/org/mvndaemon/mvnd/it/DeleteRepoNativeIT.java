@@ -18,6 +18,7 @@ package org.mvndaemon.mvnd.it;
 import java.io.IOException;
 import java.nio.file.Path;
 import javax.inject.Inject;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
@@ -37,6 +38,9 @@ public class DeleteRepoNativeIT {
 
     @Test
     void buildDeleteRepoAndRebuild() throws IOException, InterruptedException {
+        Assumptions.assumeTrue(Os.current() != Os.WINDOWS,
+                "Test disabled on windows because all jar files are locked, so we can't even delete the repository");
+
         final Path localMavenRepo = parameters.mavenRepoLocal();
         TestUtils.deleteDir(localMavenRepo);
 
