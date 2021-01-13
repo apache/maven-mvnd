@@ -30,6 +30,7 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
+import org.mvndaemon.mvnd.junit.TestUtils;
 
 @MvndNativeTest(projectDir = "src/test/projects/single-module")
 public class SingleModuleNativeIT {
@@ -79,6 +80,20 @@ public class SingleModuleNativeIT {
 
         Assertions.assertThat(installedJar).exists();
 
+    }
+
+    @Test
+    void buildDeleteRepoAndRebuild() throws IOException, InterruptedException {
+        final Path localMavenRepo = parameters.mavenRepoLocal();
+        TestUtils.deleteDir(localMavenRepo);
+
+        final TestClientOutput o1 = new TestClientOutput();
+        client.execute(o1, "clean", "install", "-e", "-B").assertSuccess();
+
+        TestUtils.deleteDir(localMavenRepo);
+
+        final TestClientOutput o2 = new TestClientOutput();
+        client.execute(o2, "clean", "install", "-e", "-B").assertSuccess();
     }
 
     protected void assertJVM(TestClientOutput o, Properties props) {
