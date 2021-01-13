@@ -88,8 +88,17 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
                 getLogger().debug("Starting to watch path " + key);
             }
             try {
+                WatchEvent.Modifier[] mods;
+                try {
+                    mods = new WatchEvent.Modifier[] {
+                            com.sun.nio.file.SensitivityWatchEventModifier.HIGH
+                    };
+                } catch (Throwable t) {
+                    mods = null;
+                }
                 final WatchKey watchKey = key.register(watchService,
-                        StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+                        new WatchEvent.Kind[] { StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY },
+                        mods);
                 return new Registration(watchKey);
             } catch (IOException e) {
                 throw new RuntimeException(e);

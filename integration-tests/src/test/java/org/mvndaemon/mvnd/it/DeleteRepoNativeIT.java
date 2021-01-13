@@ -44,6 +44,10 @@ public class DeleteRepoNativeIT {
         client.execute(o1, "clean", "install", "-e", "-B").assertSuccess();
 
         TestUtils.deleteDir(localMavenRepo, Os.current() != Os.WINDOWS);
+        if (Os.current() == Os.WINDOWS) {
+            // On windows, we're using the service watcher which polls every 2s by default
+            Thread.sleep(2500);
+        }
 
         final TestClientOutput o2 = new TestClientOutput();
         client.execute(o2, "clean", "install", "-e", "-B").assertSuccess();
