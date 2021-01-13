@@ -29,6 +29,7 @@ import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Message;
+import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
@@ -90,7 +91,7 @@ public class SingleModuleNativeIT {
         final TestClientOutput o1 = new TestClientOutput();
         client.execute(o1, "clean", "install", "-e", "-B").assertSuccess();
 
-        TestUtils.deleteDir(localMavenRepo);
+        TestUtils.deleteDir(localMavenRepo, Os.current() != Os.WINDOWS);
 
         final TestClientOutput o2 = new TestClientOutput();
         client.execute(o2, "clean", "install", "-e", "-B").assertSuccess();
