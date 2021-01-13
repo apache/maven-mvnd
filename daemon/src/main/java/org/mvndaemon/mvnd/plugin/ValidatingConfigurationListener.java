@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.mvndaemon.mvnd.plugin;
 
 /*
@@ -18,11 +33,9 @@ package org.mvndaemon.mvnd.plugin;
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.Parameter;
 import org.codehaus.plexus.component.configurator.ConfigurationListener;
@@ -34,8 +47,7 @@ import org.codehaus.plexus.component.configurator.ConfigurationListener;
  * @author Benjamin Bentmann
  */
 class ValidatingConfigurationListener
-    implements ConfigurationListener
-{
+        implements ConfigurationListener {
 
     private final Object mojo;
 
@@ -43,54 +55,43 @@ class ValidatingConfigurationListener
 
     private final Map<String, Parameter> missingParameters;
 
-    ValidatingConfigurationListener(Object mojo, MojoDescriptor mojoDescriptor, ConfigurationListener delegate )
-    {
+    ValidatingConfigurationListener(Object mojo, MojoDescriptor mojoDescriptor, ConfigurationListener delegate) {
         this.mojo = mojo;
         this.delegate = delegate;
         this.missingParameters = new HashMap<>();
 
-        if ( mojoDescriptor.getParameters() != null )
-        {
-            for ( Parameter param : mojoDescriptor.getParameters() )
-            {
-                if ( param.isRequired() )
-                {
-                    missingParameters.put( param.getName(), param );
+        if (mojoDescriptor.getParameters() != null) {
+            for (Parameter param : mojoDescriptor.getParameters()) {
+                if (param.isRequired()) {
+                    missingParameters.put(param.getName(), param);
                 }
             }
         }
     }
 
-    public Collection<Parameter> getMissingParameters()
-    {
+    public Collection<Parameter> getMissingParameters() {
         return missingParameters.values();
     }
 
-    public void notifyFieldChangeUsingSetter( String fieldName, Object value, Object target )
-    {
-        delegate.notifyFieldChangeUsingSetter( fieldName, value, target );
+    public void notifyFieldChangeUsingSetter(String fieldName, Object value, Object target) {
+        delegate.notifyFieldChangeUsingSetter(fieldName, value, target);
 
-        if ( mojo == target )
-        {
-            notify( fieldName, value );
+        if (mojo == target) {
+            notify(fieldName, value);
         }
     }
 
-    public void notifyFieldChangeUsingReflection( String fieldName, Object value, Object target )
-    {
-        delegate.notifyFieldChangeUsingReflection( fieldName, value, target );
+    public void notifyFieldChangeUsingReflection(String fieldName, Object value, Object target) {
+        delegate.notifyFieldChangeUsingReflection(fieldName, value, target);
 
-        if ( mojo == target )
-        {
-            notify( fieldName, value );
+        if (mojo == target) {
+            notify(fieldName, value);
         }
     }
 
-    private void notify( String fieldName, Object value )
-    {
-        if ( value != null )
-        {
-            missingParameters.remove( fieldName );
+    private void notify(String fieldName, Object value) {
+        if (value != null) {
+            missingParameters.remove(fieldName);
         }
     }
 
