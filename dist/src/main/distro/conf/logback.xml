@@ -26,7 +26,7 @@
   <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator" />
 
   <appender name="DAEMON" class="ch.qos.logback.core.FileAppender">
-    <file>${mvnd.daemonStorage}/daemon-${mvnd.uid}.log</file>
+    <file>${mvnd.daemonStorage}/daemon-${mvnd.id}.log</file>
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} %.-1level %msg%n</pattern>
     </encoder>

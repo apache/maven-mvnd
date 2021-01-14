@@ -23,6 +23,8 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @MvndTest(projectDir = "src/test/projects/exec-output")
 public class ExecOutputTest {
 
@@ -36,9 +38,9 @@ public class ExecOutputTest {
     void cleanInstall() throws IOException, InterruptedException {
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "verify", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
-        output.messagesToString()
-                .contains("ProjectLogMessage{projectId='exec-output', message='[INFO] [stdout] Hello world!'}");
+        client.execute(output, "clean", "verify", "-e", "-B", "-Dmvnd.log.level=DEBUG").assertSuccess();
+        assertTrue(output.messagesToString()
+                .contains("ProjectLogMessage{projectId='exec-output', message='[INFO] [stdout] Hello world!'}"));
 
     }
 }

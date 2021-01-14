@@ -70,7 +70,7 @@ public class TerminalOutput implements ClientOutput {
      * In no-buffering mode, the output of concurrent builds will be interleaved and
      * each line will be prepended with the module name in order to distinguish them.
      * In buffering mode, the list of modules being built is displayed and update
-     * continuously.  In this mode, pressing '+' one or more times will open a rolling
+     * continuously. In this mode, pressing '+' one or more times will open a rolling
      * window for each module with the related output.
      */
     public static final int KEY_CTRL_B = 'B' & 0x1f;
