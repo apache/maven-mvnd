@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -145,5 +146,22 @@ public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFa
             }
         }
 
+        @Override
+        public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+            return map.compute(key, (k, v) -> {
+                if (v != null) {
+                    try {
+                        if (Objects.equals(v.timestamp, v.current())) {
+                            return v;
+                        }
+                    } catch (RuntimeException e) {
+                        // ignore and invalidate the record
+                    }
+                    v.record.invalidate();
+                    v = null;
+                }
+                return new Record<>(mappingFunction.apply(k));
+            }).record;
+        }
     }
 }

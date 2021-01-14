@@ -16,6 +16,7 @@
 package org.mvndaemon.mvnd.cache.factory;
 
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 
 /**
  * Cache containing records that can be invalidated.
@@ -52,5 +53,10 @@ public interface Cache<K, V extends CacheRecord> {
      * Remove cached records according to the predicate
      */
     void removeIf(BiPredicate<K, V> predicate);
+
+    /**
+     * Get or compute the cached value if absent and return it.
+     */
+    V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction);
 
 }

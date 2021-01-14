@@ -23,7 +23,9 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.DefaultPluginRealmCache;
+import org.apache.maven.plugin.PluginContainerException;
 import org.apache.maven.plugin.PluginRealmCache;
+import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
@@ -37,6 +39,11 @@ import org.mvndaemon.mvnd.cache.factory.CacheFactory;
 @Priority(10)
 @Typed(PluginRealmCache.class)
 public class CliPluginRealmCache extends DefaultPluginRealmCache {
+
+    @FunctionalInterface
+    public interface PluginRealmSupplier {
+        CacheRecord load() throws PluginResolutionException, PluginContainerException;
+    }
 
     protected static class Record implements org.mvndaemon.mvnd.cache.factory.CacheRecord {
 
@@ -73,6 +80,28 @@ public class CliPluginRealmCache extends DefaultPluginRealmCache {
     public CacheRecord get(Key key) {
         Record r = cache.get(key);
         return r != null ? r.record : null;
+    }
+
+    public CacheRecord get(Key key, PluginRealmSupplier supplier)
+            throws PluginResolutionException, PluginContainerException {
+        try {
+            Record r = cache.computeIfAbsent(key, k -> {
+                try {
+                    return new Record(supplier.load());
+                } catch (PluginResolutionException | PluginContainerException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            return r.record;
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof PluginResolutionException) {
+                throw (PluginResolutionException) e.getCause();
+            }
+            if (e.getCause() instanceof PluginContainerException) {
+                throw (PluginContainerException) e.getCause();
+            }
+            throw e;
+        }
     }
 
     @Override

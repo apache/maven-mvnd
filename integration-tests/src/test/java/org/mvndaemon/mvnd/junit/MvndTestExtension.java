@@ -220,8 +220,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     localMavenRepository, settingsPath,
                     logback,
                     TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
-                    TimeUtils.toDuration(Environment.MVND_KEEP_ALIVE.getDefault()),
-                    Integer.parseInt(Environment.MVND_MAX_LOST_KEEP_ALIVE.getDefault()));
+                    TimeUtils.toDuration(Environment.MVND_KEEP_ALIVE.getDefault()).multipliedBy(10),
+                    Integer.parseInt(Environment.MVND_MAX_LOST_KEEP_ALIVE.getDefault()) * 10);
             final TestRegistry registry = new TestRegistry(parameters.registry());
 
             return new MvndResource(parameters, registry, isNative, timeoutMs);

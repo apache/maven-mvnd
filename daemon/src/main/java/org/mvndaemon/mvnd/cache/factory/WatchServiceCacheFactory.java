@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
@@ -241,5 +242,14 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
             }
         }
 
+        @Override
+        public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+            validateRecords();
+            return map.computeIfAbsent(key, k -> {
+                V v = mappingFunction.apply(k);
+                add(v);
+                return v;
+            });
+        }
     }
 }
