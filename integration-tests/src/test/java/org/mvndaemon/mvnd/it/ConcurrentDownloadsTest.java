@@ -48,14 +48,16 @@ public class ConcurrentDownloadsTest {
         int maxCur = 0;
         int cur = 0;
         for (Message m : o.getMessages()) {
-            if (m.getType() == Message.TRANSFER_STARTED) {
-                if (((Message.TransferEvent) m).getResourceName().contains("apache-camel")) {
-                    cur++;
-                    maxCur = Math.max(cur, maxCur);
-                }
-            } else if (m.getType() == Message.TRANSFER_SUCCEEDED) {
-                if (((Message.TransferEvent) m).getResourceName().contains("apache-camel")) {
-                    cur--;
+            if (m instanceof Message.TransferEvent) {
+                Message.TransferEvent event = (Message.TransferEvent) m;
+                String resource = event.getResourceName();
+                if (resource.contains("apache-camel") || resource.contains("apache-activemq")) {
+                    if (m.getType() == Message.TRANSFER_STARTED) {
+                        cur++;
+                        maxCur = Math.max(cur, maxCur);
+                    } else if (m.getType() == Message.TRANSFER_SUCCEEDED) {
+                        cur--;
+                    }
                 }
             }
         }
