@@ -8,10 +8,12 @@
 
 - NPE after pressing CTRL+B in the client [\#324](https://github.com/mvndaemon/mvnd/issues/324)
 - Should print id of daemon that is processing the request [\#314](https://github.com/mvndaemon/mvnd/issues/314)
+- The caches are not all cleaned when deleting the local repository [\#312](https://github.com/mvndaemon/mvnd/issues/312)
 - The output of ConsoleMavenTransferListener looks ugly in the client [\#284](https://github.com/mvndaemon/mvnd/issues/284)
 
 **Merged pull requests:**
 
+- The caches are not all cleaned when deleting the local repository, fi… [\#328](https://github.com/mvndaemon/mvnd/pull/328) ([gnodet](https://github.com/gnodet))
 - Use mvnd instead of mvn in the help output [\#327](https://github.com/mvndaemon/mvnd/pull/327) ([ppalaga](https://github.com/ppalaga))
 - Add a bit of doc for the various supported keys, \#293 [\#326](https://github.com/mvndaemon/mvnd/pull/326) ([gnodet](https://github.com/gnodet))
 - NPE after pressing CTRL+B in the client \#324 [\#325](https://github.com/mvndaemon/mvnd/pull/325) ([ppalaga](https://github.com/ppalaga))
@@ -242,6 +244,7 @@
 - mvnd native executable is not passing -Dkey=val to the daemon [\#159](https://github.com/mvndaemon/mvnd/pull/159) ([ppalaga](https://github.com/ppalaga))
 - Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
 - Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
+- Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
@@ -256,7 +259,6 @@
 
 - mvnd --status throws NumberFormatException in 0.0.9 [\#149](https://github.com/mvndaemon/mvnd/pull/149) ([ppalaga](https://github.com/ppalaga))
 - Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
-- Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.9](https://github.com/mvndaemon/mvnd/tree/0.0.9) (2020-10-25)
 
