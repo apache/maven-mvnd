@@ -25,6 +25,9 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.DefaultPluginDescriptorCache;
+import org.apache.maven.plugin.InvalidPluginDescriptorException;
+import org.apache.maven.plugin.PluginDescriptorParsingException;
+import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
@@ -37,6 +40,12 @@ import org.mvndaemon.mvnd.cache.factory.CacheRecord;
 @Singleton
 @Named
 public class CliPluginDescriptorCache extends DefaultPluginDescriptorCache {
+
+    @FunctionalInterface
+    public interface PluginDescriptorSupplier {
+        PluginDescriptor load()
+                throws PluginResolutionException, PluginDescriptorParsingException, InvalidPluginDescriptorException;
+    }
 
     protected static class Record implements CacheRecord {
 
@@ -79,6 +88,31 @@ public class CliPluginDescriptorCache extends DefaultPluginDescriptorCache {
     public PluginDescriptor get(Key key) {
         Record r = cache.get(key);
         return r != null ? clone(r.descriptor) : null;
+    }
+
+    public PluginDescriptor get(Key key, PluginDescriptorSupplier supplier)
+            throws PluginDescriptorParsingException, PluginResolutionException, InvalidPluginDescriptorException {
+        try {
+            Record r = cache.computeIfAbsent(key, k -> {
+                try {
+                    return new Record(clone(supplier.load()));
+                } catch (PluginDescriptorParsingException | PluginResolutionException | InvalidPluginDescriptorException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            return clone(r.descriptor);
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof PluginDescriptorParsingException) {
+                throw (PluginDescriptorParsingException) e.getCause();
+            }
+            if (e.getCause() instanceof PluginResolutionException) {
+                throw (PluginResolutionException) e.getCause();
+            }
+            if (e.getCause() instanceof InvalidPluginDescriptorException) {
+                throw (InvalidPluginDescriptorException) e.getCause();
+            }
+            throw e;
+        }
     }
 
     @Override

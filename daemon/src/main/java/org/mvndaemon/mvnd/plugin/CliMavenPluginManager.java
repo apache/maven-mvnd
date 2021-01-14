@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.classrealm.ClassRealmManager;
@@ -95,8 +98,6 @@ import org.apache.maven.session.scope.internal.SessionScopeModule;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.codehaus.plexus.component.annotations.Component;
-import org.codehaus.plexus.component.annotations.Requirement;
 import org.codehaus.plexus.component.composition.CycleDetectedInComponentGraphException;
 import org.codehaus.plexus.component.configurator.ComponentConfigurationException;
 import org.codehaus.plexus.component.configurator.ComponentConfigurator;
@@ -120,7 +121,15 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.filter.AndDependencyFilter;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
+import org.eclipse.sisu.Priority;
+import org.eclipse.sisu.Typed;
+import org.mvndaemon.mvnd.cache.impl.CliPluginDescriptorCache;
+import org.mvndaemon.mvnd.cache.impl.CliPluginRealmCache;
 
+/*
+ * gnodet: This file is based on maven DefaultMavenPluginManager and changed in order
+ * to better support parallel builds. See https://github.com/mvndaemon/mvnd/issues/310
+ */
 /**
  * Provides basic services to manage Maven plugins and their mojos. This component is kept general in its design such
  * that the plugins/mojos can be used in arbitrary contexts. In particular, the mojos can be used for ordinary build
@@ -129,8 +138,11 @@ import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
  * @author Benjamin Bentmann
  * @since  3.0
  */
-@Component(role = MavenPluginManager.class)
-public class DefaultMavenPluginManager
+@Singleton
+@Named
+@Priority(10)
+@Typed(MavenPluginManager.class)
+public class CliMavenPluginManager
         implements MavenPluginManager {
 
     /**
@@ -142,63 +154,61 @@ public class DefaultMavenPluginManager
      * 
      * @since 3.3.0
      */
-    public static final String KEY_EXTENSIONS_REALMS = DefaultMavenPluginManager.class.getName() + "/extensionsRealms";
+    public static final String KEY_EXTENSIONS_REALMS = CliMavenPluginManager.class.getName() + "/extensionsRealms";
 
-    @Requirement
+    @Inject
     private Logger logger;
 
-    @Requirement
+    @Inject
     private LoggerManager loggerManager;
 
-    @Requirement
+    @Inject
     private PlexusContainer container;
 
-    @Requirement
+    @Inject
     private ClassRealmManager classRealmManager;
 
-    @Requirement
-    private PluginDescriptorCache pluginDescriptorCache;
+    @Inject
+    private CliPluginDescriptorCache pluginDescriptorCache;
 
-    @Requirement
-    private PluginRealmCache pluginRealmCache;
+    @Inject
+    private CliPluginRealmCache pluginRealmCache;
 
-    @Requirement
+    @Inject
     private PluginDependenciesResolver pluginDependenciesResolver;
 
-    @Requirement
+    @Inject
     private RuntimeInformation runtimeInformation;
 
-    @Requirement
+    @Inject
     private ExtensionRealmCache extensionRealmCache;
 
-    @Requirement
+    @Inject
     private PluginVersionResolver pluginVersionResolver;
 
-    @Requirement
+    @Inject
     private PluginArtifactsCache pluginArtifactsCache;
 
     private ExtensionDescriptorBuilder extensionDescriptorBuilder = new ExtensionDescriptorBuilder();
 
     private PluginDescriptorBuilder builder = new PluginDescriptorBuilder();
 
-    public synchronized PluginDescriptor getPluginDescriptor(Plugin plugin, List<RemoteRepository> repositories,
+    public PluginDescriptor getPluginDescriptor(Plugin plugin, List<RemoteRepository> repositories,
             RepositorySystemSession session)
             throws PluginResolutionException, PluginDescriptorParsingException, InvalidPluginDescriptorException {
         PluginDescriptorCache.Key cacheKey = pluginDescriptorCache.createKey(plugin, repositories, session);
 
-        PluginDescriptor pluginDescriptor = pluginDescriptorCache.get(cacheKey);
-
-        if (pluginDescriptor == null) {
+        PluginDescriptor pluginDescriptor = pluginDescriptorCache.get(cacheKey, () -> {
             org.eclipse.aether.artifact.Artifact artifact = pluginDependenciesResolver.resolve(plugin, repositories, session);
 
             Artifact pluginArtifact = RepositoryUtils.toArtifact(artifact);
 
-            pluginDescriptor = extractPluginDescriptor(pluginArtifact, plugin);
+            PluginDescriptor descriptor = extractPluginDescriptor(pluginArtifact, plugin);
 
-            pluginDescriptor.setRequiredMavenVersion(artifact.getProperty("requiredMavenVersion", null));
+            descriptor.setRequiredMavenVersion(artifact.getProperty("requiredMavenVersion", null));
 
-            pluginDescriptorCache.put(cacheKey, pluginDescriptor);
-        }
+            return descriptor;
+        });
 
         pluginDescriptor.setPlugin(plugin);
 
@@ -301,7 +311,7 @@ public class DefaultMavenPluginManager
         }
     }
 
-    public synchronized void setupPluginRealm(PluginDescriptor pluginDescriptor, MavenSession session,
+    public void setupPluginRealm(PluginDescriptor pluginDescriptor, MavenSession session,
             ClassLoader parent, List<String> imports, DependencyFilter filter)
             throws PluginResolutionException, PluginContainerException {
         Plugin plugin = pluginDescriptor.getPlugin();
@@ -334,7 +344,10 @@ public class DefaultMavenPluginManager
                     project.getRemotePluginRepositories(),
                     session.getRepositorySession());
 
-            PluginRealmCache.CacheRecord cacheRecord = pluginRealmCache.get(cacheKey);
+            PluginRealmCache.CacheRecord cacheRecord = pluginRealmCache.get(cacheKey, () -> {
+                createPluginRealm(pluginDescriptor, session, parent, foreignImports, filter);
+                return new PluginRealmCache.CacheRecord(pluginDescriptor.getClassRealm(), pluginDescriptor.getArtifacts());
+            });
 
             if (cacheRecord != null) {
                 pluginDescriptor.setClassRealm(cacheRecord.getRealm());
@@ -342,10 +355,6 @@ public class DefaultMavenPluginManager
                 for (ComponentDescriptor<?> componentDescriptor : pluginDescriptor.getComponents()) {
                     componentDescriptor.setRealm(cacheRecord.getRealm());
                 }
-            } else {
-                createPluginRealm(pluginDescriptor, session, parent, foreignImports, filter);
-
-                cacheRecord = pluginRealmCache.put(cacheKey, pluginDescriptor.getClassRealm(), pluginDescriptor.getArtifacts());
             }
 
             pluginRealmCache.register(project, cacheKey, cacheRecord);
