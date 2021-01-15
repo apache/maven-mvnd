@@ -9,10 +9,13 @@
 - NPE after pressing CTRL+B in the client [\#324](https://github.com/mvndaemon/mvnd/issues/324)
 - Should print id of daemon that is processing the request [\#314](https://github.com/mvndaemon/mvnd/issues/314)
 - The caches are not all cleaned when deleting the local repository [\#312](https://github.com/mvndaemon/mvnd/issues/312)
+- Speeding up parallel plugins setup [\#310](https://github.com/mvndaemon/mvnd/issues/310)
 - The output of ConsoleMavenTransferListener looks ugly in the client [\#284](https://github.com/mvndaemon/mvnd/issues/284)
+- Investigate the other caches in Maven [\#237](https://github.com/mvndaemon/mvnd/issues/237)
 
 **Merged pull requests:**
 
+- Fixes [\#329](https://github.com/mvndaemon/mvnd/pull/329) ([gnodet](https://github.com/gnodet))
 - The caches are not all cleaned when deleting the local repository, fi… [\#328](https://github.com/mvndaemon/mvnd/pull/328) ([gnodet](https://github.com/gnodet))
 - Use mvnd instead of mvn in the help output [\#327](https://github.com/mvndaemon/mvnd/pull/327) ([ppalaga](https://github.com/ppalaga))
 - Add a bit of doc for the various supported keys, \#293 [\#326](https://github.com/mvndaemon/mvnd/pull/326) ([gnodet](https://github.com/gnodet))
@@ -24,6 +27,8 @@
 - One more attempt to workaround \#281 [\#317](https://github.com/mvndaemon/mvnd/pull/317) ([ppalaga](https://github.com/ppalaga))
 - Add TOC to README.adoc [\#315](https://github.com/mvndaemon/mvnd/pull/315) ([famod](https://github.com/famod))
 - Send transfer events to the client for better display, \#284 [\#313](https://github.com/mvndaemon/mvnd/pull/313) ([gnodet](https://github.com/gnodet))
+- Speed up parallel plugin setup \#310 [\#311](https://github.com/mvndaemon/mvnd/pull/311) ([gnodet](https://github.com/gnodet))
+- Replace mvnd --completion by a plain source now the bash file is in t… [\#308](https://github.com/mvndaemon/mvnd/pull/308) ([rmannibucau](https://github.com/rmannibucau))
 
 ## [0.3.0](https://github.com/mvndaemon/mvnd/tree/0.3.0) (2021-01-07)
 
@@ -47,7 +52,6 @@
 
 **Merged pull requests:**
 
-- Replace mvnd --completion by a plain source now the bash file is in t… [\#308](https://github.com/mvndaemon/mvnd/pull/308) ([rmannibucau](https://github.com/rmannibucau))
 - Speed up bash completion loading by packaging it as a file in the ZIP… [\#307](https://github.com/mvndaemon/mvnd/pull/307) ([ppalaga](https://github.com/ppalaga))
 - The output of ConsoleMavenTransferListener looks ugly in the client  [\#306](https://github.com/mvndaemon/mvnd/pull/306) ([ppalaga](https://github.com/ppalaga))
 - Messages sent from the server to the client should not end with a \r … [\#305](https://github.com/mvndaemon/mvnd/pull/305) ([ppalaga](https://github.com/ppalaga))
@@ -244,7 +248,6 @@
 - mvnd native executable is not passing -Dkey=val to the daemon [\#159](https://github.com/mvndaemon/mvnd/pull/159) ([ppalaga](https://github.com/ppalaga))
 - Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
 - Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
-- Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
@@ -259,6 +262,7 @@
 
 - mvnd --status throws NumberFormatException in 0.0.9 [\#149](https://github.com/mvndaemon/mvnd/pull/149) ([ppalaga](https://github.com/ppalaga))
 - Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
+- Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.9](https://github.com/mvndaemon/mvnd/tree/0.0.9) (2020-10-25)
 
