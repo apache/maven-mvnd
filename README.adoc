@@ -126,6 +126,8 @@ mvnd clean install
 
 `--stop` kills all running daemons
 
+The complete list of options is printed when executing `mvnd --help`.
+
 == Build `mvnd` from source
 
 === Prerequisites:
