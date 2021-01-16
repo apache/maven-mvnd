@@ -7,6 +7,7 @@
 **Closed issues:**
 
 - NPE after pressing CTRL+B in the client [\#324](https://github.com/mvndaemon/mvnd/issues/324)
+- maven.compiler.source & maven.compiler.target 8 [\#320](https://github.com/mvndaemon/mvnd/issues/320)
 - Should print id of daemon that is processing the request [\#314](https://github.com/mvndaemon/mvnd/issues/314)
 - The caches are not all cleaned when deleting the local repository [\#312](https://github.com/mvndaemon/mvnd/issues/312)
 - Speeding up parallel plugins setup [\#310](https://github.com/mvndaemon/mvnd/issues/310)
@@ -28,7 +29,6 @@
 - Add TOC to README.adoc [\#315](https://github.com/mvndaemon/mvnd/pull/315) ([famod](https://github.com/famod))
 - Send transfer events to the client for better display, \#284 [\#313](https://github.com/mvndaemon/mvnd/pull/313) ([gnodet](https://github.com/gnodet))
 - Speed up parallel plugin setup \#310 [\#311](https://github.com/mvndaemon/mvnd/pull/311) ([gnodet](https://github.com/gnodet))
-- Replace mvnd --completion by a plain source now the bash file is in t… [\#308](https://github.com/mvndaemon/mvnd/pull/308) ([rmannibucau](https://github.com/rmannibucau))
 
 ## [0.3.0](https://github.com/mvndaemon/mvnd/tree/0.3.0) (2021-01-07)
 
@@ -52,6 +52,7 @@
 
 **Merged pull requests:**
 
+- Replace mvnd --completion by a plain source now the bash file is in t… [\#308](https://github.com/mvndaemon/mvnd/pull/308) ([rmannibucau](https://github.com/rmannibucau))
 - Speed up bash completion loading by packaging it as a file in the ZIP… [\#307](https://github.com/mvndaemon/mvnd/pull/307) ([ppalaga](https://github.com/ppalaga))
 - The output of ConsoleMavenTransferListener looks ugly in the client  [\#306](https://github.com/mvndaemon/mvnd/pull/306) ([ppalaga](https://github.com/ppalaga))
 - Messages sent from the server to the client should not end with a \r … [\#305](https://github.com/mvndaemon/mvnd/pull/305) ([ppalaga](https://github.com/ppalaga))
