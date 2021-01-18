@@ -56,14 +56,14 @@ class ReactorBuildStats {
         this.bottleneckTimes = ImmutableMap.copyOf(bottleneckTimes);
     }
 
-    private static String projectGA(MavenProject project) {
-        return project.getGroupId() + ":" + project.getArtifactId();
+    private static String projectGAV(MavenProject project) {
+        return project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
     }
 
     public static ReactorBuildStats create(Collection<MavenProject> projects) {
         ImmutableMap.Builder<String, AtomicLong> serviceTimes = ImmutableMap.builder();
         ImmutableMap.Builder<String, AtomicLong> bottleneckTimes = ImmutableMap.builder();
-        projects.stream().map(ReactorBuildStats::projectGA).forEach(key -> {
+        projects.stream().map(ReactorBuildStats::projectGAV).forEach(key -> {
             serviceTimes.put(key, new AtomicLong());
             bottleneckTimes.put(key, new AtomicLong());
         });
@@ -79,9 +79,9 @@ class ReactorBuildStats {
     }
 
     public void recordServiceTime(MavenProject project, long durationNanos) {
-        AtomicLong serviceTime = serviceTimes.get(projectGA(project));
+        AtomicLong serviceTime = serviceTimes.get(projectGAV(project));
         if (serviceTime == null) {
-            throw new IllegalStateException("Unknown project " + projectGA(project) + ", found " + serviceTimes.keySet());
+            throw new IllegalStateException("Unknown project " + projectGAV(project) + ", found " + serviceTimes.keySet());
         }
         serviceTime.addAndGet(durationNanos);
     }
@@ -90,7 +90,7 @@ class ReactorBuildStats {
             long durationNanos) {
         // only projects that result in single-threaded builds
         if (projects.size() == 1) {
-            projects.forEach(p -> bottleneckTimes.get(projectGA(p)).addAndGet(durationNanos));
+            projects.forEach(p -> bottleneckTimes.get(projectGAV(p)).addAndGet(durationNanos));
         }
     }
 
@@ -108,7 +108,7 @@ class ReactorBuildStats {
     }
 
     public String renderCriticalPath(DependencyGraph<MavenProject> graph) {
-        return renderCriticalPath(graph, ReactorBuildStats::projectGA);
+        return renderCriticalPath(graph, ReactorBuildStats::projectGAV);
     }
 
     public <K> String renderCriticalPath(DependencyGraph<K> graph, Function<K, String> toKey) {
