@@ -6,8 +6,10 @@
 
 **Closed issues:**
 
+- \[ERROR\] Multiple entries with same key [\#333](https://github.com/mvndaemon/mvnd/issues/333)
 - NPE after pressing CTRL+B in the client [\#324](https://github.com/mvndaemon/mvnd/issues/324)
 - maven.compiler.source & maven.compiler.target 8 [\#320](https://github.com/mvndaemon/mvnd/issues/320)
+- Readme: "mvnd specific options" is incomplete [\#316](https://github.com/mvndaemon/mvnd/issues/316)
 - Should print id of daemon that is processing the request [\#314](https://github.com/mvndaemon/mvnd/issues/314)
 - The caches are not all cleaned when deleting the local repository [\#312](https://github.com/mvndaemon/mvnd/issues/312)
 - Speeding up parallel plugins setup [\#310](https://github.com/mvndaemon/mvnd/issues/310)
@@ -16,6 +18,8 @@
 
 **Merged pull requests:**
 
+- Fix error when the reactor contains duplicate groupId:artifactId, fix… [\#335](https://github.com/mvndaemon/mvnd/pull/335) ([gnodet](https://github.com/gnodet))
+- README: Mention --help in 'specific options' [\#332](https://github.com/mvndaemon/mvnd/pull/332) ([famod](https://github.com/famod))
 - Fixes [\#329](https://github.com/mvndaemon/mvnd/pull/329) ([gnodet](https://github.com/gnodet))
 - The caches are not all cleaned when deleting the local repository, fi… [\#328](https://github.com/mvndaemon/mvnd/pull/328) ([gnodet](https://github.com/gnodet))
 - Use mvnd instead of mvn in the help output [\#327](https://github.com/mvndaemon/mvnd/pull/327) ([ppalaga](https://github.com/ppalaga))
