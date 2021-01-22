@@ -69,6 +69,15 @@ public class MavenDaemon {
                     return MavenDaemon.class.getClassLoader().loadClass(name);
                 }
             }
+
+            @Override
+            public URL getResource(String name) {
+                URL url = super.getResource(name);
+                if (url == null) {
+                    url = MavenDaemon.class.getClassLoader().getResource(name);
+                }
+                return url;
+            }
         };
         Thread.currentThread().setContextClassLoader(loader);
         Class<?> clazz = loader.loadClass("org.mvndaemon.mvnd.daemon.Server");
