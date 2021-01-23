@@ -14,10 +14,13 @@
 - The caches are not all cleaned when deleting the local repository [\#312](https://github.com/mvndaemon/mvnd/issues/312)
 - Speeding up parallel plugins setup [\#310](https://github.com/mvndaemon/mvnd/issues/310)
 - The output of ConsoleMavenTransferListener looks ugly in the client [\#284](https://github.com/mvndaemon/mvnd/issues/284)
+- Cannot resolve type description for java.sql.Blob [\#277](https://github.com/mvndaemon/mvnd/issues/277)
 - Investigate the other caches in Maven [\#237](https://github.com/mvndaemon/mvnd/issues/237)
 
 **Merged pull requests:**
 
+- Cleanup [\#339](https://github.com/mvndaemon/mvnd/pull/339) ([ppalaga](https://github.com/ppalaga))
+- Fix JVM resource loading from plugins [\#338](https://github.com/mvndaemon/mvnd/pull/338) ([gnodet](https://github.com/gnodet))
 - Fix error when the reactor contains duplicate groupId:artifactId, fix… [\#335](https://github.com/mvndaemon/mvnd/pull/335) ([gnodet](https://github.com/gnodet))
 - README: Mention --help in 'specific options' [\#332](https://github.com/mvndaemon/mvnd/pull/332) ([famod](https://github.com/famod))
 - Fixes [\#329](https://github.com/mvndaemon/mvnd/pull/329) ([gnodet](https://github.com/gnodet))
