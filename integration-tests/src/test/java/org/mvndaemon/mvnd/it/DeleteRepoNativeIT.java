@@ -42,7 +42,6 @@ public class DeleteRepoNativeIT {
                 "Test disabled on windows because all jar files are locked, so we can't even delete the repository");
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
-        TestUtils.deleteDir(localMavenRepo);
 
         final TestClientOutput o1 = new TestClientOutput();
         client.execute(o1, "clean", "install", "-e", "-B").assertSuccess();
