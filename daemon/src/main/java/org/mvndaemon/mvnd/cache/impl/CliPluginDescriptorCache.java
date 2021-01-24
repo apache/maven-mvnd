@@ -56,7 +56,7 @@ public class CliPluginDescriptorCache extends DefaultPluginDescriptorCache {
         }
 
         @Override
-        public Stream<Path> getDependentPaths() {
+        public Stream<Path> getDependencyPaths() {
             return Optional.ofNullable(descriptor.getArtifacts()).orElse(Collections.emptyList())
                     .stream().map(artifact -> artifact.getFile().toPath());
         }

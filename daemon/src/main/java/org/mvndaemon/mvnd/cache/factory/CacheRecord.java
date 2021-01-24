@@ -27,7 +27,7 @@ public interface CacheRecord {
      * @return a {@link Stream} of file (not directory) {@link Path}s whose modification or deletion causes invalidation
      *         of this {@link CacheRecord}.
      */
-    Stream<Path> getDependentPaths();
+    Stream<Path> getDependencyPaths();
 
     /**
      * Callback called by the cache when this {@link CacheRecord} is removed from the cache.

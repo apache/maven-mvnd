@@ -103,7 +103,7 @@ public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFa
          * @return {@link Set} of {@link FileState}s at current time
          */
         private Set<FileState> currentFileStates() {
-            return record.getDependentPaths()
+            return record.getDependencyPaths()
                     .map(FileState::new)
                     .collect(Collectors.toSet());
         }

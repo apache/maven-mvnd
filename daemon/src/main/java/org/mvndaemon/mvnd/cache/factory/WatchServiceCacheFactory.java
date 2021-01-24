@@ -65,7 +65,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
      * @param record the {@link CacheRecord} to watch
      */
     public void add(CacheRecord record) {
-        record.getDependentPaths().forEach(p -> {
+        record.getDependencyPaths().forEach(p -> {
             final List<CacheRecord> records = recordsByPath.computeIfAbsent(p, k -> new ArrayList<>());
             synchronized (records) {
                 records.add(record);
@@ -159,7 +159,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
     void remove(List<CacheRecord> records) {
         for (CacheRecord record : records) {
             record.invalidate();
-            record.getDependentPaths()
+            record.getDependencyPaths()
                     .map(Path::getParent)
                     .forEach(dir -> registrationsByDir.compute(dir, this::unregister));
         }
