@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.codehaus.plexus.logging.AbstractLogEnabled;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 import org.mvndaemon.mvnd.cache.CacheRecord;
@@ -37,7 +36,7 @@ import org.mvndaemon.mvnd.cache.CacheRecord;
  * A factory for {@link Cache} objects invalidating its entries based on {@link BasicFileAttributes#lastModifiedTime()}
  * and {@link java.nio.file.attribute.BasicFileAttributes#fileKey()}.
  */
-public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFactory {
+public class TimestampCacheFactory implements CacheFactory {
 
     public TimestampCacheFactory() {
     }

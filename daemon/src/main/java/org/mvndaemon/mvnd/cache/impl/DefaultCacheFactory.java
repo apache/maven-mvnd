@@ -31,6 +31,9 @@ public class DefaultCacheFactory implements CacheFactory {
     private final CacheFactory delegate;
 
     public DefaultCacheFactory() {
+        /* java.nio.file.attribute.BasicFileAttributes.fileKey() is always null on Windows
+         * and we do not hold relying solely on java.nio.file.attribute.BasicFileAttributes#lastModifiedTime()
+         * for sufficient. So we rather rely on WatchService on Windows */
         this.delegate = Os.current() == Os.WINDOWS ? new WatchServiceCacheFactory() : new TimestampCacheFactory();
     }
 

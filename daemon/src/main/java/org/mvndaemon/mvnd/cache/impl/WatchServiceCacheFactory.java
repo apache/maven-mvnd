@@ -30,15 +30,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import org.codehaus.plexus.logging.AbstractLogEnabled;
+import java.util.stream.Stream;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 import org.mvndaemon.mvnd.cache.CacheRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A factory for {@link Cache} objects invalidating its entries based on events received from {@link WatchService}.
  */
-public class WatchServiceCacheFactory extends AbstractLogEnabled implements CacheFactory {
+public class WatchServiceCacheFactory implements CacheFactory {
+
+    private static final Logger LOG = LoggerFactory.getLogger(WatchServiceCacheFactory.class);
 
     private final WatchService watchService;
 
@@ -84,9 +88,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
 
     private Registration register(Path key, Registration value) {
         if (value == null) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Starting to watch path " + key);
-            }
+            LOG.debug("Starting to watch path {}", key);
             try {
                 WatchEvent.Modifier[] mods;
                 try {
@@ -105,9 +107,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
             }
         } else {
             int cnt = value.count.incrementAndGet();
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Already " + cnt + " watchers for path " + key);
-            }
+            LOG.debug("Already {} watchers for path {}", cnt, key);
             return value;
         }
     }
@@ -121,19 +121,13 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
             for (WatchEvent<?> event : watchKey.pollEvents()) {
                 final Path dir = entry.getKey();
                 WatchEvent.Kind<?> kind = event.kind();
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("Got watcher event " + kind.name());
-                }
                 if (kind == StandardWatchEventKinds.ENTRY_DELETE || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
                     final Path path = dir.resolve((Path) event.context());
+                    LOG.debug("Got watcher event {} for file {}", kind.name(), path);
                     final List<CacheRecord> records = recordsByPath.remove(path);
-                    if (getLogger().isDebugEnabled()) {
-                        getLogger().debug("Records for path " + path + ": " + records);
-                    }
+                    LOG.debug("Records for path {}: {}", path, records);
                     if (records != null) {
-                        if (getLogger().isDebugEnabled()) {
-                            getLogger().debug("Invalidating recorder of path " + path);
-                        }
+                        LOG.debug("Invalidating records of path {}", path);
                         remove(records);
                     }
                 } else if (kind == StandardWatchEventKinds.OVERFLOW) {
@@ -143,9 +137,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
                         Map.Entry<Path, List<CacheRecord>> en = it.next();
                         if (en.getKey().getParent().equals(dir)) {
                             it.remove();
-                            if (getLogger().isDebugEnabled()) {
-                                getLogger().debug("Invalidating recorder of path " + en.getKey());
-                            }
+                            LOG.debug("Invalidating records of path {}", en.getKey());
                             remove(en.getValue());
                         }
                     }
@@ -170,22 +162,16 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
 
     private Registration unregister(Path key, Registration value) {
         if (value == null) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger().debug("Already unwatchers for path " + key);
-            }
+            LOG.debug("Already stopped watching path {}", key);
             return null;
         } else {
             final int cnt = value.count.decrementAndGet();
             if (cnt <= 0) {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("Unwatching path " + key);
-                }
+                LOG.debug("Unwatching path {}", key);
                 value.watchKey.cancel();
                 return null;
             } else {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug("Still " + cnt + " watchers for path " + key);
-                }
+                LOG.debug("Still " + cnt + " watchers for path {}", key);
                 return value;
             }
         }
@@ -210,7 +196,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
 
         @Override
         public boolean contains(K key) {
-            return map.containsKey(key);
+            return get(key) != null;
         }
 
         @Override
@@ -221,7 +207,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
 
         @Override
         public void put(K key, V value) {
-            add(value);
+            add(new WrappedCacheRecord<>(map, key, value));
             map.put(key, value);
         }
 
@@ -246,9 +232,33 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
             validateRecords();
             return map.computeIfAbsent(key, k -> {
                 V v = mappingFunction.apply(k);
-                add(v);
+                add(new WrappedCacheRecord<>(map, k, v));
                 return v;
             });
         }
+    }
+
+    static class WrappedCacheRecord<K, V extends CacheRecord> implements CacheRecord {
+        private final Map<K, V> map;
+        private final K key;
+        private final V delegate;
+
+        public WrappedCacheRecord(Map<K, V> map, K key, V delegate) {
+            this.map = map;
+            this.key = key;
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Stream<Path> getDependencyPaths() {
+            return delegate.getDependencyPaths();
+        }
+
+        @Override
+        public void invalidate() {
+            delegate.invalidate();
+            map.remove(key);
+        }
+
     }
 }
