@@ -89,7 +89,7 @@ public class TimestampCacheFactoryTest {
         }
 
         @Override
-        public Stream<Path> getDependentPaths() {
+        public Stream<Path> getDependencyPaths() {
             return paths.stream();
         }
 

@@ -42,7 +42,7 @@ public class CliProjectArtifactsCache extends DefaultProjectArtifactsCache {
         }
 
         @Override
-        public Stream<Path> getDependentPaths() {
+        public Stream<Path> getDependencyPaths() {
             return record.getArtifacts().stream()
                     .map(Artifact::getFile)
                     .filter(Objects::nonNull)

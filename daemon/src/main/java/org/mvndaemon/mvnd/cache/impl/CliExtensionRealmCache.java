@@ -43,7 +43,7 @@ public class CliExtensionRealmCache extends DefaultExtensionRealmCache {
         }
 
         @Override
-        public Stream<Path> getDependentPaths() {
+        public Stream<Path> getDependencyPaths() {
             return record.getArtifacts().stream().map(artifact -> artifact.getFile().toPath());
         }
 
