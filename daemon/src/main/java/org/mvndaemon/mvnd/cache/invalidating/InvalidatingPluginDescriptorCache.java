@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.impl;
+package org.mvndaemon.mvnd.cache.invalidating;
 
 import java.nio.file.Path;
 import java.util.Collections;
@@ -33,13 +33,13 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.mvndaemon.mvnd.cache.factory.Cache;
-import org.mvndaemon.mvnd.cache.factory.CacheFactory;
-import org.mvndaemon.mvnd.cache.factory.CacheRecord;
+import org.mvndaemon.mvnd.cache.Cache;
+import org.mvndaemon.mvnd.cache.CacheFactory;
+import org.mvndaemon.mvnd.cache.CacheRecord;
 
 @Singleton
 @Named
-public class CliPluginDescriptorCache extends DefaultPluginDescriptorCache {
+public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCache {
 
     @FunctionalInterface
     public interface PluginDescriptorSupplier {
@@ -75,7 +75,7 @@ public class CliPluginDescriptorCache extends DefaultPluginDescriptorCache {
     final Cache<Key, Record> cache;
 
     @Inject
-    public CliPluginDescriptorCache(CacheFactory cacheFactory) {
+    public InvalidatingPluginDescriptorCache(CacheFactory cacheFactory) {
         this.cache = cacheFactory.newCache();
     }
 

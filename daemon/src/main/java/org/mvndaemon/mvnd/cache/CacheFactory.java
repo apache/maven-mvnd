@@ -13,25 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.factory;
-
-import java.nio.file.Path;
-import java.util.stream.Stream;
+package org.mvndaemon.mvnd.cache;
 
 /**
- * Data stored in a {@link Cache} depending on the state of a collection of files.
+ * A factory for cache objects
  */
-public interface CacheRecord {
+public interface CacheFactory {
 
     /**
-     * @return a {@link Stream} of file (not directory) {@link Path}s whose modification or deletion causes invalidation
-     *         of this {@link CacheRecord}.
+     * @param  <K> the type of {@link Cache} keys
+     * @param  <V> the type of {@link Cache} values
+     * @return     a new {@link Cache}
      */
-    Stream<Path> getDependencyPaths();
-
-    /**
-     * Callback called by the cache when this {@link CacheRecord} is removed from the cache.
-     */
-    void invalidate();
+    <K, V extends CacheRecord> Cache<K, V> newCache();
 
 }

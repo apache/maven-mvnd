@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.factory;
+package org.mvndaemon.mvnd.cache.impl;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -31,6 +31,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.mvndaemon.mvnd.cache.Cache;
+import org.mvndaemon.mvnd.cache.CacheFactory;
+import org.mvndaemon.mvnd.cache.CacheRecord;
 
 /**
  * A factory for {@link Cache} objects invalidating its entries based on events received from {@link WatchService}.

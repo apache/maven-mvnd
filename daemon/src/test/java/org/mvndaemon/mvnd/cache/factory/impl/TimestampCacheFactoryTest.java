@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.impl;
+package org.mvndaemon.mvnd.cache.factory.impl;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -25,9 +25,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mvndaemon.mvnd.cache.factory.Cache;
-import org.mvndaemon.mvnd.cache.factory.CacheRecord;
-import org.mvndaemon.mvnd.cache.factory.DefaultCacheFactory;
+import org.mvndaemon.mvnd.cache.Cache;
+import org.mvndaemon.mvnd.cache.CacheRecord;
+import org.mvndaemon.mvnd.cache.impl.DefaultCacheFactory;
 import org.mvndaemon.mvnd.common.Os;
 
 public class TimestampCacheFactoryTest {
@@ -79,7 +79,7 @@ public class TimestampCacheFactoryTest {
         Assertions.assertTrue(record2.invalidated);
     }
 
-    static class SimpleCacheRecord implements org.mvndaemon.mvnd.cache.factory.CacheRecord {
+    static class SimpleCacheRecord implements org.mvndaemon.mvnd.cache.CacheRecord {
 
         private final List<Path> paths;
         private boolean invalidated = false;
