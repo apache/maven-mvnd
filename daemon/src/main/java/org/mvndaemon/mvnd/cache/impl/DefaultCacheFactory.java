@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.factory;
+package org.mvndaemon.mvnd.cache.impl;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.eclipse.sisu.Priority;
+import org.mvndaemon.mvnd.cache.Cache;
+import org.mvndaemon.mvnd.cache.CacheFactory;
+import org.mvndaemon.mvnd.cache.CacheRecord;
 import org.mvndaemon.mvnd.common.Os;
 
 @Named

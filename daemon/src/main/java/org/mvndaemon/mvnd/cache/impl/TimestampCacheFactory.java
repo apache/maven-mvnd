@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.factory;
+package org.mvndaemon.mvnd.cache.impl;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,6 +29,9 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
+import org.mvndaemon.mvnd.cache.Cache;
+import org.mvndaemon.mvnd.cache.CacheFactory;
+import org.mvndaemon.mvnd.cache.CacheRecord;
 
 /**
  * A factory for {@link Cache} objects invalidating its entries based on {@link BasicFileAttributes#lastModifiedTime()}

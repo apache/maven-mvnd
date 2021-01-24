@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Copyright 2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.impl;
+package org.mvndaemon.mvnd.cache.invalidating;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -22,32 +22,21 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.plugin.DefaultPluginRealmCache;
-import org.apache.maven.plugin.PluginContainerException;
-import org.apache.maven.plugin.PluginRealmCache;
-import org.apache.maven.plugin.PluginResolutionException;
+import org.apache.maven.plugin.DefaultExtensionRealmCache;
+import org.apache.maven.project.ExtensionDescriptor;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
-import org.eclipse.sisu.Priority;
-import org.eclipse.sisu.Typed;
-import org.mvndaemon.mvnd.cache.factory.Cache;
-import org.mvndaemon.mvnd.cache.factory.CacheFactory;
+import org.mvndaemon.mvnd.cache.Cache;
+import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Singleton
 @Named
-@Priority(10)
-@Typed(PluginRealmCache.class)
-public class CliPluginRealmCache extends DefaultPluginRealmCache {
+public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache {
 
-    @FunctionalInterface
-    public interface PluginRealmSupplier {
-        CacheRecord load() throws PluginResolutionException, PluginContainerException;
-    }
+    protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
 
-    protected static class Record implements org.mvndaemon.mvnd.cache.factory.CacheRecord {
-
-        final CacheRecord record;
+        private final CacheRecord record;
 
         public Record(CacheRecord record) {
             this.record = record;
@@ -69,10 +58,10 @@ public class CliPluginRealmCache extends DefaultPluginRealmCache {
         }
     }
 
-    final Cache<Key, Record> cache;
+    private final Cache<Key, Record> cache;
 
     @Inject
-    public CliPluginRealmCache(CacheFactory cacheFactory) {
+    public InvalidatingExtensionRealmCache(CacheFactory cacheFactory) {
         cache = cacheFactory.newCache();
     }
 
@@ -82,31 +71,10 @@ public class CliPluginRealmCache extends DefaultPluginRealmCache {
         return r != null ? r.record : null;
     }
 
-    public CacheRecord get(Key key, PluginRealmSupplier supplier)
-            throws PluginResolutionException, PluginContainerException {
-        try {
-            Record r = cache.computeIfAbsent(key, k -> {
-                try {
-                    return new Record(supplier.load());
-                } catch (PluginResolutionException | PluginContainerException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-            return r.record;
-        } catch (RuntimeException e) {
-            if (e.getCause() instanceof PluginResolutionException) {
-                throw (PluginResolutionException) e.getCause();
-            }
-            if (e.getCause() instanceof PluginContainerException) {
-                throw (PluginContainerException) e.getCause();
-            }
-            throw e;
-        }
-    }
-
     @Override
-    public CacheRecord put(Key key, ClassRealm pluginRealm, List<Artifact> pluginArtifacts) {
-        CacheRecord record = super.put(key, pluginRealm, pluginArtifacts);
+    public CacheRecord put(Key key, ClassRealm extensionRealm, ExtensionDescriptor extensionDescriptor,
+            List<Artifact> artifacts) {
+        CacheRecord record = super.put(key, extensionRealm, extensionDescriptor, artifacts);
         super.cache.remove(key);
         cache.put(key, new Record(record));
         return record;

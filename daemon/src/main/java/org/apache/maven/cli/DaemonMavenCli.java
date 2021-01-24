@@ -94,10 +94,10 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
-import org.mvndaemon.mvnd.cache.impl.CliExtensionRealmCache;
-import org.mvndaemon.mvnd.cache.impl.CliPluginArtifactsCache;
-import org.mvndaemon.mvnd.cache.impl.CliPluginRealmCache;
-import org.mvndaemon.mvnd.cache.impl.CliProjectArtifactsCache;
+import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
+import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
+import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
+import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
@@ -503,10 +503,10 @@ public class DaemonMavenCli {
             protected void configure() {
                 bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
                 bind(CoreExports.class).toInstance(exports);
-                bind(ExtensionRealmCache.class).to(CliExtensionRealmCache.class);
-                bind(PluginArtifactsCache.class).to(CliPluginArtifactsCache.class);
-                bind(PluginRealmCache.class).to(CliPluginRealmCache.class);
-                bind(ProjectArtifactsCache.class).to(CliProjectArtifactsCache.class);
+                bind(ExtensionRealmCache.class).to(InvalidatingExtensionRealmCache.class);
+                bind(PluginArtifactsCache.class).to(InvalidatingPluginArtifactsCache.class);
+                bind(PluginRealmCache.class).to(InvalidatingPluginRealmCache.class);
+                bind(ProjectArtifactsCache.class).to(InvalidatingProjectArtifactsCache.class);
                 bind(MavenPluginManager.class).to(CliMavenPluginManager.class);
             }
         });

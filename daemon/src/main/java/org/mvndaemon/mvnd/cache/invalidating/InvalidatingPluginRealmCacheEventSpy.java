@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.cache.impl;
+package org.mvndaemon.mvnd.cache.invalidating;
 
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -33,15 +33,15 @@ import org.slf4j.LoggerFactory;
 @Named
 @Singleton
 @Typed(EventSpy.class)
-public class CliPluginRealmCacheEventSpy extends AbstractEventSpy {
+public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CliPluginRealmCacheEventSpy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InvalidatingPluginRealmCacheEventSpy.class);
 
-    private final CliPluginRealmCache cache;
+    private final InvalidatingPluginRealmCache cache;
     private Path multiModuleProjectDirectory;
 
     @Inject
-    public CliPluginRealmCacheEventSpy(CliPluginRealmCache cache) {
+    public InvalidatingPluginRealmCacheEventSpy(InvalidatingPluginRealmCache cache) {
         this.cache = cache;
     }
 
@@ -60,7 +60,7 @@ public class CliPluginRealmCacheEventSpy extends AbstractEventSpy {
         }
     }
 
-    private boolean shouldEvict(CliPluginRealmCache.Key k, CliPluginRealmCache.Record v) {
+    private boolean shouldEvict(InvalidatingPluginRealmCache.Key k, InvalidatingPluginRealmCache.Record v) {
         try {
             for (URL url : v.record.getRealm().getURLs()) {
                 if (url.getProtocol().equals("file")) {
