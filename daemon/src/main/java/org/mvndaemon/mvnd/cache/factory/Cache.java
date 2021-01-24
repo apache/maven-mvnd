@@ -19,13 +19,13 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 /**
- * Cache containing records that can be invalidated.
+ * A cache containing records that can be invalidated.
  *
- * Whenever the paths associated to a given {@link CacheRecord} have been modified,
+ * Whenever the paths associated with the given {@link CacheRecord} have been modified,
  * the record will be invalidated using {@link CacheRecord#invalidate()}.
  *
- * @param <K>
- * @param <V>
+ * @param <K> the type of cache keys
+ * @param <V> the type of cache values
  */
 public interface Cache<K, V extends CacheRecord> {
 
@@ -36,11 +36,17 @@ public interface Cache<K, V extends CacheRecord> {
 
     /**
      * Get the cached record for the key
+     *
+     * @param  key the key to search for
+     * @return     the {@link CacheRecord} associated with the given {@code key}
      */
     V get(K key);
 
     /**
-     * Put a record in the cache
+     * Put the given {@link CacheRecord} into the cache under the given {@code key}
+     *
+     * @param key   the key to store the given {@code value} under
+     * @param value the value to store under the given {@code key}
      */
     void put(K key, V value);
 
@@ -50,12 +56,17 @@ public interface Cache<K, V extends CacheRecord> {
     void clear();
 
     /**
-     * Remove cached records according to the predicate
+     * Remove all records satisfying the given predicate
      */
     void removeIf(BiPredicate<K, V> predicate);
 
     /**
      * Get or compute the cached value if absent and return it.
+     *
+     * @param  key             the key to search for
+     * @param  mappingFunction the function to use for the computation of the new {@link CacheRecord} if the key is not
+     *                         available in this {@link Cache} yet
+     * @return                 the existing or newly computed {@link CacheRecord}
      */
     V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction);
 
