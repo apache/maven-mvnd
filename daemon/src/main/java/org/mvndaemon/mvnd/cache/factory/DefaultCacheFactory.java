@@ -15,7 +15,6 @@
  */
 package org.mvndaemon.mvnd.cache.factory;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.eclipse.sisu.Priority;
@@ -26,15 +25,15 @@ import org.mvndaemon.mvnd.common.Os;
 @Priority(10)
 public class DefaultCacheFactory implements CacheFactory {
 
-    @Inject
-    WatchServiceCacheFactory watchServiceCacheFactory;
-    @Inject
-    TimestampCacheFactory timestampCacheFactory;
+    private final CacheFactory delegate;
+
+    public DefaultCacheFactory() {
+        this.delegate = Os.current() == Os.WINDOWS ? new WatchServiceCacheFactory() : new TimestampCacheFactory();
+    }
 
     @Override
     public <K, V extends CacheRecord> Cache<K, V> newCache() {
-        CacheFactory factory = Os.current() == Os.WINDOWS ? watchServiceCacheFactory : timestampCacheFactory;
-        return factory.newCache();
+        return delegate.newCache();
     }
 
 }
