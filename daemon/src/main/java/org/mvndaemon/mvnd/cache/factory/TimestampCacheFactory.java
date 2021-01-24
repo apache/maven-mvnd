@@ -28,15 +28,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 
 /**
- * A factory for {@link Cache} objects.
+ * A factory for {@link Cache} objects invalidating its entries based on {@link BasicFileAttributes#lastModifiedTime()}
+ * and {@link java.nio.file.attribute.BasicFileAttributes#fileKey()}.
  */
-@Named
-@Singleton
 public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFactory {
 
     public TimestampCacheFactory() {
@@ -44,15 +41,19 @@ public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFa
 
     @Override
     public <K, V extends CacheRecord> Cache<K, V> newCache() {
-        return new DefaultCache<>();
+        return new TimestampCache<>();
     }
 
-    static class ArtifactTimestamp {
+    /**
+     * A state of a file given by {@link BasicFileAttributes#lastModifiedTime()} and
+     * {@link java.nio.file.attribute.BasicFileAttributes#fileKey()} at the time of {@link FileState} creation.
+     */
+    static class FileState {
         final Path path;
         final FileTime lastModifiedTime;
         final Object fileKey;
 
-        ArtifactTimestamp(Path path) {
+        FileState(Path path) {
             this.path = path;
             try {
                 BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
@@ -69,7 +70,7 @@ public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFa
                 return true;
             if (o == null || getClass() != o.getClass())
                 return false;
-            ArtifactTimestamp that = (ArtifactTimestamp) o;
+            FileState that = (FileState) o;
             return path.equals(that.path) &&
                     Objects.equals(lastModifiedTime, that.lastModifiedTime) &&
                     Objects.equals(fileKey, that.fileKey);
@@ -79,31 +80,42 @@ public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFa
         public int hashCode() {
             return Objects.hash(path, lastModifiedTime, fileKey);
         }
+
+        @Override
+        public String toString() {
+            return "FileState [path=" + path + ", lastModifiedTime=" + lastModifiedTime + ", fileKey=" + fileKey + "]";
+        }
+
     }
 
     static class Record<V extends CacheRecord> {
         final V record;
-        final Set<ArtifactTimestamp> timestamp;
+
+        /** {@link Set} of {@link FileState}s at the creation time of this {@link Record} */
+        final Set<FileState> fileStates;
 
         public Record(V record) {
             this.record = record;
-            this.timestamp = current();
+            this.fileStates = currentFileStates();
         }
 
-        private Set<ArtifactTimestamp> current() {
+        /**
+         * @return {@link Set} of {@link FileState}s at current time
+         */
+        private Set<FileState> currentFileStates() {
             return record.getDependentPaths()
-                    .map(ArtifactTimestamp::new)
+                    .map(FileState::new)
                     .collect(Collectors.toSet());
         }
     }
 
-    static class DefaultCache<K, V extends CacheRecord> implements Cache<K, V> {
+    static class TimestampCache<K, V extends CacheRecord> implements Cache<K, V> {
 
         private final ConcurrentHashMap<K, Record<V>> map = new ConcurrentHashMap<>();
 
         @Override
         public boolean contains(K key) {
-            return map.containsKey(key);
+            return this.get(key) != null;
         }
 
         @Override
@@ -111,7 +123,8 @@ public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFa
             Record<V> record = map.compute(key, (k, v) -> {
                 if (v != null) {
                     try {
-                        if (Objects.equals(v.timestamp, v.current())) {
+                        final Set<FileState> currentFileStates = v.currentFileStates();
+                        if (Objects.equals(v.fileStates, currentFileStates)) {
                             return v;
                         }
                     } catch (RuntimeException e) {
@@ -151,7 +164,7 @@ public class TimestampCacheFactory extends AbstractLogEnabled implements CacheFa
             return map.compute(key, (k, v) -> {
                 if (v != null) {
                     try {
-                        if (Objects.equals(v.timestamp, v.current())) {
+                        if (Objects.equals(v.fileStates, v.currentFileStates())) {
                             return v;
                         }
                     } catch (RuntimeException e) {

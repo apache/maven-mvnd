@@ -19,19 +19,18 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 
 /**
- * Data stored in a {@link Cache} which depends on the state
- * of a few {@link Path}s.
+ * Data stored in a {@link Cache} depending on the state of a collection of files.
  */
 public interface CacheRecord {
 
     /**
-     * A list of Path that will invalidate this record if modified.
+     * @return a {@link Stream} of file (not directory) {@link Path}s whose modification or deletion causes invalidation
+     *         of this {@link CacheRecord}.
      */
     Stream<Path> getDependentPaths();
 
     /**
-     * Callback called by the cache when this record
-     * is removed from the cache.
+     * Callback called by the cache when this {@link CacheRecord} is removed from the cache.
      */
     void invalidate();
 

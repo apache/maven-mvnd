@@ -30,15 +30,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
-import javax.inject.Named;
-import javax.inject.Singleton;
 import org.codehaus.plexus.logging.AbstractLogEnabled;
 
 /**
- * A factory for {@link Cache} objects.
+ * A factory for {@link Cache} objects invalidating its entries based on events received from {@link WatchService}.
  */
-@Named
-@Singleton
 public class WatchServiceCacheFactory extends AbstractLogEnabled implements CacheFactory {
 
     private final WatchService watchService;
@@ -80,7 +76,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
 
     @Override
     public <K, V extends CacheRecord> Cache<K, V> newCache() {
-        return new DefaultCache<>();
+        return new WatchServiceCache<>();
     }
 
     private Registration register(Path key, Registration value) {
@@ -205,7 +201,7 @@ public class WatchServiceCacheFactory extends AbstractLogEnabled implements Cach
         }
     }
 
-    class DefaultCache<K, V extends CacheRecord> implements Cache<K, V> {
+    class WatchServiceCache<K, V extends CacheRecord> implements Cache<K, V> {
 
         private final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
 
