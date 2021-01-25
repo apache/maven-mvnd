@@ -1,21 +1,22 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.4.0](https://github.com/mvndaemon/mvnd/tree/0.4.0) (2021-01-25)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.3.0...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.3.0...0.4.0)
 
 **Closed issues:**
 
+- maven.compiler.source & maven.compiler.target 8 [\#320](https://github.com/mvndaemon/mvnd/issues/320)
+- Execution of liquibase scripts is shown with level "error" [\#319](https://github.com/mvndaemon/mvnd/issues/319)
+- Daemon crashing when building big project. [\#291](https://github.com/mvndaemon/mvnd/issues/291)
+- Status should indicate from which path the daemon was spawned [\#283](https://github.com/mvndaemon/mvnd/issues/283)
 - \[ERROR\] Multiple entries with same key [\#333](https://github.com/mvndaemon/mvnd/issues/333)
 - NPE after pressing CTRL+B in the client [\#324](https://github.com/mvndaemon/mvnd/issues/324)
-- maven.compiler.source & maven.compiler.target 8 [\#320](https://github.com/mvndaemon/mvnd/issues/320)
 - Readme: "mvnd specific options" is incomplete [\#316](https://github.com/mvndaemon/mvnd/issues/316)
 - Should print id of daemon that is processing the request [\#314](https://github.com/mvndaemon/mvnd/issues/314)
 - The caches are not all cleaned when deleting the local repository [\#312](https://github.com/mvndaemon/mvnd/issues/312)
 - Speeding up parallel plugins setup [\#310](https://github.com/mvndaemon/mvnd/issues/310)
-- Daemon crashing when building big project. [\#291](https://github.com/mvndaemon/mvnd/issues/291)
 - The output of ConsoleMavenTransferListener looks ugly in the client [\#284](https://github.com/mvndaemon/mvnd/issues/284)
-- Status should indicate from which path the daemon was spawned [\#283](https://github.com/mvndaemon/mvnd/issues/283)
 - Cannot resolve type description for java.sql.Blob [\#277](https://github.com/mvndaemon/mvnd/issues/277)
 - Remove mvnd.builder.rule\* and mvnd.builder.rules.provider.\* features [\#264](https://github.com/mvndaemon/mvnd/issues/264)
 - Investigate the other caches in Maven [\#237](https://github.com/mvndaemon/mvnd/issues/237)
@@ -37,8 +38,8 @@
 - Display the daemon id and shorten it a bit, fixes \#314 [\#318](https://github.com/mvndaemon/mvnd/pull/318) ([gnodet](https://github.com/gnodet))
 - One more attempt to workaround \#281 [\#317](https://github.com/mvndaemon/mvnd/pull/317) ([ppalaga](https://github.com/ppalaga))
 - Add TOC to README.adoc [\#315](https://github.com/mvndaemon/mvnd/pull/315) ([famod](https://github.com/famod))
-- Send transfer events to the client for better display, \#284 [\#313](https://github.com/mvndaemon/mvnd/pull/313) ([gnodet](https://github.com/gnodet))
 - Speed up parallel plugin setup \#310 [\#311](https://github.com/mvndaemon/mvnd/pull/311) ([gnodet](https://github.com/gnodet))
+- Send transfer events to the client for better display, \#284 [\#313](https://github.com/mvndaemon/mvnd/pull/313) ([gnodet](https://github.com/gnodet))
 
 ## [0.3.0](https://github.com/mvndaemon/mvnd/tree/0.3.0) (2021-01-07)
 
