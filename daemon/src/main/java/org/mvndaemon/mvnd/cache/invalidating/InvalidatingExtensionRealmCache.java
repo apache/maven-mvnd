@@ -27,11 +27,13 @@ import org.apache.maven.project.ExtensionDescriptor;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
+import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Singleton
 @Named
+@Priority(10)
 public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache {
 
     protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {

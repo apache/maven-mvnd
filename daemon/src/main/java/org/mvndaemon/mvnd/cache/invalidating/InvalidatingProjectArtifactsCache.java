@@ -27,11 +27,13 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.DefaultProjectArtifactsCache;
+import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Singleton
 @Named
+@Priority(10)
 public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCache {
 
     static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
