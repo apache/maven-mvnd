@@ -76,6 +76,8 @@ public class ModuleAndPluginNativeIT {
                     .resolve("plugin/src/main/java/org/mvndaemon/mvnd/test/module/plugin/mojo/HelloMojo.java");
             TestUtils.replace(mojoPath, "\"Hello\".getBytes", "\"Hi\".getBytes");
 
+            Thread.sleep(200); // Let's see if this helps to prevent intermittent failures on Mac
+
             final TestClientOutput output = new TestClientOutput();
             client.execute(output,
                     "clean",
