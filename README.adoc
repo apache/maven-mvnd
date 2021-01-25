@@ -171,4 +171,4 @@ $ ls -lh target/mvnd
 -rwxrwxr-x. 1 ppalaga ppalaga 25M Jun  2 13:23 target/mvnd
 ----
 
-This project is still in prototype mode, so feedback is most welcomed!
+We're happy to improve `mvnd`, so feedback is most welcomed!
