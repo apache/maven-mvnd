@@ -390,7 +390,7 @@ public class DaemonMavenCli {
             }
         } else {
             System.setOut(new LoggingOutputStream(s -> mvndLogger.info("[stdout] " + s)).printStream());
-            System.setErr(new LoggingOutputStream(s -> mvndLogger.error("[stderr] " + s)).printStream());
+            System.setErr(new LoggingOutputStream(s -> mvndLogger.warn("[stderr] " + s)).printStream());
         }
 
     }
