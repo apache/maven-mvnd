@@ -50,6 +50,8 @@ public class DeleteRepoNativeIT {
         if (Os.current() == Os.WINDOWS) {
             // On windows, we're using the service watcher which polls every 2s by default
             Thread.sleep(2500);
+        } else {
+            Thread.sleep(200);
         }
 
         final TestClientOutput o2 = new TestClientOutput();
