@@ -24,20 +24,17 @@ import javax.inject.Singleton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.DefaultPluginRealmCache;
 import org.apache.maven.plugin.PluginContainerException;
-import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.sisu.Priority;
-import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Singleton
 @Named
 @Priority(10)
-@Typed(PluginRealmCache.class)
 public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
 
     @FunctionalInterface
