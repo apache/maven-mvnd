@@ -13,8 +13,11 @@
 - Should print id of daemon that is processing the request [\#314](https://github.com/mvndaemon/mvnd/issues/314)
 - The caches are not all cleaned when deleting the local repository [\#312](https://github.com/mvndaemon/mvnd/issues/312)
 - Speeding up parallel plugins setup [\#310](https://github.com/mvndaemon/mvnd/issues/310)
+- Daemon crashing when building big project. [\#291](https://github.com/mvndaemon/mvnd/issues/291)
 - The output of ConsoleMavenTransferListener looks ugly in the client [\#284](https://github.com/mvndaemon/mvnd/issues/284)
+- Status should indicate from which path the daemon was spawned [\#283](https://github.com/mvndaemon/mvnd/issues/283)
 - Cannot resolve type description for java.sql.Blob [\#277](https://github.com/mvndaemon/mvnd/issues/277)
+- Remove mvnd.builder.rule\* and mvnd.builder.rules.provider.\* features [\#264](https://github.com/mvndaemon/mvnd/issues/264)
 - Investigate the other caches in Maven [\#237](https://github.com/mvndaemon/mvnd/issues/237)
 
 **Merged pull requests:**
