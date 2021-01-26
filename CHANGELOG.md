@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.4.1](https://github.com/mvndaemon/mvnd/tree/0.4.1) (2021-01-25)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.4.0...0.4.1)
+
 ## [0.4.0](https://github.com/mvndaemon/mvnd/tree/0.4.0) (2021-01-25)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.3.0...0.4.0)
