@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- Support Arquillian builds [\#346](https://github.com/mvndaemon/mvnd/issues/346)
 - Installed on RHEL 7.9 fails to load native library.  It works on CentOS 8 though [\#341](https://github.com/mvndaemon/mvnd/issues/341)
 
 ## [0.4.1](https://github.com/mvndaemon/mvnd/tree/0.4.1) (2021-01-25)
@@ -334,6 +335,7 @@
 
 **Merged pull requests:**
 
+- Upload the artifacts from the correct directory [\#109](https://github.com/mvndaemon/mvnd/pull/109) ([ppalaga](https://github.com/ppalaga))
 - Unnecessary directory in the 0.0.7 zip archive \#107 [\#108](https://github.com/mvndaemon/mvnd/pull/108) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.7](https://github.com/mvndaemon/mvnd/tree/0.0.7) (2020-10-19)
@@ -355,7 +357,6 @@
 
 **Merged pull requests:**
 
-- Upload the artifacts from the correct directory [\#109](https://github.com/mvndaemon/mvnd/pull/109) ([ppalaga](https://github.com/ppalaga))
 - Issue 100 [\#105](https://github.com/mvndaemon/mvnd/pull/105) ([gnodet](https://github.com/gnodet))
 - Replace deprecated GitHub actions commands \#85 [\#104](https://github.com/mvndaemon/mvnd/pull/104) ([ppalaga](https://github.com/ppalaga))
 - Isolate the integration tests from the local environment [\#101](https://github.com/mvndaemon/mvnd/pull/101) ([ppalaga](https://github.com/ppalaga))
