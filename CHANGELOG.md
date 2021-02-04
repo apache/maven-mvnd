@@ -85,6 +85,7 @@
 - Eliminate mutable global state in AbstractLoggingSpy [\#301](https://github.com/mvndaemon/mvnd/pull/301) ([ppalaga](https://github.com/ppalaga))
 - Support launching processes with inherited IO, fixes \#241 [\#298](https://github.com/mvndaemon/mvnd/pull/298) ([gnodet](https://github.com/gnodet))
 - Fix logging to use an inheritable thread local, fixes \#295 [\#297](https://github.com/mvndaemon/mvnd/pull/297) ([gnodet](https://github.com/gnodet))
+- Document how to install bash completion [\#290](https://github.com/mvndaemon/mvnd/pull/290) ([famod](https://github.com/famod))
 - Right-pad projectIds to improve mojo readability in the threaded view  [\#289](https://github.com/mvndaemon/mvnd/pull/289) ([ppalaga](https://github.com/ppalaga))
 - DAG width wrong for parent runtime deployment triple [\#286](https://github.com/mvndaemon/mvnd/pull/286) ([ppalaga](https://github.com/ppalaga))
 - Less global and mutable state [\#285](https://github.com/mvndaemon/mvnd/pull/285) ([ppalaga](https://github.com/ppalaga))
@@ -120,7 +121,6 @@
 
 **Merged pull requests:**
 
-- Document how to install bash completion [\#290](https://github.com/mvndaemon/mvnd/pull/290) ([famod](https://github.com/famod))
 - Maven-like rolling output when the build happens to be linear [\#271](https://github.com/mvndaemon/mvnd/pull/271) ([ppalaga](https://github.com/ppalaga))
 - A new daemon is always started on Java 8  [\#267](https://github.com/mvndaemon/mvnd/pull/267) ([ppalaga](https://github.com/ppalaga))
 - Deprecate mvnd.builder.rule\* and mvnd.builder.rules.provider.\* features [\#265](https://github.com/mvndaemon/mvnd/pull/265) ([ppalaga](https://github.com/ppalaga))
