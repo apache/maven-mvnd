@@ -405,7 +405,6 @@
 **Merged pull requests:**
 
 - Publish new versions via sdkman vendor API [\#68](https://github.com/mvndaemon/mvnd/pull/68) ([ppalaga](https://github.com/ppalaga))
-- Cannot re-use daemon with sdkman java 8.0.265.hs-adpt [\#66](https://github.com/mvndaemon/mvnd/pull/66) ([ppalaga](https://github.com/ppalaga))
 - Upgrade to GraalVM 20.2.0 [\#62](https://github.com/mvndaemon/mvnd/pull/62) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.4](https://github.com/mvndaemon/mvnd/tree/0.0.4) (2020-08-20)
@@ -433,6 +432,7 @@
 
 **Merged pull requests:**
 
+- Cannot re-use daemon with sdkman java 8.0.265.hs-adpt [\#66](https://github.com/mvndaemon/mvnd/pull/66) ([ppalaga](https://github.com/ppalaga))
 - Use amd64 arch label also on Mac [\#58](https://github.com/mvndaemon/mvnd/pull/58) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.2](https://github.com/mvndaemon/mvnd/tree/0.0.2) (2020-08-14)
