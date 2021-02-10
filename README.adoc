@@ -171,4 +171,8 @@ $ ls -lh target/mvnd
 -rwxrwxr-x. 1 ppalaga ppalaga 25M Jun  2 13:23 target/mvnd
 ----
 
+=== Known issues and limitations
+
+* Parallel build, hence `mvnd`, don't play well with `-rf` maven option at the monet. If you use the `-rf` maven option with `mvnd` you have no guarantee that all the modules will have been built (There are some improvements planned on this in the next `mvnd` releases).
+
 We're happy to improve `mvnd`, so feedback is most welcomed!
