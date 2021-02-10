@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -94,6 +95,7 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
+import org.fusesource.jansi.internal.CLibrary;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
@@ -208,6 +210,7 @@ public class DaemonMavenCli {
         Properties props = (Properties) System.getProperties().clone();
         try {
             initialize(cliRequest);
+            environment(cliRequest.workingDirectory, clientEnv);
             cli(cliRequest);
             properties(cliRequest);
             help(cliRequest);
@@ -219,7 +222,6 @@ public class DaemonMavenCli {
             populateRequest(cliRequest);
             encryption(cliRequest);
             repository(cliRequest);
-            environment(clientEnv);
             return execute(cliRequest);
         } catch (ExitException e) {
             return e.exitCode;
@@ -650,17 +652,26 @@ public class DaemonMavenCli {
         }
     }
 
-    private void environment(Map<String, String> clientEnv) {
+    private void environment(String workingDir, Map<String, String> clientEnv) {
         Map<String, String> requested = new TreeMap<>(clientEnv);
         Map<String, String> actual = new TreeMap<>(System.getenv());
+        requested.put("PWD", workingDir);
         List<String> diffs = Stream.concat(requested.keySet().stream(), actual.keySet().stream())
                 .sorted()
                 .distinct()
                 .filter(s -> !s.startsWith("JAVA_MAIN_CLASS_"))
                 .filter(key -> !Objects.equals(requested.get(key), actual.get(key)))
                 .collect(Collectors.toList());
-        if (!diffs.isEmpty()) {
-            slf4jLogger.warn("Environment mismatch !");
+        try {
+            for (String key : diffs) {
+                String vr = requested.get(key);
+                CLibrary.setenv(key, vr);
+            }
+            setEnv(clientEnv);
+            CLibrary.chdir(workingDir);
+            System.setProperty("user.dir", workingDir);
+        } catch (Exception e) {
+            slf4jLogger.warn("Environment mismatch ! Could not set the environment (" + e + ")");
             slf4jLogger.warn("A few environment mismatches have been detected between the client and the daemon.");
             diffs.forEach(key -> {
                 String vr = requested.get(key);
@@ -669,6 +680,37 @@ public class DaemonMavenCli {
             });
             slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
             slf4jLogger.warn("start a new daemon from the current environment by issuing any mvnd build command.");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static void setEnv(Map<String, String> newenv) throws Exception {
+        try {
+            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
+            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
+            theEnvironmentField.setAccessible(true);
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            env.clear();
+            env.putAll(newenv);
+            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass
+                    .getDeclaredField("theCaseInsensitiveEnvironment");
+            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
+            cienv.clear();
+            cienv.putAll(newenv);
+        } catch (NoSuchFieldException e) {
+            Class<?>[] classes = Collections.class.getDeclaredClasses();
+            Map<String, String> env = System.getenv();
+            for (Class<?> cl : classes) {
+                if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
+                    Field field = cl.getDeclaredField("m");
+                    field.setAccessible(true);
+                    Object obj = field.get(env);
+                    Map<String, String> map = (Map<String, String>) obj;
+                    map.clear();
+                    map.putAll(newenv);
+                }
+            }
         }
     }
 
