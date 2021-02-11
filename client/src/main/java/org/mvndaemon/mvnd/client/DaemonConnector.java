@@ -222,6 +222,7 @@ public class DaemonConnector {
 
     private DaemonClientConnection connectToIdleDaemon(Collection<DaemonInfo> idleDaemons, DaemonCompatibilitySpec constraint) {
         final List<DaemonInfo> compatibleIdleDaemons = getCompatibleDaemons(idleDaemons, constraint);
+        LOGGER.debug("Found {} idle daemons, {} compatibles", idleDaemons.size(), compatibleIdleDaemons.size());
         return findConnection(compatibleIdleDaemons);
     }
 
@@ -232,6 +233,8 @@ public class DaemonConnector {
                 .collect(Collectors.groupingBy(di -> di.getState() == Canceled));
         final Collection<DaemonInfo> compatibleCanceledDaemons = getCompatibleDaemons(
                 canceledBusy.getOrDefault(true, Collections.emptyList()), constraint);
+        LOGGER.debug("Found {} busy daemons, {} cancelled, {} compatibles", busyDaemons.size(), canceledBusy.size(),
+                compatibleCanceledDaemons.size());
         if (!compatibleCanceledDaemons.isEmpty()) {
             LOGGER.debug("Waiting for daemons with canceled builds to become available");
             long start = System.currentTimeMillis();

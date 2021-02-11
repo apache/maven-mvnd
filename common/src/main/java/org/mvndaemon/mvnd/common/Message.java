@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public abstract class Message {
-    public static final int BUILD_REQUEST = 0;
+    public static final int BUILD_REQUEST = 23;
     public static final int BUILD_STARTED = 1;
     public static final int BUILD_FINISHED = 2;
     /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just started */
@@ -67,7 +67,7 @@ public abstract class Message {
 
     public static Message read(DataInputStream input) throws IOException {
         int type = input.read();
-        if (type == -1) {
+        if (type < 0) {
             return null;
         }
         switch (type) {
@@ -319,7 +319,8 @@ public abstract class Message {
         final int exitCode;
 
         public static Message read(DataInputStream input) throws IOException {
-            return new BuildFinished(input.readInt());
+            int exitCode = input.readInt();
+            return new BuildFinished(exitCode);
         }
 
         public BuildFinished(int exitCode) {
@@ -329,7 +330,7 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "BuildRequest{exitCode=" + exitCode + '}';
+            return "BuildFinished{exitCode=" + exitCode + '}';
         }
 
         @Override
