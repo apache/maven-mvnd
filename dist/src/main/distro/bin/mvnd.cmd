@@ -169,7 +169,10 @@ for /F "usebackq delims=" %%a in ("%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config") do s
 
 :endReadAdditionalConfig
 
-for %%i in ("%MVND_HOME%"\mvn\boot\*.jar "%MVND_HOME%"\mvn\lib\ext\*.jar "%MVND_HOME%"\mvn\lib\*.jar) do set DAEMON_JAR="%%i"
+@setlocal EnableExtensions EnableDelayedExpansion
+for %%i in ("%MVND_HOME%"\mvn\boot\*.jar "%MVND_HOME%"\mvn\lib\ext\*.jar "%MVND_HOME%"\mvn\lib\*.jar) do set DAEMON_JAR=!DAEMON_JAR!;%%i
+@endlocal & set DAEMON_JAR="%DAEMON_JAR%"
+
 set DAEMON_LAUNCHER=org.mvndaemon.mvnd.client.DefaultClient
 
 "%JAVACMD%" ^
@@ -178,7 +181,7 @@ set DAEMON_LAUNCHER=org.mvndaemon.mvnd.client.DefaultClient
   %MAVEN_DEBUG_OPTS% ^
   -classpath %DAEMON_JAR% ^
   "-Dlogback.configurationFile=%MVND_HOME%\conf\logging\logback-client.xml" ^
-  "-Dmvnd.home=%MVND_HOME% ^
+  "-Dmvnd.home=%MVND_HOME%" ^
   "-Dmaven.home=%MVND_HOME%\mvn" ^
   "-Dlibrary.jansi.path=%MVND_HOME%\mvn\lib\jansi-native" ^
   "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" ^
