@@ -55,10 +55,6 @@ public abstract class Message {
     public static final int TRANSFER_SUCCEEDED = 21;
     public static final int TRANSFER_FAILED = 22;
 
-    public static final BareMessage KEEP_ALIVE_SINGLETON = new BareMessage(KEEP_ALIVE);
-    public static final BareMessage STOP_SINGLETON = new BareMessage(STOP);
-    public static final BareMessage CANCEL_BUILD_SINGLETON = new BareMessage(CANCEL_BUILD);
-
     final int type;
 
     Message(int type) {
@@ -587,6 +583,10 @@ public abstract class Message {
     }
 
     public static class BareMessage extends Message {
+
+        public static final BareMessage KEEP_ALIVE_SINGLETON = new BareMessage(KEEP_ALIVE);
+        public static final BareMessage STOP_SINGLETON = new BareMessage(STOP);
+        public static final BareMessage CANCEL_BUILD_SINGLETON = new BareMessage(CANCEL_BUILD);
 
         private BareMessage(int type) {
             super(type);

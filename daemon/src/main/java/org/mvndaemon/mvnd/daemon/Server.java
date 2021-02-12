@@ -440,7 +440,7 @@ public class Server implements AutoCloseable, Runnable {
                         if (flushed) {
                             m = sendQueue.poll(keepAliveMs, TimeUnit.MILLISECONDS);
                             if (m == null) {
-                                m = Message.KEEP_ALIVE_SINGLETON;
+                                m = Message.BareMessage.KEEP_ALIVE_SINGLETON;
                             }
                             flushed = false;
                         } else {
@@ -451,7 +451,7 @@ public class Server implements AutoCloseable, Runnable {
                                 continue;
                             }
                         }
-                        if (m == Message.STOP_SINGLETON) {
+                        if (m == Message.BareMessage.STOP_SINGLETON) {
                             connection.flush();
                             LOGGER.info("No more message to dispatch");
                             return;
@@ -472,7 +472,7 @@ public class Server implements AutoCloseable, Runnable {
                             break;
                         }
                         LOGGER.info("Received message: {}", message);
-                        if (message == Message.CANCEL_BUILD_SINGLETON) {
+                        if (message == Message.BareMessage.CANCEL_BUILD_SINGLETON) {
                             updateState(DaemonState.Canceled);
                             return;
                         } else {

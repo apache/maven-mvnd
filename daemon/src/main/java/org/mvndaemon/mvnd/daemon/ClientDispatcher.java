@@ -103,12 +103,12 @@ public class ClientDispatcher extends BuildEventListener {
 
     public void finish(int exitCode) throws Exception {
         queue.add(new Message.BuildFinished(exitCode));
-        queue.add(Message.STOP_SINGLETON);
+        queue.add(Message.BareMessage.STOP_SINGLETON);
     }
 
     public void fail(Throwable t) throws Exception {
         queue.add(new BuildException(t));
-        queue.add(Message.STOP_SINGLETON);
+        queue.add(Message.BareMessage.STOP_SINGLETON);
     }
 
     public void log(String msg) {

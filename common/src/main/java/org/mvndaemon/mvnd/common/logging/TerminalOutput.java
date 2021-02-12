@@ -152,12 +152,12 @@ public class TerminalOutput implements ClientOutput {
         terminal.enterRawMode();
         Thread mainThread = Thread.currentThread();
         daemonDispatch = m -> {
-            if (m == Message.CANCEL_BUILD_SINGLETON) {
+            if (m == Message.BareMessage.CANCEL_BUILD_SINGLETON) {
                 mainThread.interrupt();
             }
         };
         this.previousIntHandler = terminal.handle(Terminal.Signal.INT,
-                sig -> daemonDispatch.accept(Message.CANCEL_BUILD_SINGLETON));
+                sig -> daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON));
         this.display = new Display(terminal, false);
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
         if (!dumb) {
