@@ -29,31 +29,31 @@ import java.util.Map;
 import java.util.Objects;
 
 public abstract class Message {
-    public static final int BUILD_REQUEST = 23;
-    public static final int BUILD_STARTED = 1;
-    public static final int BUILD_FINISHED = 2;
+    public static final int BUILD_REQUEST = 1;
+    public static final int BUILD_STARTED = 2;
+    public static final int BUILD_FINISHED = 3;
     /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just started */
-    public static final int PROJECT_STARTED = 3;
+    public static final int PROJECT_STARTED = 4;
     /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just finished */
-    public static final int PROJECT_STOPPED = 4;
-    public static final int MOJO_STARTED = 5;
-    public static final int PROJECT_LOG_MESSAGE = 6;
-    public static final int BUILD_LOG_MESSAGE = 7;
-    public static final int BUILD_EXCEPTION = 8;
-    public static final int KEEP_ALIVE = 9;
-    public static final int STOP = 10;
-    public static final int DISPLAY = 11;
-    public static final int PROMPT = 12;
-    public static final int PROMPT_RESPONSE = 13;
-    public static final int BUILD_STATUS = 14;
-    public static final int KEYBOARD_INPUT = 15;
-    public static final int CANCEL_BUILD = 16;
-    public static final int TRANSFER_INITIATED = 17;
-    public static final int TRANSFER_STARTED = 18;
-    public static final int TRANSFER_PROGRESSED = 19;
-    public static final int TRANSFER_CORRUPTED = 20;
-    public static final int TRANSFER_SUCCEEDED = 21;
-    public static final int TRANSFER_FAILED = 22;
+    public static final int PROJECT_STOPPED = 5;
+    public static final int MOJO_STARTED = 6;
+    public static final int PROJECT_LOG_MESSAGE = 7;
+    public static final int BUILD_LOG_MESSAGE = 8;
+    public static final int BUILD_EXCEPTION = 9;
+    public static final int KEEP_ALIVE = 10;
+    public static final int STOP = 11;
+    public static final int DISPLAY = 12;
+    public static final int PROMPT = 13;
+    public static final int PROMPT_RESPONSE = 14;
+    public static final int BUILD_STATUS = 15;
+    public static final int KEYBOARD_INPUT = 16;
+    public static final int CANCEL_BUILD = 17;
+    public static final int TRANSFER_INITIATED = 18;
+    public static final int TRANSFER_STARTED = 19;
+    public static final int TRANSFER_PROGRESSED = 20;
+    public static final int TRANSFER_CORRUPTED = 21;
+    public static final int TRANSFER_SUCCEEDED = 22;
+    public static final int TRANSFER_FAILED = 23;
 
     final int type;
 
