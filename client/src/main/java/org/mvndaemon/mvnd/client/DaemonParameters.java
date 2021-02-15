@@ -166,6 +166,10 @@ public class DaemonParameters {
                 .asPath();
     }
 
+    public Path jvmConfigPath() {
+        return multiModuleProjectDirectory().resolve(".mvn/jvm.config");
+    }
+
     public Path localPropertiesPath() {
         return multiModuleProjectDirectory().resolve(".mvn/mvnd.properties");
     }
