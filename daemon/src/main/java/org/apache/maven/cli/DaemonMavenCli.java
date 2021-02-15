@@ -373,7 +373,7 @@ public class DaemonMavenCli {
         // Workaround for https://github.com/mvndaemon/mvnd/issues/39
         final ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
                 .getLogger("org.mvndaemon.mvnd");
-        mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level", "INFO")));
+        mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level"), null));
 
         // LOG STREAMS
         if (cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
@@ -391,10 +391,13 @@ public class DaemonMavenCli {
                 //
             }
         } else {
-            System.setOut(new LoggingOutputStream(s -> mvndLogger.info("[stdout] " + s)).printStream());
-            System.setErr(new LoggingOutputStream(s -> mvndLogger.warn("[stderr] " + s)).printStream());
+            ch.qos.logback.classic.Logger stdout = (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stdout");
+            ch.qos.logback.classic.Logger stderr = (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stderr");
+            stdout.setLevel(ch.qos.logback.classic.Level.INFO);
+            stderr.setLevel(ch.qos.logback.classic.Level.INFO);
+            System.setOut(new LoggingOutputStream(s -> stdout.info("[stdout] " + s)).printStream());
+            System.setErr(new LoggingOutputStream(s -> stderr.warn("[stderr] " + s)).printStream());
         }
-
     }
 
     private void version(CliRequest cliRequest) throws ExitException {
@@ -451,7 +454,6 @@ public class DaemonMavenCli {
         data.put("userProperties", cliRequest.userProperties);
         data.put("versionProperties", CLIReportingUtils.getBuildProperties());
         eventSpyDispatcher.init(() -> data);
-
     }
 
     DefaultPlexusContainer container()
@@ -726,6 +728,9 @@ public class DaemonMavenCli {
                 .strong(Environment.MVND_ID.asString()).toString());
 
         MavenExecutionResult result = maven.execute(request);
+
+        LoggingOutputStream.forceFlush(System.out);
+        LoggingOutputStream.forceFlush(System.err);
 
         eventSpyDispatcher.onEvent(result);
 

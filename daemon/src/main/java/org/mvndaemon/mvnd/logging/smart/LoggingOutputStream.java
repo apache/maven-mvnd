@@ -39,7 +39,7 @@ public class LoggingOutputStream extends FilterOutputStream {
     }
 
     public PrintStream printStream() {
-        return new PrintStream(this);
+        return new LoggingPrintStream(this);
     }
 
     @Override
@@ -47,6 +47,15 @@ public class LoggingOutputStream extends FilterOutputStream {
         super.write(b);
         if (buf.isEol()) {
             String line = new String(buf.toByteArray(), 0, buf.size() - LINE_SEP.length);
+            ProjectBuildLogAppender.updateMdc();
+            consumer.accept(line);
+            buf.reset();
+        }
+    }
+
+    public void forceFlush() {
+        if (buf.size() > 0) {
+            String line = new String(buf.toByteArray(), 0, buf.size());
             ProjectBuildLogAppender.updateMdc();
             consumer.accept(line);
             buf.reset();
@@ -64,6 +73,22 @@ public class LoggingOutputStream extends FilterOutputStream {
                 return true;
             }
             return false;
+        }
+    }
+
+    public static class LoggingPrintStream extends PrintStream {
+        public LoggingPrintStream(LoggingOutputStream out) {
+            super(out);
+        }
+
+        public void forceFlush() {
+            ((LoggingOutputStream) out).forceFlush();
+        }
+    }
+
+    public static void forceFlush(PrintStream ps) {
+        if (ps instanceof LoggingPrintStream) {
+            ((LoggingPrintStream) ps).forceFlush();
         }
     }
 }
