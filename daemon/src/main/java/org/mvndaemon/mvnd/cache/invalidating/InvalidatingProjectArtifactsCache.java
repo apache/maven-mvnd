@@ -45,6 +45,9 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
 
         @Override
         public Stream<Path> getDependencyPaths() {
+            if (record.getException() != null) {
+                return Stream.empty();
+            }
             return record.getArtifacts().stream()
                     .map(Artifact::getFile)
                     .filter(Objects::nonNull)
