@@ -389,6 +389,11 @@ public class Server implements AutoCloseable, Runnable {
         final SmartBuilder builder = SmartBuilder.cancel();
         stateLock.lock();
         try {
+            try {
+                ProcessHandle.current().descendants().forEach(ProcessHandle::destroy);
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
             long rem;
             while ((rem = time - System.currentTimeMillis()) > 0) {
                 try {
