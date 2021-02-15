@@ -48,7 +48,7 @@ public class MvndHelpFormatter {
      * @return            the string containing the help message
      */
     public static String displayHelp(CLIManager cliManager) {
-        int terminalWidth = Environment.MVND_TERMINAL_WIDTH.asInt();
+        int terminalWidth = getTerminalWidth();
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8.name())) {
             out.println();
@@ -116,8 +116,8 @@ public class MvndHelpFormatter {
                     spaces(help, indentPos - help.length());
                     wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
 
-                    indentedLine(help, "Default", env.getDefault(), indent);
-                    indentedLine(help, "Env. variable", env.getEnvironmentVariable(), indent);
+                    indentedLine(help, terminalWidth, "Default", env.getDefault(), indent);
+                    indentedLine(help, terminalWidth, "Env. variable", env.getEnvironmentVariable(), indent);
 
                 });
 
@@ -141,10 +141,19 @@ public class MvndHelpFormatter {
         return help.toString();
     }
 
-    private static void indentedLine(final StringBuilder stringBuilder, String key, final String value, final String indent) {
+    private static int getTerminalWidth() {
+        int terminalWidth;
+        try {
+            terminalWidth = Environment.MVND_TERMINAL_WIDTH.asInt();
+        } catch (Exception e) {
+            terminalWidth = 80;
+        }
+        return terminalWidth;
+    }
+
+    private static void indentedLine(StringBuilder stringBuilder, int terminalWidth, String key, String value, String indent) {
         int lineEnd;
         if (value != null) {
-            int terminalWidth = Environment.MVND_TERMINAL_WIDTH.asInt();
             lineEnd = stringBuilder.length() + terminalWidth;
             stringBuilder
                     .append(System.lineSeparator())

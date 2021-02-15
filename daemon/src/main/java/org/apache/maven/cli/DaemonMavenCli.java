@@ -240,8 +240,8 @@ public class DaemonMavenCli {
         }
 
         if (cliRequest.multiModuleProjectDirectory == null) {
-            System.err.format(
-                    "-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY);
+            buildEventListener.log(String.format(
+                    "-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY));
             throw new ExitException(1);
         }
         System.setProperty("maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString());
@@ -281,9 +281,9 @@ public class DaemonMavenCli {
                 }
             }
         } catch (ParseException e) {
-            System.err.println("Unable to parse maven.config: " + e.getMessage());
-            buildEventListener.log(MvndHelpFormatter.displayHelp(cliManager));
-            throw e;
+            buildEventListener.log("Unable to parse maven.config: " + e.getMessage());
+            buildEventListener.log("Run 'mvnd --help' for available options.");
+            throw new ExitException(1);
         }
 
         try {
@@ -293,9 +293,9 @@ public class DaemonMavenCli {
                 cliRequest.commandLine = cliMerge(cliManager.parse(cliRequest.args), mavenConfig);
             }
         } catch (ParseException e) {
-            System.err.println("Unable to parse command line options: " + e.getMessage());
-            buildEventListener.log(MvndHelpFormatter.displayHelp(cliManager));
-            throw e;
+            buildEventListener.log("Unable to parse command line options: " + e.getMessage());
+            buildEventListener.log("Run 'mvnd --help' for available options.");
+            throw new ExitException(1);
         }
     }
 
