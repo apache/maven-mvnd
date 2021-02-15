@@ -72,6 +72,12 @@ public class DefaultClient implements Client {
             }
         }
 
+        // Color
+        String color = Environment.COLOR.removeCommandLineOption(args);
+        if (color == null) {
+            color = Environment.COLOR.getDefault();
+        }
+
         // Serial
         if (Environment.SERIAL.removeCommandLineOption(args) != null) {
             System.setProperty(Environment.SERIAL.getProperty(), Boolean.toString(true));
@@ -93,7 +99,7 @@ public class DefaultClient implements Client {
 
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();
-        try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
+        try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile, color)) {
             try {
                 final ExecutionResult result = new DefaultClient(parameters).execute(output, args);
                 exitCode = result.getExitCode();

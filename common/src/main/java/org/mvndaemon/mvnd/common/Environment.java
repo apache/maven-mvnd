@@ -58,6 +58,8 @@ public enum Environment {
     STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--stop"),
     /** Use one thread, no log buffering and the default project builder to behave like a standard maven */
     SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:-1", "mvnd:--serial"),
+    /** Manage color output, can be either auto (the default), always or never */
+    COLOR(null, null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
 
     //
     // Log properties
