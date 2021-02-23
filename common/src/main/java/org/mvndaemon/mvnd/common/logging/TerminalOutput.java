@@ -355,8 +355,10 @@ public class TerminalOutput implements ClientOutput {
         }
         case Message.PROJECT_LOG_MESSAGE: {
             final ProjectEvent bm = (ProjectEvent) entry;
-            final Project prj = projects.computeIfAbsent(bm.getProjectId(), Project::new);
-            if (noBuffering || dumb) {
+            final Project prj = projects.get(bm.getProjectId());
+            if (prj == null) {
+                log.accept(bm.getMessage());
+            } else if (noBuffering || dumb) {
                 String msg;
                 if (maxThreads > 1) {
                     msg = String.format("[%s] %s", bm.getProjectId(), bm.getMessage());

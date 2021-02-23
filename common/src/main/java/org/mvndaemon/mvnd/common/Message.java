@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UTFDataFormatException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +108,51 @@ public abstract class Message {
     }
 
     final long timestamp = System.nanoTime();
+
+    public static Comparator<Message> getMessageComparator() {
+        return Comparator.comparingInt(Message::getClassOrder).thenComparingLong(Message::timestamp);
+    }
+
+    public static int getClassOrder(Message m) {
+        switch (m.getType()) {
+        case KEEP_ALIVE:
+        case BUILD_REQUEST:
+            return 0;
+        case BUILD_STARTED:
+            return 1;
+        case PROMPT:
+        case PROMPT_RESPONSE:
+        case DISPLAY:
+            return 2;
+        case PROJECT_STARTED:
+            return 3;
+        case MOJO_STARTED:
+            return 4;
+        case TRANSFER_INITIATED:
+        case TRANSFER_STARTED:
+            return 40;
+        case TRANSFER_PROGRESSED:
+            return 41;
+        case TRANSFER_CORRUPTED:
+        case TRANSFER_SUCCEEDED:
+        case TRANSFER_FAILED:
+            return 42;
+        case PROJECT_LOG_MESSAGE:
+            return 50;
+        case BUILD_LOG_MESSAGE:
+            return 51;
+        case PROJECT_STOPPED:
+            return 95;
+        case BUILD_FINISHED:
+            return 96;
+        case BUILD_EXCEPTION:
+            return 97;
+        case STOP:
+            return 99;
+        default:
+            throw new IllegalStateException("Unexpected message type " + m.getType() + ": " + m);
+        }
+    }
 
     public long timestamp() {
         return timestamp;

@@ -24,7 +24,6 @@ import java.nio.channels.SocketChannel;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -429,8 +428,7 @@ public class Server implements AutoCloseable, Runnable {
 
     private void handle(DaemonConnection connection, BuildRequest buildRequest) {
         updateState(Busy);
-        final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64,
-                Comparator.comparingInt(this::getClassOrder).thenComparingLong(Message::timestamp));
+        final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64, Message.getMessageComparator());
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
         final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
         try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(buildEventListener)) {
@@ -555,48 +553,6 @@ public class Server implements AutoCloseable, Runnable {
                 updateState(DaemonState.Idle);
                 System.gc();
             }
-        }
-    }
-
-    int getClassOrder(Message m) {
-        switch (m.getType()) {
-        case Message.BUILD_REQUEST:
-            return 0;
-        case Message.BUILD_STARTED:
-            return 1;
-        case Message.PROMPT:
-        case Message.PROMPT_RESPONSE:
-        case Message.DISPLAY:
-            return 2;
-        case Message.PROJECT_STARTED:
-            return 3;
-        case Message.MOJO_STARTED:
-            return 4;
-        case Message.TRANSFER_INITIATED:
-        case Message.TRANSFER_STARTED:
-            return 40;
-        case Message.TRANSFER_PROGRESSED:
-            return 41;
-        case Message.TRANSFER_CORRUPTED:
-        case Message.TRANSFER_SUCCEEDED:
-        case Message.TRANSFER_FAILED:
-            return 42;
-        case Message.PROJECT_LOG_MESSAGE:
-            return 50;
-        case Message.BUILD_LOG_MESSAGE:
-            return 51;
-        case Message.PROJECT_STOPPED:
-            return 95;
-        case Message.BUILD_FINISHED:
-            return 96;
-        case Message.BUILD_EXCEPTION:
-            return 97;
-        case Message.STOP:
-            return 99;
-        case Message.KEEP_ALIVE:
-            return 100;
-        default:
-            throw new IllegalStateException("Unexpected message type " + m.getType() + ": " + m);
         }
     }
 
