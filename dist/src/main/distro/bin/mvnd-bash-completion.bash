@@ -146,7 +146,7 @@ _mvnd()
     _get_comp_words_by_ref -n : cur prev
 
     local mvnd_opts="-1"
-    local mvnd_long_opts="--completion|--purge|--serial|--status|--stop"
+    local mvnd_long_opts="--color|--completion|--purge|--serial|--status|--stop"
     local mvnd_properties="-Djava.home|-Dmaven.multiModuleProjectDirectory|-Dmaven.repo.local|-Dmaven.settings|-Dmvnd.builder|-Dmvnd.daemonStorage|-Dmvnd.debug|-Dmvnd.duplicateDaemonGracePeriod|-Dmvnd.enableAssertions|-Dmvnd.expirationCheckDelay|-Dmvnd.home|-Dmvnd.idleTimeout|-Dmvnd.jvmArgs|-Dmvnd.keepAlive|-Dmvnd.logPurgePeriod|-Dmvnd.logback|-Dmvnd.maxHeapSize|-Dmvnd.maxLostKeepAlive|-Dmvnd.minHeapSize|-Dmvnd.minThreads|-Dmvnd.noBuffering|-Dmvnd.noDaemon|-Dmvnd.propertiesPath|-Dmvnd.registry|-Dmvnd.rollingWindowSize|-Dmvnd.serial|-Dmvnd.threads|-Duser.dir|-Duser.home"
     local opts="-am|-amd|-B|-C|-c|-cpu|-D|-e|-emp|-ep|-f|-fae|-ff|-fn|-gs|-h|-l|-N|-npr|-npu|-nsu|-o|-P|-pl|-q|-rf|-s|-T|-t|-U|-up|-V|-v|-X|${mvnd_opts}"
     local long_opts="--also-make|--also-make-dependents|--batch-mode|--strict-checksums|--lax-checksums|--check-plugin-updates|--define|--errors|--encrypt-master-password|--encrypt-password|--file|--fail-at-end|--fail-fast|--fail-never|--global-settings|--help|--log-file|--non-recursive|--no-plugin-registry|--no-plugin-updates|--no-snapshot-updates|--offline|--activate-profiles|--projects|--quiet|--resume-from|--settings|--threads|--toolchains|--update-snapshots|--update-plugins|--show-version|--version|--debug|${mvnd_long_opts}"
