@@ -18,7 +18,6 @@ package org.mvndaemon.mvnd.daemon;
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
-
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Message;
 
@@ -32,8 +31,7 @@ public class ServerTest {
         messages.addAll(Arrays.asList(
                 Message.projectStopped("projectId"),
                 Message.projectStarted("projectId"),
-                Message.log("projectId", "message"))
-        );
+                Message.log("projectId", "message")));
 
         assertEquals(Message.PROJECT_STARTED, messages.remove().getType());
         assertEquals(Message.PROJECT_LOG_MESSAGE, messages.remove().getType());

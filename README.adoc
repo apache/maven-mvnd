@@ -173,6 +173,10 @@ $ ls -lh target/mvnd
 
 === Known issues and limitations
 
-* Parallel build, hence `mvnd`, don't play well with `-rf` maven option at the moment. If you use the `-rf` maven option with `mvnd` you have no guarantee that all the modules will have been built (There are some improvements planned on this in the next `mvnd` releases).
+* `mvnd` generally does not play well with `-rf` Maven option at the moment.
+  If your source tree allows for building of some modules in parallel
+  and if the failure happens on some of the parallel execution branches,
+  there is no guarantee that `mvnd` builds all modules skipped due to the previous failure.
+  There are some improvements planned on this in the next `mvnd` releases.
 
-We're happy to improve `mvnd`, so feedback is most welcomed!
+We're happy to improve `mvnd`, so https://github.com/mvndaemon/mvnd/issues[feedback] is most welcomed!
