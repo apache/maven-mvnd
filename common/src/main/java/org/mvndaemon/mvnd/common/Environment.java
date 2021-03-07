@@ -58,8 +58,6 @@ public enum Environment {
     STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--stop"),
     /** Use one thread, no log buffering and the default project builder to behave like a standard maven */
     SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:-1", "mvnd:--serial"),
-    /** Manage color output, can be either auto (the default), always or never */
-    COLOR(null, null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
 
     //
     // Log properties
@@ -108,6 +106,8 @@ public enum Environment {
     MAVEN_SHOW_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-V", "mvn:--show-version"),
     /** Define */
     MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "mvn:-D", "mvn:--define"),
+    /** Whether the output should be styled using ANSI color codes; possible values: auto, always, never */
+    MAVEN_COLOR("style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL),
 
     //
     // mvnd properties
@@ -379,13 +379,23 @@ public enum Environment {
         return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
     }
 
+    public String getCommandLineOption(Collection<String> args) {
+        return getCommandLineOption(args, false);
+    }
+
     public String removeCommandLineOption(Collection<String> args) {
+        return getCommandLineOption(args, true);
+    }
+
+    String getCommandLineOption(Collection<String> args, boolean remove) {
         final String[] prefixes = getPrefixes();
         String value = null;
         for (Iterator<String> it = args.iterator(); it.hasNext();) {
             String arg = it.next();
             if (Stream.of(prefixes).anyMatch(arg::startsWith)) {
-                it.remove();
+                if (remove) {
+                    it.remove();
+                }
                 if (type == OptionType.VOID) {
                     value = "";
                 } else {
@@ -395,7 +405,9 @@ public enum Environment {
                     if (value.isEmpty()) {
                         if (it.hasNext()) {
                             value = it.next();
-                            it.remove();
+                            if (remove) {
+                                it.remove();
+                            }
                         }
                     } else {
                         if (value.charAt(0) == '=') {

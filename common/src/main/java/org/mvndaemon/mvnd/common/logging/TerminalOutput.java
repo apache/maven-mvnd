@@ -35,12 +35,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import org.fusesource.jansi.internal.CLibrary;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.AbstractPosixTerminal;
-import org.jline.utils.AnsiWriter;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -87,10 +85,6 @@ public class TerminalOutput implements ClientOutput {
      * the terminal the log for a given module once it's finished.
      */
     public static final int KEY_CTRL_M = 'M' & 0x1f;
-
-    public static final String COLOR_AUTO = "auto";
-    public static final String COLOR_ALWAYS = "always";
-    public static final String COLOR_NEVER = "never";
 
     private static final AttributedStyle GREEN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.GREEN);
     private static final AttributedStyle CYAN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.CYAN);
@@ -149,7 +143,7 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
-    public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile, String color) throws IOException {
+    public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
         this.terminal = TerminalBuilder.terminal();
         this.dumb = terminal.getType().startsWith("dumb");
@@ -165,7 +159,7 @@ public class TerminalOutput implements ClientOutput {
         this.previousIntHandler = terminal.handle(Terminal.Signal.INT,
                 sig -> daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON));
         this.display = new Display(terminal, false);
-        this.log = logFile == null ? new MessageCollector(color) : new FileLog(logFile, color);
+        this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
         if (!dumb) {
             final Thread r = new Thread(this::readInputLoop);
             r.start();
@@ -771,15 +765,10 @@ public class TerminalOutput implements ClientOutput {
 
         private final Writer out;
         private final Path logFile;
-        private boolean closed;
 
-        public FileLog(Path logFile, String color) throws IOException {
+        public FileLog(Path logFile) throws IOException {
             super();
-            if (COLOR_ALWAYS.equalsIgnoreCase(color)) {
-                this.out = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
-            } else {
-                this.out = new AnsiWriter(Files.newBufferedWriter(logFile, StandardCharsets.UTF_8));
-            }
+            this.out = Files.newBufferedWriter(logFile, StandardCharsets.UTF_8);
             this.logFile = logFile;
         }
 
@@ -800,10 +789,7 @@ public class TerminalOutput implements ClientOutput {
 
         @Override
         public void close() throws IOException {
-            if (!closed) {
-                out.close();
-                closed = true;
-            }
+            out.close();
         }
 
     }
@@ -815,23 +801,6 @@ public class TerminalOutput implements ClientOutput {
     class MessageCollector implements ClientLog {
 
         private final List<String> messages = new ArrayList<>();
-        private final boolean strip;
-
-        public MessageCollector(String color) {
-            if (COLOR_NEVER.equalsIgnoreCase(color)) {
-                this.strip = true;
-            } else if (COLOR_ALWAYS.equalsIgnoreCase(color)) {
-                this.strip = false;
-            } else {
-                boolean strip;
-                try {
-                    strip = CLibrary.isatty(1) == 0;
-                } catch (Throwable t) {
-                    strip = true;
-                }
-                this.strip = strip;
-            }
-        }
 
         @Override
         public void accept(String message) {
@@ -841,7 +810,7 @@ public class TerminalOutput implements ClientOutput {
         @Override
         public void flush() {
             clearDisplay();
-            messages.forEach(s -> terminal.writer().println(strip ? AttributedString.stripAnsi(s) : s));
+            messages.forEach(terminal.writer()::println);
             messages.clear();
             terminal.flush();
         }
