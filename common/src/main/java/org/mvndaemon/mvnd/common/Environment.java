@@ -473,6 +473,17 @@ public enum Environment {
         }
     }
 
+    /**
+     * The values of {@link Environment#MAVEN_COLOR} option.
+     */
+    public enum Color {
+        always, never, auto;
+
+        public static Optional<Color> of(String color) {
+            return color == null ? Optional.empty() : Optional.of(Color.valueOf(color));
+        }
+    }
+
     public static class DocumentedEnumEntry<E> {
 
         private final E entry;
