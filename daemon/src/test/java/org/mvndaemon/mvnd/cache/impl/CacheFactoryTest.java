@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -63,6 +64,12 @@ public class CacheFactoryTest {
         Assertions.assertTrue(cache.contains(k2));
         Assertions.assertEquals(record2, cache.get(k2));
         Assertions.assertFalse(record2.invalidated);
+
+        /* Make sure the new content is written a couple of ms later than the original lastModifiedTime */
+        final long deadline = Files.readAttributes(file1, BasicFileAttributes.class).lastModifiedTime().toMillis() + 10;
+        while (System.currentTimeMillis() < deadline) {
+            Thread.sleep(1);
+        }
 
         Files.write(file1, "content1.1".getBytes(StandardCharsets.UTF_8));
         if (asyncOpDelayMs > 0) {
