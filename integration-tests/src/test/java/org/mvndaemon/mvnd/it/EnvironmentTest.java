@@ -53,6 +53,9 @@ public class EnvironmentTest {
             cl.execute(output, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
                     "-Dexpression=user.dir", "-e").assertSuccess();
             assertDaemonRegistrySize(1);
+            /* Wait, till the existing instance becomes idle so that the next iteration does not start a new instance */
+            registry.awaitIdle(registry.getAll().get(0).getId());
+
             String pathStr = dir.toAbsolutePath().toString();
             assertTrue(output.getMessages().stream()
                     .anyMatch(m -> m.toString().contains(pathStr)), "Output should contain " + pathStr);
