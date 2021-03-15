@@ -43,6 +43,9 @@ public class InvalidatingPluginArtifactsCache extends DefaultPluginArtifactsCach
 
         @Override
         public Stream<Path> getDependencyPaths() {
+            if (record.getException() != null) {
+                return Stream.empty();
+            }
             return record.getArtifacts().stream().map(artifact -> artifact.getFile().toPath());
         }
 
