@@ -15,6 +15,7 @@
  */
 package org.mvndaemon.mvnd.daemon;
 
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -22,15 +23,22 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.management.Attribute;
+import javax.management.ObjectName;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonExpirationStatus;
 import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.common.DaemonState;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.TimeUtils;
+import org.mvndaemon.mvnd.nativ.CLibrary;
 
 import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
 import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
@@ -78,8 +86,13 @@ public class DaemonExpiration {
     }
 
     static DaemonExpirationStrategy lowMemory(double minFreeMemoryPercentage) {
-        // TODO
-        return daemon -> NOT_TRIGGERED;
+        if (Os.current() == Os.MAC) {
+            return new OsxMemoryExpirationStrategy(minFreeMemoryPercentage);
+        } else if (Os.current() == Os.LINUX) {
+            return new MemInfoMemoryExpirationStrategy(minFreeMemoryPercentage);
+        } else {
+            return new MBeanMemoryExpirationStrategy(minFreeMemoryPercentage);
+        }
     }
 
     static DaemonExpirationStrategy duplicateGracePeriod() {
@@ -225,6 +238,129 @@ public class DaemonExpiration {
 
         public String getReason() {
             return reason;
+        }
+
+    }
+
+    private static abstract class MemoryExpirationStrategy implements DaemonExpirationStrategy {
+        static final long MIN_THRESHOLD_BYTES = 384 * 1024 * 1024;
+        static final long MAX_THRESHOLD_BYTES = 1024 * 1024 * 1024;
+
+        final double minFreeMemoryPercentage;
+
+        public MemoryExpirationStrategy(double minFreeMemoryPercentage) {
+            this.minFreeMemoryPercentage = minFreeMemoryPercentage;
+        }
+
+        @Override
+        public DaemonExpirationResult checkExpiration(Server daemon) {
+            try {
+                long[] mem = getTotalAndFreeMemory();
+                if (mem != null && mem.length == 2) {
+                    long total = mem[0];
+                    long free = mem[1];
+                    if (total > free && free > 0) {
+                        double norm = Math.min(Math.max(total * minFreeMemoryPercentage, MIN_THRESHOLD_BYTES),
+                                MAX_THRESHOLD_BYTES);
+                        if (free < norm) {
+                            return new DaemonExpirationResult(GRACEFUL_EXPIRE, "to reclaim system memory");
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+            return NOT_TRIGGERED;
+        }
+
+        protected abstract long[] getTotalAndFreeMemory() throws Exception;
+    }
+
+    private static class OsxMemoryExpirationStrategy extends MemoryExpirationStrategy {
+        public OsxMemoryExpirationStrategy(double minFreeMemoryPercentage) {
+            super(minFreeMemoryPercentage);
+        }
+
+        @Override
+        protected long[] getTotalAndFreeMemory() throws Exception {
+            long[] mem = new long[2];
+            CLibrary.getOsxMemoryInfo(mem);
+            return mem;
+        }
+    }
+
+    private static class MemInfoMemoryExpirationStrategy extends MemoryExpirationStrategy {
+        public MemInfoMemoryExpirationStrategy(double minFreeMemoryPercentage) {
+            super(minFreeMemoryPercentage);
+        }
+
+        @Override
+        protected long[] getTotalAndFreeMemory() throws Exception {
+            Matcher m = Pattern.compile("^(\\S+):\\s+(\\d+) kB$").matcher("");
+            long total = -1;
+            long available = -1;
+            long free = -1;
+            long buffers = -1;
+            long cached = -1;
+            long reclaimable = -1;
+            long mapped = -1;
+            for (String line : Files.readAllLines(Paths.get("/proc/meminfo"))) {
+                if (m.reset(line).matches()) {
+                    String key = m.group(1);
+                    long val = Long.parseLong(m.group(2)) * 1024;
+                    switch (key) {
+                    case "MemTotal":
+                        total = val;
+                        break;
+                    case "MemAvailable":
+                        available = val;
+                        break;
+                    case "MemFree":
+                        free = val;
+                        break;
+                    case "Buffers":
+                        buffers = val;
+                        break;
+                    case "Cached":
+                        cached = val;
+                        break;
+                    case "SReclaimable":
+                        reclaimable = val;
+                        break;
+                    case "Mapped":
+                        mapped = val;
+                        break;
+                    }
+                }
+            }
+            if (available < 0) {
+                if (free != -1 && buffers != -1 && cached != -1 && reclaimable != -1 && mapped != -1) {
+                    available = free + buffers + cached + reclaimable - mapped;
+                }
+            }
+            return new long[] { total, available };
+        }
+    }
+
+    private static class MBeanMemoryExpirationStrategy extends MemoryExpirationStrategy {
+        final boolean isIbmJvm;
+
+        public MBeanMemoryExpirationStrategy(double minFreeMemoryPercentage) {
+            super(minFreeMemoryPercentage);
+            String vendor = System.getProperty("java.vm.vendor");
+            isIbmJvm = vendor.toLowerCase(Locale.ROOT).startsWith("ibm corporation");
+        }
+
+        @Override
+        protected long[] getTotalAndFreeMemory() throws Exception {
+            ObjectName objectName = new ObjectName("java.lang:type=OperatingSystem");
+            List<Attribute> list = ManagementFactory.getPlatformMBeanServer().getAttributes(
+                    objectName,
+                    new String[] { isIbmJvm ? "TotalPhysicalMemory" : "TotalPhysicalMemorySize", "FreePhysicalMemorySize" })
+                    .asList();
+            long total = ((Number) list.get(0).getValue()).longValue();
+            long free = ((Number) list.get(1).getValue()).longValue();
+            return new long[] { total, free };
         }
 
     }
