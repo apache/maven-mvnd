@@ -375,7 +375,11 @@ public class DaemonConnector {
 
             LOGGER.debug("Starting daemon process: id = {}, workingDir = {}, daemonArgs: {}", daemonId, workingDir, command);
             ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(parameters.daemonOutLog(daemonId).toFile());
-            Process process = new ProcessBuilder()
+            ProcessBuilder processBuilder = new ProcessBuilder();
+            processBuilder.environment()
+                    .put("JDK_JAVA_OPTIONS",
+                            "--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED");
+            Process process = processBuilder
                     .directory(workingDir.toFile())
                     .command(args)
                     .redirectOutput(redirect)
