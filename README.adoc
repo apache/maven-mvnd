@@ -128,6 +128,12 @@ mvnd clean install
 
 The complete list of options is printed when executing `mvnd --help`.
 
+
+== Configuration
+User specific mvnd configuration can be provided in `~/.m2/mvnd.properties`. For a full list of available properties please see 
+https://github.com/mvndaemon/mvnd/blob/master/dist/src/main/distro/conf/mvnd.properties[/dist/src/main/distro/conf/mvnd.properties].  
+Please make sure that the settings in `~/.m2/mvnd.properties` make sense as it overwrites environment specific defaults like `JAVA_HOME` or `MVND_HOME` and also mvnd default configuration provided in `<mvnd-installdir>/conf/mvnd.properties`. 
+
 == Build `mvnd` from source
 
 === Prerequisites:
