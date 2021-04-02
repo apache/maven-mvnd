@@ -19,8 +19,11 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,6 +119,10 @@ public class Server implements AutoCloseable, Runnable {
             strategy = DaemonExpiration.master();
             memoryStatus = new DaemonMemoryStatus(executor);
 
+            SecureRandom secureRandom = new SecureRandom();
+            byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
+            secureRandom.nextBytes(token);
+
             List<String> opts = new ArrayList<>();
             Arrays.stream(Environment.values())
                     .filter(Environment::isDiscriminating)
@@ -130,6 +137,7 @@ public class Server implements AutoCloseable, Runnable {
                     Environment.MVND_HOME.asString(),
                     DaemonRegistry.getProcessId(),
                     socket.socket().getLocalPort(),
+                    token,
                     Locale.getDefault().toLanguageTag(),
                     opts,
                     Busy, cur, cur);
@@ -224,6 +232,13 @@ public class Server implements AutoCloseable, Runnable {
 
     private void client(SocketChannel socket) {
         LOGGER.info("Client connected");
+        if (!checkToken(socket)) {
+            LOGGER.error("Received invalid token, dropping connection");
+            updateState(DaemonState.Idle);
+
+            return;
+        }
+
         try (DaemonConnection connection = new DaemonConnection(socket)) {
             LOGGER.info("Waiting for request");
             SynchronousQueue<Message> request = new SynchronousQueue<>();
@@ -244,6 +259,23 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.error("Error reading request", t);
         }
+    }
+
+    private boolean checkToken(SocketChannel socket) {
+        byte[] token = new byte[info.getToken().length];
+        ByteBuffer tokenBuffer = ByteBuffer.wrap(token);
+
+        try {
+            do {
+                if (socket.read(tokenBuffer) == -1) {
+                    break;
+                }
+            } while (tokenBuffer.remaining() > 0);
+        } catch (final IOException e) {
+            LOGGER.debug("Discarding EOFException: {}", e.toString(), e);
+        }
+
+        return MessageDigest.isEqual(info.getToken(), token);
     }
 
     private void expirationCheck() {

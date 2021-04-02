@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -415,7 +416,7 @@ public class DaemonConnector {
             throws DaemonException.ConnectException {
         LOGGER.debug("Connecting to Daemon");
         try {
-            DaemonConnection connection = connect(daemon.getAddress());
+            DaemonConnection connection = connect(daemon.getAddress(), daemon.getToken());
             return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, parameters);
         } catch (DaemonException.ConnectException e) {
             staleAddressDetector.maybeStaleAddress(e);
@@ -444,7 +445,7 @@ public class DaemonConnector {
         }
     }
 
-    public DaemonConnection connect(int port) throws DaemonException.ConnectException {
+    public DaemonConnection connect(int port, byte[] token) throws DaemonException.ConnectException {
         InetSocketAddress address = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
         try {
             LOGGER.debug("Trying to connect to address {}.", address);
@@ -456,6 +457,13 @@ public class DaemonConnector {
                 throw new DaemonException.ConnectException(String.format("Socket connected to itself on %s.", address));
             }
             LOGGER.debug("Connected to address {}.", socket.getRemoteSocketAddress());
+
+            ByteBuffer tokenBuffer = ByteBuffer.wrap(token);
+            do {
+                socketChannel.write(tokenBuffer);
+            } while (tokenBuffer.remaining() > 0);
+            LOGGER.debug("Exchanged token successfully");
+
             return new DaemonConnection(socketChannel);
         } catch (DaemonException.ConnectException e) {
             throw e;
