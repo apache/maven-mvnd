@@ -41,7 +41,7 @@ public class DaemonRegistryTest {
             byte[] token = new byte[16];
             new Random().nextBytes(token);
             reg1.store(new DaemonInfo("12345678", "/java/home/",
-                    "/data/reg/", 0x12345678, 7502,
+                    "/data/reg/", 0x12345678, 7502, token,
                     Locale.getDefault().toLanguageTag(), Arrays.asList("-Xmx"),
                     DaemonState.Idle, System.currentTimeMillis(), System.currentTimeMillis()));
 

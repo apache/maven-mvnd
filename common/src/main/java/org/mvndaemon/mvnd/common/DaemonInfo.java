@@ -26,11 +26,14 @@ import static org.mvndaemon.mvnd.common.DaemonState.Idle;
  */
 public class DaemonInfo {
 
+    public static final int TOKEN_SIZE = 16;
+
     private final String id;
     private final String javaHome;
     private final String mvndHome;
     private final int pid;
     private final int address;
+    private final byte[] token;
     private final String locale;
     private final List<String> options;
     private final DaemonState state;
@@ -38,7 +41,7 @@ public class DaemonInfo {
     private final long lastBusy;
 
     public DaemonInfo(String id, String javaHome, String mavenHome,
-            int pid, int address,
+            int pid, int address, byte[] token,
             String locale, List<String> options,
             DaemonState state, long lastIdle, long lastBusy) {
         this.id = id;
@@ -46,6 +49,7 @@ public class DaemonInfo {
         this.mvndHome = mavenHome;
         this.pid = pid;
         this.address = address;
+        this.token = token;
         this.locale = locale;
         this.options = options;
         this.state = state;
@@ -71,6 +75,10 @@ public class DaemonInfo {
 
     public int getAddress() {
         return address;
+    }
+
+    public byte[] getToken() {
+        return token;
     }
 
     public String getLocale() {
@@ -106,7 +114,7 @@ public class DaemonInfo {
             lb = lastBusy;
         }
         return new DaemonInfo(id, javaHome, mvndHome, pid, address,
-                locale, options, state, li, lb);
+                token, locale, options, state, li, lb);
     }
 
     @Override
