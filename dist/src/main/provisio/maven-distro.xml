@@ -20,7 +20,7 @@
     <artifactSet to="/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
-                    excludes="lib/*slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*"/>
+                    excludes="lib/*slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*,lib/maven-resolver-api*,lib/maven-resolver-impl*,lib/maven-resolver-util*,lib/maven-resolver-spi*"/>
         </artifact>
     </artifactSet>
 
@@ -43,11 +43,11 @@
             <exclusion id="*:maven-model-builder"/>
             <exclusion id="*:maven-plugin-api"/>
             <exclusion id="*:maven-repository-metadata"/>
-            <exclusion id="*:maven-resolver-api"/>
-            <exclusion id="*:maven-resolver-impl"/>
+<!--            <exclusion id="*:maven-resolver-api"/>-->
+<!--            <exclusion id="*:maven-resolver-impl"/>-->
             <exclusion id="*:maven-resolver-provider"/>
-            <exclusion id="*:maven-resolver-spi"/>
-            <exclusion id="*:maven-resolver-util"/>
+<!--            <exclusion id="*:maven-resolver-spi"/>-->
+<!--            <exclusion id="*:maven-resolver-util"/>-->
             <exclusion id="*:maven-settings"/>
             <exclusion id="*:maven-settings-builder"/>
             <exclusion id="*:maven-shared-utils"/>
