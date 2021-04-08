@@ -18,11 +18,6 @@
 -->
 <extensions>
     <extension>
-        <groupId>io.takari.aether</groupId>
-        <artifactId>takari-local-repository</artifactId>
-        <version>[0.11.3,)</version>
-    </extension>
-    <extension>
         <groupId>fr.jcgay.maven</groupId>
         <artifactId>maven-profiler</artifactId>
         <version>3.0</version>

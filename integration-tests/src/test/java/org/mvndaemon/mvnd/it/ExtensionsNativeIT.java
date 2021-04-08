@@ -50,7 +50,7 @@ public class ExtensionsNativeIT {
         assertDaemonRegistrySize(1);
         DaemonInfo daemon = registry.getAll().iterator().next();
         assertTrue(daemon.getOptions().contains(
-                "mvnd.coreExtensions=io.takari.aether:takari-local-repository:[0.11.3,);fr.jcgay.maven:maven-profiler:3.0"));
+                "mvnd.coreExtensions=fr.jcgay.maven:maven-profiler:3.0"));
 
         registry.awaitIdle(daemon.getId());
 

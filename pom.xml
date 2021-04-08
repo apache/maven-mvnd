@@ -47,7 +47,6 @@
         <logback.version>1.2.3</logback.version>
         <maven.version>3.8.2</maven.version>
         <slf4j.version>1.7.29</slf4j.version>
-        <takari-local-repository.version>0.11.2</takari-local-repository.version>
 
         <!-- plugin versions a..z -->
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
@@ -136,12 +135,6 @@
                 <version>${junit.jupiter.version}</version>
                 <scope>import</scope>
                 <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>io.takari.aether</groupId>
-                <artifactId>takari-local-repository</artifactId>
-                <version>${takari-local-repository.version}</version>
             </dependency>
 
             <dependency>

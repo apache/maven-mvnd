@@ -50,10 +50,6 @@
             <artifactId>maven-embedder</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.takari.aether</groupId>
-            <artifactId>takari-local-repository</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-interactivity-api</artifactId>
             <version>1.0</version>
