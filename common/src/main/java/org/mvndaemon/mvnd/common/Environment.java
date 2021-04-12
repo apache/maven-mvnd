@@ -231,7 +231,11 @@ public enum Environment {
      * Internal property to tell the daemon which JAVA_HOME was used to start it. It needs to be passed explicitly
      * because the value may differ from what the daemon sees through <code>System.getProperty("java.home")</code>.
      */
-    MVND_JAVA_HOME("mvnd.java.home", null, null, OptionType.PATH, Flags.INTERNAL);
+    MVND_JAVA_HOME("mvnd.java.home", null, null, OptionType.PATH, Flags.INTERNAL),
+    /**
+     * Log mojos execution time at the end of the build.
+     */
+    MVND_BUILD_TIME("mvnd.buildTime", null, null, OptionType.BOOLEAN, Flags.NONE);
 
     static Properties properties;
 
