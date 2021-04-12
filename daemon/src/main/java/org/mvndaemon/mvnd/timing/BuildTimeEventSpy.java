@@ -32,6 +32,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.sisu.Typed;
+import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,6 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
 
     public static final int MAX_NAME_LENGTH = 58;
     public static final String DIVIDER = "------------------------------------------------------------------------";
-    public static final String BUILDTIME_OUTPUT_LOG_PROPERTY = "buildtime.output.log";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -89,7 +89,8 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
             break;
 
         case SessionEnded:
-            String prop = getExecutionProperty(event, BUILDTIME_OUTPUT_LOG_PROPERTY, "false");
+            String prop = getExecutionProperty(event, Environment.MVND_BUILD_TIME.getProperty(),
+                    Environment.MVND_BUILD_TIME.getDefault());
             boolean output = Boolean.parseBoolean(prop);
             doReport(output);
             break;
