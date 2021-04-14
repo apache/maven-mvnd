@@ -291,6 +291,6 @@ public class DaemonRegistry implements AutoCloseable {
     }
 
     public String toString() {
-        return String.format("PersistentDaemonRegistry[file=%s]", registryFile);
+        return String.format("DaemonRegistry[file=%s]", registryFile);
     }
 }
