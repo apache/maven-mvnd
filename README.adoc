@@ -66,6 +66,13 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 $ brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
+=== Install using https://community.chocolatey.org/packages/mvndaemon/[Chocolatey]
+
+[source,shell]
+----
+$ choco install mvndaemon
+----
+
 === Set up completion
 
 Optionally, you can set up completion as follows:
