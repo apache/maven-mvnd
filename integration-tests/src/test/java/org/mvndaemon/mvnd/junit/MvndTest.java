@@ -30,4 +30,8 @@ public @interface MvndTest {
      * <code>@MvndTest(projectDir = "src/test/projects/my-project")</code>
      */
     String projectDir();
+
+    String keepAlive() default "";
+
+    String maxLostKeepAlive() default "";
 }

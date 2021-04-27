@@ -56,14 +56,17 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         try {
             final Store store = context.getRoot().getStore(ExtensionContext.Namespace.GLOBAL);
             final Class<?> testClass = context.getRequiredTestClass();
-            final MvndTest mnvdTest = testClass.getAnnotation(MvndTest.class);
-            if (mnvdTest != null) {
+            final MvndTest mvndTest = testClass.getAnnotation(MvndTest.class);
+            String keepAlive = Environment.MVND_KEEP_ALIVE.getDefault();
+            if (mvndTest != null) {
                 store.put(MvndResource.class.getName(),
                         MvndResource.create(
                                 context.getRequiredTestClass().getSimpleName(),
-                                mnvdTest.projectDir(),
+                                mvndTest.projectDir(),
                                 false,
-                                -1L));
+                                -1L,
+                                mvndTest.keepAlive(),
+                                mvndTest.maxLostKeepAlive()));
             } else {
                 final MvndNativeTest mvndNativeTest = testClass.getAnnotation(MvndNativeTest.class);
                 store.put(MvndResource.class.getName(),
@@ -71,7 +74,9 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                                 context.getRequiredTestClass().getSimpleName(),
                                 mvndNativeTest.projectDir(),
                                 true,
-                                mvndNativeTest.timeoutSec() * 1000L));
+                                mvndNativeTest.timeoutSec() * 1000L,
+                                mvndNativeTest.keepAlive(),
+                                mvndNativeTest.maxLostKeepAlive()));
             }
         } catch (Exception e) {
             this.bootException = e;
@@ -142,7 +147,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         private final boolean isNative;
         private final long timeoutMs;
 
-        public static MvndResource create(String className, String rawProjectDir, boolean isNative, long timeoutMs)
+        public static MvndResource create(String className, String rawProjectDir, boolean isNative, long timeoutMs,
+                String keepAlive, String maxLostKeepAlive)
                 throws IOException {
             if (rawProjectDir == null) {
                 throw new IllegalStateException("rawProjectDir of @MvndTest must be set");
@@ -220,8 +226,10 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     localMavenRepository, settingsPath,
                     logback,
                     TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
-                    TimeUtils.toDuration(Environment.MVND_KEEP_ALIVE.getDefault()).multipliedBy(10),
-                    Integer.parseInt(Environment.MVND_MAX_LOST_KEEP_ALIVE.getDefault()) * 10);
+                    keepAlive != null && !keepAlive.isEmpty() ? TimeUtils.toDuration(keepAlive)
+                            : TimeUtils.toDuration(Environment.MVND_KEEP_ALIVE.getDefault()).multipliedBy(10),
+                    maxLostKeepAlive != null && !maxLostKeepAlive.isEmpty() ? Integer.parseInt(maxLostKeepAlive)
+                            : Integer.parseInt(Environment.MVND_MAX_LOST_KEEP_ALIVE.getDefault()) * 10);
             final TestRegistry registry = new TestRegistry(parameters.registry());
 
             return new MvndResource(parameters, registry, isNative, timeoutMs);
