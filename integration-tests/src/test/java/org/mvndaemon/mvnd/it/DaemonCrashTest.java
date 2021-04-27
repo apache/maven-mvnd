@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
@@ -30,7 +31,8 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@MvndTest(projectDir = "src/test/projects/daemon-crash")
+@MvndTest(projectDir = "src/test/projects/daemon-crash", keepAlive = "100ms", maxLostKeepAlive = "30")
+@Timeout(30)
 public class DaemonCrashTest {
 
     @Inject

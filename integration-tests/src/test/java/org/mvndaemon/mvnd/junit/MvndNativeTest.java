@@ -37,4 +37,8 @@ public @interface MvndNativeTest {
      * Timeout for {@link Client#execute(org.mvndaemon.mvnd.common.ClientOutput, java.util.List)} in seconds
      */
     long timeoutSec() default 300;
+
+    String keepAlive() default "";
+
+    String maxLostKeepAlive() default "";
 }
