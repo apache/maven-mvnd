@@ -1,0 +1,166 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+# os=Default is meant to be generic unix/linux
+
+known_targets := Linux-x86 Linux-x86_64 Linux-arm Linux-armv6 Linux-armv7 Linux-android-arm Linux-ppc64 Mac-x86 Mac-x86_64 DragonFly-x86_64 FreeBSD-x86_64 OpenBSD-x86_64 Windows-x86 Windows-x86_64 SunOS-sparcv9 HPUX-ia64_32
+target := $(OS_NAME)-$(OS_ARCH)
+
+ifeq (,$(findstring $(strip $(target)),$(known_targets)))
+  target := Default
+endif
+
+# cross-compilation toolchain prefix (e.g. "arm-linux-gnueabi-")
+CROSS_PREFIX :=
+
+Default_CC        := $(CROSS_PREFIX)gcc
+Default_STRIP     := $(CROSS_PREFIX)strip
+Default_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -fPIC -fvisibility=hidden
+Default_LINKFLAGS := -shared
+Default_LIBNAME   := libmvndnative.so
+Default_JANSI_FLAGS  := 
+
+Linux-x86_CC        := $(CROSS_PREFIX)gcc
+Linux-x86_STRIP     := $(CROSS_PREFIX)strip
+Linux-x86_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -fPIC -m32 -fvisibility=hidden
+Linux-x86_LINKFLAGS := -shared -static-libgcc
+Linux-x86_LIBNAME   := libmvndnative.so
+Linux-x86_JANSI_FLAGS  := 
+
+Linux-x86_64_CC        := $(CROSS_PREFIX)gcc
+Linux-x86_64_STRIP     := $(CROSS_PREFIX)strip
+Linux-x86_64_CCFLAGS   := -Isrc/main/lib/inc_linux -I$(JAVA_HOME)/include -Os -fPIC -m64 -fvisibility=hidden
+Linux-x86_64_LINKFLAGS := -shared -static-libgcc
+Linux-x86_64_LIBNAME   := libmvndnative.so
+Linux-x86_64_JANSI_FLAGS  := 
+
+Linux-arm_CC          := $(CROSS_PREFIX)gcc
+Linux-arm_STRIP       := $(CROSS_PREFIX)strip
+Linux-arm_CCFLAGS     := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -fPIC -mfloat-abi=softfp -mfpu=vfp -fvisibility=hidden
+Linux-arm_LINKFLAGS   := -shared -static-libgcc
+Linux-arm_LIBNAME     := libmvndnative.so
+Linux-arm_JANSI_FLAGS  :=
+
+Linux-armv6_CC        := $(CROSS_PREFIX)gcc
+Linux-armv6_STRIP     := $(CROSS_PREFIX)strip
+Linux-armv6_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -mfloat-abi=hard -mfpu=vfp -fPIC -fvisibility=hidden
+Linux-armv6_LINKFLAGS := -shared -static-libgcc
+Linux-armv6_LIBNAME   := libmvndnative.so
+Linux-armv6_JANSI_FLAGS  :=
+
+Linux-armv7_CC        := $(CROSS_PREFIX)gcc
+Linux-armv7_STRIP     := $(CROSS_PREFIX)strip
+Linux-armv7_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -mfloat-abi=hard -mfpu=vfp -fPIC -fvisibility=hidden
+Linux-armv7_LINKFLAGS := -shared -static-libgcc
+Linux-armv7_LIBNAME   := libmvndnative.so
+Linux-armv7_JANSI_FLAGS  :=
+
+Linux-arm64_CC        := $(CROSS_PREFIX)gcc
+Linux-arm64_STRIP     := $(CROSS_PREFIX)strip
+Linux-arm64_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -mfloat-abi=hard -mfpu=vfp -fPIC -fvisibility=hidden
+Linux-arm64_LINKFLAGS := -shared -static-libgcc
+Linux-arm64_LIBNAME   := libmvndnative.so
+Linux-arm64_JANSI_FLAGS  :=
+
+Linux-ppc64_CC        := $(CROSS_PREFIX)gcc
+Linux-ppc64_STRIP     := $(CROSS_PREFIX)strip
+Linux-ppc64_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -fPIC -fvisibility=hidden
+Linux-ppc64_LINKFLAGS := -shared -static-libgcc
+Linux-ppc64_LIBNAME   := libmvndnative.so
+Linux-ppc64_JANSI_FLAGS  :=
+
+DragonFly-x86_64_CC        := $(CROSS_PREFIX)cc
+DragonFly-x86_64_STRIP     := $(CROSS_PREFIX)strip
+DragonFly-x86_64_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -O2 -fPIC -fvisibility=hidden
+DragonFly-x86_64_LINKFLAGS := -shared
+DragonFly-x86_64_LIBNAME   := libmvndnative.so
+DragonFly-x86_64_JANSI_FLAGS  :=
+
+FreeBSD-x86_CC        := $(CROSS_PREFIX)gcc
+FreeBSD-x86_STRIP     := $(CROSS_PREFIX)strip
+FreeBSD-x86_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -fPIC -fvisibility=hidden
+FreeBSD-x86_LINKFLAGS := -shared
+FreeBSD-x86_LIBNAME   := libmvndnative.so
+FreeBSD-x86_JANSI_FLAGS  :=
+
+FreeBSD-x86_64_CC        := $(CROSS_PREFIX)gcc
+FreeBSD-x86_64_STRIP     := $(CROSS_PREFIX)strip
+FreeBSD-x86_64_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -fPIC -fvisibility=hidden
+FreeBSD-x86_64_LINKFLAGS := -shared
+FreeBSD-x86_64_LIBNAME   := libmvndnative.so
+FreeBSD-x86_64_JANSI_FLAGS  :=
+
+OpenBSD-x86_64_CC        := $(CROSS_PREFIX)gcc
+OpenBSD-x86_64_STRIP     := $(CROSS_PREFIX)strip
+OpenBSD-x86_64_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -Os -fPIC -fvisibility=hidden
+OpenBSD-x86_64_LINKFLAGS := -shared
+OpenBSD-x86_64_LIBNAME   := libmvndnative.so
+OpenBSD-x86_64_JANSI_FLAGS  := 
+
+SunOS-sparcv9_CC        := $(CROSS_PREFIX)gcc
+SunOS-sparcv9_STRIP     := $(CROSS_PREFIX)strip
+SunOS-sparcv9_CCFLAGS   := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_linux -O2s-fPIC -m64 -fvisibility=hidden
+SunOS-sparcv9_LINKFLAGS := -shared -static-libgcc
+SunOS-sparcv9_LIBNAME   := libmvndnative.so
+SunOS-sparcv9_JANSI_FLAGS  := 
+
+HPUX-ia64_32_CC			:= cc
+HPUX-ia64_32_STRIP		:= strip
+HPUX-ia64_32_CCFLAGS	:= -Isrc/main/lib/inc_linux +Osize +z -Bhidden
+HPUX-ia64_32_LINKFLAGS	:= -b
+HPUX-ia64_32_LIBNAME	:= libmvndnative.so
+HPUX-ia64_32_JANSI_FLAGS :=
+
+Mac-x86_CC        := gcc
+Mac-x86_STRIP     := strip -x
+Mac-x86_CCFLAGS    := -I$(JAVA_HOME)/include -Isrc/main/lib/inc_mac -Os -fPIC -mmacosx-version-min=10.4 -fvisibility=hidden
+Mac-x86_LINKFLAGS := -dynamiclib
+Mac-x86_LIBNAME   := libmvndnative.jnilib
+Mac-x86_JANSI_FLAGS  := -DJANSI_ENABLE_LOCKING_STYLE=0
+
+Mac-x86_64_CC        := gcc -arch $(OS_ARCH)
+Mac-x86_64_STRIP     := strip -x
+MAC_SDK := /Developer/SDKs/MacOSX10.10.sdk
+ifeq ($(wildcard MAC_SDK),)
+	MAC_SDK := /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk
+endif
+Mac-x86_64_CCFLAGS    := -I$(MAC_SDK)/System/Library/Frameworks/JavaVM.framework/Headers -Isrc/main/lib/inc_mac -Os -fPIC -mmacosx-version-min=10.6 -fvisibility=hidden
+Mac-x86_64_LINKFLAGS := -dynamiclib 
+Mac-x86_64_LIBNAME   := libmvndnative.jnilib
+Mac-x86_64_JANSI_FLAGS  := 
+
+Windows-x86_CC           := $(CROSS_PREFIX)gcc
+Windows-x86_STRIP        := $(CROSS_PREFIX)strip
+Windows-x86_CCFLAGS      := -D_JNI_IMPLEMENTATION_ -Isrc/main/lib/inc_win -Os
+Windows-x86_LINKFLAGS    := -Wl,--kill-at -shared -static-libgcc
+Windows-x86_LIBNAME      := mvndnative.dll
+Windows-x86_JANSI_FLAGS := 
+
+Windows-x86_64_CC           := $(CROSS_PREFIX)gcc
+Windows-x86_64_STRIP        := $(CROSS_PREFIX)strip
+Windows-x86_64_CCFLAGS      := -D_JNI_IMPLEMENTATION_ -Isrc/main/lib/inc_win -Os
+Windows-x86_64_LINKFLAGS    := -Wl,--kill-at -shared -static-libgcc
+Windows-x86_64_LIBNAME      := mvndnative.dll
+Windows-x86_64_JANSI_FLAGS := 
+
+
+CC        := $($(target)_CC)
+STRIP     := $($(target)_STRIP)
+CCFLAGS   := $($(target)_CCFLAGS) 
+LINKFLAGS := $($(target)_LINKFLAGS) 
+LIBNAME   := $($(target)_LIBNAME)
+CCFLAGS := $(CCFLAGS)
