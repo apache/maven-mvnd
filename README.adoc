@@ -135,6 +135,27 @@ mvnd clean install
 
 The complete list of options is printed when executing `mvnd --help`.
 
+
+== Configuration
+Configuration can be provided through properties file.  Mvnd read properties file from the following locations:
+
+* the properties path supplied using `MVND_PROPERTIES_PATH` environment variable or `mvnd.propertiesPath` system variable
+* the local properties path located at `[PROJECT_HOME]/.mvn/mvnd.properties`
+* the user properties path located at: `[USER_HOME]/.m2/mvnd.properties`
+* the system properties path located at: `[MVND_HOME]/conf/mvnd.properties`
+
+Properties defined in the first files will take precedence over properties specified in a lower ranked file.
+
+A few special properties do not follow the above mechanism:
+
+* `mvnd.daemonStorage`: this property defines the location where mvnd stores its files (registry and daemon logs).  This property can only be defined as a system property on the command line
+* `mvnd.id`: this property is used internally to identify the daemon being created
+* `mvnd.extClasspath`: internal option to specify the maven extension classpath
+* `mvnd.coreExtensions`: internal option to specify the list of maven extension to register
+
+For a full list of available properties please see 
+https://github.com/mvndaemon/mvnd/blob/master/dist/src/main/distro/conf/mvnd.properties[/dist/src/main/distro/conf/mvnd.properties].  
+
 == Build `mvnd` from source
 
 === Prerequisites:
