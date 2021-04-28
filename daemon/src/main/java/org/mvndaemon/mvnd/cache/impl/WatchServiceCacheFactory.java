@@ -125,20 +125,28 @@ public class WatchServiceCacheFactory implements CacheFactory {
                     final Path path = dir.resolve((Path) event.context());
                     LOG.debug("Got watcher event {} for file {}", kind.name(), path);
                     final List<CacheRecord> records = recordsByPath.remove(path);
-                    LOG.debug("Records for path {}: {}", path, records);
                     if (records != null) {
-                        LOG.debug("Invalidating records of path {}", path);
-                        remove(records);
+                        synchronized (records) {
+                            LOG.debug("Invalidating records for path {}: {}", path, records);
+                            remove(records);
+                        }
                     }
                 } else if (kind == StandardWatchEventKinds.OVERFLOW) {
                     /* Invalidate all records under the given dir */
+                    LOG.debug("Got overflow event for path {}", dir);
                     Iterator<Map.Entry<Path, List<CacheRecord>>> it = recordsByPath.entrySet().iterator();
                     while (it.hasNext()) {
                         Map.Entry<Path, List<CacheRecord>> en = it.next();
-                        if (en.getKey().getParent().equals(dir)) {
+                        final Path path = en.getKey();
+                        if (path.getParent().equals(dir)) {
                             it.remove();
-                            LOG.debug("Invalidating records of path {}", en.getKey());
-                            remove(en.getValue());
+                            final List<CacheRecord> records = en.getValue();
+                            if (records != null) {
+                                synchronized (records) {
+                                    LOG.debug("Invalidating records of path {}: {}", path, records);
+                                    remove(records);
+                                }
+                            }
                         }
                     }
                 }
