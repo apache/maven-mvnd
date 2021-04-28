@@ -52,9 +52,9 @@
         <!-- plugin versions a..z -->
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
         <compiler.version>3.8.1</compiler.version>
-        <formatter-maven-plugin.version>2.12.1</formatter-maven-plugin.version>
+        <formatter-maven-plugin.version>2.15.0</formatter-maven-plugin.version>
         <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
-        <impsort-maven-plugin.version>1.4.1</impsort-maven-plugin.version>
+        <impsort-maven-plugin.version>1.6.0</impsort-maven-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
         <maven-install-plugin.version>2.4</maven-install-plugin.version>
@@ -334,6 +334,7 @@ limitations under the License.</inlineHeader>
                         <configFile>${maven.multiModuleProjectDirectory}/build/eclipse-formatter-config.xml</configFile>
                         <skip>${format.skip}</skip>
                         <lineEnding>KEEP</lineEnding>
+                        <cachedir>${build.directory}/cache</cachedir>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -345,6 +346,7 @@ limitations under the License.</inlineHeader>
                         <staticAfter>true</staticAfter>
                         <lineEnding>KEEP</lineEnding>
                         <skip>${format.skip}</skip>
+                        <cachedir>${build.directory}/cache</cachedir>
                     </configuration>
                 </plugin>
                 <plugin>
