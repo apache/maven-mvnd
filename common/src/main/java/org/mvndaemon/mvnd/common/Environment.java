@@ -107,7 +107,7 @@ public enum Environment {
     /** Define */
     MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "mvn:-D", "mvn:--define"),
     /** Whether the output should be styled using ANSI color codes; possible values: auto, always, never */
-    MAVEN_COLOR("style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL),
+    MAVEN_COLOR("style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
 
     //
     // mvnd properties
