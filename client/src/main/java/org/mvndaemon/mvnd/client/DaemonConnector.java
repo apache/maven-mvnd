@@ -232,10 +232,11 @@ public class DaemonConnector {
     private DaemonClientConnection connectToCanceledDaemon(Collection<DaemonInfo> busyDaemons,
             DaemonCompatibilitySpec constraint) {
         DaemonClientConnection connection = null;
-        Map<Boolean, List<DaemonInfo>> canceledBusy = busyDaemons.stream()
-                .collect(Collectors.groupingBy(di -> di.getState() == Canceled));
-        final Collection<DaemonInfo> compatibleCanceledDaemons = getCompatibleDaemons(
-                canceledBusy.getOrDefault(true, Collections.emptyList()), constraint);
+        List<DaemonInfo> canceledBusy = busyDaemons.stream()
+                .filter(di -> di.getState() == Canceled)
+                .collect(Collectors.toList());
+        final List<DaemonInfo> compatibleCanceledDaemons = getCompatibleDaemons(
+                canceledBusy, constraint);
         LOGGER.debug("Found {} busy daemons, {} cancelled, {} compatibles", busyDaemons.size(), canceledBusy.size(),
                 compatibleCanceledDaemons.size());
         if (!compatibleCanceledDaemons.isEmpty()) {
