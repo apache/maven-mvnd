@@ -508,7 +508,7 @@ public class Server implements AutoCloseable, Runnable {
                         }
                         LOGGER.info("Received message: {}", message);
                         if (message == Message.BareMessage.CANCEL_BUILD_SINGLETON) {
-                            updateState(DaemonState.Canceled);
+                            updateState(Canceled);
                             return;
                         } else {
                             synchronized (recvQueue) {
