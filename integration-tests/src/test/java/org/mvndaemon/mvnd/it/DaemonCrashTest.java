@@ -32,7 +32,7 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @MvndTest(projectDir = "src/test/projects/daemon-crash", keepAlive = "100ms", maxLostKeepAlive = "30")
-@Timeout(30)
+@Timeout(60)
 public class DaemonCrashTest {
 
     @Inject
