@@ -25,6 +25,7 @@ import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -251,10 +252,10 @@ public class DaemonRegistry implements AutoCloseable {
 
     private static int getProcessId0() {
         String pid = null;
-        final File self = new File("/proc/self");
         try {
-            if (self.exists()) {
-                pid = self.getCanonicalFile().getName();
+            final Path self = Paths.get("/proc/self");
+            if (Files.exists(self)) {
+                pid = self.toRealPath().getFileName().toString();
             }
         } catch (IOException ignored) {
         }
