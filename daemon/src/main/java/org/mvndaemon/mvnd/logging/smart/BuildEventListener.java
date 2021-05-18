@@ -27,13 +27,13 @@ public abstract class BuildEventListener {
         public void sessionStarted(ExecutionEvent event) {
         }
 
-        public void projectStarted(ExecutionEvent event) {
+        public void projectStarted(String projectId) {
         }
 
         public void projectLogMessage(String projectId, String event) {
         }
 
-        public void projectFinished(ExecutionEvent event) {
+        public void projectFinished(String projectId) {
         }
 
         public void mojoStarted(ExecutionEvent event) {
@@ -64,11 +64,11 @@ public abstract class BuildEventListener {
 
     public abstract void sessionStarted(ExecutionEvent event);
 
-    public abstract void projectStarted(ExecutionEvent event);
+    public abstract void projectStarted(String projectId);
 
     public abstract void projectLogMessage(String projectId, String event);
 
-    public abstract void projectFinished(ExecutionEvent event);
+    public abstract void projectFinished(String projectId);
 
     public abstract void mojoStarted(ExecutionEvent event);
 
