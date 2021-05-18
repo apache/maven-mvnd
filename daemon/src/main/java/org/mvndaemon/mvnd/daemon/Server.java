@@ -214,7 +214,6 @@ public class Server implements AutoCloseable, Runnable {
     static class DaemonThread extends Thread {
         public DaemonThread(Runnable target) {
             super(target);
-            setDaemon(true);
         }
     }
 
