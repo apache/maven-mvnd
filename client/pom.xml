@@ -92,6 +92,7 @@
                 <configuration>
                     <compilerArgs>
                         <arg>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</arg>
+                        <arg>--add-exports=java.base/jdk.internal.module=ALL-UNNAMED</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
