@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
@@ -78,16 +79,26 @@ public class ClientDispatcher extends BuildEventListener {
         throw new IllegalStateException("Could not compute the 90th percentile of the projects length from " + projects);
     }
 
-    public void projectStarted(ExecutionEvent event) {
-        queue.add(Message.projectStarted(event.getProject().getArtifactId()));
+    private final Map<String, Boolean> projects = new ConcurrentHashMap<>();
+
+    public void projectStarted(String projectId) {
+        projects.put(projectId, Boolean.TRUE);
+        queue.add(Message.projectStarted(projectId));
     }
 
     public void projectLogMessage(String projectId, String event) {
+        if (projectId != null) {
+            Boolean b = projects.get(projectId);
+            if (b != Boolean.TRUE) {
+            }
+        }
         queue.add(projectId == null ? Message.log(trimTrailingEols(event)) : Message.log(projectId, trimTrailingEols(event)));
     }
 
-    public void projectFinished(ExecutionEvent event) {
-        queue.add(Message.projectStopped(event.getProject().getArtifactId()));
+    @Override
+    public void projectFinished(String projectId) {
+        projects.put(projectId, Boolean.FALSE);
+        queue.add(Message.projectStopped(projectId));
     }
 
     public void mojoStarted(ExecutionEvent event) {

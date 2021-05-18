@@ -35,18 +35,35 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> impleme
 
     private static final String KEY_PROJECT_ID = "maven.project.id";
     private static final ThreadLocal<String> PROJECT_ID = new InheritableThreadLocal<>();
+    private static final ThreadLocal<String> FORKING_PROJECT_ID = new InheritableThreadLocal<>();
 
     public static String getProjectId() {
         return PROJECT_ID.get();
     }
 
     public static void setProjectId(String projectId) {
+        String forkingProjectId = FORKING_PROJECT_ID.get();
+        if (forkingProjectId != null) {
+            if (projectId != null) {
+                projectId = forkingProjectId + "/" + projectId;
+            } else {
+                projectId = forkingProjectId;
+            }
+        }
         if (projectId != null) {
             PROJECT_ID.set(projectId);
             MDC.put(KEY_PROJECT_ID, projectId);
         } else {
             PROJECT_ID.remove();
             MDC.remove(KEY_PROJECT_ID);
+        }
+    }
+
+    public static void setForkingProjectId(String forkingProjectId) {
+        if (forkingProjectId != null) {
+            FORKING_PROJECT_ID.set(forkingProjectId);
+        } else {
+            FORKING_PROJECT_ID.remove();
         }
     }
 
@@ -92,8 +109,7 @@ public class ProjectBuildLogAppender extends AppenderBase<ILoggingEvent> impleme
 
     @Override
     protected void append(ILoggingEvent event) {
-        Map<String, String> mdc = event.getMDCPropertyMap();
-        String projectId = mdc != null ? mdc.get(KEY_PROJECT_ID) : null;
+        String projectId = event.getMDCPropertyMap().get(KEY_PROJECT_ID);
         buildEventListener.projectLogMessage(projectId, layout.doLayout(event));
     }
 
