@@ -542,6 +542,9 @@ public class TerminalOutput implements ClientOutput {
                 lines.addAll(logs);
                 remLogLines -= logs.size();
             }
+            while (remLogLines-- > 0 && lines.size() <= maxThreads + 1) {
+                lines.add(AttributedString.EMPTY);
+            }
         } else {
             int skipProjects = projectsCount - dispLines;
             for (Project prj : projects.values()) {
