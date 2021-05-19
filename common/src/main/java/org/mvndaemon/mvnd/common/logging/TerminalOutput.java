@@ -162,6 +162,7 @@ public class TerminalOutput implements ClientOutput {
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
         if (!dumb) {
             final Thread r = new Thread(this::readInputLoop);
+            r.setDaemon(true);
             r.start();
             this.reader = r;
         } else {
@@ -483,7 +484,6 @@ public class TerminalOutput implements ClientOutput {
         closing = true;
         if (reader != null) {
             reader.interrupt();
-            reader.join();
         }
         log.close();
         terminal.handle(Terminal.Signal.INT, previousIntHandler);
