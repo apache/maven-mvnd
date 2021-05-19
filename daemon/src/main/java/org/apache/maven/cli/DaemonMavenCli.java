@@ -206,7 +206,7 @@ public class DaemonMavenCli {
         try {
             CliRequest req = new CliRequest(null, null);
             req.args = arguments.toArray(new String[0]);
-            req.workingDirectory = workingDirectory;
+            req.workingDirectory = new File(workingDirectory).getCanonicalPath();
             req.multiModuleProjectDirectory = new File(projectDirectory);
             return doMain(req, clientEnv);
         } finally {
@@ -684,8 +684,7 @@ public class DaemonMavenCli {
                 CLibrary.setenv(key, vr);
             }
             setEnv(clientEnv);
-            CLibrary.chdir(workingDir);
-            System.setProperty("user.dir", workingDir);
+            chDir(workingDir);
         } catch (Exception e) {
             slf4jLogger.warn("Environment mismatch ! Could not set the environment (" + e + ")");
             slf4jLogger.warn("A few environment mismatches have been detected between the client and the daemon.");
@@ -697,6 +696,18 @@ public class DaemonMavenCli {
             slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
             slf4jLogger.warn("start a new daemon from the current environment by issuing any mvnd build command.");
         }
+    }
+
+    protected static void chDir(String workingDir) throws Exception {
+        CLibrary.chdir(workingDir);
+        System.setProperty("user.dir", workingDir);
+        Class<?> fileClass = Class.forName("java.io.File");
+        Field fsField = fileClass.getDeclaredField("fs");
+        fsField.setAccessible(true);
+        Object fs = fsField.get(null);
+        Field userDirField = fs.getClass().getDeclaredField("userDir");
+        userDirField.setAccessible(true);
+        userDirField.set(fs, workingDir);
     }
 
     @SuppressWarnings("unchecked")

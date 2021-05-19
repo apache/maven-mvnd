@@ -15,6 +15,8 @@
  */
 package org.mvndaemon.mvnd.nativ;
 
+import java.lang.reflect.Field;
+
 /**
  * Interface to access some low level POSIX functions, loaded by
  * <a href="http://fusesource.github.io/hawtjni/">HawtJNI</a> Runtime

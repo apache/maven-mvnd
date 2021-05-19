@@ -39,7 +39,8 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -144,18 +145,28 @@ public class IpcClient {
                         .redirectError(discard)
                         .start();
 
-                Future<int[]> future = ForkJoinPool.commonPool().submit(() -> {
+                ExecutorService es = Executors.newSingleThreadExecutor();
+                Future<int[]> future = es.submit(() -> {
                     Socket s = ss.accept();
                     DataInputStream dis = new DataInputStream(s.getInputStream());
                     int rand2 = dis.readInt();
                     int port2 = dis.readInt();
                     return new int[] { rand2, port2 };
                 });
-                int[] res = future.get(5, TimeUnit.SECONDS);
+                int[] res;
+                try {
+                    res = future.get(5, TimeUnit.SECONDS);
+                } catch (Exception e) {
+                    process.destroyForcibly();
+                    throw e;
+                } finally {
+                    es.shutdownNow();
+                    ss.close();
+                }
                 if (rand != res[0]) {
                     process.destroyForcibly();
+                    throw new IllegalStateException("IpcServer did not respond with the correct random");
                 }
-                ss.close();
 
                 int port = res[1];
                 Socket socket = new Socket();
