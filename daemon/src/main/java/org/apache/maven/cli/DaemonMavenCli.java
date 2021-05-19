@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -100,6 +102,9 @@ import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.execution.BuildResumptionPersistenceException;
+import org.mvndaemon.mvnd.execution.DefaultBuildResumptionAnalyzer;
+import org.mvndaemon.mvnd.execution.DefaultBuildResumptionDataRepository;
 import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
@@ -113,6 +118,7 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
+import static java.util.Comparator.comparing;
 import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 
 /**
@@ -141,6 +147,8 @@ public class DaemonMavenCli {
     private static final String MVN_MAVEN_CONFIG = ".mvn/maven.config";
 
     public static final String STYLE_COLOR_PROPERTY = "style.color";
+
+    public static final String RESUME = "r";
 
     private final Slf4jLoggerManager plexusLoggerManager;
 
@@ -260,7 +268,7 @@ public class DaemonMavenCli {
 
     void cli(CliRequest cliRequest)
             throws Exception {
-        CLIManager cliManager = new CLIManager();
+        CLIManager cliManager = newCLIManager();
 
         List<String> args = new ArrayList<>();
         CommandLine mavenConfig = null;
@@ -301,10 +309,16 @@ public class DaemonMavenCli {
 
     private void help(CliRequest cliRequest) throws Exception {
         if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
-            buildEventListener.log(MvndHelpFormatter.displayHelp(new CLIManager()));
+            buildEventListener.log(MvndHelpFormatter.displayHelp(newCLIManager()));
             throw new ExitException(0);
         }
+    }
 
+    private CLIManager newCLIManager() {
+        CLIManager cliManager = new CLIManager();
+        cliManager.options.addOption(Option.builder(RESUME).longOpt("resume").desc("Resume reactor from " +
+                "the last failed project, using the resume.properties file in the build directory").build());
+        return cliManager;
     }
 
     private CommandLine cliMerge(CommandLine mavenArgs, CommandLine mavenConfig) {
@@ -739,15 +753,15 @@ public class DaemonMavenCli {
 
             Map<String, String> references = new LinkedHashMap<>();
 
-            MavenProject project = null;
+            List<MavenProject> failedProjects = new ArrayList<>();
 
             for (Throwable exception : result.getExceptions()) {
                 ExceptionSummary summary = handler.handleException(exception);
 
                 logSummary(summary, references, "", cliRequest.showErrors);
 
-                if (project == null && exception instanceof LifecycleExecutionException) {
-                    project = ((LifecycleExecutionException) exception).getProject();
+                if (exception instanceof LifecycleExecutionException) {
+                    failedProjects.add(((LifecycleExecutionException) exception).getProject());
                 }
             }
 
@@ -772,11 +786,30 @@ public class DaemonMavenCli {
                 }
             }
 
-            if (project != null && !project.equals(result.getTopologicallySortedProjects().get(0))) {
-                slf4jLogger.error("");
-                slf4jLogger.error("After correcting the problems, you can resume the build with the command");
-                slf4jLogger.error(buffer().a("  ").strong("mvn <args> -rf "
-                        + getResumeFrom(result.getTopologicallySortedProjects(), project)).toString());
+            boolean canResume = new DefaultBuildResumptionAnalyzer().determineBuildResumptionData(result).map(resumption -> {
+                try {
+                    Path directory = Paths.get(request.getBaseDirectory()).resolve("target");
+                    new DefaultBuildResumptionDataRepository().persistResumptionData(directory, resumption);
+                    return true;
+                } catch (BuildResumptionPersistenceException e) {
+                    slf4jLogger.warn("Could not persist build resumption data", e);
+                }
+                return false;
+            }).orElse(false);
+
+            if (canResume) {
+                logBuildResumeHint("mvn <args> -r");
+            } else if (!failedProjects.isEmpty()) {
+                List<MavenProject> sortedProjects = result.getTopologicallySortedProjects();
+
+                // Sort the failedProjects list in the topologically sorted order.
+                failedProjects.sort(comparing(sortedProjects::indexOf));
+
+                MavenProject firstFailedProject = failedProjects.get(0);
+                if (!firstFailedProject.equals(sortedProjects.get(0))) {
+                    String resumeFromSelector = getResumeFromSelector(sortedProjects, firstFailedProject);
+                    logBuildResumeHint("mvn <args> -rf " + resumeFromSelector);
+                }
             }
 
             if (MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(cliRequest.request.getReactorFailureBehavior())) {
@@ -787,8 +820,16 @@ public class DaemonMavenCli {
                 return 1;
             }
         } else {
+            Path directory = Paths.get(request.getBaseDirectory()).resolve("target");
+            new DefaultBuildResumptionDataRepository().removeResumptionData(directory);
             return 0;
         }
+    }
+
+    private void logBuildResumeHint(String resumeBuildHint) {
+        slf4jLogger.error("");
+        slf4jLogger.error("After correcting the problems, you can resume the build with the command");
+        slf4jLogger.error(buffer().a("  ").strong(resumeBuildHint).toString());
     }
 
     /**
@@ -808,7 +849,7 @@ public class DaemonMavenCli {
      * @return               Value for -rf flag to resume build exactly from place where it failed ({@code :artifactId} in
      *                       general and {@code groupId:artifactId} when there is a name clash).
      */
-    private String getResumeFrom(List<MavenProject> mavenProjects, MavenProject failedProject) {
+    private String getResumeFromSelector(List<MavenProject> mavenProjects, MavenProject failedProject) {
         for (MavenProject buildProject : mavenProjects) {
             if (failedProject.getArtifactId().equals(buildProject.getArtifactId()) && !failedProject.equals(
                     buildProject)) {
@@ -1170,6 +1211,11 @@ public class DaemonMavenCli {
 
         if ((request.getPom() != null) && (request.getPom().getParentFile() != null)) {
             request.setBaseDirectory(request.getPom().getParentFile());
+        }
+
+        if (commandLine.hasOption(RESUME)) {
+            new DefaultBuildResumptionDataRepository()
+                    .applyResumptionData(request, Paths.get(request.getBaseDirectory()).resolve("target"));
         }
 
         if (commandLine.hasOption(CLIManager.RESUME_FROM)) {
