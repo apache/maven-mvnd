@@ -24,6 +24,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -206,7 +208,7 @@ public class DaemonMavenCli {
         try {
             CliRequest req = new CliRequest(null, null);
             req.args = arguments.toArray(new String[0]);
-            req.workingDirectory = workingDirectory;
+            req.workingDirectory = new File(workingDirectory).getCanonicalPath();
             req.multiModuleProjectDirectory = new File(projectDirectory);
             return doMain(req, clientEnv);
         } finally {
@@ -684,8 +686,7 @@ public class DaemonMavenCli {
                 CLibrary.setenv(key, vr);
             }
             setEnv(clientEnv);
-            CLibrary.chdir(workingDir);
-            System.setProperty("user.dir", workingDir);
+            chDir(workingDir);
         } catch (Exception e) {
             slf4jLogger.warn("Environment mismatch ! Could not set the environment (" + e + ")");
             slf4jLogger.warn("A few environment mismatches have been detected between the client and the daemon.");
@@ -696,6 +697,41 @@ public class DaemonMavenCli {
             });
             slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
             slf4jLogger.warn("start a new daemon from the current environment by issuing any mvnd build command.");
+        }
+    }
+
+    protected static void chDir(String workingDir) throws Exception {
+        CLibrary.chdir(workingDir);
+        System.setProperty("user.dir", workingDir);
+        // change current dir for the java.io.File class
+        Class<?> fileClass = Class.forName("java.io.File");
+        Field fsField = fileClass.getDeclaredField("fs");
+        fsField.setAccessible(true);
+        Object fs = fsField.get(null);
+        Field userDirField = fs.getClass().getDeclaredField("userDir");
+        userDirField.setAccessible(true);
+        userDirField.set(fs, workingDir);
+        // change current dir for the java.nio.Path class
+        fs = FileSystems.getDefault();
+        Class<?> fsClass = fs.getClass();
+        while (fsClass != Object.class) {
+            if ("sun.nio.fs.UnixFileSystem".equals(fsClass.getName())) {
+                Field defaultDirectoryField = fsClass.getDeclaredField("defaultDirectory");
+                defaultDirectoryField.setAccessible(true);
+                String encoding = System.getProperty("sun.jnu.encoding");
+                Charset charset = encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
+                defaultDirectoryField.set(fs, workingDir.getBytes(charset));
+            } else if ("sun.nio.fs.WindowsFileSystem".equals(fsClass.getName())) {
+                Field defaultDirectoryField = fsClass.getDeclaredField("defaultDirectory");
+                Field defaultRootField = fsClass.getDeclaredField("defaultRoot");
+                defaultDirectoryField.setAccessible(true);
+                defaultRootField.setAccessible(true);
+                Path wdir = Paths.get(workingDir);
+                Path root = wdir.getRoot();
+                defaultDirectoryField.set(fs, wdir.toString());
+                defaultRootField.set(fs, root.toString());
+            }
+            fsClass = fsClass.getSuperclass();
         }
     }
 
