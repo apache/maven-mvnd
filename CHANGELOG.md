@@ -1,13 +1,111 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.5.0](https://github.com/mvndaemon/mvnd/tree/0.5.0) (2021-05-31)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.4.1...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.4.3...0.5.0)
+
+**Implemented enhancements:**
+
+- Add the --color option as an alias to -Dstyle.color= [\#376](https://github.com/mvndaemon/mvnd/issues/376)
+- autokill if inactive since some time + memory becomes low? [\#364](https://github.com/mvndaemon/mvnd/issues/364)
 
 **Closed issues:**
 
+- Race conditions when building https://github.com/apache/jackrabbit-filevault [\#408](https://github.com/mvndaemon/mvnd/issues/408)
+- Offer a way to hide the original maven output [\#407](https://github.com/mvndaemon/mvnd/issues/407)
+- java.util.ConcurrentModificationException in the cache [\#405](https://github.com/mvndaemon/mvnd/issues/405)
+- openapi-generator-maven-plugin:5.0.1:generate  Unable to read location `src/main/openapi/project.yaml` [\#397](https://github.com/mvndaemon/mvnd/issues/397)
+- Global mvn settings.xml via mvnd.properties [\#383](https://github.com/mvndaemon/mvnd/issues/383)
+- Build failing with a NPE [\#372](https://github.com/mvndaemon/mvnd/issues/372)
+- Support -r / --resume option [\#351](https://github.com/mvndaemon/mvnd/issues/351)
+- Could not find artifact org.apache.maven.surefire:surefire-providers:pom:2.22.2 [\#281](https://github.com/mvndaemon/mvnd/issues/281)
+- Decide the defaults L&F of the multithread terminal view [\#210](https://github.com/mvndaemon/mvnd/issues/210)
+- Set maven version like maven-wrapper [\#143](https://github.com/mvndaemon/mvnd/issues/143)
+- The client should reserve lines to avoid hops in the output display [\#414](https://github.com/mvndaemon/mvnd/issues/414)
+- Provide a native library for mvnd specific needs [\#400](https://github.com/mvndaemon/mvnd/issues/400)
+- Support Maven 3.8.1 [\#393](https://github.com/mvndaemon/mvnd/issues/393)
+- \[Security\] Possible RCE [\#390](https://github.com/mvndaemon/mvnd/issues/390)
+- The build time spy sometimes prints info for other modules [\#389](https://github.com/mvndaemon/mvnd/issues/389)
+- NPE on Windows using "Git for Windows" \(MINGW\) [\#387](https://github.com/mvndaemon/mvnd/issues/387)
+- Compilation fails when using a plugin and try to provide additional dependencies to that plugin [\#276](https://github.com/mvndaemon/mvnd/issues/276)
+
+**Merged pull requests:**
+
+- Bump xstream from 1.4.16 to 1.4.17 [\#412](https://github.com/mvndaemon/mvnd/pull/412) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Fix ConcurrentModificationException in the cache, fixes \#405 [\#406](https://github.com/mvndaemon/mvnd/pull/406) ([gnodet](https://github.com/gnodet))
+- README.adoc: add Chocolatey installation option [\#398](https://github.com/mvndaemon/mvnd/pull/398) ([jeffjensen](https://github.com/jeffjensen))
+- Use a proper property different from the maven-buildtime-extension on… [\#396](https://github.com/mvndaemon/mvnd/pull/396) ([gnodet](https://github.com/gnodet))
+- \#393 update Maven version to 3.8.1 [\#394](https://github.com/mvndaemon/mvnd/pull/394) ([robertk3s](https://github.com/robertk3s))
+- Bump xstream from 1.4.15 to 1.4.16 [\#385](https://github.com/mvndaemon/mvnd/pull/385) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Support -r / --resume option, fixes \#351 [\#413](https://github.com/mvndaemon/mvnd/pull/413) ([gnodet](https://github.com/gnodet))
+- Improve events reporting for forked lifecycles [\#411](https://github.com/mvndaemon/mvnd/pull/411) ([gnodet](https://github.com/gnodet))
+- Add the --color option as an alias to -Dstyle.color, fixes \#376 [\#404](https://github.com/mvndaemon/mvnd/pull/404) ([gnodet](https://github.com/gnodet))
+- Upgrade formatter / impsort plugins [\#403](https://github.com/mvndaemon/mvnd/pull/403) ([gnodet](https://github.com/gnodet))
+- Add an expiration strategy if the system has less than 5% memory available, fixes \#364 [\#402](https://github.com/mvndaemon/mvnd/pull/402) ([gnodet](https://github.com/gnodet))
+- Provide a native library, fixes \#400 [\#401](https://github.com/mvndaemon/mvnd/pull/401) ([gnodet](https://github.com/gnodet))
+- Upgrade maven 3.8.1 + prototype for global lock [\#399](https://github.com/mvndaemon/mvnd/pull/399) ([gnodet](https://github.com/gnodet))
+- \#390 Restrict usage of mvnd daemons to the current user by utilizing a token check [\#391](https://github.com/mvndaemon/mvnd/pull/391) ([Syquel](https://github.com/Syquel))
+- Global mvn settings.xml via mvnd.properties \#383 [\#386](https://github.com/mvndaemon/mvnd/pull/386) ([mgoldschmidt-ds](https://github.com/mgoldschmidt-ds))
+- Do not run server threads as daemon as it causes problems with the exec-maven-plugin \(\#276\) [\#330](https://github.com/mvndaemon/mvnd/pull/330) ([gnodet](https://github.com/gnodet))
+
+## [0.4.3](https://github.com/mvndaemon/mvnd/tree/0.4.3) (2021-03-19)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.4.2...0.4.3)
+
+**Fixed bugs:**
+
+- The update of the environment does not work with jdk 16 [\#380](https://github.com/mvndaemon/mvnd/issues/380)
+- Segmentation fault on startup after updating to 0.4.2 [\#375](https://github.com/mvndaemon/mvnd/issues/375)
+- NPE from InvalidatingPluginArtifactsCache, similar to \#347 [\#377](https://github.com/mvndaemon/mvnd/pull/377) ([lanmaoxinqing](https://github.com/lanmaoxinqing))
+
+**Closed issues:**
+
+- There is also jansi [\#379](https://github.com/mvndaemon/mvnd/issues/379)
+- Upon installing release for Windows MVND not responsive [\#152](https://github.com/mvndaemon/mvnd/issues/152)
+- Release 0.4.3 [\#382](https://github.com/mvndaemon/mvnd/issues/382)
+
+**Merged pull requests:**
+
+- The update of the environment does not work with jdk 16, fixes \#380 [\#381](https://github.com/mvndaemon/mvnd/pull/381) ([gnodet](https://github.com/gnodet))
+- Upgrade to jansi 2.3.2, fixes \#375 [\#378](https://github.com/mvndaemon/mvnd/pull/378) ([gnodet](https://github.com/gnodet))
+
+## [0.4.2](https://github.com/mvndaemon/mvnd/tree/0.4.2) (2021-03-10)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.4.1...0.4.2)
+
+**Fixed bugs:**
+
+- A daemon started with -B/--batch option stays colorless forever [\#373](https://github.com/mvndaemon/mvnd/issues/373)
+- Sometimes starts more threads than it should? [\#362](https://github.com/mvndaemon/mvnd/issues/362)
+- Fix color output for file / tty [\#358](https://github.com/mvndaemon/mvnd/issues/358)
+- The system property mvnd.terminalWidth is missing - when starting mvnd [\#354](https://github.com/mvndaemon/mvnd/issues/354)
+- Make sure the environment is properly updated [\#352](https://github.com/mvndaemon/mvnd/issues/352)
+-  Access is denied Exception on "mvnd -version" [\#349](https://github.com/mvndaemon/mvnd/issues/349)
+- `mvnd` ignores the `.mvn/jvm.config` file [\#348](https://github.com/mvndaemon/mvnd/issues/348)
+- NPE from InvalidatingProjectArtifactsCache when building a Quarkus deployment module from a tag [\#347](https://github.com/mvndaemon/mvnd/issues/347)
+- --quiet seems to supress mvn output entirely in some cases [\#344](https://github.com/mvndaemon/mvnd/issues/344)
+- cancellation of 'mvnd qurkus:dev' with CRTL+C let the process live [\#343](https://github.com/mvndaemon/mvnd/issues/343)
+
+**Closed issues:**
+
+- Keep daemon alive in Docker? [\#365](https://github.com/mvndaemon/mvnd/issues/365)
+- mvnd assumes an .m2 folder in home directory [\#360](https://github.com/mvndaemon/mvnd/issues/360)
 - Support Arquillian builds [\#346](https://github.com/mvndaemon/mvnd/issues/346)
+- Incremental builds [\#345](https://github.com/mvndaemon/mvnd/issues/345)
 - Installed on RHEL 7.9 fails to load native library.  It works on CentOS 8 though [\#341](https://github.com/mvndaemon/mvnd/issues/341)
+- MultipleArtifactsNotFoundException: Missing: org.apache.maven.surefire:surefire-junit-platform:jar:2.22.2 [\#256](https://github.com/mvndaemon/mvnd/issues/256)
+- Release 0.4.2 [\#369](https://github.com/mvndaemon/mvnd/issues/369)
+- Environment mismatches should ignore the PWD var [\#234](https://github.com/mvndaemon/mvnd/issues/234)
+- maven-checkstyle-plugin: NoSuchMethodError: 'void org.slf4j.spi.LocationAwareLogger.log\(org.slf4j.Marker, java.lang.String, int, java.lang.String, java.lang.Throwable\)' [\#183](https://github.com/mvndaemon/mvnd/issues/183)
+
+**Merged pull requests:**
+
+- Leverage Maven's -Dstyle.color to avoid coloring instead of stripping the ASCII codes in the client [\#371](https://github.com/mvndaemon/mvnd/pull/371) ([ppalaga](https://github.com/ppalaga))
+- Fix typo in README [\#370](https://github.com/mvndaemon/mvnd/pull/370) ([findepi](https://github.com/findepi))
+- Fix display showing more projects than the ones actually active [\#367](https://github.com/mvndaemon/mvnd/pull/367) ([gnodet](https://github.com/gnodet))
+- Fix color output for file / tty \#358 [\#359](https://github.com/mvndaemon/mvnd/pull/359) ([gnodet](https://github.com/gnodet))
+- Kill children processes when interrupting the build, fixes \#343 [\#357](https://github.com/mvndaemon/mvnd/pull/357) ([gnodet](https://github.com/gnodet))
+- Added known limitations to use -rf maven option [\#350](https://github.com/mvndaemon/mvnd/pull/350) ([valdar](https://github.com/valdar))
 
 ## [0.4.1](https://github.com/mvndaemon/mvnd/tree/0.4.1) (2021-01-25)
 
