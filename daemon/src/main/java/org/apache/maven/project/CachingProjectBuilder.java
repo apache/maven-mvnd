@@ -230,7 +230,6 @@ public class CachingProjectBuilder
             }
         }
         project.setResolvedArtifacts(artifacts);
-        project.setArtifacts(artifacts);
 
         return resolutionResult;
     }
