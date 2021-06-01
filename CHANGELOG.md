@@ -1,5 +1,7 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
 ## [0.5.0](https://github.com/mvndaemon/mvnd/tree/0.5.0) (2021-05-31)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.4.3...0.5.0)
