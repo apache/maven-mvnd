@@ -2,6 +2,12 @@
 
 ## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
 
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.0...HEAD)
+
+**Closed issues:**
+
+- Improve support for forked lifecycles [\#410](https://github.com/mvndaemon/mvnd/issues/410)
+
 ## [0.5.0](https://github.com/mvndaemon/mvnd/tree/0.5.0) (2021-05-31)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.4.3...0.5.0)
