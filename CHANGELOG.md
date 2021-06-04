@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.5.1](https://github.com/mvndaemon/mvnd/tree/0.5.1) (2021-06-04)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.0...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.0...0.5.1)
 
 **Fixed bugs:**
 
@@ -12,8 +12,8 @@
 
 **Closed issues:**
 
-- The IPC sync context fails after one minute [\#424](https://github.com/mvndaemon/mvnd/issues/424)
 - Improve support for forked lifecycles [\#410](https://github.com/mvndaemon/mvnd/issues/410)
+- The IPC sync context fails after one minute [\#424](https://github.com/mvndaemon/mvnd/issues/424)
 
 **Merged pull requests:**
 
@@ -442,6 +442,7 @@
 - Fixup \#111 Document the number of utilized cores and use 1 core at least [\#121](https://github.com/mvndaemon/mvnd/pull/121) ([ppalaga](https://github.com/ppalaga))
 - Rename ServerMain to MavenDaemon to be more explicit, fixes \#118 [\#120](https://github.com/mvndaemon/mvnd/pull/120) ([gnodet](https://github.com/gnodet))
 - Leave 1 processor unused on the daemon by default, fixes \#111 [\#119](https://github.com/mvndaemon/mvnd/pull/119) ([gnodet](https://github.com/gnodet))
+- Improve progress display [\#113](https://github.com/mvndaemon/mvnd/pull/113) ([gnodet](https://github.com/gnodet))
 - Skip tests when releasing [\#110](https://github.com/mvndaemon/mvnd/pull/110) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.8](https://github.com/mvndaemon/mvnd/tree/0.0.8) (2020-10-19)
@@ -476,7 +477,6 @@
 
 **Merged pull requests:**
 
-- Improve progress display [\#113](https://github.com/mvndaemon/mvnd/pull/113) ([gnodet](https://github.com/gnodet))
 - Issue 100 [\#105](https://github.com/mvndaemon/mvnd/pull/105) ([gnodet](https://github.com/gnodet))
 - Replace deprecated GitHub actions commands \#85 [\#104](https://github.com/mvndaemon/mvnd/pull/104) ([ppalaga](https://github.com/ppalaga))
 - Isolate the integration tests from the local environment [\#101](https://github.com/mvndaemon/mvnd/pull/101) ([ppalaga](https://github.com/ppalaga))
@@ -566,6 +566,7 @@
 - Fix \#53 Using MAVEN\_HOME may clash with other tools [\#54](https://github.com/mvndaemon/mvnd/pull/54) ([ppalaga](https://github.com/ppalaga))
 - Add curl -L flag to cope with redirects [\#51](https://github.com/mvndaemon/mvnd/pull/51) ([fvaleri](https://github.com/fvaleri))
 - Fix \#49 Could not notify CliPluginRealmCache [\#50](https://github.com/mvndaemon/mvnd/pull/50) ([ppalaga](https://github.com/ppalaga))
+- Fix \#33 Maven mojo change ignored [\#38](https://github.com/mvndaemon/mvnd/pull/38) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.1](https://github.com/mvndaemon/mvnd/tree/0.0.1) (2020-07-30)
 
