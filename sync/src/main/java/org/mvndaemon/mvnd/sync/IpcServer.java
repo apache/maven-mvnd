@@ -154,6 +154,7 @@ public class IpcServer {
                 if (request.isEmpty()) {
                     throw new IOException("Received invalid request");
                 }
+                use();
                 String contextId;
                 Context context;
                 String command = request.remove(0);
