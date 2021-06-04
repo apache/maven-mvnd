@@ -700,19 +700,26 @@ public class DaemonMavenCli {
         }
     }
 
+    private static float javaSpec = 0.0f;
+
     protected static void chDir(String workingDir) throws Exception {
         CLibrary.chdir(workingDir);
         System.setProperty("user.dir", workingDir);
         // change current dir for the java.io.File class
         Class<?> fileClass = Class.forName("java.io.File");
-        Field fsField = fileClass.getDeclaredField("fs");
-        fsField.setAccessible(true);
-        Object fs = fsField.get(null);
-        Field userDirField = fs.getClass().getDeclaredField("userDir");
-        userDirField.setAccessible(true);
-        userDirField.set(fs, workingDir);
+        if (javaSpec <= 0.0f) {
+            javaSpec = Float.parseFloat(System.getProperty("java.specification.version"));
+        }
+        if (javaSpec >= 11.0) {
+            Field fsField = fileClass.getDeclaredField("fs");
+            fsField.setAccessible(true);
+            Object fs = fsField.get(null);
+            Field userDirField = fs.getClass().getDeclaredField("userDir");
+            userDirField.setAccessible(true);
+            userDirField.set(fs, workingDir);
+        }
         // change current dir for the java.nio.Path class
-        fs = FileSystems.getDefault();
+        Object fs = FileSystems.getDefault();
         Class<?> fsClass = fs.getClass();
         while (fsClass != Object.class) {
             if ("sun.nio.fs.UnixFileSystem".equals(fsClass.getName())) {
