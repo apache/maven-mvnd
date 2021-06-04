@@ -197,8 +197,7 @@ public class IpcClient {
                 f.complete(s);
             }
         } catch (Exception e) {
-            // ignore
-            close();
+            close(e);
         }
     }
 
@@ -224,12 +223,16 @@ public class IpcClient {
         }
     }
 
-    synchronized void close() {
+    void close() {
+        close(new IOException("Closing"));
+    }
+
+    synchronized void close(Throwable e) {
         if (socket != null) {
             try {
                 socket.close();
             } catch (IOException t) {
-                // ignore
+                e.addSuppressed(t);
             }
             socket = null;
             input = null;
@@ -239,12 +242,11 @@ public class IpcClient {
             receiver.interrupt();
             try {
                 receiver.join(1000);
-            } catch (InterruptedException e) {
-                // ignore
+            } catch (InterruptedException t) {
+                e.addSuppressed(t);
             }
         }
-        Throwable t = new IOException("Closing");
-        responses.values().forEach(f -> f.completeExceptionally(t));
+        responses.values().forEach(f -> f.completeExceptionally(e));
         responses.clear();
     }
 
@@ -257,8 +259,8 @@ public class IpcClient {
             }
             return response.get(1);
         } catch (Exception e) {
-            close();
-            throw new RuntimeException("Unable to create new context", e);
+            close(e);
+            throw new RuntimeException("Unable to create new sync context", e);
         }
     }
 
@@ -273,8 +275,8 @@ public class IpcClient {
                 throw new IOException("Unexpected response: " + response);
             }
         } catch (Exception e) {
-            close();
-            throw new RuntimeException("Unable to perform lock", e);
+            close(e);
+            throw new RuntimeException("Unable to perform lock (contextId = " + contextId + ")", e);
         }
     }
 
@@ -285,8 +287,8 @@ public class IpcClient {
                 throw new IOException("Unexpected response: " + response);
             }
         } catch (Exception e) {
-            close();
-            throw new RuntimeException("Unable to perform lock", e);
+            close(e);
+            throw new RuntimeException("Unable to unlock (contextId = " + contextId + ")", e);
         }
     }
 

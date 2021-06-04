@@ -98,13 +98,17 @@ public class IpcServer {
         }
     }
 
+    private static void debug(String msg, Object... args) {
+        //System.out.printf("[ipc] [debug] " + msg + "\n", args);
+    }
+
     private static void info(String msg, Object... args) {
-        System.out.printf(msg + "\n", args);
+        System.out.printf("[ipc] [info] " + msg + "\n", args);
     }
 
     private static void error(String msg, Throwable t) {
-        System.err.println(msg);
-        t.printStackTrace();
+        System.out.println("[ipc] [error] " + msg);
+        t.printStackTrace(System.out);
     }
 
     private static void run(Runnable runnable) {
@@ -133,8 +137,8 @@ public class IpcServer {
     }
 
     private void client(Socket socket) {
-        info("Client connected");
-        clients.incrementAndGet();
+        int c = clients.incrementAndGet();
+        info("New client connected (%d connected)", c);
         use();
         Map<String, Context> clientContexts = new ConcurrentHashMap<>();
         try {
@@ -163,6 +167,7 @@ public class IpcServer {
                     contexts.put(context.id, context);
                     clientContexts.put(context.id, context);
                     synchronized (output) {
+                        debug("Created context %s", context.id);
                         output.writeInt(requestId);
                         output.writeInt(2);
                         output.writeUTF(RESPONSE_CONTEXT);
@@ -177,11 +182,12 @@ public class IpcServer {
                     contextId = request.remove(0);
                     context = contexts.get(contextId);
                     if (context == null) {
-                        throw new IOException("Unknown context: " + contextId);
+                        throw new IOException("Unknown context: " + contextId + ". Known contexts = " + contexts.keySet());
                     }
                     context.lock(request).thenRun(() -> {
                         try {
                             synchronized (output) {
+                                debug("Locking in context %s", context.id);
                                 output.writeInt(requestId);
                                 output.writeInt(1);
                                 output.writeUTF(RESPONSE_ACQUIRE);
@@ -191,8 +197,9 @@ public class IpcServer {
                             try {
                                 socket.close();
                             } catch (IOException ioException) {
-                                // ignore
+                                e.addSuppressed(ioException);
                             }
+                            error("Error writing lock response", e);
                         }
                     });
                     break;
@@ -204,10 +211,11 @@ public class IpcServer {
                     context = contexts.remove(contextId);
                     clientContexts.remove(contextId);
                     if (context == null) {
-                        throw new IOException("Unknown context: " + contextId);
+                        throw new IOException("Unknown context: " + contextId + ". Known contexts = " + contexts.keySet());
                     }
                     context.unlock();
                     synchronized (output) {
+                        debug("Closing context %s", context.id);
                         output.writeInt(requestId);
                         output.writeInt(1);
                         output.writeUTF(RESPONSE_CLOSE);
