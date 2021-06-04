@@ -16,7 +16,9 @@
 package org.mvndaemon.mvnd.sync;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 import org.eclipse.aether.SyncContext;
 import org.eclipse.aether.artifact.Artifact;
@@ -27,18 +29,22 @@ import org.eclipse.aether.metadata.Metadata;
  */
 class IpcSyncContext implements SyncContext {
 
-    IpcClient client;
-    boolean shared;
-    String contextId;
+    final IpcClient client;
+    final boolean shared;
+    final String contextId;
+    final AtomicBoolean closed = new AtomicBoolean();
 
     IpcSyncContext(IpcClient client, boolean shared) {
         this.client = client;
         this.shared = shared;
-        this.contextId = client.newContext(shared);
+        this.contextId = Objects.requireNonNull(client.newContext(shared));
     }
 
     @Override
     public void acquire(Collection<? extends Artifact> artifacts, Collection<? extends Metadata> metadatas) {
+        if (closed.get()) {
+            throw new IllegalStateException("Already closed");
+        }
         Collection<String> keys = new TreeSet<>();
         stream(artifacts).map(this::getKey).forEach(keys::add);
         stream(metadatas).map(this::getKey).forEach(keys::add);
@@ -50,7 +56,7 @@ class IpcSyncContext implements SyncContext {
 
     @Override
     public void close() {
-        if (contextId != null) {
+        if (closed.compareAndSet(false, true)) {
             client.unlock(contextId);
         }
     }
