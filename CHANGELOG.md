@@ -6,6 +6,7 @@
 
 **Fixed bugs:**
 
+- The IPC sync context fails after one minute [\#424](https://github.com/mvndaemon/mvnd/issues/424)
 - Can not set environment correctly on JDK \< 11 [\#422](https://github.com/mvndaemon/mvnd/issues/422)
 - Fix concurrent build of projects when using forked lifecycles [\#419](https://github.com/mvndaemon/mvnd/issues/419)
 - Parallel build fails due to missing JAR artifacts in compilePath [\#418](https://github.com/mvndaemon/mvnd/issues/418)
@@ -13,7 +14,6 @@
 **Closed issues:**
 
 - Improve support for forked lifecycles [\#410](https://github.com/mvndaemon/mvnd/issues/410)
-- The IPC sync context fails after one minute [\#424](https://github.com/mvndaemon/mvnd/issues/424)
 
 **Merged pull requests:**
 
@@ -566,7 +566,6 @@
 - Fix \#53 Using MAVEN\_HOME may clash with other tools [\#54](https://github.com/mvndaemon/mvnd/pull/54) ([ppalaga](https://github.com/ppalaga))
 - Add curl -L flag to cope with redirects [\#51](https://github.com/mvndaemon/mvnd/pull/51) ([fvaleri](https://github.com/fvaleri))
 - Fix \#49 Could not notify CliPluginRealmCache [\#50](https://github.com/mvndaemon/mvnd/pull/50) ([ppalaga](https://github.com/ppalaga))
-- Fix \#33 Maven mojo change ignored [\#38](https://github.com/mvndaemon/mvnd/pull/38) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.1](https://github.com/mvndaemon/mvnd/tree/0.0.1) (2020-07-30)
 
