@@ -18,6 +18,7 @@
 **Merged pull requests:**
 
 - The IPC server shuts down after one minute during the build [\#425](https://github.com/mvndaemon/mvnd/pull/425) ([gnodet](https://github.com/gnodet))
+- Bump xstream from 1.4.16 to 1.4.17 [\#412](https://github.com/mvndaemon/mvnd/pull/412) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Fix the environment update, fixes \#422 [\#423](https://github.com/mvndaemon/mvnd/pull/423) ([gnodet](https://github.com/gnodet))
 - Fix concurrent build of projects when using forked lifecycles [\#421](https://github.com/mvndaemon/mvnd/pull/421) ([gnodet](https://github.com/gnodet))
 - Parallel build fails due to missing JAR artifacts in compilePath [\#420](https://github.com/mvndaemon/mvnd/pull/420) ([gnodet](https://github.com/gnodet))
@@ -53,7 +54,6 @@
 
 **Merged pull requests:**
 
-- Bump xstream from 1.4.16 to 1.4.17 [\#412](https://github.com/mvndaemon/mvnd/pull/412) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Fix ConcurrentModificationException in the cache, fixes \#405 [\#406](https://github.com/mvndaemon/mvnd/pull/406) ([gnodet](https://github.com/gnodet))
 - README.adoc: add Chocolatey installation option [\#398](https://github.com/mvndaemon/mvnd/pull/398) ([jeffjensen](https://github.com/jeffjensen))
 - Use a proper property different from the maven-buildtime-extension on… [\#396](https://github.com/mvndaemon/mvnd/pull/396) ([gnodet](https://github.com/gnodet))
