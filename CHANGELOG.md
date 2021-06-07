@@ -18,7 +18,6 @@
 **Merged pull requests:**
 
 - The IPC server shuts down after one minute during the build [\#425](https://github.com/mvndaemon/mvnd/pull/425) ([gnodet](https://github.com/gnodet))
-- Bump xstream from 1.4.16 to 1.4.17 [\#412](https://github.com/mvndaemon/mvnd/pull/412) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Fix the environment update, fixes \#422 [\#423](https://github.com/mvndaemon/mvnd/pull/423) ([gnodet](https://github.com/gnodet))
 - Fix concurrent build of projects when using forked lifecycles [\#421](https://github.com/mvndaemon/mvnd/pull/421) ([gnodet](https://github.com/gnodet))
 - Parallel build fails due to missing JAR artifacts in compilePath [\#420](https://github.com/mvndaemon/mvnd/pull/420) ([gnodet](https://github.com/gnodet))
@@ -54,6 +53,7 @@
 
 **Merged pull requests:**
 
+- Bump xstream from 1.4.16 to 1.4.17 [\#412](https://github.com/mvndaemon/mvnd/pull/412) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Fix ConcurrentModificationException in the cache, fixes \#405 [\#406](https://github.com/mvndaemon/mvnd/pull/406) ([gnodet](https://github.com/gnodet))
 - README.adoc: add Chocolatey installation option [\#398](https://github.com/mvndaemon/mvnd/pull/398) ([jeffjensen](https://github.com/jeffjensen))
 - Use a proper property different from the maven-buildtime-extension on… [\#396](https://github.com/mvndaemon/mvnd/pull/396) ([gnodet](https://github.com/gnodet))
@@ -357,7 +357,6 @@
 - Issue 114 [\#181](https://github.com/mvndaemon/mvnd/pull/181) ([gnodet](https://github.com/gnodet))
 - Separate BuildStarted message to avoid serializing via Propertries.\[l… [\#178](https://github.com/mvndaemon/mvnd/pull/178) ([ppalaga](https://github.com/ppalaga))
 - More fine grained status on build start [\#177](https://github.com/mvndaemon/mvnd/pull/177) ([ppalaga](https://github.com/ppalaga))
-- User's preference for -T can be stored as mvnd.threads in ~/.m2/mvnd.… [\#176](https://github.com/mvndaemon/mvnd/pull/176) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.11](https://github.com/mvndaemon/mvnd/tree/0.0.11) (2020-10-29)
 
@@ -383,6 +382,7 @@
 
 **Merged pull requests:**
 
+- User's preference for -T can be stored as mvnd.threads in ~/.m2/mvnd.… [\#176](https://github.com/mvndaemon/mvnd/pull/176) ([ppalaga](https://github.com/ppalaga))
 - Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 - Improve terminal output [\#172](https://github.com/mvndaemon/mvnd/pull/172) ([ppalaga](https://github.com/ppalaga))
 - Fixup 67d5b4b Remove leftovers [\#170](https://github.com/mvndaemon/mvnd/pull/170) ([ppalaga](https://github.com/ppalaga))
