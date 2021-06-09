@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.1...HEAD)
+
+**Closed issues:**
+
+- GitHub workflow: Cache dependencies [\#426](https://github.com/mvndaemon/mvnd/issues/426)
+- NullPointerException in integration tests with maven-surefire-plugin 3.0.0-M5 [\#103](https://github.com/mvndaemon/mvnd/issues/103)
+
 ## [0.5.1](https://github.com/mvndaemon/mvnd/tree/0.5.1) (2021-06-04)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.0...0.5.1)
@@ -115,7 +124,6 @@
 - Support Arquillian builds [\#346](https://github.com/mvndaemon/mvnd/issues/346)
 - Incremental builds [\#345](https://github.com/mvndaemon/mvnd/issues/345)
 - Installed on RHEL 7.9 fails to load native library.  It works on CentOS 8 though [\#341](https://github.com/mvndaemon/mvnd/issues/341)
-- MultipleArtifactsNotFoundException: Missing: org.apache.maven.surefire:surefire-junit-platform:jar:2.22.2 [\#256](https://github.com/mvndaemon/mvnd/issues/256)
 - Release 0.4.2 [\#369](https://github.com/mvndaemon/mvnd/issues/369)
 - Environment mismatches should ignore the PWD var [\#234](https://github.com/mvndaemon/mvnd/issues/234)
 - maven-checkstyle-plugin: NoSuchMethodError: 'void org.slf4j.spi.LocationAwareLogger.log\(org.slf4j.Marker, java.lang.String, int, java.lang.String, java.lang.Throwable\)' [\#183](https://github.com/mvndaemon/mvnd/issues/183)
@@ -208,7 +216,6 @@
 - Document how to install bash completion [\#290](https://github.com/mvndaemon/mvnd/pull/290) ([famod](https://github.com/famod))
 - Right-pad projectIds to improve mojo readability in the threaded view  [\#289](https://github.com/mvndaemon/mvnd/pull/289) ([ppalaga](https://github.com/ppalaga))
 - DAG width wrong for parent runtime deployment triple [\#286](https://github.com/mvndaemon/mvnd/pull/286) ([ppalaga](https://github.com/ppalaga))
-- Less global and mutable state [\#285](https://github.com/mvndaemon/mvnd/pull/285) ([ppalaga](https://github.com/ppalaga))
 - Support short variants of boolean properties [\#280](https://github.com/mvndaemon/mvnd/pull/280) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.2.0](https://github.com/mvndaemon/mvnd/tree/0.2.0) (2020-12-16)
@@ -224,6 +231,7 @@
 
 **Closed issues:**
 
+- MultipleArtifactsNotFoundException: Missing: org.apache.maven.surefire:surefire-junit-platform:jar:2.22.2 [\#256](https://github.com/mvndaemon/mvnd/issues/256)
 - mvnd.rb not support mac now [\#273](https://github.com/mvndaemon/mvnd/issues/273)
 - Crash with Java 17 [\#272](https://github.com/mvndaemon/mvnd/issues/272)
 - Maven-like rolling output when the build happens to be linear [\#269](https://github.com/mvndaemon/mvnd/issues/269)
@@ -241,6 +249,7 @@
 
 **Merged pull requests:**
 
+- Less global and mutable state [\#285](https://github.com/mvndaemon/mvnd/pull/285) ([ppalaga](https://github.com/ppalaga))
 - Maven-like rolling output when the build happens to be linear [\#271](https://github.com/mvndaemon/mvnd/pull/271) ([ppalaga](https://github.com/ppalaga))
 - A new daemon is always started on Java 8  [\#267](https://github.com/mvndaemon/mvnd/pull/267) ([ppalaga](https://github.com/ppalaga))
 - Deprecate mvnd.builder.rule\* and mvnd.builder.rules.provider.\* features [\#265](https://github.com/mvndaemon/mvnd/pull/265) ([ppalaga](https://github.com/ppalaga))
