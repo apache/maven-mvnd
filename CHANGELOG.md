@@ -450,6 +450,7 @@
 - Issue 47 [\#123](https://github.com/mvndaemon/mvnd/pull/123) ([gnodet](https://github.com/gnodet))
 - Fixup \#111 Document the number of utilized cores and use 1 core at least [\#121](https://github.com/mvndaemon/mvnd/pull/121) ([ppalaga](https://github.com/ppalaga))
 - Rename ServerMain to MavenDaemon to be more explicit, fixes \#118 [\#120](https://github.com/mvndaemon/mvnd/pull/120) ([gnodet](https://github.com/gnodet))
+- Leave 1 processor unused on the daemon by default, fixes \#111 [\#119](https://github.com/mvndaemon/mvnd/pull/119) ([gnodet](https://github.com/gnodet))
 - Improve progress display [\#113](https://github.com/mvndaemon/mvnd/pull/113) ([gnodet](https://github.com/gnodet))
 - Skip tests when releasing [\#110](https://github.com/mvndaemon/mvnd/pull/110) ([ppalaga](https://github.com/ppalaga))
 
@@ -485,7 +486,6 @@
 
 **Merged pull requests:**
 
-- Leave 1 processor unused on the daemon by default, fixes \#111 [\#119](https://github.com/mvndaemon/mvnd/pull/119) ([gnodet](https://github.com/gnodet))
 - Issue 100 [\#105](https://github.com/mvndaemon/mvnd/pull/105) ([gnodet](https://github.com/gnodet))
 - Replace deprecated GitHub actions commands \#85 [\#104](https://github.com/mvndaemon/mvnd/pull/104) ([ppalaga](https://github.com/ppalaga))
 - Isolate the integration tests from the local environment [\#101](https://github.com/mvndaemon/mvnd/pull/101) ([ppalaga](https://github.com/ppalaga))
@@ -518,7 +518,6 @@
 
 - Wait for the deamon to become idle before rebuilding in UpgradesInBom… [\#74](https://github.com/mvndaemon/mvnd/pull/74) ([ppalaga](https://github.com/ppalaga))
 - Added a changelog automatic update gh action [\#70](https://github.com/mvndaemon/mvnd/pull/70) ([oscerd](https://github.com/oscerd))
-- Fixup publishing new versions via sdkman vendor API \#67 [\#69](https://github.com/mvndaemon/mvnd/pull/69) ([ppalaga](https://github.com/ppalaga))
 -  CachingProjectBuilder ignored [\#73](https://github.com/mvndaemon/mvnd/pull/73) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.5](https://github.com/mvndaemon/mvnd/tree/0.0.5) (2020-09-17)
@@ -533,6 +532,7 @@
 
 **Merged pull requests:**
 
+- Fixup publishing new versions via sdkman vendor API \#67 [\#69](https://github.com/mvndaemon/mvnd/pull/69) ([ppalaga](https://github.com/ppalaga))
 - Publish new versions via sdkman vendor API [\#68](https://github.com/mvndaemon/mvnd/pull/68) ([ppalaga](https://github.com/ppalaga))
 - Cannot re-use daemon with sdkman java 8.0.265.hs-adpt [\#66](https://github.com/mvndaemon/mvnd/pull/66) ([ppalaga](https://github.com/ppalaga))
 - Upgrade to GraalVM 20.2.0 [\#62](https://github.com/mvndaemon/mvnd/pull/62) ([ppalaga](https://github.com/ppalaga))
