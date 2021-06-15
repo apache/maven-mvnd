@@ -59,6 +59,8 @@ public class EnvironmentTest {
             String pathStr = dir.toAbsolutePath().toString();
             assertTrue(output.getMessages().stream()
                     .anyMatch(m -> m.toString().contains(pathStr)), "Output should contain " + pathStr);
+            assertTrue(output.getMessages().stream()
+                    .noneMatch(m -> m.toString().contains("Environment mismatch")));
         }
         assertDaemonRegistrySize(1);
     }
