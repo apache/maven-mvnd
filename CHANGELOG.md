@@ -4,10 +4,18 @@
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.1...HEAD)
 
+**Fixed bugs:**
+
+- The environment set up does not work well on JDK \>= 16 [\#427](https://github.com/mvndaemon/mvnd/issues/427)
+
 **Closed issues:**
 
 - GitHub workflow: Cache dependencies [\#426](https://github.com/mvndaemon/mvnd/issues/426)
 - NullPointerException in integration tests with maven-surefire-plugin 3.0.0-M5 [\#103](https://github.com/mvndaemon/mvnd/issues/103)
+
+**Merged pull requests:**
+
+- JDK 16 support, fixes \#427 [\#428](https://github.com/mvndaemon/mvnd/pull/428) ([gnodet](https://github.com/gnodet))
 
 ## [0.5.1](https://github.com/mvndaemon/mvnd/tree/0.5.1) (2021-06-04)
 
@@ -518,6 +526,7 @@
 
 - Wait for the deamon to become idle before rebuilding in UpgradesInBom… [\#74](https://github.com/mvndaemon/mvnd/pull/74) ([ppalaga](https://github.com/ppalaga))
 - Added a changelog automatic update gh action [\#70](https://github.com/mvndaemon/mvnd/pull/70) ([oscerd](https://github.com/oscerd))
+- Fixup publishing new versions via sdkman vendor API \#67 [\#69](https://github.com/mvndaemon/mvnd/pull/69) ([ppalaga](https://github.com/ppalaga))
 -  CachingProjectBuilder ignored [\#73](https://github.com/mvndaemon/mvnd/pull/73) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.5](https://github.com/mvndaemon/mvnd/tree/0.0.5) (2020-09-17)
@@ -532,7 +541,6 @@
 
 **Merged pull requests:**
 
-- Fixup publishing new versions via sdkman vendor API \#67 [\#69](https://github.com/mvndaemon/mvnd/pull/69) ([ppalaga](https://github.com/ppalaga))
 - Publish new versions via sdkman vendor API [\#68](https://github.com/mvndaemon/mvnd/pull/68) ([ppalaga](https://github.com/ppalaga))
 - Cannot re-use daemon with sdkman java 8.0.265.hs-adpt [\#66](https://github.com/mvndaemon/mvnd/pull/66) ([ppalaga](https://github.com/ppalaga))
 - Upgrade to GraalVM 20.2.0 [\#62](https://github.com/mvndaemon/mvnd/pull/62) ([ppalaga](https://github.com/ppalaga))
