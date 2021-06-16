@@ -16,6 +16,7 @@
 package org.mvndaemon.mvnd.timing;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -110,10 +111,16 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
         log.accept(DIVIDER);
         log.accept("Build Time Summary:");
         log.accept(DIVIDER);
+        Map<String, Long> mojos = new HashMap<>();
         session.projects().forEach(p -> {
             log.accept(String.format("%s [%.3fs]", p.name(), p.duration() / 1000d));
-            p.mojos().forEach(m -> log.accept(String.format("  %s [%.3fs]", m.name(), m.duration() / 1000d)));
+            p.mojos().forEach(m -> {
+                log.accept(String.format("  %s [%.3fs]", m.name(), m.duration() / 1000d));
+                mojos.merge(m.name(), m.duration(), Long::sum);
+            });
         });
+        log.accept(DIVIDER);
+        mojos.forEach((name, duration) -> log.accept(String.format("  %s [%.3fs]", name, duration / 1000d)));
     }
 
     private static class Session {
