@@ -17,6 +17,8 @@ package org.mvndaemon.mvnd.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
@@ -50,7 +52,53 @@ public class DaemonRegistryTest {
             assertNotNull(reg2.getAll());
             assertEquals(1, reg2.getAll().size());
         }
+    }
 
+    @Test
+    public void testRecovery() throws IOException {
+        Path temp = File.createTempFile("reg", ".data").toPath();
+        temp.toFile().deleteOnExit();
+        try (TestDaemonRegistry reg1 = new TestDaemonRegistry(temp)) {
+            // first store daemon
+            byte[] token = new byte[16];
+            new Random().nextBytes(token);
+            reg1.store(new DaemonInfo("12345678", "/java/home/",
+                    "/data/reg/", 0x12345678, 7502, token,
+                    Locale.getDefault().toLanguageTag(), Arrays.asList("-Xmx"),
+                    DaemonState.Idle, System.currentTimeMillis(), System.currentTimeMillis()));
+            assertEquals(1, reg1.getAll().size());
+            // store an invalid event to trigger recovery
+            StringBuilder sb = new StringBuilder(1024);
+            for (int i = 0; i < 1024; i++) {
+                sb.append('…');
+            }
+            reg1.storeStopEvent(new DaemonStopEvent("11111",
+                    System.currentTimeMillis(),
+                    DaemonExpirationStatus.QUIET_EXPIRE,
+                    sb.toString()));
+            assertEquals(1, reg1.doGetDaemonStopEvents().size());
+            // check if registry is reset
+            assertEquals(0, reg1.getAll().size());
+            assertEquals(0, reg1.doGetDaemonStopEvents().size());
+        }
+    }
+
+    static class TestDaemonRegistry extends DaemonRegistry {
+        public TestDaemonRegistry(Path registryFile) {
+            super(registryFile);
+        }
+
+        @Override
+        protected void writeString(String str) {
+            ByteBuffer buffer = buffer();
+            if (str == null) {
+                buffer.putShort((short) -1);
+            } else {
+                byte[] buf = str.getBytes(StandardCharsets.UTF_8);
+                buffer.putShort((short) buf.length);
+                buffer.put(buf);
+            }
+        }
     }
 
 }

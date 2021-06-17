@@ -16,9 +16,9 @@
 
 package org.mvndaemon.mvnd.common;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
@@ -139,6 +139,10 @@ public class DaemonRegistry implements AutoCloseable {
 
     public List<DaemonStopEvent> getStopEvents() {
         read();
+        return doGetDaemonStopEvents();
+    }
+
+    protected List<DaemonStopEvent> doGetDaemonStopEvents() {
         return new ArrayList<>(stopEvents);
     }
 
@@ -242,10 +246,26 @@ public class DaemonRegistry implements AutoCloseable {
                     return;
                 } catch (IOException e) {
                     throw new RuntimeException("Could not lock offset 0 of " + registryFile);
+                } catch (IllegalStateException | ArrayIndexOutOfBoundsException e) {
+                    String absPath = registryFile.toAbsolutePath().normalize().toString();
+                    LOGGER.warn("Invalid daemon registry info, " +
+                            "trying to recover from this issue. " +
+                            "If you keep getting this warning, " +
+                            "try deleting the `registry.bin` file at [" + absPath + "]", e);
+                    this.reset();
+                    return;
                 }
             }
             throw new RuntimeException("Could not lock " + registryFile + " within " + LOCK_TIMEOUT_MS + " ms");
         }
+    }
+
+    private void reset() {
+        infosMap.clear();
+        stopEvents.clear();
+        BufferCaster.cast(buffer).clear();
+        buffer.putInt(0); // reset daemon count
+        buffer.putInt(0); // reset stop event count
     }
 
     private static final int PROCESS_ID = getProcessId0();
@@ -271,7 +291,7 @@ public class DaemonRegistry implements AutoCloseable {
         }
     }
 
-    private String readString() {
+    protected String readString() {
         int sz = buffer.getShort();
         if (sz == -1) {
             return null;
@@ -284,16 +304,26 @@ public class DaemonRegistry implements AutoCloseable {
         return new String(buf, StandardCharsets.UTF_8);
     }
 
-    private void writeString(String str) {
+    protected void writeString(String str) {
         if (str == null) {
             buffer.putShort((short) -1);
-        } else if (str.length() > 1024) {
-            throw new IllegalStateException("String too long: " + str);
-        } else {
-            byte[] buf = str.getBytes(StandardCharsets.UTF_8);
-            buffer.putShort((short) buf.length);
-            buffer.put(buf);
+            return;
         }
+        byte[] buf = str.getBytes(StandardCharsets.UTF_8);
+        if (buf.length > 1024) {
+            LOGGER.warn("Attempting to write string longer than 1024 bytes: '{}'. Please raise an issue.", str);
+            str = str.substring(0, 1033);
+            while (buf.length > 1024) {
+                str = str.substring(0, str.length() - 12) + "…";
+                buf = str.getBytes(StandardCharsets.UTF_8);
+            }
+        }
+        buffer.putShort((short) buf.length);
+        buffer.put(buf);
+    }
+
+    protected ByteBuffer buffer() {
+        return buffer;
     }
 
     public String toString() {
