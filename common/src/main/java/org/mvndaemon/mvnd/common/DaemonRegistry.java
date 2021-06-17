@@ -16,7 +16,9 @@
 
 package org.mvndaemon.mvnd.common;
 
-import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.MappedByteBuffer;
@@ -35,8 +37,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
 import static org.mvndaemon.mvnd.common.DaemonState.Idle;
@@ -242,10 +242,26 @@ public class DaemonRegistry implements AutoCloseable {
                     return;
                 } catch (IOException e) {
                     throw new RuntimeException("Could not lock offset 0 of " + registryFile);
+                } catch (IllegalStateException e) {
+                    String absPath = registryFile.toAbsolutePath().normalize().toString();
+                    LOGGER.warn("Invalid daemon registry info, " +
+                            "try to recovery this issue by reset registry buffer. " +
+                            "If you keep getting this warning, " +
+                            "try to delete `registry.bin` file at [" + absPath + "]", e);
+                    this.reset();
+                    return;
                 }
             }
             throw new RuntimeException("Could not lock " + registryFile + " within " + LOCK_TIMEOUT_MS + " ms");
         }
+    }
+
+    private void reset() {
+        infosMap.clear();
+        stopEvents.clear();
+        BufferCaster.cast(buffer).clear();
+        buffer.putInt(0); // reset daemon count
+        buffer.putInt(0); // reset stop event count
     }
 
     private static final int PROCESS_ID = getProcessId0();

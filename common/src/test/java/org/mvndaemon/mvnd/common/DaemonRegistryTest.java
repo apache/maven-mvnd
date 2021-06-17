@@ -15,13 +15,14 @@
  */
 package org.mvndaemon.mvnd.common;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -50,7 +51,32 @@ public class DaemonRegistryTest {
             assertNotNull(reg2.getAll());
             assertEquals(1, reg2.getAll().size());
         }
-
     }
+
+    @Test
+    public void testRecovery() throws IOException {
+        Path temp = File.createTempFile("reg", ".data").toPath();
+        temp.toFile().deleteOnExit();
+        try (DaemonRegistry reg1 = new DaemonRegistry(temp)) {
+            // first store daemon
+            byte[] token = new byte[16];
+            new Random().nextBytes(token);
+            reg1.store(new DaemonInfo("12345678", "/java/home/",
+                    "/data/reg/", 0x12345678, 7502, token,
+                    Locale.getDefault().toLanguageTag(), Arrays.asList("-Xmx"),
+                    DaemonState.Idle, System.currentTimeMillis(), System.currentTimeMillis()));
+            assertEquals(1, reg1.getAll().size());
+            // store an invalid event to trigger recovery
+            reg1.storeStopEvent(new DaemonStopEvent("11111",
+                    System.currentTimeMillis(),
+                    DaemonExpirationStatus.QUIET_EXPIRE,
+                    "reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024, reason txt longer than 1024"
+            ));
+            // check if registry is reset
+            assertEquals(0, reg1.getAll().size());
+        }
+    }
+
+
 
 }
