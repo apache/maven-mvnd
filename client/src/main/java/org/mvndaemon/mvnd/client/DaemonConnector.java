@@ -303,6 +303,12 @@ public class DaemonConnector {
     }
 
     private Process startDaemonProcess(String daemonId) {
+        // Those options are needed in order to be able to set the environment correctly
+        DaemonParameters parameters = this.parameters.withJdkJavaOpts(
+                " --add-opens java.base/java.io=ALL-UNNAMED"
+                        + " --add-opens java.base/java.lang=ALL-UNNAMED"
+                        + " --add-opens java.base/java.util=ALL-UNNAMED"
+                        + " --add-opens java.base/sun.nio.fs=ALL-UNNAMED");
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
@@ -378,12 +384,7 @@ public class DaemonConnector {
             LOGGER.debug("Starting daemon process: id = {}, workingDir = {}, daemonArgs: {}", daemonId, workingDir, command);
             ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(parameters.daemonOutLog(daemonId).toFile());
             ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.environment()
-                    .put("JDK_JAVA_OPTIONS",
-                            "--add-opens java.base/java.io=ALL-UNNAMED " +
-                                    "--add-opens java.base/java.lang=ALL-UNNAMED " +
-                                    "--add-opens java.base/java.util=ALL-UNNAMED " +
-                                    "--add-opens java.base/sun.nio.fs=ALL-UNNAMED");
+            processBuilder.environment().put(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable(), parameters.jdkJavaOpts());
             Process process = processBuilder
                     .directory(workingDir.toFile())
                     .command(args)
