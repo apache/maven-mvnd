@@ -95,6 +95,11 @@ public class DefaultClient implements Client {
          * and --color is not supported there yet. */
         args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
 
+        String userJdkJavaOpts = System.getenv(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable());
+        if (userJdkJavaOpts != null) {
+            Environment.JDK_JAVA_OPTIONS.addCommandLineOption(args, userJdkJavaOpts);
+        }
+
         // System properties
         setSystemPropertiesFromCommandLine(args);
 

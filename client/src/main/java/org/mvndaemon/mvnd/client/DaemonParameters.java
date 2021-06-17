@@ -229,6 +229,10 @@ public class DaemonParameters {
         return property(Environment.MVND_JVM_ARGS).asString();
     }
 
+    public String jdkJavaOpts() {
+        return property(Environment.JDK_JAVA_OPTIONS).asString();
+    }
+
     /**
      * @return the number of threads (same syntax as Maven's {@code -T}/{@code --threads} option) to pass to the daemon
      *         unless the user passes his own `-T` or `--threads`.
@@ -290,6 +294,13 @@ public class DaemonParameters {
         return new DaemonParameters(new PropertiesBuilder()
                 .putAll(this.properties)
                 .put(Environment.USER_DIR, newUserDir));
+    }
+
+    public DaemonParameters withJdkJavaOpts(String opts) {
+        String org = this.properties.getOrDefault(Environment.JDK_JAVA_OPTIONS.getProperty(), "");
+        return new DaemonParameters(new PropertiesBuilder()
+                .putAll(this.properties)
+                .put(Environment.JDK_JAVA_OPTIONS, org + opts));
     }
 
     public Duration keepAlive() {
