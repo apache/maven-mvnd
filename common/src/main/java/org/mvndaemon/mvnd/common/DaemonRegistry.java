@@ -245,9 +245,9 @@ public class DaemonRegistry implements AutoCloseable {
                 } catch (IllegalStateException e) {
                     String absPath = registryFile.toAbsolutePath().normalize().toString();
                     LOGGER.warn("Invalid daemon registry info, " +
-                            "try to recovery this issue by reset registry buffer. " +
+                            "trying to recover from this issue. " +
                             "If you keep getting this warning, " +
-                            "try to delete `registry.bin` file at [" + absPath + "]", e);
+                            "try deleting the `registry.bin` file at [" + absPath + "]", e);
                     this.reset();
                     return;
                 }
