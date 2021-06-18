@@ -95,6 +95,11 @@ public class DefaultClient implements Client {
          * and --color is not supported there yet. */
         args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
 
+        String userJdkJavaOpts = System.getenv(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable());
+        if (userJdkJavaOpts != null) {
+            Environment.JDK_JAVA_OPTIONS.addCommandLineOption(args, userJdkJavaOpts);
+        }
+
         // System properties
         setSystemPropertiesFromCommandLine(args);
 
@@ -140,7 +145,12 @@ public class DefaultClient implements Client {
     }
 
     public DefaultClient(DaemonParameters parameters) {
-        this.parameters = parameters;
+        // Those options are needed in order to be able to set the environment correctly
+        this.parameters = parameters.withJdkJavaOpts(
+                " --add-opens java.base/java.io=ALL-UNNAMED"
+                        + " --add-opens java.base/java.lang=ALL-UNNAMED"
+                        + " --add-opens java.base/java.util=ALL-UNNAMED"
+                        + " --add-opens java.base/sun.nio.fs=ALL-UNNAMED");
     }
 
     @Override
