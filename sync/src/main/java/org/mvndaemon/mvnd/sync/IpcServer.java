@@ -46,6 +46,8 @@ import static org.mvndaemon.mvnd.sync.IpcMessages.RESPONSE_CONTEXT;
  */
 public class IpcServer {
 
+    public static final String IDLE_TIMEOUT_PROP = "ipcsync.idle.timeout";
+
     static final long IDLE_TIMEOUT = TimeUnit.SECONDS.toNanos(60);
 
     private final ServerSocket serverSocket;
@@ -53,13 +55,24 @@ public class IpcServer {
     private final AtomicInteger counter = new AtomicInteger();
     private final Map<String, Lock> locks = new ConcurrentHashMap<>();
     private final Map<String, Context> contexts = new ConcurrentHashMap<>();
-
+    private final long idleTimeout;
     private volatile long lastUsed;
     private volatile boolean closing;
 
     public IpcServer() throws IOException {
         serverSocket = new ServerSocket();
         serverSocket.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+        long timeout = IDLE_TIMEOUT;
+        String str = System.getProperty(IDLE_TIMEOUT_PROP);
+        if (str != null) {
+            try {
+                long dur = Long.parseLong(str);
+                timeout = TimeUnit.SECONDS.toNanos(dur);
+            } catch (NumberFormatException e) {
+                error("Property " + IDLE_TIMEOUT_PROP + " specified with invalid value: " + str, e);
+            }
+        }
+        idleTimeout = timeout;
     }
 
     public static void main(String[] args) throws Exception {
@@ -77,8 +90,7 @@ public class IpcServer {
                 sun.misc.Signal.handle(new sun.misc.Signal("TSTP"), sun.misc.SignalHandler.SIG_IGN);
             }
         } catch (Throwable t) {
-            System.err.println("Unable to ignore INT and TSTP signals");
-            t.printStackTrace();
+            error("Unable to ignore INT and TSTP signals", t);
         }
 
         int tmpPort = Integer.parseInt(args[0]);
@@ -251,7 +263,7 @@ public class IpcServer {
     private void expirationCheck() {
         while (true) {
             long current = System.nanoTime();
-            if (current - lastUsed > IDLE_TIMEOUT) {
+            if (current - lastUsed > idleTimeout) {
                 close();
                 break;
             }
