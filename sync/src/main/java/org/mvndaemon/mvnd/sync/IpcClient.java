@@ -132,6 +132,10 @@ public class IpcClient {
                 }
                 args.add("-cp");
                 args.add(classpath);
+                String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
+                if (timeout != null) {
+                    args.add("-D" + IpcServer.IDLE_TIMEOUT_PROP + "=" + timeout);
+                }
                 args.add(IpcServer.class.getName());
                 args.add(Integer.toString(tmpport));
                 args.add(Integer.toString(rand));
