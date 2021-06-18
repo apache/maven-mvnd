@@ -25,9 +25,21 @@ import org.eclipse.aether.impl.SyncContextFactory;
 import org.eclipse.aether.internal.impl.SimpleLocalRepositoryManagerFactory;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class IpcSyncContextTest {
+
+    @BeforeAll
+    static void setup() {
+        System.setProperty(IpcServer.IDLE_TIMEOUT_PROP, "5");
+    }
+
+    @AfterAll
+    static void tearDown() {
+        System.clearProperty(IpcServer.IDLE_TIMEOUT_PROP);
+    }
 
     @Test
     public void testContextSimple() throws Exception {
