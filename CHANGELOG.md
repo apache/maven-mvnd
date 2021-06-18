@@ -1,11 +1,19 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.5.2](https://github.com/mvndaemon/mvnd/tree/0.5.2) (2021-06-18)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.1...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.1...0.5.2)
+
+**Implemented enhancements:**
+
+- The build time event spy should aggregate values for each mojo [\#430](https://github.com/mvndaemon/mvnd/issues/430)
 
 **Fixed bugs:**
 
+- The IpcSyncContextTest takes a long time to exit [\#434](https://github.com/mvndaemon/mvnd/issues/434)
+- java.lang.ArrayIndexOutOfBoundsException during tests [\#433](https://github.com/mvndaemon/mvnd/issues/433)
+- Bad string size caused by missing bytes in registry.bin [\#432](https://github.com/mvndaemon/mvnd/issues/432)
+- The JDK\_JAVA\_OPTIONS environment variable is not honoured [\#429](https://github.com/mvndaemon/mvnd/issues/429)
 - The environment set up does not work well on JDK \>= 16 [\#427](https://github.com/mvndaemon/mvnd/issues/427)
 
 **Closed issues:**
@@ -15,6 +23,10 @@
 
 **Merged pull requests:**
 
+- Attempt to fix bad registry errors, fixes \#432 and \#433 [\#439](https://github.com/mvndaemon/mvnd/pull/439) ([gnodet](https://github.com/gnodet))
+- Add a system property to configure the idle timeout on the ipc sync s… [\#437](https://github.com/mvndaemon/mvnd/pull/437) ([gnodet](https://github.com/gnodet))
+- The JDK\_JAVA\_OPTIONS environment variable is not honoured, fixes \#429 [\#436](https://github.com/mvndaemon/mvnd/pull/436) ([gnodet](https://github.com/gnodet))
+- The build time event spy should aggregate values for each mojo \#430 [\#431](https://github.com/mvndaemon/mvnd/pull/431) ([gnodet](https://github.com/gnodet))
 - JDK 16 support, fixes \#427 [\#428](https://github.com/mvndaemon/mvnd/pull/428) ([gnodet](https://github.com/gnodet))
 
 ## [0.5.1](https://github.com/mvndaemon/mvnd/tree/0.5.1) (2021-06-04)
