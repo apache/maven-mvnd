@@ -329,7 +329,7 @@ limitations under the License.</inlineHeader>
                         <configFile>${maven.multiModuleProjectDirectory}/build/eclipse-formatter-config.xml</configFile>
                         <skip>${format.skip}</skip>
                         <lineEnding>KEEP</lineEnding>
-                        <cachedir>${build.directory}/cache</cachedir>
+                        <cachedir>${project.build.directory}/cache</cachedir>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -341,7 +341,7 @@ limitations under the License.</inlineHeader>
                         <staticAfter>true</staticAfter>
                         <lineEnding>KEEP</lineEnding>
                         <skip>${format.skip}</skip>
-                        <cachedir>${build.directory}/cache</cachedir>
+                        <cachedir>${project.build.directory}/cache</cachedir>
                     </configuration>
                 </plugin>
                 <plugin>
