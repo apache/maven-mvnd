@@ -122,7 +122,6 @@ public class LoggingExecutionListener implements ExecutionListener {
     @Override
     public void forkedProjectStarted(ExecutionEvent event) {
         setMdc(event);
-        buildEventListener.projectStarted(ProjectBuildLogAppender.getProjectId());
         delegate.forkedProjectStarted(event);
     }
 
@@ -130,7 +129,6 @@ public class LoggingExecutionListener implements ExecutionListener {
     public void forkedProjectSucceeded(ExecutionEvent event) {
         setMdc(event);
         delegate.forkedProjectSucceeded(event);
-        buildEventListener.projectFinished(ProjectBuildLogAppender.getProjectId());
         ProjectBuildLogAppender.setProjectId(null);
     }
 
@@ -138,7 +136,6 @@ public class LoggingExecutionListener implements ExecutionListener {
     public void forkedProjectFailed(ExecutionEvent event) {
         setMdc(event);
         delegate.forkedProjectFailed(event);
-        buildEventListener.projectFinished(ProjectBuildLogAppender.getProjectId());
         ProjectBuildLogAppender.setProjectId(null);
     }
 
