@@ -48,7 +48,9 @@ public class LockingEventSpy extends AbstractEventSpy {
     private Lock getLock(ExecutionEvent event) {
         SessionData data = event.getSession().getRepositorySession().getData();
         Map<MavenProject, Lock> locks = (Map) data.get(LOCKS_KEY);
+        // initialize the value if not already done (in case of a concurrent access) to the method
         if (locks == null) {
+            // the call to data.set(k, null, v) is effectively a call to data.putIfAbsent(k, v)
             data.set(LOCKS_KEY, null, new ConcurrentHashMap<>());
             locks = (Map) data.get(LOCKS_KEY);
         }
@@ -58,15 +60,15 @@ public class LockingEventSpy extends AbstractEventSpy {
     @Override
     public void onEvent(Object event) throws Exception {
         if (event instanceof ExecutionEvent) {
-            ExecutionEvent ee = (ExecutionEvent) event;
-            switch (ee.getType()) {
+            ExecutionEvent executionEvent = (ExecutionEvent) event;
+            switch (executionEvent.getType()) {
             case ProjectStarted:
             case ForkedProjectStarted: {
-                Lock lock = getLock(ee);
+                Lock lock = getLock(executionEvent);
                 if (!lock.tryLock()) {
-                    logger.warn("Suspending concurrent execution of project " + ee.getProject());
-                    getLock(ee).lockInterruptibly();
-                    logger.warn("Resuming execution of project " + ee.getProject());
+                    logger.warn("Suspending concurrent execution of project '{}'", executionEvent.getProject());
+                    lock.lockInterruptibly();
+                    logger.warn("Resuming execution of project '{}'", executionEvent.getProject());
                 }
                 break;
             }
@@ -74,7 +76,7 @@ public class LockingEventSpy extends AbstractEventSpy {
             case ProjectFailed:
             case ForkedProjectSucceeded:
             case ForkedProjectFailed:
-                getLock(ee).unlock();
+                getLock(executionEvent).unlock();
                 break;
             }
         }
