@@ -69,7 +69,6 @@
 - Global mvn settings.xml via mvnd.properties [\#383](https://github.com/mvndaemon/mvnd/issues/383)
 - Build failing with a NPE [\#372](https://github.com/mvndaemon/mvnd/issues/372)
 - Support -r / --resume option [\#351](https://github.com/mvndaemon/mvnd/issues/351)
-- Could not find artifact org.apache.maven.surefire:surefire-providers:pom:2.22.2 [\#281](https://github.com/mvndaemon/mvnd/issues/281)
 - Decide the defaults L&F of the multithread terminal view [\#210](https://github.com/mvndaemon/mvnd/issues/210)
 - Set maven version like maven-wrapper [\#143](https://github.com/mvndaemon/mvnd/issues/143)
 - The client should reserve lines to avoid hops in the output display [\#414](https://github.com/mvndaemon/mvnd/issues/414)
@@ -118,6 +117,7 @@
 **Merged pull requests:**
 
 - The update of the environment does not work with jdk 16, fixes \#380 [\#381](https://github.com/mvndaemon/mvnd/pull/381) ([gnodet](https://github.com/gnodet))
+- Fix color output for file / tty \#358 [\#359](https://github.com/mvndaemon/mvnd/pull/359) ([gnodet](https://github.com/gnodet))
 - Upgrade to jansi 2.3.2, fixes \#375 [\#378](https://github.com/mvndaemon/mvnd/pull/378) ([gnodet](https://github.com/gnodet))
 
 ## [0.4.2](https://github.com/mvndaemon/mvnd/tree/0.4.2) (2021-03-10)
@@ -154,7 +154,6 @@
 - Leverage Maven's -Dstyle.color to avoid coloring instead of stripping the ASCII codes in the client [\#371](https://github.com/mvndaemon/mvnd/pull/371) ([ppalaga](https://github.com/ppalaga))
 - Fix typo in README [\#370](https://github.com/mvndaemon/mvnd/pull/370) ([findepi](https://github.com/findepi))
 - Fix display showing more projects than the ones actually active [\#367](https://github.com/mvndaemon/mvnd/pull/367) ([gnodet](https://github.com/gnodet))
-- Fix color output for file / tty \#358 [\#359](https://github.com/mvndaemon/mvnd/pull/359) ([gnodet](https://github.com/gnodet))
 - Kill children processes when interrupting the build, fixes \#343 [\#357](https://github.com/mvndaemon/mvnd/pull/357) ([gnodet](https://github.com/gnodet))
 - Added known limitations to use -rf maven option [\#350](https://github.com/mvndaemon/mvnd/pull/350) ([valdar](https://github.com/valdar))
 
@@ -172,6 +171,7 @@
 - Execution of liquibase scripts is shown with level "error" [\#319](https://github.com/mvndaemon/mvnd/issues/319)
 - Daemon crashing when building big project. [\#291](https://github.com/mvndaemon/mvnd/issues/291)
 - Status should indicate from which path the daemon was spawned [\#283](https://github.com/mvndaemon/mvnd/issues/283)
+- Could not find artifact org.apache.maven.surefire:surefire-providers:pom:2.22.2 [\#281](https://github.com/mvndaemon/mvnd/issues/281)
 - \[ERROR\] Multiple entries with same key [\#333](https://github.com/mvndaemon/mvnd/issues/333)
 - NPE after pressing CTRL+B in the client [\#324](https://github.com/mvndaemon/mvnd/issues/324)
 - Readme: "mvnd specific options" is incomplete [\#316](https://github.com/mvndaemon/mvnd/issues/316)
@@ -387,6 +387,7 @@
 - Separate BuildStarted message to avoid serializing via Propertries.\[l… [\#178](https://github.com/mvndaemon/mvnd/pull/178) ([ppalaga](https://github.com/ppalaga))
 - More fine grained status on build start [\#177](https://github.com/mvndaemon/mvnd/pull/177) ([ppalaga](https://github.com/ppalaga))
 - User's preference for -T can be stored as mvnd.threads in ~/.m2/mvnd.… [\#176](https://github.com/mvndaemon/mvnd/pull/176) ([ppalaga](https://github.com/ppalaga))
+- Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.11](https://github.com/mvndaemon/mvnd/tree/0.0.11) (2020-10-29)
 
@@ -412,7 +413,6 @@
 
 **Merged pull requests:**
 
-- Cygwin support, fixes \#156 [\#173](https://github.com/mvndaemon/mvnd/pull/173) ([gnodet](https://github.com/gnodet))
 - Improve terminal output [\#172](https://github.com/mvndaemon/mvnd/pull/172) ([ppalaga](https://github.com/ppalaga))
 - Fixup 67d5b4b Remove leftovers [\#170](https://github.com/mvndaemon/mvnd/pull/170) ([ppalaga](https://github.com/ppalaga))
 - Improvements [\#169](https://github.com/mvndaemon/mvnd/pull/169) ([gnodet](https://github.com/gnodet))
@@ -420,7 +420,6 @@
 - ProjectBuildLogAppender not found when starting the daemon \#165 [\#166](https://github.com/mvndaemon/mvnd/pull/166) ([ppalaga](https://github.com/ppalaga))
 - Killed or crashed daemon process kept in the registry until mvnd --st… [\#164](https://github.com/mvndaemon/mvnd/pull/164) ([ppalaga](https://github.com/ppalaga))
 - mvnd native executable is not passing -Dkey=val to the daemon [\#159](https://github.com/mvndaemon/mvnd/pull/159) ([ppalaga](https://github.com/ppalaga))
-- Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
 - Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
@@ -434,6 +433,7 @@
 
 **Merged pull requests:**
 
+- Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
 - mvnd --status throws NumberFormatException in 0.0.9 [\#149](https://github.com/mvndaemon/mvnd/pull/149) ([ppalaga](https://github.com/ppalaga))
 - Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
 - Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
