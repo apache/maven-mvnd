@@ -18,6 +18,7 @@ package org.mvndaemon.mvnd.common.logging;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -145,7 +146,17 @@ public class TerminalOutput implements ClientOutput {
 
     public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
-        this.terminal = TerminalBuilder.terminal();
+        String charName = System.getenv("LANG");
+        if (charName != null && !charName.isEmpty()) {
+            String[] locale = charName.split("\\.");
+            if (locale.length == 2) {
+                charName = locale[1];
+            }
+        } else {
+            charName = "UTF-8";
+        }
+
+        this.terminal = TerminalBuilder.builder().encoding(Charset.forName(charName)).build();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
         this.linesPerProject = rollingWindowSize;
