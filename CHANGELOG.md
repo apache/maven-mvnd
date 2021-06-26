@@ -27,6 +27,7 @@
 - Add a system property to configure the idle timeout on the ipc sync s… [\#437](https://github.com/mvndaemon/mvnd/pull/437) ([gnodet](https://github.com/gnodet))
 - The JDK\_JAVA\_OPTIONS environment variable is not honoured, fixes \#429 [\#436](https://github.com/mvndaemon/mvnd/pull/436) ([gnodet](https://github.com/gnodet))
 - The build time event spy should aggregate values for each mojo \#430 [\#431](https://github.com/mvndaemon/mvnd/pull/431) ([gnodet](https://github.com/gnodet))
+- JDK 16 support, fixes \#427 [\#428](https://github.com/mvndaemon/mvnd/pull/428) ([gnodet](https://github.com/gnodet))
 
 ## [0.5.1](https://github.com/mvndaemon/mvnd/tree/0.5.1) (2021-06-04)
 
@@ -45,7 +46,6 @@
 
 **Merged pull requests:**
 
-- JDK 16 support, fixes \#427 [\#428](https://github.com/mvndaemon/mvnd/pull/428) ([gnodet](https://github.com/gnodet))
 - The IPC server shuts down after one minute during the build [\#425](https://github.com/mvndaemon/mvnd/pull/425) ([gnodet](https://github.com/gnodet))
 - Fix the environment update, fixes \#422 [\#423](https://github.com/mvndaemon/mvnd/pull/423) ([gnodet](https://github.com/gnodet))
 - Fix concurrent build of projects when using forked lifecycles [\#421](https://github.com/mvndaemon/mvnd/pull/421) ([gnodet](https://github.com/gnodet))
@@ -366,6 +366,7 @@
 
 - Store registry under ~/.m2 where we already have mvnd.properties [\#211](https://github.com/mvndaemon/mvnd/pull/211) ([ppalaga](https://github.com/ppalaga))
 - Make TerminalOutput.dumb final, activate TerminalOutput.noBuffering with -B/--batch-mode, mvnd.rollingWindowSize default 0 [\#209](https://github.com/mvndaemon/mvnd/pull/209) ([ppalaga](https://github.com/ppalaga))
+- Use org.mvndaemon package [\#208](https://github.com/mvndaemon/mvnd/pull/208) ([gnodet](https://github.com/gnodet))
 - Fix the readInputLoop so that messages are all delivered and processe… [\#205](https://github.com/mvndaemon/mvnd/pull/205) ([gnodet](https://github.com/gnodet))
 - Improve display with an easy opt-out option and support for dumb term… [\#204](https://github.com/mvndaemon/mvnd/pull/204) ([gnodet](https://github.com/gnodet))
 - Minor improvements [\#203](https://github.com/mvndaemon/mvnd/pull/203) ([gnodet](https://github.com/gnodet))
@@ -471,7 +472,6 @@
 - Fixup \#111 Document the number of utilized cores and use 1 core at least [\#121](https://github.com/mvndaemon/mvnd/pull/121) ([ppalaga](https://github.com/ppalaga))
 - Rename ServerMain to MavenDaemon to be more explicit, fixes \#118 [\#120](https://github.com/mvndaemon/mvnd/pull/120) ([gnodet](https://github.com/gnodet))
 - Leave 1 processor unused on the daemon by default, fixes \#111 [\#119](https://github.com/mvndaemon/mvnd/pull/119) ([gnodet](https://github.com/gnodet))
-- Improve progress display [\#113](https://github.com/mvndaemon/mvnd/pull/113) ([gnodet](https://github.com/gnodet))
 - Skip tests when releasing [\#110](https://github.com/mvndaemon/mvnd/pull/110) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.8](https://github.com/mvndaemon/mvnd/tree/0.0.8) (2020-10-19)
@@ -506,6 +506,7 @@
 
 **Merged pull requests:**
 
+- Improve progress display [\#113](https://github.com/mvndaemon/mvnd/pull/113) ([gnodet](https://github.com/gnodet))
 - Issue 100 [\#105](https://github.com/mvndaemon/mvnd/pull/105) ([gnodet](https://github.com/gnodet))
 - Replace deprecated GitHub actions commands \#85 [\#104](https://github.com/mvndaemon/mvnd/pull/104) ([ppalaga](https://github.com/ppalaga))
 - Isolate the integration tests from the local environment [\#101](https://github.com/mvndaemon/mvnd/pull/101) ([ppalaga](https://github.com/ppalaga))
