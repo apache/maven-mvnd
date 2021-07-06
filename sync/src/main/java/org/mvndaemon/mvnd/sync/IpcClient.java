@@ -15,6 +15,7 @@
  */
 package org.mvndaemon.mvnd.sync;
 
+import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -111,43 +112,51 @@ public class IpcClient {
                 int tmpport = ss.getLocalPort();
                 int rand = new Random().nextInt();
 
-                List<String> args = new ArrayList<>();
-                String javaHome = System.getenv("JAVA_HOME");
-                if (javaHome == null) {
-                    javaHome = System.getProperty("java.home");
-                }
-                boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
-                String javaCmd = win ? "bin\\java.exe" : "bin/java";
-                String java = Paths.get(javaHome).resolve(javaCmd).toAbsolutePath().toString();
-                args.add(java);
-                String classpath;
-                String className = getClass().getName().replace('.', '/') + ".class";
-                String url = getClass().getClassLoader().getResource(className).toString();
-                if (url.startsWith("jar:")) {
-                    classpath = url.substring("jar:".length(), url.indexOf("!/"));
-                } else if (url.startsWith("file:")) {
-                    classpath = url.substring("file:".length(), url.indexOf(className));
+                String noFork = System.getProperty(IpcServer.NO_FORK_PROP);
+                Closeable close;
+                if (Boolean.parseBoolean(noFork)) {
+                    IpcServer server = IpcServer.runServer(tmpport, rand);
+                    close = server::close;
                 } else {
-                    throw new IllegalStateException();
+                    List<String> args = new ArrayList<>();
+                    String javaHome = System.getenv("JAVA_HOME");
+                    if (javaHome == null) {
+                        javaHome = System.getProperty("java.home");
+                    }
+                    boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
+                    String javaCmd = win ? "bin\\java.exe" : "bin/java";
+                    String java = Paths.get(javaHome).resolve(javaCmd).toAbsolutePath().toString();
+                    args.add(java);
+                    String classpath;
+                    String className = getClass().getName().replace('.', '/') + ".class";
+                    String url = getClass().getClassLoader().getResource(className).toString();
+                    if (url.startsWith("jar:")) {
+                        classpath = url.substring("jar:".length(), url.indexOf("!/"));
+                    } else if (url.startsWith("file:")) {
+                        classpath = url.substring("file:".length(), url.indexOf(className));
+                    } else {
+                        throw new IllegalStateException();
+                    }
+                    args.add("-cp");
+                    args.add(classpath);
+                    String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
+                    if (timeout != null) {
+                        args.add("-D" + IpcServer.IDLE_TIMEOUT_PROP + "=" + timeout);
+                    }
+                    args.add(IpcServer.class.getName());
+                    args.add(Integer.toString(tmpport));
+                    args.add(Integer.toString(rand));
+                    ProcessBuilder processBuilder = new ProcessBuilder();
+                    ProcessBuilder.Redirect discard = ProcessBuilder.Redirect.to(new File(win ? "NUL" : "/dev/null"));
+                    discard = ProcessBuilder.Redirect.INHERIT;
+                    Process process = processBuilder
+                            .directory(lockFile.getParent().toFile())
+                            .command(args)
+                            .redirectOutput(discard)
+                            .redirectError(discard)
+                            .start();
+                    close = process::destroyForcibly;
                 }
-                args.add("-cp");
-                args.add(classpath);
-                String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
-                if (timeout != null) {
-                    args.add("-D" + IpcServer.IDLE_TIMEOUT_PROP + "=" + timeout);
-                }
-                args.add(IpcServer.class.getName());
-                args.add(Integer.toString(tmpport));
-                args.add(Integer.toString(rand));
-                ProcessBuilder processBuilder = new ProcessBuilder();
-                ProcessBuilder.Redirect discard = ProcessBuilder.Redirect.to(new File(win ? "NUL" : "/dev/null"));
-                discard = ProcessBuilder.Redirect.INHERIT;
-                Process process = processBuilder
-                        .directory(lockFile.getParent().toFile())
-                        .command(args)
-                        .redirectOutput(discard)
-                        .redirectError(discard)
-                        .start();
 
                 ExecutorService es = Executors.newSingleThreadExecutor();
                 Future<int[]> future = es.submit(() -> {
@@ -161,14 +170,14 @@ public class IpcClient {
                 try {
                     res = future.get(5, TimeUnit.SECONDS);
                 } catch (Exception e) {
-                    process.destroyForcibly();
+                    close.close();
                     throw e;
                 } finally {
                     es.shutdownNow();
                     ss.close();
                 }
                 if (rand != res[0]) {
-                    process.destroyForcibly();
+                    close.close();
                     throw new IllegalStateException("IpcServer did not respond with the correct random");
                 }
 
@@ -255,17 +264,21 @@ public class IpcClient {
     }
 
     String newContext(boolean shared) {
-        try {
-            List<String> response = send(Arrays.asList(
-                    REQUEST_CONTEXT, Boolean.toString(shared)));
-            if (response.size() != 2 || !RESPONSE_CONTEXT.equals(response.get(0))) {
-                throw new IOException("Unexpected response: " + response);
+        RuntimeException error = new RuntimeException("Unable to create new sync context");
+        for (int i = 0; i < 2; i++) {
+            try {
+                List<String> response = send(Arrays.asList(
+                        REQUEST_CONTEXT, Boolean.toString(shared)));
+                if (response.size() != 2 || !RESPONSE_CONTEXT.equals(response.get(0))) {
+                    throw new IOException("Unexpected response: " + response);
+                }
+                return response.get(1);
+            } catch (Exception e) {
+                close(e);
+                error.addSuppressed(e);
             }
-            return response.get(1);
-        } catch (Exception e) {
-            close(e);
-            throw new RuntimeException("Unable to create new sync context", e);
         }
+        throw error;
     }
 
     void lock(String contextId, Collection<String> keys) {
@@ -299,7 +312,8 @@ public class IpcClient {
     @Override
     public String toString() {
         return "IpcClient{"
-                + "repository=" + repository
+                + "repository=" + repository + ','
+                + "port=" + (socket != null ? socket.getPort() : 0)
                 + '}';
     }
 }
