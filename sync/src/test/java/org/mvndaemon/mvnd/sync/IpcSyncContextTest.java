@@ -28,8 +28,12 @@ import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IpcSyncContextTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IpcSyncContextTest.class);
 
     @BeforeAll
     static void setup() {
@@ -73,15 +77,15 @@ public class IpcSyncContextTest {
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(() -> {
                 try (SyncContext context = factory.newInstance(session, false)) {
-                    System.out.println("Trying to lock from " + context);
+                    LOGGER.info("Trying to lock from {}", context);
                     context.acquire(Collections.singleton(artifact), null);
-                    System.out.println("Lock acquired from " + context);
+                    LOGGER.info("Lock acquired from {}", context);
                     try {
                         Thread.sleep(50);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    System.out.println("Unlock from " + context);
+                    LOGGER.info("Unlock from {}", context);
                 }
             });
             threads[i].start();
@@ -89,6 +93,36 @@ public class IpcSyncContextTest {
 
         for (Thread thread : threads) {
             thread.join();
+        }
+    }
+
+    @Test
+    void testTimeoutAndConnect() throws Exception {
+        System.setProperty(IpcServer.IDLE_TIMEOUT_PROP, "50ms");
+        System.setProperty(IpcServer.NO_FORK_PROP, "true");
+        try {
+
+            SyncContextFactory factory = new IpcSyncContextFactory();
+
+            DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
+            LocalRepository repository = new LocalRepository(new File("target/test-repo"));
+            LocalRepositoryManager localRepositoryManager = new SimpleLocalRepositoryManagerFactory()
+                    .newInstance(session, repository);
+            session.setLocalRepositoryManager(localRepositoryManager);
+            Artifact artifact = new DefaultArtifact("myGroup", "myArtifact", "jar", "0.1");
+
+            for (int i = 0; i < 10; i++) {
+                LOGGER.info("[client] Creating sync context");
+                try (SyncContext context = factory.newInstance(session, false)) {
+                    LOGGER.info("[client] Sync context created: {}", context.toString());
+                    context.acquire(Collections.singleton(artifact), null);
+                }
+                LOGGER.info("[client] Sync context closed");
+                Thread.sleep(100);
+            }
+        } finally {
+            System.clearProperty(IpcServer.IDLE_TIMEOUT_PROP);
+            System.clearProperty(IpcServer.NO_FORK_PROP);
         }
     }
 }

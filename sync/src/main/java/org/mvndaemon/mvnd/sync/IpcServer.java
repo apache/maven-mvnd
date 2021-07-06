@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -46,12 +47,14 @@ import static org.mvndaemon.mvnd.sync.IpcMessages.RESPONSE_CONTEXT;
  */
 public class IpcServer {
 
+    public static final String NO_FORK_PROP = "ipcsync.nofork";
+
     public static final String IDLE_TIMEOUT_PROP = "ipcsync.idle.timeout";
 
     static final long IDLE_TIMEOUT = TimeUnit.SECONDS.toNanos(60);
 
     private final ServerSocket serverSocket;
-    private final AtomicInteger clients = new AtomicInteger();
+    private final Map<Socket, Thread> clients = new HashMap<>();
     private final AtomicInteger counter = new AtomicInteger();
     private final Map<String, Lock> locks = new ConcurrentHashMap<>();
     private final Map<String, Context> contexts = new ConcurrentHashMap<>();
@@ -66,8 +69,13 @@ public class IpcServer {
         String str = System.getProperty(IDLE_TIMEOUT_PROP);
         if (str != null) {
             try {
+                TimeUnit unit = TimeUnit.SECONDS;
+                if (str.endsWith("ms")) {
+                    unit = TimeUnit.MILLISECONDS;
+                    str = str.substring(0, str.length() - 2);
+                }
                 long dur = Long.parseLong(str);
-                timeout = TimeUnit.SECONDS.toNanos(dur);
+                timeout = unit.toNanos(dur);
             } catch (NumberFormatException e) {
                 error("Property " + IDLE_TIMEOUT_PROP + " specified with invalid value: " + str, e);
             }
@@ -96,6 +104,10 @@ public class IpcServer {
         int tmpPort = Integer.parseInt(args[0]);
         int rand = Integer.parseInt(args[1]);
 
+        runServer(tmpPort, rand);
+    }
+
+    static IpcServer runServer(int tmpPort, int rand) throws IOException {
         IpcServer server = new IpcServer();
         run(server::run);
         int port = server.getPort();
@@ -108,6 +120,8 @@ public class IpcServer {
                 dos.flush();
             }
         }
+
+        return server;
     }
 
     private static void debug(String msg, Object... args) {
@@ -149,7 +163,11 @@ public class IpcServer {
     }
 
     private void client(Socket socket) {
-        int c = clients.incrementAndGet();
+        int c;
+        synchronized (clients) {
+            clients.put(socket, Thread.currentThread());
+            c = clients.size();
+        }
         info("New client connected (%d connected)", c);
         use();
         Map<String, Context> clientContexts = new ConcurrentHashMap<>();
@@ -240,9 +258,13 @@ public class IpcServer {
                 }
             }
         } catch (Throwable t) {
-            error("Error processing request", t);
+            if (!closing) {
+                error("Error processing request", t);
+            }
         } finally {
-            info("Client disconnecting...");
+            if (!closing) {
+                info("Client disconnecting...");
+            }
             clientContexts.values().forEach(context -> {
                 contexts.remove(context.id);
                 context.unlock();
@@ -252,7 +274,13 @@ public class IpcServer {
             } catch (IOException ioException) {
                 // ignore
             }
-            info("%d clients left", clients.decrementAndGet());
+            synchronized (clients) {
+                clients.remove(socket);
+                c = clients.size();
+            }
+            if (!closing) {
+                info("%d clients left", c);
+            }
         }
     }
 
@@ -264,19 +292,28 @@ public class IpcServer {
         while (true) {
             long current = System.nanoTime();
             if (current - lastUsed > idleTimeout) {
+                info("IpcServer expired, closing");
                 close();
                 break;
             }
         }
     }
 
-    private void close() {
+    void close() {
         closing = true;
         try {
             serverSocket.close();
         } catch (IOException e) {
             error("Error closing server socket", e);
         }
+        clients.forEach((s, t) -> {
+            try {
+                s.close();
+            } catch (IOException e) {
+                // ignore
+            }
+            t.interrupt();
+        });
     }
 
     static class Waiter {
