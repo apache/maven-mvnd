@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.2...HEAD)
+
+**Fixed bugs:**
+
+- The IPC sync context fails instead of reconnecting [\#446](https://github.com/mvndaemon/mvnd/issues/446)
+- Progress is computed incorrectly \(above 100%\) [\#443](https://github.com/mvndaemon/mvnd/issues/443)
+
+**Merged pull requests:**
+
+- Make sure the IpcClient recreates the server if the context creation fails, fixes \#446 [\#447](https://github.com/mvndaemon/mvnd/pull/447) ([gnodet](https://github.com/gnodet))
+- Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
+
 ## [0.5.2](https://github.com/mvndaemon/mvnd/tree/0.5.2) (2021-06-18)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.1...0.5.2)
@@ -68,7 +82,6 @@
 - openapi-generator-maven-plugin:5.0.1:generate  Unable to read location `src/main/openapi/project.yaml` [\#397](https://github.com/mvndaemon/mvnd/issues/397)
 - Global mvn settings.xml via mvnd.properties [\#383](https://github.com/mvndaemon/mvnd/issues/383)
 - Build failing with a NPE [\#372](https://github.com/mvndaemon/mvnd/issues/372)
-- Support -r / --resume option [\#351](https://github.com/mvndaemon/mvnd/issues/351)
 - Could not find artifact org.apache.maven.surefire:surefire-providers:pom:2.22.2 [\#281](https://github.com/mvndaemon/mvnd/issues/281)
 - Decide the defaults L&F of the multithread terminal view [\#210](https://github.com/mvndaemon/mvnd/issues/210)
 - Set maven version like maven-wrapper [\#143](https://github.com/mvndaemon/mvnd/issues/143)
@@ -141,6 +154,7 @@
 
 - Keep daemon alive in Docker? [\#365](https://github.com/mvndaemon/mvnd/issues/365)
 - mvnd assumes an .m2 folder in home directory [\#360](https://github.com/mvndaemon/mvnd/issues/360)
+- Support -r / --resume option [\#351](https://github.com/mvndaemon/mvnd/issues/351)
 - Support Arquillian builds [\#346](https://github.com/mvndaemon/mvnd/issues/346)
 - Incremental builds [\#345](https://github.com/mvndaemon/mvnd/issues/345)
 - Installed on RHEL 7.9 fails to load native library.  It works on CentOS 8 though [\#341](https://github.com/mvndaemon/mvnd/issues/341)
@@ -334,6 +348,7 @@
 - Messages associated with projectId from the previous build in the ter… [\#217](https://github.com/mvndaemon/mvnd/pull/217) ([ppalaga](https://github.com/ppalaga))
 - Ignore INT and TSTP signals in the daemon [\#214](https://github.com/mvndaemon/mvnd/pull/214) ([gnodet](https://github.com/gnodet))
 - Automatic purge of daemon logs [\#213](https://github.com/mvndaemon/mvnd/pull/213) ([gnodet](https://github.com/gnodet))
+- Improve display with an easy opt-out option and support for dumb term… [\#204](https://github.com/mvndaemon/mvnd/pull/204) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.12](https://github.com/mvndaemon/mvnd/tree/0.0.12) (2020-11-12)
 
@@ -367,7 +382,6 @@
 - Store registry under ~/.m2 where we already have mvnd.properties [\#211](https://github.com/mvndaemon/mvnd/pull/211) ([ppalaga](https://github.com/ppalaga))
 - Make TerminalOutput.dumb final, activate TerminalOutput.noBuffering with -B/--batch-mode, mvnd.rollingWindowSize default 0 [\#209](https://github.com/mvndaemon/mvnd/pull/209) ([ppalaga](https://github.com/ppalaga))
 - Fix the readInputLoop so that messages are all delivered and processe… [\#205](https://github.com/mvndaemon/mvnd/pull/205) ([gnodet](https://github.com/gnodet))
-- Improve display with an easy opt-out option and support for dumb term… [\#204](https://github.com/mvndaemon/mvnd/pull/204) ([gnodet](https://github.com/gnodet))
 - Minor improvements [\#203](https://github.com/mvndaemon/mvnd/pull/203) ([gnodet](https://github.com/gnodet))
 - Pad the status line elements so that they do not move as the build is progressing [\#202](https://github.com/mvndaemon/mvnd/pull/202) ([ppalaga](https://github.com/ppalaga))
 - Reduce the number of Message subclasses [\#201](https://github.com/mvndaemon/mvnd/pull/201) ([ppalaga](https://github.com/ppalaga))
