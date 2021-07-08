@@ -136,6 +136,7 @@
                                 -H:IncludeResources=org/mvndaemon/mvnd/.*
                                 -H:IncludeResources=mvnd-bash-completion.bash
                                 -H:-ParseRuntimeOptions
+                                -H:+AddAllCharsets
                                 -ea
                             </buildArgs>
                         </configuration>
