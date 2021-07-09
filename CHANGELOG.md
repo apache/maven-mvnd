@@ -8,11 +8,13 @@
 
 - The IPC sync context fails instead of reconnecting [\#446](https://github.com/mvndaemon/mvnd/issues/446)
 - Progress is computed incorrectly \(above 100%\) [\#443](https://github.com/mvndaemon/mvnd/issues/443)
+- Incorrect charset display in Terminal output [\#441](https://github.com/mvndaemon/mvnd/issues/441)
 
 **Merged pull requests:**
 
 - Make sure the IpcClient recreates the server if the context creation fails, fixes \#446 [\#447](https://github.com/mvndaemon/mvnd/pull/447) ([gnodet](https://github.com/gnodet))
 - Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
+- Fix incorrect charset display in Terminal output, \#441 [\#442](https://github.com/mvndaemon/mvnd/pull/442) ([lanmaoxinqing](https://github.com/lanmaoxinqing))
 
 ## [0.5.2](https://github.com/mvndaemon/mvnd/tree/0.5.2) (2021-06-18)
 
@@ -171,7 +173,6 @@
 - Fix color output for file / tty \#358 [\#359](https://github.com/mvndaemon/mvnd/pull/359) ([gnodet](https://github.com/gnodet))
 - Kill children processes when interrupting the build, fixes \#343 [\#357](https://github.com/mvndaemon/mvnd/pull/357) ([gnodet](https://github.com/gnodet))
 - Added known limitations to use -rf maven option [\#350](https://github.com/mvndaemon/mvnd/pull/350) ([valdar](https://github.com/valdar))
-- Pre-release polishing [\#340](https://github.com/mvndaemon/mvnd/pull/340) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.4.1](https://github.com/mvndaemon/mvnd/tree/0.4.1) (2021-01-25)
 
@@ -452,6 +453,7 @@
 - mvnd --status throws NumberFormatException in 0.0.9 [\#149](https://github.com/mvndaemon/mvnd/pull/149) ([ppalaga](https://github.com/ppalaga))
 - Add Twitter badge to README [\#146](https://github.com/mvndaemon/mvnd/pull/146) ([ppalaga](https://github.com/ppalaga))
 - Mention Homebrew tap in the README, show asciinema cast instead of a … [\#145](https://github.com/mvndaemon/mvnd/pull/145) ([ppalaga](https://github.com/ppalaga))
+- Have unique test project module names [\#139](https://github.com/mvndaemon/mvnd/pull/139) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.9](https://github.com/mvndaemon/mvnd/tree/0.0.9) (2020-10-25)
 
@@ -473,7 +475,6 @@
 
 - Remove the superfluous Serializer interface and its implemetation [\#141](https://github.com/mvndaemon/mvnd/pull/141) ([ppalaga](https://github.com/ppalaga))
 - Do not add mvnd-client.jar to daemon's class path [\#140](https://github.com/mvndaemon/mvnd/pull/140) ([ppalaga](https://github.com/ppalaga))
-- Have unique test project module names [\#139](https://github.com/mvndaemon/mvnd/pull/139) ([ppalaga](https://github.com/ppalaga))
 - Split daemon module into daemon and dist \#130 [\#138](https://github.com/mvndaemon/mvnd/pull/138) ([ppalaga](https://github.com/ppalaga))
 - Polish client status line [\#137](https://github.com/mvndaemon/mvnd/pull/137) ([ppalaga](https://github.com/ppalaga))
 - mvnd --status to display memory usage \#129 [\#136](https://github.com/mvndaemon/mvnd/pull/136) ([ppalaga](https://github.com/ppalaga))
