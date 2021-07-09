@@ -239,7 +239,11 @@ public enum Environment {
     /**
      * Log mojos execution time at the end of the build.
      */
-    MVND_BUILD_TIME("mvnd.buildTime", null, null, OptionType.BOOLEAN, Flags.NONE);
+    MVND_BUILD_TIME("mvnd.buildTime", null, null, OptionType.BOOLEAN, Flags.NONE),
+    /**
+     * Regexp pattern that will force eviction of the plugin realms if one of its dependencies matches.
+     */
+    MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL);
 
     static Properties properties;
 

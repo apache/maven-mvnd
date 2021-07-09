@@ -17,8 +17,12 @@ package org.mvndaemon.mvnd.cache.invalidating;
 
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -27,6 +31,7 @@ import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.eclipse.sisu.Typed;
+import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +44,8 @@ public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
 
     private final InvalidatingPluginRealmCache cache;
     private Path multiModuleProjectDirectory;
+    private String pattern;
+    private PathMatcher matcher;
 
     @Inject
     public InvalidatingPluginRealmCacheEventSpy(InvalidatingPluginRealmCache cache) {
@@ -51,6 +58,38 @@ public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
             if (event instanceof MavenExecutionRequest) {
                 /*  Store the multiModuleProjectDirectory path */
                 multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
+                pattern = Environment.MVND_PLUGIN_REALM_EVICT_PATTERN.asOptional()
+                        .orElse(Environment.MVND_PLUGIN_REALM_EVICT_PATTERN.getDefault());
+                if (!pattern.isEmpty()) {
+                    String[] patterns = pattern.split(",");
+                    List<PathMatcher> matchers = new ArrayList<>();
+                    for (String pattern : patterns) {
+                        if (pattern.startsWith("mvn:")) {
+                            String[] parts = pattern.substring("mvn:".length()).split(":");
+                            String groupId, artifactId, version;
+                            if (parts.length >= 3) {
+                                version = parts[2];
+                            } else {
+                                version = "*";
+                            }
+                            if (parts.length >= 2) {
+                                groupId = parts[0];
+                                artifactId = parts[1];
+                            } else {
+                                groupId = "*";
+                                artifactId = parts[0];
+                            }
+                            pattern = "glob:**/" + ("*".equals(groupId) ? "" : groupId.replace('.', '/') + "/")
+                                    + artifactId + "/" + ("*".equals(version) ? "**" : version + "/**");
+                        }
+                        matchers.add(getPathMatcher(pattern));
+                    }
+                    if (matchers.size() == 1) {
+                        matcher = matchers.iterator().next();
+                    } else {
+                        matcher = path -> matchers.stream().anyMatch(f -> f.matches(path));
+                    }
+                }
             } else if (event instanceof MavenExecutionResult) {
                 /* Evict the entries referring to jars under multiModuleProjectDirectory */
                 cache.cache.removeIf(this::shouldEvict);
@@ -70,6 +109,11 @@ public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
                                 "Removing PluginRealmCache entry {} because it refers to an artifact in the build tree {}",
                                 k, path);
                         return true;
+                    } else if (matcher != null && matcher.matches(path)) {
+                        LOG.debug(
+                                "Removing PluginRealmCache entry {} because its components {} matches the eviction pattern '{}'",
+                                k, path, pattern);
+                        return true;
                     }
                 }
             }
@@ -78,4 +122,12 @@ public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
             return true;
         }
     }
+
+    private static PathMatcher getPathMatcher(String pattern) {
+        if (!pattern.startsWith("glob:") && !pattern.startsWith("regex:")) {
+            pattern = "glob:" + pattern;
+        }
+        return FileSystems.getDefault().getPathMatcher(pattern);
+    }
+
 }
