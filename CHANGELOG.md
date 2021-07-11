@@ -13,6 +13,7 @@
 **Merged pull requests:**
 
 - Make sure the IpcClient recreates the server if the context creation fails, fixes \#446 [\#447](https://github.com/mvndaemon/mvnd/pull/447) ([gnodet](https://github.com/gnodet))
+- Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
 - Fix incorrect charset display in Terminal output, \#441 [\#442](https://github.com/mvndaemon/mvnd/pull/442) ([lanmaoxinqing](https://github.com/lanmaoxinqing))
 
 ## [0.5.2](https://github.com/mvndaemon/mvnd/tree/0.5.2) (2021-06-18)
@@ -38,7 +39,6 @@
 
 **Merged pull requests:**
 
-- Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
 - Attempt to fix bad registry errors, fixes \#432 and \#433 [\#439](https://github.com/mvndaemon/mvnd/pull/439) ([gnodet](https://github.com/gnodet))
 - Add a system property to configure the idle timeout on the ipc sync s… [\#437](https://github.com/mvndaemon/mvnd/pull/437) ([gnodet](https://github.com/gnodet))
 - The JDK\_JAVA\_OPTIONS environment variable is not honoured, fixes \#429 [\#436](https://github.com/mvndaemon/mvnd/pull/436) ([gnodet](https://github.com/gnodet))
@@ -98,6 +98,7 @@
 
 **Merged pull requests:**
 
+- Make sure the current directory is changed when processing a new mave… [\#416](https://github.com/mvndaemon/mvnd/pull/416) ([gnodet](https://github.com/gnodet))
 - Bump xstream from 1.4.16 to 1.4.17 [\#412](https://github.com/mvndaemon/mvnd/pull/412) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Fix ConcurrentModificationException in the cache, fixes \#405 [\#406](https://github.com/mvndaemon/mvnd/pull/406) ([gnodet](https://github.com/gnodet))
 - README.adoc: add Chocolatey installation option [\#398](https://github.com/mvndaemon/mvnd/pull/398) ([jeffjensen](https://github.com/jeffjensen))
