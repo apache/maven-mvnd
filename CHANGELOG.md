@@ -437,6 +437,7 @@
 - Killed or crashed daemon process kept in the registry until mvnd --st… [\#164](https://github.com/mvndaemon/mvnd/pull/164) ([ppalaga](https://github.com/ppalaga))
 - mvnd native executable is not passing -Dkey=val to the daemon [\#159](https://github.com/mvndaemon/mvnd/pull/159) ([ppalaga](https://github.com/ppalaga))
 - Improve the error message that reports a daemon crash [\#158](https://github.com/mvndaemon/mvnd/pull/158) ([ppalaga](https://github.com/ppalaga))
+- Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 
 ## [0.0.10](https://github.com/mvndaemon/mvnd/tree/0.0.10) (2020-10-26)
 
@@ -471,7 +472,6 @@
 
 **Merged pull requests:**
 
-- Upgrade to jansi 2.0, fix windows output [\#151](https://github.com/mvndaemon/mvnd/pull/151) ([gnodet](https://github.com/gnodet))
 - Remove the superfluous Serializer interface and its implemetation [\#141](https://github.com/mvndaemon/mvnd/pull/141) ([ppalaga](https://github.com/ppalaga))
 - Do not add mvnd-client.jar to daemon's class path [\#140](https://github.com/mvndaemon/mvnd/pull/140) ([ppalaga](https://github.com/ppalaga))
 - Have unique test project module names [\#139](https://github.com/mvndaemon/mvnd/pull/139) ([ppalaga](https://github.com/ppalaga))
