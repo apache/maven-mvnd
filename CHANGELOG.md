@@ -64,6 +64,7 @@
 
 - The IPC server shuts down after one minute during the build [\#425](https://github.com/mvndaemon/mvnd/pull/425) ([gnodet](https://github.com/gnodet))
 - Fix the environment update, fixes \#422 [\#423](https://github.com/mvndaemon/mvnd/pull/423) ([gnodet](https://github.com/gnodet))
+- Fix concurrent build of projects when using forked lifecycles [\#421](https://github.com/mvndaemon/mvnd/pull/421) ([gnodet](https://github.com/gnodet))
 - Parallel build fails due to missing JAR artifacts in compilePath [\#420](https://github.com/mvndaemon/mvnd/pull/420) ([gnodet](https://github.com/gnodet))
 
 ## [0.5.0](https://github.com/mvndaemon/mvnd/tree/0.5.0) (2021-05-31)
