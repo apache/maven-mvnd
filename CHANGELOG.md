@@ -539,6 +539,7 @@
 - Replace the jpm library with the jdk ProcessHandle interface, \#36 [\#80](https://github.com/mvndaemon/mvnd/pull/80) ([gnodet](https://github.com/gnodet))
 - Provide smarter output on the client, fixes \#77 [\#79](https://github.com/mvndaemon/mvnd/pull/79) ([gnodet](https://github.com/gnodet))
 - Explain project better in README \#75 [\#76](https://github.com/mvndaemon/mvnd/pull/76) ([ppalaga](https://github.com/ppalaga))
+- Use amd64 arch label also on Mac [\#58](https://github.com/mvndaemon/mvnd/pull/58) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.6](https://github.com/mvndaemon/mvnd/tree/0.0.6) (2020-09-29)
 
@@ -595,10 +596,6 @@
 - Require Java 8+ instead of Java 11+ at runtime [\#56](https://github.com/mvndaemon/mvnd/issues/56)
 - Using MAVEN\_HOME may clash with other tools [\#53](https://github.com/mvndaemon/mvnd/issues/53)
 - Could not notify CliPluginRealmCache [\#49](https://github.com/mvndaemon/mvnd/issues/49)
-
-**Merged pull requests:**
-
-- Use amd64 arch label also on Mac [\#58](https://github.com/mvndaemon/mvnd/pull/58) ([ppalaga](https://github.com/ppalaga))
 
 ## [0.0.2](https://github.com/mvndaemon/mvnd/tree/0.0.2) (2020-08-14)
 
