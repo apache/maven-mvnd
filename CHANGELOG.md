@@ -15,7 +15,6 @@
 - Make sure the IpcClient recreates the server if the context creation fails, fixes \#446 [\#447](https://github.com/mvndaemon/mvnd/pull/447) ([gnodet](https://github.com/gnodet))
 - Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
 - Fix incorrect charset display in Terminal output, \#441 [\#442](https://github.com/mvndaemon/mvnd/pull/442) ([lanmaoxinqing](https://github.com/lanmaoxinqing))
-- JDK 16 support, fixes \#427 [\#428](https://github.com/mvndaemon/mvnd/pull/428) ([gnodet](https://github.com/gnodet))
 
 ## [0.5.2](https://github.com/mvndaemon/mvnd/tree/0.5.2) (2021-06-18)
 
@@ -36,6 +35,7 @@
 **Closed issues:**
 
 - GitHub workflow: Cache dependencies [\#426](https://github.com/mvndaemon/mvnd/issues/426)
+- NullPointerException in integration tests with maven-surefire-plugin 3.0.0-M5 [\#103](https://github.com/mvndaemon/mvnd/issues/103)
 
 **Merged pull requests:**
 
@@ -43,6 +43,7 @@
 - Add a system property to configure the idle timeout on the ipc sync s… [\#437](https://github.com/mvndaemon/mvnd/pull/437) ([gnodet](https://github.com/gnodet))
 - The JDK\_JAVA\_OPTIONS environment variable is not honoured, fixes \#429 [\#436](https://github.com/mvndaemon/mvnd/pull/436) ([gnodet](https://github.com/gnodet))
 - The build time event spy should aggregate values for each mojo \#430 [\#431](https://github.com/mvndaemon/mvnd/pull/431) ([gnodet](https://github.com/gnodet))
+- JDK 16 support, fixes \#427 [\#428](https://github.com/mvndaemon/mvnd/pull/428) ([gnodet](https://github.com/gnodet))
 
 ## [0.5.1](https://github.com/mvndaemon/mvnd/tree/0.5.1) (2021-06-04)
 
@@ -508,7 +509,6 @@
 
 **Closed issues:**
 
-- NullPointerException in integration tests with maven-surefire-plugin 3.0.0-M5 [\#103](https://github.com/mvndaemon/mvnd/issues/103)
 - The system streams should be captured and redirected to the client with a per-thread association to the module being build [\#100](https://github.com/mvndaemon/mvnd/issues/100)
 - Isolate the integration tests from the local environment [\#97](https://github.com/mvndaemon/mvnd/issues/97)
 - Add mvn.cmd [\#93](https://github.com/mvndaemon/mvnd/issues/93)
