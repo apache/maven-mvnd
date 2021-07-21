@@ -18,10 +18,12 @@ package org.mvndaemon.mvnd.sync;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.StandardProtocolFamily;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.Channels;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,10 +53,14 @@ public class IpcServer {
 
     public static final String IDLE_TIMEOUT_PROP = "ipcsync.idle.timeout";
 
+    public static final String FAMILY_PROP = "ipcsync.family";
+
+    public static final String NO_NATIVE_PROP = "ipcsync.nonative";
+
     static final long IDLE_TIMEOUT = TimeUnit.SECONDS.toNanos(60);
 
-    private final ServerSocket serverSocket;
-    private final Map<Socket, Thread> clients = new HashMap<>();
+    private final ServerSocketChannel serverSocket;
+    private final Map<SocketChannel, Thread> clients = new HashMap<>();
     private final AtomicInteger counter = new AtomicInteger();
     private final Map<String, Lock> locks = new ConcurrentHashMap<>();
     private final Map<String, Context> contexts = new ConcurrentHashMap<>();
@@ -62,9 +68,8 @@ public class IpcServer {
     private volatile long lastUsed;
     private volatile boolean closing;
 
-    public IpcServer() throws IOException {
-        serverSocket = new ServerSocket();
-        serverSocket.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+    public IpcServer(StandardProtocolFamily family) throws IOException {
+        serverSocket = SocketHelper.openServerSocket(family);
         long timeout = IDLE_TIMEOUT;
         String str = System.getProperty(IDLE_TIMEOUT_PROP);
         if (str != null) {
@@ -101,22 +106,23 @@ public class IpcServer {
             error("Unable to ignore INT and TSTP signals", t);
         }
 
-        int tmpPort = Integer.parseInt(args[0]);
-        int rand = Integer.parseInt(args[1]);
+        String family = args[0];
+        String tmpAddress = args[1];
+        String rand = args[2];
 
-        runServer(tmpPort, rand);
+        runServer(StandardProtocolFamily.valueOf(family), tmpAddress, rand);
     }
 
-    static IpcServer runServer(int tmpPort, int rand) throws IOException {
-        IpcServer server = new IpcServer();
+    static IpcServer runServer(StandardProtocolFamily family, String tmpAddress, String rand) throws IOException {
+        IpcServer server = new IpcServer(family);
         run(server::run);
-        int port = server.getPort();
-
-        try (Socket s = new Socket()) {
-            s.connect(new InetSocketAddress(InetAddress.getLoopbackAddress(), tmpPort));
-            try (DataOutputStream dos = new DataOutputStream(s.getOutputStream())) {
-                dos.writeInt(rand);
-                dos.writeInt(port);
+        String address = SocketHelper.socketAddressToString(server.getLocalAddress());
+        SocketAddress socketAddress = SocketHelper.socketAddressFromString(tmpAddress);
+        SocketHelper.checkFamily(family, socketAddress);
+        try (SocketChannel socket = SocketChannel.open(socketAddress)) {
+            try (DataOutputStream dos = new DataOutputStream(Channels.newOutputStream(socket))) {
+                dos.writeUTF(rand);
+                dos.writeUTF(address);
                 dos.flush();
             }
         }
@@ -142,17 +148,17 @@ public class IpcServer {
         thread.start();
     }
 
-    public int getPort() {
-        return serverSocket.getLocalPort();
+    public SocketAddress getLocalAddress() throws IOException {
+        return serverSocket.getLocalAddress();
     }
 
     public void run() {
         try {
-            info("IpcServer started on port %d", getPort());
+            info("IpcServer started at %s", getLocalAddress().toString());
             use();
             run(this::expirationCheck);
             while (!closing) {
-                Socket socket = this.serverSocket.accept();
+                SocketChannel socket = this.serverSocket.accept();
                 run(() -> client(socket));
             }
         } catch (Throwable t) {
@@ -162,7 +168,7 @@ public class IpcServer {
         }
     }
 
-    private void client(Socket socket) {
+    private void client(SocketChannel socket) {
         int c;
         synchronized (clients) {
             clients.put(socket, Thread.currentThread());
@@ -172,8 +178,9 @@ public class IpcServer {
         use();
         Map<String, Context> clientContexts = new ConcurrentHashMap<>();
         try {
-            DataInputStream input = new DataInputStream(socket.getInputStream());
-            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+            ByteChannel wrapper = SocketHelper.wrapChannel(socket);
+            DataInputStream input = new DataInputStream(Channels.newInputStream(wrapper));
+            DataOutputStream output = new DataOutputStream(Channels.newOutputStream(wrapper));
             while (!closing) {
                 int requestId = input.readInt();
                 int sz = input.readInt();

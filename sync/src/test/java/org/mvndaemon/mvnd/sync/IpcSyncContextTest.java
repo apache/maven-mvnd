@@ -38,6 +38,8 @@ public class IpcSyncContextTest {
     @BeforeAll
     static void setup() {
         System.setProperty(IpcServer.IDLE_TIMEOUT_PROP, "5");
+        System.setProperty(IpcServer.FAMILY_PROP, "INET");
+        System.setProperty(IpcServer.NO_NATIVE_PROP, "true");
     }
 
     @AfterAll

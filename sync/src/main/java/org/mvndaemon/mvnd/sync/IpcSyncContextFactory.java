@@ -16,6 +16,7 @@
 package org.mvndaemon.mvnd.sync;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PreDestroy;
@@ -39,7 +40,9 @@ public class IpcSyncContextFactory implements SyncContextFactory {
     @Override
     public SyncContext newInstance(RepositorySystemSession session, boolean shared) {
         Path repository = session.getLocalRepository().getBasedir().toPath();
-        IpcClient client = clients.computeIfAbsent(repository, IpcClient::new);
+        String mvndHome = System.getProperty("mvnd.home");
+        Path syncPath = mvndHome != null ? Paths.get(mvndHome).resolve("bin") : null;
+        IpcClient client = clients.computeIfAbsent(repository, r -> new IpcClient(r, syncPath));
         return new IpcSyncContext(client, shared);
     }
 
