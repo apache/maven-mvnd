@@ -19,18 +19,18 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PreDestroy;
-import javax.annotation.Priority;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.SyncContext;
 import org.eclipse.aether.impl.SyncContextFactory;
+import org.eclipse.sisu.Priority;
 
 /**
  * The SyncContextFactory implementation.
  */
 @Named
-@Priority(Integer.MAX_VALUE)
+@Priority(10)
 @Singleton
 public class IpcSyncContextFactory implements SyncContextFactory {
 

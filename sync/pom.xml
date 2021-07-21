@@ -51,7 +51,11 @@
             <artifactId>jakarta.inject-api</artifactId>
             <version>${jakarta.inject.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.eclipse.sisu</groupId>
+            <artifactId>org.eclipse.sisu.inject</artifactId>
+            <version>0.3.4</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
