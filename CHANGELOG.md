@@ -274,7 +274,7 @@
 - Maven-like rolling output when the build happens to be linear [\#269](https://github.com/mvndaemon/mvnd/issues/269)
 - Support Homebrew on Linux [\#268](https://github.com/mvndaemon/mvnd/issues/268)
 - A new daemon is always started with OpenJDK 8 [\#266](https://github.com/mvndaemon/mvnd/issues/266)
-- Fix `getCurrentProject\(\)` [\#262](https://github.com/mvndaemon/mvnd/issues/262)
+- Fix `getCurrentProject()` [\#262](https://github.com/mvndaemon/mvnd/issues/262)
 - No reuse of daemons, no build speedup. [\#261](https://github.com/mvndaemon/mvnd/issues/261)
 - No reuse of daemons - error on daemon creation - unknown signal TSTP \(Windows 10, Bellsoft Liberica JDK\) [\#260](https://github.com/mvndaemon/mvnd/issues/260)
 - mvnd is affected by CVE-2020-17521 vulnerability [\#259](https://github.com/mvndaemon/mvnd/issues/259)
