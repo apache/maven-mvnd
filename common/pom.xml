@@ -108,13 +108,47 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <fork>true</fork>
+                            <compilerArgs>
+                                <arg>-XDignore.symbol.file</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jdk16</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <fork>true</fork>
+                            <compilerArgs>
+                                <arg>-XDignore.symbol.file</arg>
+                            </compilerArgs>
+                            <release>16</release>
+                            <multiReleaseOutput>true</multiReleaseOutput>
+                            <compileSourceRoots>
+                                <root>${project.basedir}/src/main/java16</root>
+                            </compileSourceRoots>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
                 <configuration>
-                    <fork>true</fork>
-                    <compilerArgs>
-                        <arg>-XDignore.symbol.file</arg>
-                    </compilerArgs>
+                    <archive>
+                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

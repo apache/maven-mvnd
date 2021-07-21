@@ -32,7 +32,7 @@ public class DaemonInfo {
     private final String javaHome;
     private final String mvndHome;
     private final int pid;
-    private final int address;
+    private final String address;
     private final byte[] token;
     private final String locale;
     private final List<String> options;
@@ -41,7 +41,7 @@ public class DaemonInfo {
     private final long lastBusy;
 
     public DaemonInfo(String id, String javaHome, String mavenHome,
-            int pid, int address, byte[] token,
+            int pid, String address, byte[] token,
             String locale, List<String> options,
             DaemonState state, long lastIdle, long lastBusy) {
         this.id = id;
@@ -73,7 +73,7 @@ public class DaemonInfo {
         return pid;
     }
 
-    public int getAddress() {
+    public String getAddress() {
         return address;
     }
 

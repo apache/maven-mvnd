@@ -17,8 +17,7 @@ package org.mvndaemon.mvnd.daemon;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.net.StandardProtocolFamily;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -55,6 +54,7 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildRequest;
 import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.common.SocketHelper;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
@@ -111,10 +111,15 @@ public class Server implements AutoCloseable, Runnable {
         this.noDaemon = Environment.MVND_NO_DAEMON.asBoolean();
         this.keepAliveMs = Environment.MVND_KEEP_ALIVE.asDuration().toMillis();
 
+        StandardProtocolFamily socketFamily = Environment.MVND_SOCKET_FAMILY
+                .asOptional()
+                .map(StandardProtocolFamily::valueOf)
+                .orElse(StandardProtocolFamily.INET);
+
         try {
             cli = new DaemonMavenCli();
             registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
-            socket = ServerSocketChannel.open().bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
+            socket = SocketHelper.openServerSocket(socketFamily);
             executor = Executors.newScheduledThreadPool(1);
             strategy = DaemonExpiration.master();
             memoryStatus = new DaemonMemoryStatus(executor);
@@ -136,7 +141,7 @@ public class Server implements AutoCloseable, Runnable {
                     Environment.MVND_JAVA_HOME.asString(),
                     Environment.MVND_HOME.asString(),
                     DaemonRegistry.getProcessId(),
-                    socket.socket().getLocalPort(),
+                    SocketHelper.socketAddressToString(socket.getLocalAddress()),
                     token,
                     Locale.getDefault().toLanguageTag(),
                     opts,

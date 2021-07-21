@@ -239,7 +239,11 @@ public enum Environment {
     /**
      * Log mojos execution time at the end of the build.
      */
-    MVND_BUILD_TIME("mvnd.buildTime", null, null, OptionType.BOOLEAN, Flags.NONE);
+    MVND_BUILD_TIME("mvnd.buildTime", null, null, OptionType.BOOLEAN, Flags.NONE),
+    /**
+     * Socket family to use
+     */
+    MVND_SOCKET_FAMILY("mvnd.socketFamily", null, "INET", OptionType.STRING, Flags.DISCRIMINATING);
 
     static Properties properties;
 

@@ -18,6 +18,7 @@ package org.mvndaemon.mvnd.client;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.StandardProtocolFamily;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -321,6 +322,10 @@ public class DaemonParameters {
 
     public Duration purgeLogPeriod() {
         return property(Environment.MVND_LOG_PURGE_PERIOD).orFail().asDuration();
+    }
+
+    public Optional<StandardProtocolFamily> socketFamily() {
+        return property(Environment.MVND_SOCKET_FAMILY).asOptional().map(StandardProtocolFamily::valueOf);
     }
 
     public static String findDefaultMultimoduleProjectDirectory(Path pwd) {

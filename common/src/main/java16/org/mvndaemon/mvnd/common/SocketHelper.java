@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.sync;
+package org.mvndaemon.mvnd.common;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -22,16 +22,34 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.StandardProtocolFamily;
+import java.net.UnixDomainSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Objects;
 
 import static java.net.StandardProtocolFamily.INET;
 import static java.net.StandardProtocolFamily.INET6;
-import static java.util.Objects.requireNonNull;
+import static java.net.StandardProtocolFamily.UNIX;
 
 public class SocketHelper {
+
+    public static StandardProtocolFamily getSocketFamily(SocketAddress address) {
+        if (address instanceof InetSocketAddress) {
+            InetSocketAddress isa = (InetSocketAddress) address;
+            InetAddress ia = isa.getAddress();
+            if (ia instanceof Inet6Address) {
+                return INET6;
+            } else {
+                return INET;
+            }
+                    } else if (address instanceof UnixDomainSocketAddress) {
+                        return UNIX;
+        } else {
+            throw new IllegalArgumentException("Unsupported socket address '" + address + "'");
+        }
+    }
 
     public static void checkFamily(StandardProtocolFamily family, SocketAddress address) {
         Objects.requireNonNull(family);
@@ -45,10 +63,10 @@ public class SocketHelper {
                 throw new IllegalArgumentException(
                         "Socket address '" + address + "' does not match required family '" + family + "'");
             }
-            //        } else if (address instanceof UnixDomainSocketAddress) {
-            //            if (family != StandardProtocolFamily.UNIX) {
-            //                throw new IllegalArgumentException("Socket address '" + address + "' does not match required family '" + family + "'");
-            //            }
+        } else if (address instanceof UnixDomainSocketAddress) {
+            if (family != StandardProtocolFamily.UNIX) {
+                throw new IllegalArgumentException("Socket address '" + address + "' does not match required family '" + family + "'");
+            }
         } else {
             throw new IllegalArgumentException(
                     "Socket address '" + address + "' does not match required family '" + family + "'");
@@ -87,8 +105,8 @@ public class SocketHelper {
                 }
                 return new InetSocketAddress(addr, Integer.parseInt(p));
             }
-            //        } else if (str.startsWith("unix:")) {
-            //            return UnixDomainSocketAddress.of(str.substring("unix:".length()));
+        } else if (str.startsWith("unix:")) {
+            return UnixDomainSocketAddress.of(str.substring("unix:".length()));
         } else {
             throw new IllegalArgumentException("Unsupported address: " + str);
         }
@@ -111,30 +129,36 @@ public class SocketHelper {
                 }
             }
             return "inet:" + formatted + ":" + port;
-            //        } else if (address instanceof UnixDomainSocketAddress) {
-            //            return "unix:" + address;
+        } else if (address instanceof UnixDomainSocketAddress) {
+            return "unix:" + address;
         } else {
-            throw new IllegalArgumentException("Unsupported address: " + address);
+            throw new IllegalArgumentException("Unsupported socket address: '" + address + "'");
         }
     }
 
+    public static SocketChannel openSocket(StandardProtocolFamily family) throws IOException {
+        Objects.requireNonNull(family);
+                return SocketChannel.open(family);
+    }
+
     public static ServerSocketChannel openServerSocket(StandardProtocolFamily family) throws IOException {
-        return ServerSocketChannel.open(/*family*/).bind(getLoopbackAddress(family), 0);
+        Objects.requireNonNull(family);
+                return ServerSocketChannel.open(family).bind(getLoopbackAddress(family), 0);
     }
 
     private static SocketAddress getLoopbackAddress(StandardProtocolFamily family) {
         try {
             Objects.requireNonNull(family);
             switch (family) {
-            case INET:
-                return new InetSocketAddress(Inet4Address.getByAddress(new byte[] { 127, 0, 0, 1 }), 0);
-            case INET6:
-                return new InetSocketAddress(
-                        Inet6Address.getByAddress(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }), 0);
-            //                case UNIX:
-            //                    return null;
-            default:
-                throw new IllegalArgumentException("Unsupported family: " + family);
+                case INET:
+                    return new InetSocketAddress(Inet4Address.getByAddress(new byte[] { 127, 0, 0, 1 }), 0);
+                case INET6:
+                    return new InetSocketAddress(
+                            Inet6Address.getByAddress(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }), 0);
+                                case UNIX:
+                                    return null;
+                default:
+                    throw new IllegalArgumentException("Unsupported family: " + family);
             }
         } catch (UnknownHostException e) {
             throw new IllegalArgumentException("Unsupported family: " + family, e);

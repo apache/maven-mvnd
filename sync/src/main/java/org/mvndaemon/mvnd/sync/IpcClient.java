@@ -48,6 +48,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.mvndaemon.mvnd.common.JavaVersion;
+import org.mvndaemon.mvnd.common.SocketHelper;
 
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_ACQUIRE;
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_CLOSE;
@@ -119,9 +121,14 @@ public class IpcClient {
                 String tmpaddr = SocketHelper.socketAddressToString(ss.getLocalAddress());
                 String rand = Long.toHexString(new Random().nextLong());
 
-                String noNative = System.getProperty(IpcServer.NO_NATIVE_PROP);
+                boolean noNative = Boolean.getBoolean(IpcServer.NO_NATIVE_PROP);
+                boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
+                if (!noNative) {
+                    String syncCmd = win ? "mvnd-sync.exe" : "mvnd-sync";
+                    noNative = !Files.isExecutable(syncServerPath.resolve(syncCmd));
+                }
                 Closeable close;
-                if (Boolean.parseBoolean(noNative)) {
+                if (noNative) {
                     String noFork = System.getProperty(IpcServer.NO_FORK_PROP);
                     if (Boolean.parseBoolean(noFork)) {
                         IpcServer server = IpcServer.runServer(family, tmpaddr, rand);
@@ -132,20 +139,10 @@ public class IpcClient {
                         if (javaHome == null) {
                             javaHome = System.getProperty("java.home");
                         }
-                        boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
                         String javaCmd = win ? "bin\\java.exe" : "bin/java";
                         String java = Paths.get(javaHome).resolve(javaCmd).toAbsolutePath().toString();
                         args.add(java);
-                        String classpath;
-                        String className = getClass().getName().replace('.', '/') + ".class";
-                        String url = getClass().getClassLoader().getResource(className).toString();
-                        if (url.startsWith("jar:")) {
-                            classpath = url.substring("jar:".length(), url.indexOf("!/"));
-                        } else if (url.startsWith("file:")) {
-                            classpath = url.substring("file:".length(), url.indexOf(className));
-                        } else {
-                            throw new IllegalStateException();
-                        }
+                        String classpath = getJarPath(getClass()) + File.pathSeparator + getJarPath(SocketHelper.class);
                         args.add("-cp");
                         args.add(classpath);
                         String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
@@ -169,7 +166,6 @@ public class IpcClient {
                     }
                 } else {
                     List<String> args = new ArrayList<>();
-                    boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
                     String syncCmd = win ? "mvnd-sync.exe" : "mvnd-sync";
                     args.add(syncServerPath.resolve(syncCmd).toString());
                     String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
@@ -224,6 +220,20 @@ public class IpcClient {
                 throw new RuntimeException("Unable to create and connect to lock server", e);
             }
         }
+    }
+
+    private String getJarPath(Class clazz) {
+        String classpath;
+        String className = clazz.getName().replace('.', '/') + ".class";
+        String url = clazz.getClassLoader().getResource(className).toString();
+        if (url.startsWith("jar:")) {
+            classpath = url.substring("jar:".length(), url.indexOf("!/"));
+        } else if (url.startsWith("file:")) {
+            classpath = url.substring("file:".length(), url.indexOf(className));
+        } else {
+            throw new IllegalStateException();
+        }
+        return classpath;
     }
 
     void receive() {
