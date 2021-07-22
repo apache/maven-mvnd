@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
@@ -63,6 +64,7 @@ public class SocketFamilyTest {
 
     @Test
     @EnabledForJreRange(min = JRE.JAVA_16)
+    @Disabled("Test framework does not support multi-release expanded jars")
     void testUnixFromTo() {
         SocketAddress address = SocketFamily.fromString("unix:/tmp/foo-0123456.socket");
         assertEquals(SocketFamily.unix, SocketFamily.familyOf(address));
