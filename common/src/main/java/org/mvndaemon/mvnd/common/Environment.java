@@ -243,7 +243,7 @@ public enum Environment {
     /**
      * Socket family to use
      */
-    MVND_SOCKET_FAMILY("mvnd.socketFamily", null, "INET", OptionType.STRING, Flags.DISCRIMINATING);
+    MVND_SOCKET_FAMILY("mvnd.socketFamily", null, "inet", OptionType.STRING, Flags.DISCRIMINATING);
 
     static Properties properties;
 

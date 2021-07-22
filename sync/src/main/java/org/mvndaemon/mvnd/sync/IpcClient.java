@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.RandomAccessFile;
 import java.net.SocketAddress;
-import java.net.StandardProtocolFamily;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileLock;
@@ -48,8 +47,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.mvndaemon.mvnd.common.ByteChannelWrapper;
 import org.mvndaemon.mvnd.common.JavaVersion;
-import org.mvndaemon.mvnd.common.SocketHelper;
+import org.mvndaemon.mvnd.common.SocketFamily;
 
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_ACQUIRE;
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_CLOSE;
@@ -82,7 +82,7 @@ public class IpcClient {
     synchronized void ensureInitialized() throws IOException {
         if (socket == null) {
             socket = createClient();
-            ByteChannel wrapper = SocketHelper.wrapChannel(socket);
+            ByteChannel wrapper = new ByteChannelWrapper(socket);
             input = new DataInputStream(Channels.newInputStream(wrapper));
             output = new DataOutputStream(Channels.newOutputStream(wrapper));
             receiver = new Thread(this::receive);
@@ -93,9 +93,9 @@ public class IpcClient {
 
     SocketChannel createClient() throws IOException {
         String familyProp = System.getProperty(FAMILY_PROP);
-        StandardProtocolFamily family = familyProp != null
-                ? StandardProtocolFamily.valueOf(familyProp)
-                : JavaVersion.getJavaSpec() >= 16.0f ? StandardProtocolFamily.UNIX : StandardProtocolFamily.INET;
+        SocketFamily family = familyProp != null
+                ? SocketFamily.valueOf(familyProp)
+                : JavaVersion.getJavaSpec() >= 16.0f ? SocketFamily.unix : SocketFamily.inet;
 
         Path lockFile = repository.resolve(".maven-resolver-ipc-lock-" + family.name().toLowerCase())
                 .toAbsolutePath().normalize();
@@ -110,15 +110,15 @@ public class IpcClient {
                 String line = raf.readLine();
                 if (line != null) {
                     try {
-                        SocketAddress address = SocketHelper.socketAddressFromString(line);
+                        SocketAddress address = SocketFamily.fromString(line);
                         return SocketChannel.open(address);
                     } catch (IOException e) {
                         // ignore
                     }
                 }
 
-                ServerSocketChannel ss = SocketHelper.openServerSocket(family);
-                String tmpaddr = SocketHelper.socketAddressToString(ss.getLocalAddress());
+                ServerSocketChannel ss = family.openServerSocket();
+                String tmpaddr = SocketFamily.toString(ss.getLocalAddress());
                 String rand = Long.toHexString(new Random().nextLong());
 
                 boolean noNative = Boolean.getBoolean(IpcServer.NO_NATIVE_PROP);
@@ -142,7 +142,7 @@ public class IpcClient {
                         String javaCmd = win ? "bin\\java.exe" : "bin/java";
                         String java = Paths.get(javaHome).resolve(javaCmd).toAbsolutePath().toString();
                         args.add(java);
-                        String classpath = getJarPath(getClass()) + File.pathSeparator + getJarPath(SocketHelper.class);
+                        String classpath = getJarPath(getClass()) + File.pathSeparator + getJarPath(SocketFamily.class);
                         args.add("-cp");
                         args.add(classpath);
                         String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
@@ -210,7 +210,7 @@ public class IpcClient {
                     throw new IllegalStateException("IpcServer did not respond with the correct random");
                 }
 
-                SocketAddress addr = SocketHelper.socketAddressFromString(res[1]);
+                SocketAddress addr = SocketFamily.fromString(res[1]);
                 SocketChannel socket = SocketChannel.open(addr);
 
                 raf.seek(0);
@@ -361,7 +361,7 @@ public class IpcClient {
 
     private String getAddress() {
         try {
-            return SocketHelper.socketAddressToString(socket.getLocalAddress());
+            return SocketFamily.toString(socket.getLocalAddress());
         } catch (IOException e) {
             return "[not bound]";
         }

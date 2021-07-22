@@ -19,7 +19,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.net.StandardProtocolFamily;
 import java.nio.channels.ByteChannel;
 import java.nio.channels.Channels;
 import java.nio.channels.ServerSocketChannel;
@@ -35,7 +34,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.mvndaemon.mvnd.common.SocketHelper;
+import org.mvndaemon.mvnd.common.ByteChannelWrapper;
+import org.mvndaemon.mvnd.common.SocketFamily;
 
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_ACQUIRE;
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_CLOSE;
@@ -69,8 +69,8 @@ public class IpcServer {
     private volatile long lastUsed;
     private volatile boolean closing;
 
-    public IpcServer(StandardProtocolFamily family) throws IOException {
-        serverSocket = SocketHelper.openServerSocket(family);
+    public IpcServer(SocketFamily family) throws IOException {
+        serverSocket = family.openServerSocket();
         long timeout = IDLE_TIMEOUT;
         String str = System.getProperty(IDLE_TIMEOUT_PROP);
         if (str != null) {
@@ -111,15 +111,14 @@ public class IpcServer {
         String tmpAddress = args[1];
         String rand = args[2];
 
-        runServer(StandardProtocolFamily.valueOf(family), tmpAddress, rand);
+        runServer(SocketFamily.valueOf(family), tmpAddress, rand);
     }
 
-    static IpcServer runServer(StandardProtocolFamily family, String tmpAddress, String rand) throws IOException {
+    static IpcServer runServer(SocketFamily family, String tmpAddress, String rand) throws IOException {
         IpcServer server = new IpcServer(family);
         run(server::run);
-        String address = SocketHelper.socketAddressToString(server.getLocalAddress());
-        SocketAddress socketAddress = SocketHelper.socketAddressFromString(tmpAddress);
-        SocketHelper.checkFamily(family, socketAddress);
+        String address = SocketFamily.toString(server.getLocalAddress());
+        SocketAddress socketAddress = SocketFamily.fromString(tmpAddress);
         try (SocketChannel socket = SocketChannel.open(socketAddress)) {
             try (DataOutputStream dos = new DataOutputStream(Channels.newOutputStream(socket))) {
                 dos.writeUTF(rand);
@@ -179,7 +178,7 @@ public class IpcServer {
         use();
         Map<String, Context> clientContexts = new ConcurrentHashMap<>();
         try {
-            ByteChannel wrapper = SocketHelper.wrapChannel(socket);
+            ByteChannel wrapper = new ByteChannelWrapper(socket);
             DataInputStream input = new DataInputStream(Channels.newInputStream(wrapper));
             DataOutputStream output = new DataOutputStream(Channels.newOutputStream(wrapper));
             while (!closing) {

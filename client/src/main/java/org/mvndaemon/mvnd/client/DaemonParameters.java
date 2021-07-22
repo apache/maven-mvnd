@@ -18,7 +18,6 @@ package org.mvndaemon.mvnd.client;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.StandardProtocolFamily;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,6 +43,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.mvndaemon.mvnd.common.BuildProperties;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -324,8 +324,8 @@ public class DaemonParameters {
         return property(Environment.MVND_LOG_PURGE_PERIOD).orFail().asDuration();
     }
 
-    public Optional<StandardProtocolFamily> socketFamily() {
-        return property(Environment.MVND_SOCKET_FAMILY).asOptional().map(StandardProtocolFamily::valueOf);
+    public Optional<SocketFamily> socketFamily() {
+        return property(Environment.MVND_SOCKET_FAMILY).asOptional().map(SocketFamily::valueOf);
     }
 
     public static String findDefaultMultimoduleProjectDirectory(Path pwd) {

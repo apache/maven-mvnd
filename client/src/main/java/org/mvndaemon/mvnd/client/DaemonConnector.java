@@ -18,7 +18,6 @@ package org.mvndaemon.mvnd.client;
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketAddress;
-import java.net.StandardProtocolFamily;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
@@ -50,7 +49,7 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.MavenDaemon;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Os;
-import org.mvndaemon.mvnd.common.SocketHelper;
+import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -375,7 +374,7 @@ public class DaemonConnector {
             Environment.MVND_REGISTRY.addCommandLineOption(args, parameters.registry().toString());
             Environment.MVND_SOCKET_FAMILY.addCommandLineOption(args,
                     parameters.socketFamily().orElseGet(
-                            () -> getJavaVersion() >= 16.0f ? StandardProtocolFamily.UNIX : StandardProtocolFamily.INET)
+                            () -> getJavaVersion() >= 16.0f ? SocketFamily.unix : SocketFamily.inet)
                             .toString());
             parameters.discriminatingCommandLineOptions(args);
             args.add(MavenDaemon.class.getName());
@@ -476,11 +475,11 @@ public class DaemonConnector {
     }
 
     public DaemonConnection connect(String str, byte[] token) throws DaemonException.ConnectException {
-        SocketAddress address = SocketHelper.socketAddressFromString(str);
-        StandardProtocolFamily family = SocketHelper.getSocketFamily(address);
+        SocketAddress address = SocketFamily.fromString(str);
         try {
             LOGGER.debug("Trying to connect to address {}.", address);
-            SocketChannel socketChannel = SocketHelper.openSocket(family);
+            SocketFamily family = SocketFamily.familyOf(address);
+            SocketChannel socketChannel = family.openSocket();
             socketChannel.configureBlocking(false);
             boolean connected = socketChannel.connect(address);
             if (!connected) {
