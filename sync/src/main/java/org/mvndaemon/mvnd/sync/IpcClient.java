@@ -19,8 +19,10 @@ import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.net.SocketAddress;
 import java.nio.channels.ByteChannel;
@@ -49,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.mvndaemon.mvnd.common.ByteChannelWrapper;
 import org.mvndaemon.mvnd.common.JavaVersion;
+import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.SocketFamily;
 
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_ACQUIRE;
@@ -65,8 +68,9 @@ import static org.mvndaemon.mvnd.sync.IpcServer.FAMILY_PROP;
  */
 public class IpcClient {
 
-    Path repository;
-    Path syncServerPath;
+    Path lockPath;
+    Path logPath;
+    Path syncPath;
     SocketChannel socket;
     DataOutputStream output;
     DataInputStream input;
@@ -74,9 +78,10 @@ public class IpcClient {
     AtomicInteger requestId = new AtomicInteger();
     Map<Integer, CompletableFuture<List<String>>> responses = new ConcurrentHashMap<>();
 
-    IpcClient(Path repository, Path syncServerPath) {
-        this.repository = repository;
-        this.syncServerPath = syncServerPath;
+    IpcClient(Path lockPath, Path logPath, Path syncPath) {
+        this.lockPath = lockPath;
+        this.logPath = logPath;
+        this.syncPath = syncPath;
     }
 
     synchronized void ensureInitialized() throws IOException {
@@ -97,8 +102,8 @@ public class IpcClient {
                 ? SocketFamily.valueOf(familyProp)
                 : JavaVersion.getJavaSpec() >= 16.0f ? SocketFamily.unix : SocketFamily.inet;
 
-        Path lockFile = repository.resolve(".maven-resolver-ipc-lock-" + family.name().toLowerCase())
-                .toAbsolutePath().normalize();
+        Path lockPath = this.lockPath.toAbsolutePath().normalize();
+        Path lockFile = lockPath.resolve(".maven-resolver-ipc-lock-" + family.name().toLowerCase());
         if (!Files.isRegularFile(lockFile)) {
             if (!Files.isDirectory(lockFile.getParent())) {
                 Files.createDirectories(lockFile.getParent());
@@ -125,16 +130,18 @@ public class IpcClient {
                 boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
                 if (!noNative) {
                     String syncCmd = win ? "mvnd-sync.exe" : "mvnd-sync";
-                    noNative = !Files.isExecutable(syncServerPath.resolve(syncCmd));
+                    noNative = !Files.isExecutable(syncPath.resolve(syncCmd));
                 }
                 Closeable close;
+                Path logFile = logPath.resolve("mvnd-sync-" + rand + ".log");
+                List<String> args = null;
                 if (noNative) {
                     String noFork = System.getProperty(IpcServer.NO_FORK_PROP);
                     if (Boolean.parseBoolean(noFork)) {
                         IpcServer server = IpcServer.runServer(family, tmpaddr, rand);
                         close = server::close;
                     } else {
-                        List<String> args = new ArrayList<>();
+                        args = new ArrayList<>();
                         String javaHome = System.getenv("JAVA_HOME");
                         if (javaHome == null) {
                             javaHome = System.getProperty("java.home");
@@ -156,6 +163,8 @@ public class IpcClient {
                         ProcessBuilder processBuilder = new ProcessBuilder();
                         ProcessBuilder.Redirect discard = ProcessBuilder.Redirect.to(new File(win ? "NUL" : "/dev/null"));
                         discard = ProcessBuilder.Redirect.INHERIT;
+                        Files.createDirectories(logPath);
+                        discard = ProcessBuilder.Redirect.to(logFile.toFile());
                         Process process = processBuilder
                                 .directory(lockFile.getParent().toFile())
                                 .command(args)
@@ -165,9 +174,9 @@ public class IpcClient {
                         close = process::destroyForcibly;
                     }
                 } else {
-                    List<String> args = new ArrayList<>();
+                    args = new ArrayList<>();
                     String syncCmd = win ? "mvnd-sync.exe" : "mvnd-sync";
-                    args.add(syncServerPath.resolve(syncCmd).toString());
+                    args.add(syncPath.resolve(syncCmd).toString());
                     String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
                     if (timeout != null) {
                         args.add("-D" + IpcServer.IDLE_TIMEOUT_PROP + "=" + timeout);
@@ -178,6 +187,8 @@ public class IpcClient {
                     ProcessBuilder processBuilder = new ProcessBuilder();
                     ProcessBuilder.Redirect discard = ProcessBuilder.Redirect.to(new File(win ? "NUL" : "/dev/null"));
                     discard = ProcessBuilder.Redirect.INHERIT;
+                    Files.createDirectories(logPath);
+                    discard = ProcessBuilder.Redirect.to(logFile.toFile());
                     Process process = processBuilder
                             .directory(lockFile.getParent().toFile())
                             .command(args)
@@ -199,6 +210,13 @@ public class IpcClient {
                 try {
                     res = future.get(5, TimeUnit.SECONDS);
                 } catch (Exception e) {
+                    try (PrintWriter writer = new PrintWriter(new FileWriter(logFile.toFile(), true))) {
+                        writer.println("Arguments:");
+                        args.forEach(writer::println);
+                        writer.println();
+                        writer.println("Exception:");
+                        e.printStackTrace(writer);
+                    }
                     close.close();
                     throw e;
                 } finally {
@@ -227,12 +245,24 @@ public class IpcClient {
         String className = clazz.getName().replace('.', '/') + ".class";
         String url = clazz.getClassLoader().getResource(className).toString();
         if (url.startsWith("jar:")) {
-            classpath = url.substring("jar:".length(), url.indexOf("!/"));
+            url = url.substring("jar:".length(), url.indexOf("!/"));
+            if (url.startsWith("file:")) {
+                classpath = url.substring("file:".length());
+            } else {
+                throw new IllegalStateException();
+            }
         } else if (url.startsWith("file:")) {
             classpath = url.substring("file:".length(), url.indexOf(className));
         } else {
             throw new IllegalStateException();
         }
+        if (Os.current() == Os.WINDOWS) {
+            if (classpath.startsWith("/")) {
+                classpath = classpath.substring(1);
+            }
+            classpath = classpath.replace('/', '\\');
+        }
+
         return classpath;
     }
 
@@ -354,9 +384,9 @@ public class IpcClient {
     @Override
     public String toString() {
         return "IpcClient{"
-                + "repository=" + repository + ','
-                + "address=" + (socket != null ? getAddress() : 0)
-                + '}';
+                + "lockPath=" + lockPath + ","
+                + "syncServerPath=" + syncPath + ","
+                + "address='" + getAddress() + "'}";
     }
 
     private String getAddress() {

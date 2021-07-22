@@ -26,6 +26,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.SyncContext;
 import org.eclipse.aether.impl.SyncContextFactory;
 import org.eclipse.sisu.Priority;
+import org.mvndaemon.mvnd.common.Environment;
 
 /**
  * The SyncContextFactory implementation.
@@ -40,9 +41,10 @@ public class IpcSyncContextFactory implements SyncContextFactory {
     @Override
     public SyncContext newInstance(RepositorySystemSession session, boolean shared) {
         Path repository = session.getLocalRepository().getBasedir().toPath();
-        String mvndHome = System.getProperty("mvnd.home");
+        Path logPath = Environment.MVND_DAEMON_STORAGE.asPath();
+        String mvndHome = Environment.MVND_HOME.asOptional().orElse(null);
         Path syncPath = mvndHome != null ? Paths.get(mvndHome).resolve("bin") : null;
-        IpcClient client = clients.computeIfAbsent(repository, r -> new IpcClient(r, syncPath));
+        IpcClient client = clients.computeIfAbsent(repository, r -> new IpcClient(r, logPath, syncPath));
         return new IpcSyncContext(client, shared);
     }
 

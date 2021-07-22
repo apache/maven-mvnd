@@ -16,6 +16,8 @@
 package org.mvndaemon.mvnd.sync;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.SyncContext;
@@ -28,6 +30,7 @@ import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +40,9 @@ public class IpcSyncContextTest {
 
     @BeforeAll
     static void setup() {
+        Path target = Paths.get(System.getProperty("basedir", "")).resolve("target");
+        System.setProperty(Environment.MVND_DAEMON_STORAGE.getProperty(), target.resolve("mvnd/storage").toString());
+        System.setProperty(Environment.MVND_HOME.getProperty(), target.resolve("mvnd/home").toString());
         System.setProperty(IpcServer.IDLE_TIMEOUT_PROP, "5");
         System.setProperty(IpcServer.FAMILY_PROP, "inet");
         System.setProperty(IpcServer.NO_NATIVE_PROP, "true");
@@ -52,7 +58,7 @@ public class IpcSyncContextTest {
         SyncContextFactory factory = new IpcSyncContextFactory();
 
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-        LocalRepository repository = new LocalRepository(new File("target/test-repo"));
+        LocalRepository repository = new LocalRepository(new File("target/mvnd/test-repo"));
         LocalRepositoryManager localRepositoryManager = new SimpleLocalRepositoryManagerFactory()
                 .newInstance(session, repository);
         session.setLocalRepositoryManager(localRepositoryManager);
@@ -69,7 +75,7 @@ public class IpcSyncContextTest {
         SyncContextFactory factory = new IpcSyncContextFactory();
 
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-        LocalRepository repository = new LocalRepository(new File("target/test-repo"));
+        LocalRepository repository = new LocalRepository(new File("target/mvnd/test-repo"));
         LocalRepositoryManager localRepositoryManager = new SimpleLocalRepositoryManagerFactory()
                 .newInstance(session, repository);
         session.setLocalRepositoryManager(localRepositoryManager);
@@ -107,7 +113,7 @@ public class IpcSyncContextTest {
             SyncContextFactory factory = new IpcSyncContextFactory();
 
             DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-            LocalRepository repository = new LocalRepository(new File("target/test-repo"));
+            LocalRepository repository = new LocalRepository(new File("target/mvnd/test-repo"));
             LocalRepositoryManager localRepositoryManager = new SimpleLocalRepositoryManagerFactory()
                     .newInstance(session, repository);
             session.setLocalRepositoryManager(localRepositoryManager);
