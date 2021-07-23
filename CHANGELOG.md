@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.2...HEAD)
 
+**Implemented enhancements:**
+
+- If a failure happens in a module, the client should display it as soon as possible [\#438](https://github.com/mvndaemon/mvnd/issues/438)
+
 **Fixed bugs:**
 
 - The IPC sync context fails instead of reconnecting [\#446](https://github.com/mvndaemon/mvnd/issues/446)
