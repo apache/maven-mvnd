@@ -13,6 +13,7 @@
 - The IPC sync context fails instead of reconnecting [\#446](https://github.com/mvndaemon/mvnd/issues/446)
 - Progress is computed incorrectly \(above 100%\) [\#443](https://github.com/mvndaemon/mvnd/issues/443)
 - Incorrect charset display in Terminal output [\#441](https://github.com/mvndaemon/mvnd/issues/441)
+- Files still locked after earlier stopped / failed build on Windows [\#440](https://github.com/mvndaemon/mvnd/issues/440)
 
 **Merged pull requests:**
 
