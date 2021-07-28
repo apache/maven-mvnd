@@ -24,6 +24,7 @@ import org.junit.jupiter.api.condition.OS;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
+import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestRegistry;
 
@@ -55,7 +56,9 @@ public class BootstrapPluginTest {
                 fail("Error", e);
             }
             assertDaemonRegistrySize(1);
-            Thread.sleep(100);
+            /* Wait, till the instance becomes idle */
+            DaemonInfo d = registry.getAll().get(0);
+            registry.awaitIdle(d.getId());
         }
     }
 
