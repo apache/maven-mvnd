@@ -46,7 +46,7 @@ public class BootstrapPluginTest {
     void cleanInstall() throws IOException, InterruptedException {
         assertDaemonRegistrySize(0);
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 5; i++) {
             final TestClientOutput output = new TestClientOutput();
             try {
                 client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
