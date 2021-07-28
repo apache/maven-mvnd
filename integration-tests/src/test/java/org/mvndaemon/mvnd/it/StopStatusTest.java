@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.common.DaemonInfo;
@@ -29,7 +27,6 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestRegistry;
 
 @MvndTest(projectDir = "src/test/projects/single-module")
-@DisabledOnOs(OS.MAC)
 public class StopStatusTest {
 
     @Inject

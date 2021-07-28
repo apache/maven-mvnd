@@ -31,7 +31,7 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @MvndTest(projectDir = "src/test/projects/bootstrap-plugin")
-@DisabledOnOs({OS.WINDOWS, OS.MAC})
+@DisabledOnOs(OS.WINDOWS)
 public class BootstrapPluginTest {
 
     @Inject
