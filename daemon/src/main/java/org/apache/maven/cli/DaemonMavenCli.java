@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -81,7 +82,6 @@ import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifactsCache;
-import org.apache.maven.properties.internal.EnvironmentUtils;
 import org.apache.maven.properties.internal.SystemProperties;
 import org.apache.maven.session.scope.internal.SessionScopeModule;
 import org.apache.maven.shared.utils.logging.MessageBuilder;
@@ -97,6 +97,7 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.util.Os;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
@@ -689,10 +690,19 @@ public class DaemonMavenCli {
             chDir(workingDir);
         } catch (Exception e) {
             slf4jLogger.warn("Environment mismatch ! Could not set the environment (" + e + ")");
+        }
+        Map<String, String> nactual = new TreeMap<>(System.getenv());
+        diffs = Stream.concat(requested.keySet().stream(), actual.keySet().stream())
+                .sorted()
+                .distinct()
+                .filter(s -> !s.startsWith("JAVA_MAIN_CLASS_"))
+                .filter(key -> !Objects.equals(requested.get(key), nactual.get(key)))
+                .collect(Collectors.toList());
+        if (!diffs.isEmpty()) {
             slf4jLogger.warn("A few environment mismatches have been detected between the client and the daemon.");
             diffs.forEach(key -> {
                 String vr = requested.get(key);
-                String va = actual.get(key);
+                String va = nactual.get(key);
                 slf4jLogger.warn("   {} -> {} instead of {}", key, va, vr);
             });
             slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
@@ -1373,7 +1383,7 @@ public class DaemonMavenCli {
     // ----------------------------------------------------------------------
 
     static void populateProperties(CommandLine commandLine, Properties systemProperties, Properties userProperties) {
-        EnvironmentUtils.addEnvVars(systemProperties);
+        addEnvVars(systemProperties);
 
         // ----------------------------------------------------------------------
         // Options that are set on the command line become system properties
@@ -1405,6 +1415,16 @@ public class DaemonMavenCli {
 
         String mavenBuildVersion = CLIReportingUtils.createMavenVersionString(buildProperties);
         systemProperties.setProperty("maven.build.version", mavenBuildVersion);
+    }
+
+    public static void addEnvVars(Properties props) {
+        if (props != null) {
+            boolean caseSensitive = !Os.isFamily(Os.FAMILY_WINDOWS);
+            for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
+                String key = "env." + (caseSensitive ? entry.getKey() : entry.getKey().toUpperCase(Locale.ENGLISH));
+                props.setProperty(key, entry.getValue());
+            }
+        }
     }
 
     private static void setCliProperty(String property, Properties properties) {
