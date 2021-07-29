@@ -100,6 +100,7 @@
                         <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
                         <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
                     </systemPropertyVariables>
+                    <rerunFailingTestsCount>2</rerunFailingTestsCount>
                 </configuration>
             </plugin>
             <plugin>

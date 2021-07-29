@@ -59,6 +59,8 @@ public class StopStatusTest {
         client.execute(new TestClientOutput(), "clean").assertSuccess();
         /* There should still be exactly one item in the registry after the second build */
         assertDaemonRegistrySize(1);
+        /* Wait, till the instance becomes idle */
+        registry.awaitIdle(d.getId());
 
         client.execute(new TestClientOutput(), "--stop").assertSuccess();
         /* No items in the registry after we have killed all daemons */
