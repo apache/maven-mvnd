@@ -17,6 +17,7 @@
 
 **Merged pull requests:**
 
+- Improve test stability on OSX [\#453](https://github.com/mvndaemon/mvnd/pull/453) ([gnodet](https://github.com/gnodet))
 - Make sure the IpcClient recreates the server if the context creation fails, fixes \#446 [\#447](https://github.com/mvndaemon/mvnd/pull/447) ([gnodet](https://github.com/gnodet))
 - Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
 - Fix incorrect charset display in Terminal output, \#441 [\#442](https://github.com/mvndaemon/mvnd/pull/442) ([lanmaoxinqing](https://github.com/lanmaoxinqing))
