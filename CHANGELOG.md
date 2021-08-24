@@ -15,6 +15,10 @@
 - Incorrect charset display in Terminal output [\#441](https://github.com/mvndaemon/mvnd/issues/441)
 - Files still locked after earlier stopped / failed build on Windows [\#440](https://github.com/mvndaemon/mvnd/issues/440)
 
+**Closed issues:**
+
+- maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
+
 **Merged pull requests:**
 
 - Improve test stability on OSX [\#453](https://github.com/mvndaemon/mvnd/pull/453) ([gnodet](https://github.com/gnodet))
