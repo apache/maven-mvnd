@@ -17,10 +17,12 @@
 
 **Closed issues:**
 
+- Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
 - maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
 
 **Merged pull requests:**
 
+- \#457 Support Maven 3.8.2 [\#459](https://github.com/mvndaemon/mvnd/pull/459) ([robertk3s](https://github.com/robertk3s))
 - Improve test stability on OSX [\#453](https://github.com/mvndaemon/mvnd/pull/453) ([gnodet](https://github.com/gnodet))
 - Make sure the IpcClient recreates the server if the context creation fails, fixes \#446 [\#447](https://github.com/mvndaemon/mvnd/pull/447) ([gnodet](https://github.com/gnodet))
 - Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
