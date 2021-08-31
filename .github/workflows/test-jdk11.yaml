@@ -19,11 +19,11 @@ name: GitHub Actions
 on: [push, pull_request]
 
 env:
-  GRAALVM_VERSION: '21.1.0.java16'
+  GRAALVM_VERSION: '20.3.0.java11'
 
 jobs:
 
-  linux-jdk16:
+  linux-jdk11:
     runs-on: ubuntu-18.04
     steps:
 
@@ -61,7 +61,7 @@ jobs:
           name: mvnd-linux-amd64.zip
           path: dist/target/mvnd-*.zip
 
-  windows-jdk16:
+  windows-jdk11:
     runs-on: windows-2019
     steps:
 
@@ -128,7 +128,7 @@ jobs:
           name: mvnd-windows-amd64.zip
           path: dist/target/mvnd-*.zip
 
-  darwin-jdk16:
+  darwin-jdk11:
     runs-on: macos-10.15
     steps:
 

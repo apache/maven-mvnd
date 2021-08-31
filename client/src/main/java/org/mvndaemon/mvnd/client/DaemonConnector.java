@@ -16,9 +16,8 @@
 package org.mvndaemon.mvnd.client;
 
 import java.io.File;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.io.IOException;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
@@ -32,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -49,6 +49,7 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.MavenDaemon;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -371,6 +372,10 @@ public class DaemonConnector {
             Environment.MVND_ID.addCommandLineOption(args, daemonId);
             Environment.MVND_DAEMON_STORAGE.addCommandLineOption(args, parameters.daemonStorage().toString());
             Environment.MVND_REGISTRY.addCommandLineOption(args, parameters.registry().toString());
+            Environment.MVND_SOCKET_FAMILY.addCommandLineOption(args,
+                    parameters.socketFamily().orElseGet(
+                            () -> getJavaVersion() >= 16.0f ? SocketFamily.unix : SocketFamily.inet)
+                            .toString());
             parameters.discriminatingCommandLineOptions(args);
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
@@ -391,6 +396,31 @@ public class DaemonConnector {
                     String.format("Error starting daemon: id = %s, workingDir = %s, daemonArgs: %s",
                             daemonId, workingDir, command),
                     e);
+        }
+    }
+
+    private float getJavaVersion() {
+        try {
+            final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
+            Path javaExec = parameters.javaHome().resolve(java);
+            List<String> args = new ArrayList<>();
+            args.add(javaExec.toString());
+            args.add("-version");
+            Process process = new ProcessBuilder()
+                    .directory(parameters.mvndHome().toFile())
+                    .command(args)
+                    .start();
+            process.waitFor();
+            Scanner sc = new Scanner(process.getErrorStream());
+            sc.next();
+            sc.next();
+            String version = sc.next();
+            LOGGER.warn("JAVA VERSION: " + version);
+            int is = version.charAt(0) == '"' ? 1 : 0;
+            int ie = version.indexOf('.', version.indexOf('.', is));
+            return Float.parseFloat(version.substring(is, ie));
+        } catch (Exception e) {
+            throw new IllegalStateException("Unable to detect java version", e);
         }
     }
 
@@ -444,18 +474,37 @@ public class DaemonConnector {
         }
     }
 
-    public DaemonConnection connect(int port, byte[] token) throws DaemonException.ConnectException {
-        InetSocketAddress address = new InetSocketAddress(InetAddress.getLoopbackAddress(), port);
+    public DaemonConnection connect(String str, byte[] token) throws DaemonException.ConnectException {
+        SocketAddress address = SocketFamily.fromString(str);
         try {
             LOGGER.debug("Trying to connect to address {}.", address);
-            SocketChannel socketChannel = SocketChannel.open();
-            Socket socket = socketChannel.socket();
-            socket.connect(address, CONNECT_TIMEOUT);
-            if (socket.getLocalSocketAddress().equals(socket.getRemoteSocketAddress())) {
-                socketChannel.close();
-                throw new DaemonException.ConnectException(String.format("Socket connected to itself on %s.", address));
+            SocketFamily family = SocketFamily.familyOf(address);
+            SocketChannel socketChannel = family.openSocket();
+            socketChannel.configureBlocking(false);
+            boolean connected = socketChannel.connect(address);
+            if (!connected) {
+                long t0 = System.nanoTime();
+                long t1 = t0 + TimeUnit.MICROSECONDS.toNanos(CONNECT_TIMEOUT);
+                while (!connected && t0 < t1) {
+                    Thread.sleep(10);
+                    connected = socketChannel.finishConnect();
+                    if (!connected) {
+                        t0 = System.nanoTime();
+                    }
+                }
+                if (!connected) {
+                    throw new IOException("Timeout");
+                }
             }
-            LOGGER.debug("Connected to address {}.", socket.getRemoteSocketAddress());
+            socketChannel.configureBlocking(true);
+
+            //            Socket socket = socketChannel.socket();
+            //            socket.connect(address, CONNECT_TIMEOUT);
+            //            if (socket.getLocalSocketAddress().equals(socket.getRemoteSocketAddress())) {
+            //                socketChannel.close();
+            //                throw new DaemonException.ConnectException(String.format("Socket connected to itself on %s.", address));
+            //            }
+            LOGGER.debug("Connected to address {}.", socketChannel.getRemoteAddress());
 
             ByteBuffer tokenBuffer = ByteBuffer.wrap(token);
             do {

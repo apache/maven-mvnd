@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.security.sasl.SaslClientFactory;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -124,7 +123,7 @@ public class DocMojo extends AbstractMojo {
                 }
 
                 public Object nextElement() {
-                    return (SaslClientFactory) it.next();
+                    return it.next();
                 }
             };
         }

@@ -16,21 +16,25 @@
 package org.mvndaemon.mvnd.sync;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PreDestroy;
-import javax.annotation.Priority;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.SyncContext;
 import org.eclipse.aether.impl.SyncContextFactory;
+import org.eclipse.sisu.Priority;
+import org.mvndaemon.mvnd.common.BuildProperties;
+import org.mvndaemon.mvnd.common.Environment;
 
 /**
  * The SyncContextFactory implementation.
  */
 @Named
-@Priority(Integer.MAX_VALUE)
+@Priority(10)
 @Singleton
 public class IpcSyncContextFactory implements SyncContextFactory {
 
@@ -39,7 +43,13 @@ public class IpcSyncContextFactory implements SyncContextFactory {
     @Override
     public SyncContext newInstance(RepositorySystemSession session, boolean shared) {
         Path repository = session.getLocalRepository().getBasedir().toPath();
-        IpcClient client = clients.computeIfAbsent(repository, IpcClient::new);
+        Path logPath = Optional.ofNullable(System.getProperty(Environment.MVND_DAEMON_STORAGE.getProperty()))
+                .map(Paths::get)
+                .orElseGet(() -> Environment.USER_HOME.asPath()
+                        .resolve(".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion()));
+        String mvndHome = Environment.MVND_HOME.asString();
+        Path syncPath = mvndHome != null ? Paths.get(mvndHome).resolve("bin") : null;
+        IpcClient client = clients.computeIfAbsent(repository, r -> new IpcClient(r, logPath, syncPath));
         return new IpcSyncContext(client, shared);
     }
 
