@@ -306,6 +306,18 @@ public class TerminalOutput implements ClientOutput {
             terminal.writer().printf("%s%n", d.getMessage());
             break;
         }
+        case Message.PRINT_OUT: {
+            Message.StringMessage d = (Message.StringMessage) entry;
+            clearDisplay();
+            System.out.printf("%s%n", d.getMessage());
+            break;
+        }
+        case Message.PRINT_ERR: {
+            Message.StringMessage d = (Message.StringMessage) entry;
+            clearDisplay();
+            System.err.printf("%s%n", d.getMessage());
+            break;
+        }
         case Message.PROMPT: {
             Message.Prompt prompt = (Message.Prompt) entry;
             if (dumb) {

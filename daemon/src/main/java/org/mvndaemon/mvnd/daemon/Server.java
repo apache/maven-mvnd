@@ -58,6 +58,7 @@ import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
+import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -567,6 +568,8 @@ public class Server implements AutoCloseable, Runnable {
                         }
                     }
                 });
+                System.setOut(new LoggingOutputStream(s -> sendQueue.add(Message.out(s))).printStream());
+                System.setErr(new LoggingOutputStream(s -> sendQueue.add(Message.err(s))).printStream());
                 int exitCode = cli.main(
                         buildRequest.getArgs(),
                         buildRequest.getWorkingDir(),
