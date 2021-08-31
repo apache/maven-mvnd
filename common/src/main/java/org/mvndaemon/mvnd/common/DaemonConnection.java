@@ -23,7 +23,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
@@ -47,10 +47,10 @@ public class DaemonConnection implements AutoCloseable {
     private final SocketChannel socket;
     private final DataInputStream input;
     private final DataOutputStream output;
-    private final InetSocketAddress localAddress;
-    private final InetSocketAddress remoteAddress;
+    private final SocketAddress localAddress;
+    private final SocketAddress remoteAddress;
 
-    public DaemonConnection(SocketChannel socket) {
+    public DaemonConnection(SocketChannel socket) throws IOException {
         this.socket = socket;
         try {
             // NOTE: we use non-blocking IO as there is no reliable way when using blocking IO to shutdown reads while
@@ -61,8 +61,8 @@ public class DaemonConnection implements AutoCloseable {
         } catch (IOException e) {
             throw new DaemonException.InterruptedException(e);
         }
-        localAddress = (InetSocketAddress) socket.socket().getLocalSocketAddress();
-        remoteAddress = (InetSocketAddress) socket.socket().getRemoteSocketAddress();
+        localAddress = socket.getLocalAddress();
+        remoteAddress = socket.getRemoteAddress();
     }
 
     @Override

@@ -185,7 +185,7 @@ public class DaemonRegistry implements AutoCloseable {
                         String javaHome = readString();
                         String mavenHome = readString();
                         int pid = buffer.getInt();
-                        int address = buffer.getInt();
+                        String address = readString();
 
                         byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
                         buffer.get(token);
@@ -224,7 +224,7 @@ public class DaemonRegistry implements AutoCloseable {
                             writeString(di.getJavaHome());
                             writeString(di.getMvndHome());
                             buffer.putInt(di.getPid());
-                            buffer.putInt(di.getAddress());
+                            writeString(di.getAddress());
                             buffer.put(di.getToken());
                             writeString(di.getLocale());
                             buffer.putInt(di.getOptions().size());

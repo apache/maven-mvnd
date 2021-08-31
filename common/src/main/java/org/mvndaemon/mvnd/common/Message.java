@@ -344,6 +344,7 @@ public abstract class Message {
                     "args=" + args +
                     ", workingDir='" + workingDir + '\'' +
                     ", projectDir='" + projectDir + '\'' +
+                    ", env='" + env + '\'' +
                     '}';
         }
 

@@ -43,6 +43,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.mvndaemon.mvnd.common.BuildProperties;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -321,6 +322,10 @@ public class DaemonParameters {
 
     public Duration purgeLogPeriod() {
         return property(Environment.MVND_LOG_PURGE_PERIOD).orFail().asDuration();
+    }
+
+    public Optional<SocketFamily> socketFamily() {
+        return property(Environment.MVND_SOCKET_FAMILY).asOptional().map(SocketFamily::valueOf);
     }
 
     public static String findDefaultMultimoduleProjectDirectory(Path pwd) {

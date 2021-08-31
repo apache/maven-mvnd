@@ -48,16 +48,6 @@
 
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <!-- parent pom 1.11 forces version instead of using property -->
-                    <source>${jdkTarget}</source>
-                    <target>${jdkTarget}</target>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.0.0</version>
@@ -124,18 +114,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>jdk15+</id>
-            <activation>
-                <jdk>[15,)</jdk>
-            </activation>
-            <properties>
-                <jdkTarget>1.7</jdkTarget>
-                <javadocSource>7</javadocSource>
-            </properties>
-        </profile>
-    </profiles>
 
 </project>

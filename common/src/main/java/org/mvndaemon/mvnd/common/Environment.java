@@ -241,6 +241,10 @@ public enum Environment {
      */
     MVND_BUILD_TIME("mvnd.buildTime", null, null, OptionType.BOOLEAN, Flags.NONE),
     /**
+     * Socket family to use
+     */
+    MVND_SOCKET_FAMILY("mvnd.socketFamily", null, "inet", OptionType.STRING, Flags.DISCRIMINATING),
+    /**
      * Regexp pattern that will force eviction of the plugin realms if one of its dependencies matches.
      */
     MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL);

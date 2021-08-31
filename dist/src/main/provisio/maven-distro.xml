@@ -83,6 +83,10 @@
             <include>mvnd</include>
             <include>mvnd.exe</include>
         </directory>
+        <directory path="${basedir}/../sync/target">
+            <include>mvnd-sync</include>
+            <include>mvnd-sync.exe</include>
+        </directory>
     </fileSet>
 
     <archive name="mvnd-${project.version}-${os.detected.name}-${os.detected.arch}.zip" executable="**/bin/mvnd"/>

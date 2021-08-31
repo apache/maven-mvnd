@@ -51,7 +51,15 @@
             <artifactId>jakarta.inject-api</artifactId>
             <version>${jakarta.inject.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.eclipse.sisu</groupId>
+            <artifactId>org.eclipse.sisu.inject</artifactId>
+            <version>0.3.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mvndaemon.mvnd</groupId>
+            <artifactId>mvnd-common</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -87,5 +95,40 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>native</id>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.nativeimage</groupId>
+                        <artifactId>native-image-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>native-image</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skip>false</skip>
+                            <mainClass>org.mvndaemon.mvnd.sync.IpcServer</mainClass>
+                            <imageName>mvnd-sync</imageName>
+                            <buildArgs>
+                                --no-server
+                                --no-fallback
+                                --allow-incomplete-classpath
+                                -H:-ParseRuntimeOptions
+                                -ea
+                            </buildArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

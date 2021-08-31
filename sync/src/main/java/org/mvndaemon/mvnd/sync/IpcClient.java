@@ -19,14 +19,17 @@ import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.SocketAddress;
+import java.nio.channels.ByteChannel;
+import java.nio.channels.Channels;
 import java.nio.channels.FileLock;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -36,6 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,6 +49,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.mvndaemon.mvnd.common.ByteChannelWrapper;
+import org.mvndaemon.mvnd.common.JavaVersion;
+import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.common.SocketFamily;
 
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_ACQUIRE;
 import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_CLOSE;
@@ -52,6 +60,7 @@ import static org.mvndaemon.mvnd.sync.IpcMessages.REQUEST_CONTEXT;
 import static org.mvndaemon.mvnd.sync.IpcMessages.RESPONSE_ACQUIRE;
 import static org.mvndaemon.mvnd.sync.IpcMessages.RESPONSE_CLOSE;
 import static org.mvndaemon.mvnd.sync.IpcMessages.RESPONSE_CONTEXT;
+import static org.mvndaemon.mvnd.sync.IpcServer.FAMILY_PROP;
 
 /**
  * Client side implementation.
@@ -59,33 +68,42 @@ import static org.mvndaemon.mvnd.sync.IpcMessages.RESPONSE_CONTEXT;
  */
 public class IpcClient {
 
-    Path repository;
-    Socket socket;
+    Path lockPath;
+    Path logPath;
+    Path syncPath;
+    SocketChannel socket;
     DataOutputStream output;
     DataInputStream input;
     Thread receiver;
     AtomicInteger requestId = new AtomicInteger();
     Map<Integer, CompletableFuture<List<String>>> responses = new ConcurrentHashMap<>();
 
-    IpcClient(Path repository) {
-        this.repository = repository;
+    IpcClient(Path lockPath, Path logPath, Path syncPath) {
+        this.lockPath = lockPath;
+        this.logPath = logPath;
+        this.syncPath = syncPath;
     }
 
-    synchronized Socket ensureInitialized() throws IOException {
+    synchronized void ensureInitialized() throws IOException {
         if (socket == null) {
             socket = createClient();
-            input = new DataInputStream(socket.getInputStream());
-            output = new DataOutputStream(socket.getOutputStream());
+            ByteChannel wrapper = new ByteChannelWrapper(socket);
+            input = new DataInputStream(Channels.newInputStream(wrapper));
+            output = new DataOutputStream(Channels.newOutputStream(wrapper));
             receiver = new Thread(this::receive);
             receiver.setDaemon(true);
             receiver.start();
         }
-        return socket;
     }
 
-    Socket createClient() throws IOException {
-        InetAddress loopback = InetAddress.getLoopbackAddress();
-        Path lockFile = repository.resolve(".maven-resolver-ipc-lock").toAbsolutePath().normalize();
+    SocketChannel createClient() throws IOException {
+        String familyProp = System.getProperty(FAMILY_PROP);
+        SocketFamily family = familyProp != null
+                ? SocketFamily.valueOf(familyProp)
+                : JavaVersion.getJavaSpec() >= 16.0f ? SocketFamily.unix : SocketFamily.inet;
+
+        Path lockPath = this.lockPath.toAbsolutePath().normalize();
+        Path lockFile = lockPath.resolve(".maven-resolver-ipc-lock-" + family.name().toLowerCase());
         if (!Files.isRegularFile(lockFile)) {
             if (!Files.isDirectory(lockFile.getParent())) {
                 Files.createDirectories(lockFile.getParent());
@@ -96,59 +114,81 @@ public class IpcClient {
             try (FileLock lock = raf.getChannel().lock()) {
                 String line = raf.readLine();
                 if (line != null) {
-                    int port = Integer.parseInt(line);
-                    if (port > 0) {
-                        try {
-                            Socket socket = new Socket();
-                            socket.connect(new InetSocketAddress(loopback, port));
-                            return socket;
-                        } catch (IOException e) {
-                            // ignore
-                        }
+                    try {
+                        SocketAddress address = SocketFamily.fromString(line);
+                        return SocketChannel.open(address);
+                    } catch (IOException e) {
+                        // ignore
                     }
                 }
-                ServerSocket ss = new ServerSocket();
-                ss.bind(new InetSocketAddress(loopback, 0));
-                int tmpport = ss.getLocalPort();
-                int rand = new Random().nextInt();
 
-                String noFork = System.getProperty(IpcServer.NO_FORK_PROP);
+                ServerSocketChannel ss = family.openServerSocket();
+                String tmpaddr = SocketFamily.toString(ss.getLocalAddress());
+                String rand = Long.toHexString(new Random().nextLong());
+
+                boolean noNative = Boolean.getBoolean(IpcServer.NO_NATIVE_PROP);
+                boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
+                if (!noNative) {
+                    String syncCmd = win ? "mvnd-sync.exe" : "mvnd-sync";
+                    noNative = !Files.isExecutable(syncPath.resolve(syncCmd));
+                }
                 Closeable close;
-                if (Boolean.parseBoolean(noFork)) {
-                    IpcServer server = IpcServer.runServer(tmpport, rand);
-                    close = server::close;
-                } else {
-                    List<String> args = new ArrayList<>();
-                    String javaHome = System.getenv("JAVA_HOME");
-                    if (javaHome == null) {
-                        javaHome = System.getProperty("java.home");
-                    }
-                    boolean win = System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
-                    String javaCmd = win ? "bin\\java.exe" : "bin/java";
-                    String java = Paths.get(javaHome).resolve(javaCmd).toAbsolutePath().toString();
-                    args.add(java);
-                    String classpath;
-                    String className = getClass().getName().replace('.', '/') + ".class";
-                    String url = getClass().getClassLoader().getResource(className).toString();
-                    if (url.startsWith("jar:")) {
-                        classpath = url.substring("jar:".length(), url.indexOf("!/"));
-                    } else if (url.startsWith("file:")) {
-                        classpath = url.substring("file:".length(), url.indexOf(className));
+                Path logFile = logPath.resolve("mvnd-sync-" + rand + ".log");
+                List<String> args = null;
+                if (noNative) {
+                    String noFork = System.getProperty(IpcServer.NO_FORK_PROP);
+                    if (Boolean.parseBoolean(noFork)) {
+                        IpcServer server = IpcServer.runServer(family, tmpaddr, rand);
+                        close = server::close;
                     } else {
-                        throw new IllegalStateException();
+                        args = new ArrayList<>();
+                        String javaHome = System.getenv("JAVA_HOME");
+                        if (javaHome == null) {
+                            javaHome = System.getProperty("java.home");
+                        }
+                        String javaCmd = win ? "bin\\java.exe" : "bin/java";
+                        String java = Paths.get(javaHome).resolve(javaCmd).toAbsolutePath().toString();
+                        args.add(java);
+                        String classpath = getJarPath(getClass()) + File.pathSeparator + getJarPath(SocketFamily.class);
+                        args.add("-cp");
+                        args.add(classpath);
+                        String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
+                        if (timeout != null) {
+                            args.add("-D" + IpcServer.IDLE_TIMEOUT_PROP + "=" + timeout);
+                        }
+                        args.add(IpcServer.class.getName());
+                        args.add(family.name());
+                        args.add(tmpaddr);
+                        args.add(rand);
+                        ProcessBuilder processBuilder = new ProcessBuilder();
+                        ProcessBuilder.Redirect discard = ProcessBuilder.Redirect.to(new File(win ? "NUL" : "/dev/null"));
+                        discard = ProcessBuilder.Redirect.INHERIT;
+                        Files.createDirectories(logPath);
+                        discard = ProcessBuilder.Redirect.to(logFile.toFile());
+                        Process process = processBuilder
+                                .directory(lockFile.getParent().toFile())
+                                .command(args)
+                                .redirectOutput(discard)
+                                .redirectError(discard)
+                                .start();
+                        close = process::destroyForcibly;
                     }
-                    args.add("-cp");
-                    args.add(classpath);
+                } else {
+                    args = new ArrayList<>();
+                    String syncCmd = win ? "mvnd-sync.exe" : "mvnd-sync";
+                    args.add(syncPath.resolve(syncCmd).toString());
                     String timeout = System.getProperty(IpcServer.IDLE_TIMEOUT_PROP);
                     if (timeout != null) {
                         args.add("-D" + IpcServer.IDLE_TIMEOUT_PROP + "=" + timeout);
                     }
-                    args.add(IpcServer.class.getName());
-                    args.add(Integer.toString(tmpport));
-                    args.add(Integer.toString(rand));
+                    args.add(family.name());
+                    args.add(tmpaddr);
+                    args.add(rand);
                     ProcessBuilder processBuilder = new ProcessBuilder();
                     ProcessBuilder.Redirect discard = ProcessBuilder.Redirect.to(new File(win ? "NUL" : "/dev/null"));
                     discard = ProcessBuilder.Redirect.INHERIT;
+                    Files.createDirectories(logPath);
+                    discard = ProcessBuilder.Redirect.to(logFile.toFile());
                     Process process = processBuilder
                             .directory(lockFile.getParent().toFile())
                             .command(args)
@@ -159,39 +199,71 @@ public class IpcClient {
                 }
 
                 ExecutorService es = Executors.newSingleThreadExecutor();
-                Future<int[]> future = es.submit(() -> {
-                    Socket s = ss.accept();
-                    DataInputStream dis = new DataInputStream(s.getInputStream());
-                    int rand2 = dis.readInt();
-                    int port2 = dis.readInt();
-                    return new int[] { rand2, port2 };
+                Future<String[]> future = es.submit(() -> {
+                    SocketChannel s = ss.accept();
+                    DataInputStream dis = new DataInputStream(Channels.newInputStream(s));
+                    String rand2 = dis.readUTF();
+                    String addr2 = dis.readUTF();
+                    return new String[] { rand2, addr2 };
                 });
-                int[] res;
+                String[] res;
                 try {
                     res = future.get(5, TimeUnit.SECONDS);
                 } catch (Exception e) {
+                    try (PrintWriter writer = new PrintWriter(new FileWriter(logFile.toFile(), true))) {
+                        writer.println("Arguments:");
+                        args.forEach(writer::println);
+                        writer.println();
+                        writer.println("Exception:");
+                        e.printStackTrace(writer);
+                    }
                     close.close();
                     throw e;
                 } finally {
                     es.shutdownNow();
                     ss.close();
                 }
-                if (rand != res[0]) {
+                if (!Objects.equals(rand, res[0])) {
                     close.close();
                     throw new IllegalStateException("IpcServer did not respond with the correct random");
                 }
 
-                int port = res[1];
-                Socket socket = new Socket();
-                socket.connect(new InetSocketAddress(loopback, port));
+                SocketAddress addr = SocketFamily.fromString(res[1]);
+                SocketChannel socket = SocketChannel.open(addr);
 
                 raf.seek(0);
-                raf.writeBytes(port + "\n");
+                raf.writeBytes(res[1] + "\n");
                 return socket;
             } catch (Exception e) {
                 throw new RuntimeException("Unable to create and connect to lock server", e);
             }
         }
+    }
+
+    private String getJarPath(Class clazz) {
+        String classpath;
+        String className = clazz.getName().replace('.', '/') + ".class";
+        String url = clazz.getClassLoader().getResource(className).toString();
+        if (url.startsWith("jar:")) {
+            url = url.substring("jar:".length(), url.indexOf("!/"));
+            if (url.startsWith("file:")) {
+                classpath = url.substring("file:".length());
+            } else {
+                throw new IllegalStateException();
+            }
+        } else if (url.startsWith("file:")) {
+            classpath = url.substring("file:".length(), url.indexOf(className));
+        } else {
+            throw new IllegalStateException();
+        }
+        if (Os.current() == Os.WINDOWS) {
+            if (classpath.startsWith("/")) {
+                classpath = classpath.substring(1);
+            }
+            classpath = classpath.replace('/', '\\');
+        }
+
+        return classpath;
     }
 
     void receive() {
@@ -312,8 +384,17 @@ public class IpcClient {
     @Override
     public String toString() {
         return "IpcClient{"
-                + "repository=" + repository + ','
-                + "port=" + (socket != null ? socket.getPort() : 0)
-                + '}';
+                + "lockPath=" + lockPath + ","
+                + "syncServerPath=" + syncPath + ","
+                + "address='" + getAddress() + "'}";
     }
+
+    private String getAddress() {
+        try {
+            return SocketFamily.toString(socket.getLocalAddress());
+        } catch (IOException e) {
+            return "[not bound]";
+        }
+    }
+
 }

@@ -31,8 +31,8 @@
     <name>Maven Daemon - Documentation Maven Plugin</name>
 
     <properties>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
 
         <roaster.version>2.22.2.Final</roaster.version>
         <maven.plugin-tools.version>3.6.0</maven.plugin-tools.version>
