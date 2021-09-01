@@ -19,11 +19,16 @@
 
 - Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
 - maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
+- use unix domain socket if available [\#417](https://github.com/mvndaemon/mvnd/issues/417)
 
 **Merged pull requests:**
 
 - \#457 Support Maven 3.8.2 [\#459](https://github.com/mvndaemon/mvnd/pull/459) ([robertk3s](https://github.com/robertk3s))
+- Bump commons-compress from 1.20 to 1.21 [\#454](https://github.com/mvndaemon/mvnd/pull/454) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Improve test stability on OSX [\#453](https://github.com/mvndaemon/mvnd/pull/453) ([gnodet](https://github.com/gnodet))
+- Make sure the client env vars are correctly propagated to system properties [\#451](https://github.com/mvndaemon/mvnd/pull/451) ([gnodet](https://github.com/gnodet))
+- I417 [\#450](https://github.com/mvndaemon/mvnd/pull/450) ([gnodet](https://github.com/gnodet))
+- Provide an eviction pattern to get rid of classloaders for bad behavi… [\#448](https://github.com/mvndaemon/mvnd/pull/448) ([gnodet](https://github.com/gnodet))
 - Make sure the IpcClient recreates the server if the context creation fails, fixes \#446 [\#447](https://github.com/mvndaemon/mvnd/pull/447) ([gnodet](https://github.com/gnodet))
 - Forked projects are counted as projects leading to incorrect count, fixes \#443 [\#444](https://github.com/mvndaemon/mvnd/pull/444) ([gnodet](https://github.com/gnodet))
 - Fix incorrect charset display in Terminal output, \#441 [\#442](https://github.com/mvndaemon/mvnd/pull/442) ([lanmaoxinqing](https://github.com/lanmaoxinqing))
