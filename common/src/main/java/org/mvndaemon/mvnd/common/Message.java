@@ -55,6 +55,7 @@ public abstract class Message {
     public static final int TRANSFER_CORRUPTED = 21;
     public static final int TRANSFER_SUCCEEDED = 22;
     public static final int TRANSFER_FAILED = 23;
+    public static final int EXECUTION_FAILURE = 24;
 
     final int type;
 
@@ -103,6 +104,8 @@ public abstract class Message {
         case TRANSFER_SUCCEEDED:
         case TRANSFER_FAILED:
             return TransferEvent.read(type, input);
+        case EXECUTION_FAILURE:
+            return ExecutionFailureEvent.read(input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -821,6 +824,56 @@ public abstract class Message {
         }
     }
 
+    public static class ExecutionFailureEvent extends Message {
+
+        final String projectId;
+        final boolean halted;
+        final String exception;
+
+        private ExecutionFailureEvent(String projectId, boolean halted, String exception) {
+            super(EXECUTION_FAILURE);
+            this.projectId = projectId;
+            this.halted = halted;
+            this.exception = exception;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        public boolean isHalted() {
+            return halted;
+        }
+
+        public String getException() {
+            return exception;
+        }
+
+        @Override
+        public String toString() {
+            return "ExecutionFailure{" +
+                    "projectId='" + projectId + '\'' +
+                    ", halted=" + halted +
+                    ", exception='" + exception + '\'' +
+                    '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, projectId);
+            output.writeBoolean(halted);
+            writeUTF(output, exception);
+        }
+
+        public static ExecutionFailureEvent read(DataInputStream input) throws IOException {
+            String projectId = readUTF(input);
+            boolean halted = input.readBoolean();
+            String exception = readUTF(input);
+            return new ExecutionFailureEvent(projectId, halted, exception);
+        }
+    }
+
     public static class TransferEvent extends Message {
 
         public static final int INITIATED = 0;
@@ -980,6 +1033,10 @@ public abstract class Message {
 
     public static StringMessage projectStopped(String projectId) {
         return new StringMessage(PROJECT_STOPPED, projectId);
+    }
+
+    public static ExecutionFailureEvent executionFailure(String projectId, boolean halted, String exception) {
+        return new ExecutionFailureEvent(projectId, halted, exception);
     }
 
     public static Message mojoStarted(String artifactId, String pluginGroupId, String pluginArtifactId,

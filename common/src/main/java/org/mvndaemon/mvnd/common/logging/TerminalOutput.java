@@ -46,6 +46,7 @@ import org.jline.utils.Display;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildStarted;
+import org.mvndaemon.mvnd.common.Message.ExecutionFailureEvent;
 import org.mvndaemon.mvnd.common.Message.MojoStartedEvent;
 import org.mvndaemon.mvnd.common.Message.ProjectEvent;
 import org.mvndaemon.mvnd.common.Message.StringMessage;
@@ -93,6 +94,7 @@ public class TerminalOutput implements ClientOutput {
     private final Terminal.SignalHandler previousIntHandler;
     private final Display display;
     private final Map<String, Map<String, TransferEvent>> transfers = new LinkedHashMap<>();
+    private final ArrayList<ExecutionFailureEvent> failures = new ArrayList<>();
     private final LinkedHashMap<String, Project> projects = new LinkedHashMap<>();
     private final ClientLog log;
     private final Thread reader;
@@ -409,6 +411,11 @@ public class TerminalOutput implements ClientOutput {
                     .remove(te.getResourceName());
             break;
         }
+        case Message.EXECUTION_FAILURE: {
+            final ExecutionFailureEvent efe = (ExecutionFailureEvent) entry;
+            failures.add(efe);
+            break;
+        }
         default:
             throw new IllegalStateException("Unexpected message " + entry);
         }
@@ -521,12 +528,18 @@ public class TerminalOutput implements ClientOutput {
         // so keep one more line empty at the end
         dispLines--;
 
-        AttributedString globalTransfer = formatTransfers("");
-        dispLines -= globalTransfer != null ? 1 : 0;
-
         addStatusLine(lines, dispLines, projectsCount);
+
+        AttributedString globalFailure = formatFailures();
+        if (globalFailure != null) {
+            lines.add(globalFailure);
+            dispLines--;
+        }
+
+        AttributedString globalTransfer = formatTransfers("");
         if (globalTransfer != null) {
             lines.add(globalTransfer);
+            dispLines--;
         }
 
         if (projectsCount <= dispLines) {
@@ -559,6 +572,43 @@ public class TerminalOutput implements ClientOutput {
                 .map(s -> s.columnSubSequence(0, cols))
                 .collect(Collectors.toList());
         display.update(trimmed, -1);
+    }
+
+    private AttributedString formatFailures() {
+        if (failures.isEmpty()) {
+            return null;
+        }
+        AttributedStringBuilder asb = new AttributedStringBuilder();
+        asb.style(AttributedStyle.DEFAULT.foreground(AttributedStyle.RED).bold());
+        if (failures.stream().anyMatch(ExecutionFailureEvent::isHalted)) {
+            asb.append("ABORTING ");
+        }
+        asb.append("FAILURE: ");
+        asb.style(AttributedStyle.DEFAULT.foreground(AttributedStyle.RED));
+        if (failures.size() == 1) {
+            ExecutionFailureEvent efe = failures.iterator().next();
+            asb.append(efe.getProjectId());
+            String exception = efe.getException();
+            if (exception != null) {
+                if (exception.startsWith("org.apache.maven.lifecycle.LifecycleExecutionException: ")) {
+                    exception = exception
+                            .substring("org.apache.maven.lifecycle.LifecycleExecutionException: ".length());
+                }
+                asb.append(": ").append(exception);
+            }
+        } else {
+            asb.append(String.valueOf(failures.size())).append(" projects failed: ");
+            asb.append(failures.stream().map(ExecutionFailureEvent::getProjectId).collect(Collectors.joining(", ")));
+        }
+        AttributedString as = asb.toAttributedString();
+        if (as.columnLength() >= getTerminalWidth() - 1) {
+            asb = new AttributedStringBuilder();
+            asb.append(as.columnSubSequence(0, getTerminalWidth() - 2));
+            asb.style(AttributedStyle.DEFAULT);
+            asb.append("…");
+            as = asb.toAttributedString();
+        }
+        return as;
     }
 
     private AttributedString formatTransfers(String projectId) {

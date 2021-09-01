@@ -15,17 +15,50 @@
  */
 package org.mvndaemon.mvnd.logging.smart;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.execution.ProjectExecutionEvent;
+import org.apache.maven.execution.ProjectExecutionListener;
+import org.apache.maven.lifecycle.LifecycleExecutionException;
+import org.apache.maven.lifecycle.internal.ReactorBuildStatus;
+import org.eclipse.sisu.Typed;
 
-public class LoggingExecutionListener implements ExecutionListener {
+@Singleton
+@Named
+@Typed({ LoggingExecutionListener.class, ExecutionListener.class, ProjectExecutionListener.class })
+public class LoggingExecutionListener implements ExecutionListener, ProjectExecutionListener {
 
-    private final ExecutionListener delegate;
-    private final BuildEventListener buildEventListener;
+    private ExecutionListener delegate;
+    private BuildEventListener buildEventListener;
 
-    public LoggingExecutionListener(ExecutionListener delegate, BuildEventListener buildEventListener) {
+    public void init(ExecutionListener delegate, BuildEventListener buildEventListener) {
         this.delegate = delegate;
         this.buildEventListener = buildEventListener;
+    }
+
+    @Override
+    public void beforeProjectExecution(ProjectExecutionEvent projectExecutionEvent) throws LifecycleExecutionException {
+    }
+
+    @Override
+    public void beforeProjectLifecycleExecution(ProjectExecutionEvent projectExecutionEvent)
+            throws LifecycleExecutionException {
+    }
+
+    @Override
+    public void afterProjectExecutionSuccess(ProjectExecutionEvent projectExecutionEvent) throws LifecycleExecutionException {
+    }
+
+    @Override
+    public void afterProjectExecutionFailure(ProjectExecutionEvent projectExecutionEvent) {
+        MavenSession session = projectExecutionEvent.getSession();
+        ReactorBuildStatus status = (ReactorBuildStatus) session.getRepositorySession().getData().get(ReactorBuildStatus.class);
+        Throwable cause = projectExecutionEvent.getCause();
+        buildEventListener.executionFailure(projectExecutionEvent.getProject().getArtifactId(),
+                status.isHalted(), cause != null ? cause.toString() : null);
     }
 
     @Override
@@ -71,6 +104,7 @@ public class LoggingExecutionListener implements ExecutionListener {
     @Override
     public void projectSkipped(ExecutionEvent event) {
         setMdc(event);
+        buildEventListener.projectStarted(event.getProject().getArtifactId());
         delegate.projectSkipped(event);
         buildEventListener.projectFinished(event.getProject().getArtifactId());
     }
