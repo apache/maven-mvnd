@@ -92,6 +92,8 @@ public class SmartBuilder implements Builder {
             ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
             ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
 
+        session.getRepositorySession().getData().set(ReactorBuildStatus.class, reactorBuildStatus);
+
         DependencyGraph<MavenProject> graph = (DependencyGraph<MavenProject>) session.getRequest().getData()
                 .get(DependencyGraph.class.getName());
 

@@ -36,6 +36,9 @@ public abstract class BuildEventListener {
         public void projectFinished(String projectId) {
         }
 
+        public void executionFailure(String projectId, boolean halted, String exception) {
+        }
+
         public void mojoStarted(ExecutionEvent event) {
         }
 
@@ -69,6 +72,8 @@ public abstract class BuildEventListener {
     public abstract void projectLogMessage(String projectId, String event);
 
     public abstract void projectFinished(String projectId);
+
+    public abstract void executionFailure(String projectId, boolean halted, String exception);
 
     public abstract void mojoStarted(ExecutionEvent event);
 

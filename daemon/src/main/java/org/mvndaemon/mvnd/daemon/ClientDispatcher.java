@@ -101,6 +101,11 @@ public class ClientDispatcher extends BuildEventListener {
         queue.add(Message.projectStopped(projectId));
     }
 
+    public void executionFailure(String projectId, boolean halted, String exception) {
+        projects.put(projectId, Boolean.FALSE);
+        queue.add(Message.executionFailure(projectId, halted, exception));
+    }
+
     public void mojoStarted(ExecutionEvent event) {
         final MojoExecution execution = event.getMojoExecution();
         queue.add(Message.mojoStarted(

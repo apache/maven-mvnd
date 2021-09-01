@@ -66,7 +66,6 @@ import org.apache.maven.eventspy.internal.EventSpyDispatcher;
 import org.apache.maven.exception.DefaultExceptionHandler;
 import org.apache.maven.exception.ExceptionHandler;
 import org.apache.maven.exception.ExceptionSummary;
-import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequestPopulationException;
 import org.apache.maven.execution.MavenExecutionRequestPopulator;
@@ -177,6 +176,8 @@ public class DaemonMavenCli {
 
     private final Map<String, ConfigurationProcessor> configurationProcessors;
 
+    private final LoggingExecutionListener executionListener;
+
     /** Non-volatile, assuming that it is accessed only from the main thread */
     private BuildEventListener buildEventListener = BuildEventListener.dummy();
 
@@ -197,6 +198,7 @@ public class DaemonMavenCli {
         configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
         toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
         dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
+        executionListener = container.lookup(LoggingExecutionListener.class);
 
     }
 
@@ -579,8 +581,10 @@ public class DaemonMavenCli {
                 final EventSpyDispatcher eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
                 properties(cliRequest);
                 configure(cliRequest, eventSpyDispatcher, configurationProcessors);
+                LoggingExecutionListener executionListener = container.lookup(LoggingExecutionListener.class);
                 populateRequest(cliRequest, cliRequest.request, slf4jLogger, eventSpyDispatcher,
-                        container.lookup(ModelProcessor.class), createTransferListener(cliRequest), buildEventListener);
+                        container.lookup(ModelProcessor.class), createTransferListener(cliRequest), buildEventListener,
+                        executionListener);
                 executionRequestPopulator.populateDefaults(cliRequest.request);
                 BootstrapCoreExtensionManager resolver = container.lookup(BootstrapCoreExtensionManager.class);
                 return Collections
@@ -1110,7 +1114,7 @@ public class DaemonMavenCli {
 
     private void populateRequest(CliRequest cliRequest) {
         populateRequest(cliRequest, cliRequest.request, slf4jLogger, eventSpyDispatcher, modelProcessor,
-                createTransferListener(cliRequest), buildEventListener);
+                createTransferListener(cliRequest), buildEventListener, executionListener);
     }
 
     private static void populateRequest(
@@ -1120,7 +1124,8 @@ public class DaemonMavenCli {
             EventSpyDispatcher eventSpyDispatcher,
             ModelProcessor modelProcessor,
             TransferListener transferListener,
-            BuildEventListener buildEventListener) {
+            BuildEventListener buildEventListener,
+            LoggingExecutionListener executionListener) {
         CommandLine commandLine = cliRequest.commandLine;
         String workingDirectory = cliRequest.workingDirectory;
         boolean showErrors = cliRequest.showErrors;
@@ -1219,12 +1224,10 @@ public class DaemonMavenCli {
             }
         }
 
-        ExecutionListener executionListener = new ExecutionEventLogger();
-        if (eventSpyDispatcher != null) {
-            executionListener = new LoggingExecutionListener(
-                    eventSpyDispatcher.chainListener(executionListener),
-                    buildEventListener);
-        }
+        ExecutionEventLogger executionEventLogger = new ExecutionEventLogger();
+        executionListener.init(
+                eventSpyDispatcher.chainListener(executionEventLogger),
+                buildEventListener);
 
         String alternatePomFile = null;
         if (commandLine.hasOption(CLIManager.ALTERNATE_POM_FILE)) {
