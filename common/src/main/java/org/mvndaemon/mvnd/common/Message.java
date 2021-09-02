@@ -56,6 +56,8 @@ public abstract class Message {
     public static final int TRANSFER_SUCCEEDED = 22;
     public static final int TRANSFER_FAILED = 23;
     public static final int EXECUTION_FAILURE = 24;
+    public static final int PRINT_OUT = 25;
+    public static final int PRINT_ERR = 26;
 
     final int type;
 
@@ -106,6 +108,9 @@ public abstract class Message {
             return TransferEvent.read(type, input);
         case EXECUTION_FAILURE:
             return ExecutionFailureEvent.read(input);
+        case PRINT_OUT:
+        case PRINT_ERR:
+            return StringMessage.read(type, input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -126,6 +131,8 @@ public abstract class Message {
         case PROMPT:
         case PROMPT_RESPONSE:
         case DISPLAY:
+        case PRINT_OUT:
+        case PRINT_ERR:
             return 2;
         case PROJECT_STARTED:
             return 3;
@@ -703,6 +710,10 @@ public abstract class Message {
                 return "BuildLogMessage";
             case DISPLAY:
                 return "Display";
+            case PRINT_OUT:
+                return "PrintOut";
+            case PRINT_ERR:
+                return "PrintErr";
             default:
                 throw new IllegalStateException("Unexpected type " + type);
             }
@@ -1013,6 +1024,14 @@ public abstract class Message {
 
     public static StringMessage display(String message) {
         return new StringMessage(DISPLAY, message);
+    }
+
+    public static StringMessage out(String message) {
+        return new StringMessage(PRINT_OUT, message);
+    }
+
+    public static StringMessage err(String message) {
+        return new StringMessage(PRINT_ERR, message);
     }
 
     public static StringMessage log(String message) {

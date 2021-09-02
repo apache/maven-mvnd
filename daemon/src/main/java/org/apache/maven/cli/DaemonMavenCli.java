@@ -152,6 +152,8 @@ public class DaemonMavenCli {
 
     public static final String RESUME = "r";
 
+    public static final String RAW_STREAMS = "raw-streams";
+
     private final Slf4jLoggerManager plexusLoggerManager;
 
     private final ILoggerFactory slf4jLoggerFactory;
@@ -323,6 +325,8 @@ public class DaemonMavenCli {
         CLIManager cliManager = new CLIManager();
         cliManager.options.addOption(Option.builder(RESUME).longOpt("resume").desc("Resume reactor from " +
                 "the last failed project, using the resume.properties file in the build directory").build());
+        cliManager.options.addOption(Option.builder().longOpt(RAW_STREAMS).desc("Do not decorate output and " +
+                "error streams").build());
         return cliManager;
     }
 
@@ -409,7 +413,7 @@ public class DaemonMavenCli {
                 // Ignore
                 //
             }
-        } else {
+        } else if (!cliRequest.commandLine.hasOption(RAW_STREAMS)) {
             ch.qos.logback.classic.Logger stdout = (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stdout");
             ch.qos.logback.classic.Logger stderr = (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stderr");
             stdout.setLevel(ch.qos.logback.classic.Level.INFO);
