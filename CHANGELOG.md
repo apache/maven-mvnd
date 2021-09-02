@@ -7,6 +7,7 @@
 **Implemented enhancements:**
 
 - If a failure happens in a module, the client should display it as soon as possible [\#438](https://github.com/mvndaemon/mvnd/issues/438)
+- Display the current build status [\#361](https://github.com/mvndaemon/mvnd/issues/361)
 
 **Fixed bugs:**
 
@@ -20,9 +21,11 @@
 - Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
 - maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
 - use unix domain socket if available [\#417](https://github.com/mvndaemon/mvnd/issues/417)
+- Broken cache? [\#342](https://github.com/mvndaemon/mvnd/issues/342)
 
 **Merged pull requests:**
 
+- Provide an early display of build failures, fixes \#361 [\#462](https://github.com/mvndaemon/mvnd/pull/462) ([gnodet](https://github.com/gnodet))
 - \#457 Support Maven 3.8.2 [\#459](https://github.com/mvndaemon/mvnd/pull/459) ([robertk3s](https://github.com/robertk3s))
 - Bump commons-compress from 1.20 to 1.21 [\#454](https://github.com/mvndaemon/mvnd/pull/454) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Improve test stability on OSX [\#453](https://github.com/mvndaemon/mvnd/pull/453) ([gnodet](https://github.com/gnodet))
