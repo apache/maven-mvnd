@@ -50,7 +50,7 @@ class ReactorBuildQueue {
         this.rootProjects = new HashSet<>();
         this.blockedProjects = new HashSet<>();
         this.finishedProjects = new HashSet<>();
-        this.graph.getProjects().forEach(project -> {
+        projects.forEach(project -> {
             this.projects.add(project);
             if (this.graph.isRoot(project)) {
                 this.rootProjects.add(project);
