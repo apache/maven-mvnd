@@ -8,6 +8,7 @@
 
 - If a failure happens in a module, the client should display it as soon as possible [\#438](https://github.com/mvndaemon/mvnd/issues/438)
 - Display the current build status [\#361](https://github.com/mvndaemon/mvnd/issues/361)
+- Provide a way to remove decoration on the standard out/err streams [\#356](https://github.com/mvndaemon/mvnd/issues/356)
 
 **Fixed bugs:**
 
@@ -18,14 +19,19 @@
 
 **Closed issues:**
 
+- Mvnd runs on several projects while mvn only runs on the top level project [\#464](https://github.com/mvndaemon/mvnd/issues/464)
+- Better progress report [\#463](https://github.com/mvndaemon/mvnd/issues/463)
 - Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
 - maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
+- use client env vars [\#445](https://github.com/mvndaemon/mvnd/issues/445)
 - use unix domain socket if available [\#417](https://github.com/mvndaemon/mvnd/issues/417)
 - Broken cache? [\#342](https://github.com/mvndaemon/mvnd/issues/342)
 
 **Merged pull requests:**
 
+- Make sure mvnd does not build more projects than needed, fixes \#464 [\#465](https://github.com/mvndaemon/mvnd/pull/465) ([gnodet](https://github.com/gnodet))
 - Provide an early display of build failures, fixes \#361 [\#462](https://github.com/mvndaemon/mvnd/pull/462) ([gnodet](https://github.com/gnodet))
+- I356 [\#461](https://github.com/mvndaemon/mvnd/pull/461) ([gnodet](https://github.com/gnodet))
 - \#457 Support Maven 3.8.2 [\#459](https://github.com/mvndaemon/mvnd/pull/459) ([robertk3s](https://github.com/robertk3s))
 - Bump commons-compress from 1.20 to 1.21 [\#454](https://github.com/mvndaemon/mvnd/pull/454) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Improve test stability on OSX [\#453](https://github.com/mvndaemon/mvnd/pull/453) ([gnodet](https://github.com/gnodet))
