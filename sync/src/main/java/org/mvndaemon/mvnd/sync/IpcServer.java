@@ -298,10 +298,19 @@ public class IpcServer {
     private void expirationCheck() {
         while (true) {
             long current = System.nanoTime();
-            if (current - lastUsed > idleTimeout) {
+            long left = (lastUsed + idleTimeout) - current;
+            if (left < 0) {
                 info("IpcServer expired, closing");
                 close();
                 break;
+            } else {
+                try {
+                    Thread.sleep(TimeUnit.NANOSECONDS.toMillis(left));
+                } catch (InterruptedException e) {
+                    info("IpcServer expiration check interrupted, closing");
+                    close();
+                    break;
+                }
             }
         }
     }
