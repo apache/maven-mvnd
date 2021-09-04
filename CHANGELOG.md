@@ -29,6 +29,7 @@
 
 **Merged pull requests:**
 
+- Fix CPU loop in sync server [\#468](https://github.com/mvndaemon/mvnd/pull/468) ([gnodet](https://github.com/gnodet))
 - Make sure mvnd does not build more projects than needed, fixes \#464 [\#465](https://github.com/mvndaemon/mvnd/pull/465) ([gnodet](https://github.com/gnodet))
 - Provide an early display of build failures, fixes \#361 [\#462](https://github.com/mvndaemon/mvnd/pull/462) ([gnodet](https://github.com/gnodet))
 - I356 [\#461](https://github.com/mvndaemon/mvnd/pull/461) ([gnodet](https://github.com/gnodet))
