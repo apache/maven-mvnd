@@ -41,13 +41,13 @@
         <graalvm.version>20.3.2</graalvm.version>
         <groovy.version>3.0.7</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
-        <jansi.version>2.3.2</jansi.version>
+        <jansi.version>2.3.4</jansi.version>
         <jline.version>3.20.0</jline.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
         <logback.version>1.2.3</logback.version>
-        <maven.version>3.8.1</maven.version>
-        <maven.resolver.version>1.6.2</maven.resolver.version>
-        <slf4j.version>1.7.29</slf4j.version>
+        <maven.version>3.8.2</maven.version>
+        <maven.resolver.version>1.6.3</maven.resolver.version>
+        <slf4j.version>1.7.32</slf4j.version>
 
         <!-- plugin versions a..z -->
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
