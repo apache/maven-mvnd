@@ -1,14 +1,15 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.6.0](https://github.com/mvndaemon/mvnd/tree/0.6.0) (2021-09-07)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.2...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.2...0.6.0)
 
 **Implemented enhancements:**
 
 - If a failure happens in a module, the client should display it as soon as possible [\#438](https://github.com/mvndaemon/mvnd/issues/438)
 - Display the current build status [\#361](https://github.com/mvndaemon/mvnd/issues/361)
 - Provide a way to remove decoration on the standard out/err streams [\#356](https://github.com/mvndaemon/mvnd/issues/356)
+- The build time event spy should aggregate values for each mojo [\#430](https://github.com/mvndaemon/mvnd/issues/430)
 
 **Fixed bugs:**
 
@@ -29,6 +30,9 @@
 
 **Merged pull requests:**
 
+- Speed improvements [\#472](https://github.com/mvndaemon/mvnd/pull/472) ([gnodet](https://github.com/gnodet))
+- Mvn 3.8.2 support, fixes \#457 [\#471](https://github.com/mvndaemon/mvnd/pull/471) ([gnodet](https://github.com/gnodet))
+- Revert "\#457 Support Maven 3.8.2" [\#470](https://github.com/mvndaemon/mvnd/pull/470) ([gnodet](https://github.com/gnodet))
 - Disable the IPC sync context factory by default \(can be enabled using… [\#469](https://github.com/mvndaemon/mvnd/pull/469) ([gnodet](https://github.com/gnodet))
 - Fix CPU loop in sync server [\#468](https://github.com/mvndaemon/mvnd/pull/468) ([gnodet](https://github.com/gnodet))
 - Make sure mvnd does not build more projects than needed, fixes \#464 [\#465](https://github.com/mvndaemon/mvnd/pull/465) ([gnodet](https://github.com/gnodet))
