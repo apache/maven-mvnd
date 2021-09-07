@@ -22,7 +22,7 @@
 
     <groupId>org.mvndaemon.mvnd</groupId>
     <artifactId>mvnd</artifactId>
-    <version>0.5.3-SNAPSHOT</version>
+    <version>0.6.0</version>
 
     <packaging>pom</packaging>
     <name>Maven Daemon - Parent</name>
@@ -172,38 +172,38 @@
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-native</artifactId>
-                <version>0.5.3-SNAPSHOT</version>
+                <version>0.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-agent</artifactId>
-                <version>0.5.3-SNAPSHOT</version>
+                <version>0.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-client</artifactId>
-                <version>0.5.3-SNAPSHOT</version>
+                <version>0.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-common</artifactId>
-                <version>0.5.3-SNAPSHOT</version>
+                <version>0.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
-                <version>0.5.3-SNAPSHOT</version>
+                <version>0.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-daemon</artifactId>
-                <version>0.5.3-SNAPSHOT</version>
+                <version>0.6.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-helper-agent</artifactId>
-                <version>0.5.3-SNAPSHOT</version>
+                <version>0.6.0</version>
             </dependency>
 
             <dependency>
