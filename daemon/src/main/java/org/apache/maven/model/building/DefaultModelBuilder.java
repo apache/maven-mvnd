@@ -561,8 +561,6 @@ public class DefaultModelBuilder
 
         if (pomFile != null) {
             model.setPomFile(pomFile);
-        } else if (modelSource instanceof FileModelSource) {
-            model.setPomFile(((FileModelSource) modelSource).getFile());
         }
 
         problems.setSource(model);
