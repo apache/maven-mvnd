@@ -29,6 +29,7 @@
 
 **Merged pull requests:**
 
+- Disable the IPC sync context factory by default \(can be enabled using… [\#469](https://github.com/mvndaemon/mvnd/pull/469) ([gnodet](https://github.com/gnodet))
 - Fix CPU loop in sync server [\#468](https://github.com/mvndaemon/mvnd/pull/468) ([gnodet](https://github.com/gnodet))
 - Make sure mvnd does not build more projects than needed, fixes \#464 [\#465](https://github.com/mvndaemon/mvnd/pull/465) ([gnodet](https://github.com/gnodet))
 - Provide an early display of build failures, fixes \#361 [\#462](https://github.com/mvndaemon/mvnd/pull/462) ([gnodet](https://github.com/gnodet))
