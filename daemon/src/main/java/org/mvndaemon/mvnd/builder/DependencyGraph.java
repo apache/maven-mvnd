@@ -57,9 +57,8 @@ public class DependencyGraph<K> {
         Map<MavenProject, List<MavenProject>> upstreams = projects.stream()
                 .collect(Collectors.toMap(p -> p, p -> graph.getUpstreamProjects(p, false)));
         Map<MavenProject, List<MavenProject>> downstreams = projects.stream()
-                .collect(
-                        Collectors.toMap(p -> p, p -> graph.getDownstreamProjects(p, false)));
-        return new DependencyGraph<MavenProject>(Collections.unmodifiableList(projects), upstreams, downstreams);
+                .collect(Collectors.toMap(p -> p, p -> graph.getDownstreamProjects(p, false)));
+        return new DependencyGraph<>(Collections.unmodifiableList(projects), upstreams, downstreams);
     }
 
     public DependencyGraph(List<K> projects, Map<K, List<K>> upstreams, Map<K, List<K>> downstreams) {
