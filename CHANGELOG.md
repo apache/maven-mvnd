@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.6.0...HEAD)
+
+**Closed issues:**
+
+- release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
+
 ## [0.6.0](https://github.com/mvndaemon/mvnd/tree/0.6.0) (2021-09-07)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.2...0.6.0)
