@@ -34,6 +34,7 @@ public class OSInfo {
     public static final String IA64 = "ia64";
     public static final String PPC = "ppc";
     public static final String PPC64 = "ppc64";
+    public static final String ARM64 = "arm64";
 
     private static final HashMap<String, String> archMapping = new HashMap<String, String>();
     static {
@@ -72,6 +73,9 @@ public class OSInfo {
         archMapping.put("powerpc64", PPC64);
         archMapping.put("power_pc64", PPC64);
         archMapping.put("power_rs64", PPC64);
+
+        archMapping.put("aarch64", ARM64);
+
     }
 
     public static void main(String[] args) {
