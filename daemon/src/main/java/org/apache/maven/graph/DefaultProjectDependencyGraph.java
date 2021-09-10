@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.maven.execution.ProjectDependencyGraph;
 import org.apache.maven.project.DuplicateProjectException;
 import org.apache.maven.project.MavenProject;
@@ -62,7 +61,7 @@ public class DefaultProjectDependencyGraph
 
     private List<MavenProject> allProjects;
 
-    private Map<String, Integer> order;
+    private Map<MavenProject, Integer> order;
 
     private Map<String, MavenProject> projects;
 
@@ -85,7 +84,7 @@ public class DefaultProjectDependencyGraph
             MavenProject project = sorted.get(index);
             String id = ProjectSorter.getId(project);
             this.projects.put(id, project);
-            this.order.put(id, index);
+            this.order.put(project, index);
         }
     }
 
@@ -112,7 +111,7 @@ public class DefaultProjectDependencyGraph
             MavenProject project = sorted.get(index);
             String id = ProjectSorter.getId(project);
             this.projects.put(id, project);
-            this.order.put(id, index);
+            this.order.put(project, index);
         }
     }
 
@@ -164,15 +163,24 @@ public class DefaultProjectDependencyGraph
     }
 
     private List<MavenProject> getSortedProjects(Set<String> projectIds) {
-        return projectIds.stream()
-                .sorted(Comparator.comparing(order::get))
-                .map(projects::get)
-                .collect(Collectors.toList());
+        List<MavenProject> result = new ArrayList<>(projectIds.size());
+        for (String projectId : projectIds) {
+            result.add(projects.get(projectId));
+        }
+        result.sort(new MavenProjectComparator());
+        return result;
     }
 
     @Override
     public String toString() {
         return sorter.getSortedProjects().toString();
+    }
+
+    private class MavenProjectComparator implements Comparator<MavenProject> {
+        @Override
+        public int compare(MavenProject o1, MavenProject o2) {
+            return order.get(o1) - order.get(o2);
+        }
     }
 
 }
