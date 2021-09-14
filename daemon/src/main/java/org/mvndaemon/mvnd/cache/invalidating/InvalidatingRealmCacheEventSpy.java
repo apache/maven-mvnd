@@ -38,18 +38,21 @@ import org.slf4j.LoggerFactory;
 @Named
 @Singleton
 @Typed(EventSpy.class)
-public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
+public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InvalidatingPluginRealmCacheEventSpy.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InvalidatingRealmCacheEventSpy.class);
 
-    private final InvalidatingPluginRealmCache cache;
+    private final InvalidatingPluginRealmCache pluginCache;
+    private final InvalidatingExtensionRealmCache extensionCache;
     private Path multiModuleProjectDirectory;
     private String pattern;
     private PathMatcher matcher;
 
     @Inject
-    public InvalidatingPluginRealmCacheEventSpy(InvalidatingPluginRealmCache cache) {
-        this.cache = cache;
+    public InvalidatingRealmCacheEventSpy(
+            InvalidatingPluginRealmCache cache, InvalidatingExtensionRealmCache extensionCache) {
+        this.pluginCache = cache;
+        this.extensionCache = extensionCache;
     }
 
     @Override
@@ -92,7 +95,8 @@ public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
                 }
             } else if (event instanceof MavenExecutionResult) {
                 /* Evict the entries referring to jars under multiModuleProjectDirectory */
-                cache.cache.removeIf(this::shouldEvict);
+                pluginCache.cache.removeIf(this::shouldEvict);
+                extensionCache.cache.removeIf(this::shouldEvict);
             }
         } catch (Exception e) {
             LOG.warn("Could not notify CliPluginRealmCache", e);
@@ -112,6 +116,30 @@ public class InvalidatingPluginRealmCacheEventSpy extends AbstractEventSpy {
                     } else if (matcher != null && matcher.matches(path)) {
                         LOG.debug(
                                 "Removing PluginRealmCache entry {} because its components {} matches the eviction pattern '{}'",
+                                k, path, pattern);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (URISyntaxException e) {
+            return true;
+        }
+    }
+
+    private boolean shouldEvict(InvalidatingExtensionRealmCache.Key k, InvalidatingExtensionRealmCache.Record v) {
+        try {
+            for (URL url : v.record.getRealm().getURLs()) {
+                if (url.getProtocol().equals("file")) {
+                    final Path path = Paths.get(url.toURI());
+                    if (path.startsWith(multiModuleProjectDirectory)) {
+                        LOG.debug(
+                                "Removing ExtensionRealmCache entry {} because it refers to an artifact in the build tree {}",
+                                k, path);
+                        return true;
+                    } else if (matcher != null && matcher.matches(path)) {
+                        LOG.debug(
+                                "Removing ExtensionRealmCache entry {} because its components {} matches the eviction pattern '{}'",
                                 k, path, pattern);
                         return true;
                     }
