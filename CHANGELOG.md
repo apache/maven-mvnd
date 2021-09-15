@@ -8,6 +8,10 @@
 
 - release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
 
+**Merged pull requests:**
+
+- Add instructions for MacPorts [\#476](https://github.com/mvndaemon/mvnd/pull/476) ([breun](https://github.com/breun))
+
 ## [0.6.0](https://github.com/mvndaemon/mvnd/tree/0.6.0) (2021-09-07)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.2...0.6.0)
