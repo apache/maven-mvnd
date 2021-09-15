@@ -38,7 +38,7 @@ public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache 
 
     protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
 
-        private final CacheRecord record;
+        final CacheRecord record;
 
         public Record(CacheRecord record) {
             this.record = record;
@@ -60,7 +60,7 @@ public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache 
         }
     }
 
-    private final Cache<Key, Record> cache;
+    final Cache<Key, Record> cache;
 
     @Inject
     public InvalidatingExtensionRealmCache(CacheFactory cacheFactory) {
