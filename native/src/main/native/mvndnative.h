@@ -24,8 +24,7 @@
     #include <unistd.h>
     #include <stdlib.h>
 
-    #include "inc_linux/jni.h"
-    #include "inc_linux/jni_md.h"
+    #include "jni.h"
 #endif
 
 #ifdef __FreeBSD__
@@ -39,8 +38,7 @@
     #include <termios.h>
     #include <sys/ioctl.h>
 
-    #include "inc_linux/jni.h"
-    #include "inc_linux/jni_md.h"
+    #include "jni.h"
 #endif
 
 /* Windows based build */
@@ -52,8 +50,7 @@
     #include <conio.h>
     #include <io.h>
 
-    #include "inc_win/jni.h"
-    #include "inc_win/jni_md.h"
+    #include "jni.h"
 #endif
 
 #if defined(__APPLE__) && defined(__MACH__)
@@ -64,8 +61,7 @@
     #include <sys/ioctl.h>
     #include <unistd.h>
 
-    #include "inc_mac/jni.h"
-    #include "inc_mac/jni_md.h"
+    #include "jni.h"
 #endif
 
 #include <stdint.h>
