@@ -6,10 +6,12 @@
 
 **Closed issues:**
 
+- Build fails on a tycho-based eclipse project [\#477](https://github.com/mvndaemon/mvnd/issues/477)
 - release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
 
 **Merged pull requests:**
 
+- Make sure the plugin eviction pattern also applies to extensions, fixes \#477 [\#478](https://github.com/mvndaemon/mvnd/pull/478) ([gnodet](https://github.com/gnodet))
 - Add instructions for MacPorts [\#476](https://github.com/mvndaemon/mvnd/pull/476) ([breun](https://github.com/breun))
 
 ## [0.6.0](https://github.com/mvndaemon/mvnd/tree/0.6.0) (2021-09-07)
