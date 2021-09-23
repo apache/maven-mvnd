@@ -23,7 +23,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
 import javax.inject.Named;
@@ -91,7 +92,7 @@ public class MvndSyncContextFactory implements SyncContextFactory {
     }
 
     private static class LocalSyncContextFactory implements SyncContextFactory {
-        final Map<String, Semaphore> locks = new ConcurrentHashMap<>();
+        final Map<String, Lock> locks = new ConcurrentHashMap<>();
         @Override
         public SyncContext newInstance(RepositorySystemSession session, boolean shared) {
             return new LocalSyncContext();
@@ -109,7 +110,7 @@ public class MvndSyncContextFactory implements SyncContextFactory {
                 try {
                     for (String key : keys) {
                         current = key;
-                        getSemaphore(key).acquire();
+                        getLock(key).lock();
                         locked.add(key);
                     }
                 } catch (Exception e) {
@@ -122,12 +123,12 @@ public class MvndSyncContextFactory implements SyncContextFactory {
             public void close() {
                 String key;
                 while ((key = locked.poll()) != null) {
-                    getSemaphore(key).release();
+                    getLock(key).unlock();
                 }
             }
 
-            private Semaphore getSemaphore(String key) {
-                return locks.computeIfAbsent(key, k -> new Semaphore(1));
+            private Lock getLock(String key) {
+                return locks.computeIfAbsent(key, k -> new ReentrantLock());
             }
 
             private <T> Stream<T> stream(Collection<T> col) {
