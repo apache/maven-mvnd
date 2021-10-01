@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- Windows+Cygwin - Why do I get weird output? [\#483](https://github.com/mvndaemon/mvnd/issues/483)
 - Build fails on a tycho-based eclipse project [\#477](https://github.com/mvndaemon/mvnd/issues/477)
 - release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
 - Use custom wrapper [\#455](https://github.com/mvndaemon/mvnd/issues/455)
