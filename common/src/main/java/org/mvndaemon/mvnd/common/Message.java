@@ -138,6 +138,8 @@ public abstract class Message {
             return 3;
         case MOJO_STARTED:
             return 4;
+        case EXECUTION_FAILURE:
+            return 10;
         case TRANSFER_INITIATED:
         case TRANSFER_STARTED:
             return 40;
