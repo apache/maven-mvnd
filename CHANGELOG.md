@@ -6,6 +6,8 @@
 
 **Closed issues:**
 
+- mvnd seems to not respect jenv local setting [\#487](https://github.com/mvndaemon/mvnd/issues/487)
+- `IllegalStateException` on multi module project failure [\#486](https://github.com/mvndaemon/mvnd/issues/486)
 - Windows+Cygwin - Why do I get weird output? [\#483](https://github.com/mvndaemon/mvnd/issues/483)
 - Build fails on a tycho-based eclipse project [\#477](https://github.com/mvndaemon/mvnd/issues/477)
 - release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
@@ -24,16 +26,16 @@
 **Implemented enhancements:**
 
 - If a failure happens in a module, the client should display it as soon as possible [\#438](https://github.com/mvndaemon/mvnd/issues/438)
+- The build time event spy should aggregate values for each mojo [\#430](https://github.com/mvndaemon/mvnd/issues/430)
 - Display the current build status [\#361](https://github.com/mvndaemon/mvnd/issues/361)
 - Provide a way to remove decoration on the standard out/err streams [\#356](https://github.com/mvndaemon/mvnd/issues/356)
-- The build time event spy should aggregate values for each mojo [\#430](https://github.com/mvndaemon/mvnd/issues/430)
 
 **Fixed bugs:**
 
+- Files still locked after earlier stopped / failed build on Windows [\#440](https://github.com/mvndaemon/mvnd/issues/440)
 - The IPC sync context fails instead of reconnecting [\#446](https://github.com/mvndaemon/mvnd/issues/446)
 - Progress is computed incorrectly \(above 100%\) [\#443](https://github.com/mvndaemon/mvnd/issues/443)
 - Incorrect charset display in Terminal output [\#441](https://github.com/mvndaemon/mvnd/issues/441)
-- Files still locked after earlier stopped / failed build on Windows [\#440](https://github.com/mvndaemon/mvnd/issues/440)
 
 **Closed issues:**
 
@@ -42,8 +44,8 @@
 - Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
 - maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
 - use client env vars [\#445](https://github.com/mvndaemon/mvnd/issues/445)
-- use unix domain socket if available [\#417](https://github.com/mvndaemon/mvnd/issues/417)
 - Broken cache? [\#342](https://github.com/mvndaemon/mvnd/issues/342)
+- use unix domain socket if available [\#417](https://github.com/mvndaemon/mvnd/issues/417)
 
 **Merged pull requests:**
 
@@ -68,10 +70,6 @@
 ## [0.5.2](https://github.com/mvndaemon/mvnd/tree/0.5.2) (2021-06-18)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.5.1...0.5.2)
-
-**Implemented enhancements:**
-
-- The build time event spy should aggregate values for each mojo [\#430](https://github.com/mvndaemon/mvnd/issues/430)
 
 **Fixed bugs:**
 
