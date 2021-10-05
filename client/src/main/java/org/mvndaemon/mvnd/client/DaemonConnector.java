@@ -364,6 +364,10 @@ public class DaemonConnector {
             if (maxHeapSize != null) {
                 args.add("-Xmx" + maxHeapSize);
             }
+            String threadStackSize = parameters.threadStackSize();
+            if (threadStackSize != null) {
+                args.add("-Xss" + threadStackSize);
+            }
 
             Environment.MVND_HOME.addCommandLineOption(args, mvndHome.toString());
             Environment.MVND_JAVA_HOME.addCommandLineOption(args, parameters.javaHome().toString());
