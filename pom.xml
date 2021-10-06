@@ -45,7 +45,7 @@
         <jline.version>3.20.0</jline.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
         <logback.version>1.2.3</logback.version>
-        <maven.version>3.8.2</maven.version>
+        <maven.version>3.8.3</maven.version>
         <maven.resolver.version>1.6.3</maven.resolver.version>
         <slf4j.version>1.7.32</slf4j.version>
 
