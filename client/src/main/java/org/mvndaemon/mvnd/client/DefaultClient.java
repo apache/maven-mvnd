@@ -251,6 +251,17 @@ public class DefaultClient implements Client {
             }
             Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
 
+            Path dir;
+            if (Environment.MAVEN_FILE.hasCommandLineOption(args)) {
+                dir = parameters.userDir().resolve(Environment.MAVEN_FILE.getCommandLineOption(args));
+                if (Files.isRegularFile(dir)) {
+                    dir = dir.getParent();
+                }
+                dir = dir.normalize();
+            } else {
+                dir = parameters.userDir();
+            }
+
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
                 output.setDaemonId(daemon.getDaemon().getId());
@@ -260,7 +271,7 @@ public class DefaultClient implements Client {
                 daemon.dispatch(new Message.BuildRequest(
                         args,
                         parameters.userDir().toString(),
-                        parameters.multiModuleProjectDirectory().toString(),
+                        parameters.multiModuleProjectDirectory(dir).toString(),
                         System.getenv()));
 
                 output.accept(Message

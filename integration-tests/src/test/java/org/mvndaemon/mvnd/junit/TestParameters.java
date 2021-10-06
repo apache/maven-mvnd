@@ -43,7 +43,10 @@ public class TestParameters extends DaemonParameters {
                 .put(Environment.MVND_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
                 .put(Environment.MVND_MIN_THREADS, TEST_MIN_THREADS));
         this.testDir = testDir;
+    }
 
+    public DaemonParameters clearMavenMultiModuleProjectDirectory() {
+        return derive(b -> b.put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, null));
     }
 
     public Path getTestDir() {
