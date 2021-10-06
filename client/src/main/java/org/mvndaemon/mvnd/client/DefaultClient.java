@@ -235,20 +235,23 @@ public class DefaultClient implements Client {
                 return DefaultResult.success(argv);
             }
 
-            if (!Environment.MVND_THREADS.hasCommandLineOption(args)) {
-                Environment.MVND_THREADS.addCommandLineOption(args, parameters.threads());
-            }
-            if (!Environment.MVND_BUILDER.hasCommandLineOption(args)) {
-                Environment.MVND_BUILDER.addCommandLineOption(args, parameters.builder());
-            }
+            Environment.MVND_THREADS.removeCommandLineOption(args);
+            Environment.MVND_THREADS.addCommandLineOption(args, parameters.threads());
+
+            Environment.MVND_BUILDER.removeCommandLineOption(args);
+            Environment.MVND_BUILDER.addCommandLineOption(args, parameters.builder());
+
             final Path settings = parameters.settings();
-            if (settings != null && !Environment.MAVEN_SETTINGS.hasCommandLineOption(args)) {
+            if (settings != null) {
+                Environment.MAVEN_SETTINGS.removeCommandLineOption(args);
                 Environment.MAVEN_SETTINGS.addCommandLineOption(args, settings.toString());
             }
+
             final Path localMavenRepository = parameters.mavenRepoLocal();
             if (localMavenRepository != null && !Environment.MAVEN_REPO_LOCAL.hasCommandLineOption(args)) {
                 Environment.MAVEN_REPO_LOCAL.addCommandLineOption(args, localMavenRepository.toString());
             }
+
             Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
 
             Path dir;
