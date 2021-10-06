@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -47,7 +46,6 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @Named("smart")
-@Default
 public class SmartBuilder implements Builder {
 
     public static final String PROP_PROFILING = "smartbuilder.profiling";
