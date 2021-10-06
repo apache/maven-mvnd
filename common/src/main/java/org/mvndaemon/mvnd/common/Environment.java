@@ -96,6 +96,8 @@ public enum Environment {
     MAVEN_REPO_LOCAL("maven.repo.local", null, null, OptionType.PATH, Flags.NONE),
     /** The location of the maven settings file */
     MAVEN_SETTINGS("maven.settings", null, null, OptionType.PATH, Flags.NONE, "mvn:-s", "mvn:--settings"),
+    /** The pom or directory to build */
+    MAVEN_FILE(null, null, null, OptionType.PATH, Flags.NONE, "mvn:-f", "mvn:--file"),
     /** The root directory of the current multi module Maven project */
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, OptionType.PATH, Flags.NONE),
     /** Log file */

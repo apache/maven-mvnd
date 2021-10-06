@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
@@ -204,9 +205,13 @@ public class DaemonParameters {
     }
 
     public Path multiModuleProjectDirectory() {
+        return multiModuleProjectDirectory(userDir());
+    }
+
+    public Path multiModuleProjectDirectory(Path projectDir) {
         return value(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY)
                 .orSystemProperty()
-                .orDefault(() -> findDefaultMultimoduleProjectDirectory(userDir()))
+                .orDefault(() -> findDefaultMultimoduleProjectDirectory(projectDir))
                 .asPath()
                 .toAbsolutePath().normalize();
     }
@@ -258,6 +263,13 @@ public class DaemonParameters {
     }
 
     /**
+     * @return path to {@code pom.xml} or {@code null}
+     */
+    public Path file() {
+        return value(Environment.MAVEN_FILE).asPath();
+    }
+
+    /**
      * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the
      *         default
      */
@@ -292,16 +304,18 @@ public class DaemonParameters {
      * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
     public DaemonParameters cd(Path newUserDir) {
-        return new DaemonParameters(new PropertiesBuilder()
-                .putAll(this.properties)
-                .put(Environment.USER_DIR, newUserDir));
+        return derive(b -> b.put(Environment.USER_DIR, newUserDir));
     }
 
     public DaemonParameters withJdkJavaOpts(String opts) {
         String org = this.properties.getOrDefault(Environment.JDK_JAVA_OPTIONS.getProperty(), "");
-        return new DaemonParameters(new PropertiesBuilder()
-                .putAll(this.properties)
-                .put(Environment.JDK_JAVA_OPTIONS, org + opts));
+        return derive(b -> b.put(Environment.JDK_JAVA_OPTIONS, org + opts));
+    }
+
+    protected DaemonParameters derive(Consumer<PropertiesBuilder> customizer) {
+        PropertiesBuilder builder = new PropertiesBuilder().putAll(this.properties);
+        customizer.accept(builder);
+        return new DaemonParameters(builder);
     }
 
     public Duration keepAlive() {
