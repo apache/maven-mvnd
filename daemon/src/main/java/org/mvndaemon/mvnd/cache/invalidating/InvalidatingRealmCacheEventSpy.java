@@ -30,6 +30,7 @@ import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.project.MavenProject;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
@@ -44,15 +45,19 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
 
     private final InvalidatingPluginRealmCache pluginCache;
     private final InvalidatingExtensionRealmCache extensionCache;
+    private final InvalidatingProjectArtifactsCache projectArtifactsCache;
     private Path multiModuleProjectDirectory;
     private String pattern;
     private PathMatcher matcher;
 
     @Inject
     public InvalidatingRealmCacheEventSpy(
-            InvalidatingPluginRealmCache cache, InvalidatingExtensionRealmCache extensionCache) {
+            InvalidatingPluginRealmCache cache,
+            InvalidatingExtensionRealmCache extensionCache,
+            InvalidatingProjectArtifactsCache projectArtifactsCache) {
         this.pluginCache = cache;
         this.extensionCache = extensionCache;
+        this.projectArtifactsCache = projectArtifactsCache;
     }
 
     @Override
@@ -97,10 +102,19 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
                 /* Evict the entries referring to jars under multiModuleProjectDirectory */
                 pluginCache.cache.removeIf(this::shouldEvict);
                 extensionCache.cache.removeIf(this::shouldEvict);
+                MavenExecutionResult mer = (MavenExecutionResult) event;
+                List<MavenProject> projects = mer.getTopologicallySortedProjects();
+                projectArtifactsCache.cache
+                        .removeIf((k, r) -> shouldEvict(projects, (InvalidatingProjectArtifactsCache.CacheKey) k, r));
             }
         } catch (Exception e) {
             LOG.warn("Could not notify CliPluginRealmCache", e);
         }
+    }
+
+    private boolean shouldEvict(List<MavenProject> projects, InvalidatingProjectArtifactsCache.CacheKey k,
+            InvalidatingProjectArtifactsCache.Record v) {
+        return projects.stream().anyMatch(p -> k.matches(p.getGroupId(), p.getArtifactId(), p.getVersion()));
     }
 
     private boolean shouldEvict(InvalidatingPluginRealmCache.Key k, InvalidatingPluginRealmCache.Record v) {

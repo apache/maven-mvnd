@@ -17,16 +17,27 @@ package org.mvndaemon.mvnd.cache.invalidating;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.DefaultProjectArtifactsCache;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.LocalRepository;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
@@ -35,6 +46,119 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 @Named
 @Priority(10)
 public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCache {
+
+    protected static class CacheKey
+            implements Key {
+
+        private final String groupId;
+
+        private final String artifactId;
+
+        private final String version;
+
+        private final Set<String> dependencyArtifacts;
+
+        private final WorkspaceRepository workspace;
+
+        private final LocalRepository localRepo;
+
+        private final List<RemoteRepository> repositories;
+
+        private final Set<String> collect;
+
+        private final Set<String> resolve;
+
+        private boolean aggregating;
+
+        private final int hashCode;
+
+        public CacheKey(MavenProject project, List<RemoteRepository> repositories,
+                Collection<String> scopesToCollect, Collection<String> scopesToResolve, boolean aggregating,
+                RepositorySystemSession session) {
+
+            groupId = project.getGroupId();
+            artifactId = project.getArtifactId();
+            version = project.getVersion();
+
+            Set<String> deps = new LinkedHashSet<>();
+            if (project.getDependencyArtifacts() != null) {
+                for (Artifact dep : project.getDependencyArtifacts()) {
+                    deps.add(dep.toString());
+                }
+            }
+            dependencyArtifacts = Collections.unmodifiableSet(deps);
+
+            workspace = RepositoryUtils.getWorkspace(session);
+            this.localRepo = session.getLocalRepository();
+            this.repositories = new ArrayList<>(repositories.size());
+            for (RemoteRepository repository : repositories) {
+                if (repository.isRepositoryManager()) {
+                    this.repositories.addAll(repository.getMirroredRepositories());
+                } else {
+                    this.repositories.add(repository);
+                }
+            }
+            collect = scopesToCollect == null
+                    ? Collections.<String> emptySet()
+                    : Collections.unmodifiableSet(new HashSet<>(scopesToCollect));
+            resolve = scopesToResolve == null
+                    ? Collections.<String> emptySet()
+                    : Collections.unmodifiableSet(new HashSet<>(scopesToResolve));
+            this.aggregating = aggregating;
+
+            int hash = 17;
+            hash = hash * 31 + Objects.hashCode(groupId);
+            hash = hash * 31 + Objects.hashCode(artifactId);
+            hash = hash * 31 + Objects.hashCode(version);
+            hash = hash * 31 + Objects.hashCode(dependencyArtifacts);
+            hash = hash * 31 + Objects.hashCode(workspace);
+            hash = hash * 31 + Objects.hashCode(localRepo);
+            hash = hash * 31 + RepositoryUtils.repositoriesHashCode(repositories);
+            hash = hash * 31 + Objects.hashCode(collect);
+            hash = hash * 31 + Objects.hashCode(resolve);
+            hash = hash * 31 + Objects.hashCode(aggregating);
+            this.hashCode = hash;
+        }
+
+        public boolean matches(String groupId, String artifactId, String version) {
+            return Objects.equals(this.groupId, groupId)
+                    && Objects.equals(this.artifactId, artifactId)
+                    && Objects.equals(this.version, version);
+        }
+
+        @Override
+        public String toString() {
+            return groupId + ":" + artifactId + ":" + version;
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+
+            if (!(o instanceof CacheKey)) {
+                return false;
+            }
+
+            CacheKey that = (CacheKey) o;
+
+            return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId)
+                    && Objects.equals(version, that.version)
+                    && Objects.equals(dependencyArtifacts, that.dependencyArtifacts)
+                    && Objects.equals(workspace, that.workspace)
+                    && Objects.equals(localRepo, that.localRepo)
+                    && RepositoryUtils.repositoriesEquals(repositories, that.repositories)
+                    && Objects.equals(collect, that.collect)
+                    && Objects.equals(resolve, that.resolve)
+                    && aggregating == that.aggregating;
+        }
+    }
 
     static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
         private final CacheRecord record;
@@ -64,6 +188,13 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
     @Inject
     public InvalidatingProjectArtifactsCache(CacheFactory cacheFactory) {
         this.cache = cacheFactory.newCache();
+    }
+
+    @Override
+    public Key createKey(MavenProject project, Collection<String> scopesToCollect, Collection<String> scopesToResolve,
+            boolean aggregating, RepositorySystemSession session) {
+        return new CacheKey(project, project.getRemoteProjectRepositories(), scopesToCollect, scopesToResolve,
+                aggregating, session);
     }
 
     @Override
