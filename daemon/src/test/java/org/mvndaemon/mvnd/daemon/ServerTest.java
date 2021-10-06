@@ -32,8 +32,7 @@ public class ServerTest {
                 Message.projectStopped("projectId"),
                 Message.projectStarted("projectId"),
                 Message.log("projectId", "message"),
-                Message.executionFailure("projectId", true, "error")
-                ));
+                Message.executionFailure("projectId", true, "error")));
 
         assertEquals(Message.PROJECT_STARTED, messages.remove().getType());
         assertEquals(Message.EXECUTION_FAILURE, messages.remove().getType());
