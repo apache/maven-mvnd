@@ -6,15 +6,24 @@
 
 **Closed issues:**
 
+- Daemon forgets about maven settings on reuse [\#490](https://github.com/mvndaemon/mvnd/issues/490)
+- Support Maven 3.8.3 [\#488](https://github.com/mvndaemon/mvnd/issues/488)
 - mvnd seems to not respect jenv local setting [\#487](https://github.com/mvndaemon/mvnd/issues/487)
 - `IllegalStateException` on multi module project failure [\#486](https://github.com/mvndaemon/mvnd/issues/486)
+- The `maven.multiModuleProjectDirectory` is badly set when using `-f [path-to-pom]` [\#484](https://github.com/mvndaemon/mvnd/issues/484)
 - Windows+Cygwin - Why do I get weird output? [\#483](https://github.com/mvndaemon/mvnd/issues/483)
+- Negative local Maven repo lookup persists after installing the artifact [\#482](https://github.com/mvndaemon/mvnd/issues/482)
 - Build fails on a tycho-based eclipse project [\#477](https://github.com/mvndaemon/mvnd/issues/477)
 - release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
 - Use custom wrapper [\#455](https://github.com/mvndaemon/mvnd/issues/455)
 
 **Merged pull requests:**
 
+- Negative local Maven repo lookup persists after installing the artifa… [\#495](https://github.com/mvndaemon/mvnd/pull/495) ([gnodet](https://github.com/gnodet))
+- The maven.multiModuleProjectDirectory is badly set when using -f \[pat… [\#494](https://github.com/mvndaemon/mvnd/pull/494) ([gnodet](https://github.com/gnodet))
+- Support Maven 3.8.3, fixes \#488 [\#493](https://github.com/mvndaemon/mvnd/pull/493) ([gnodet](https://github.com/gnodet))
+- Fix mvnd command line aliases, fixes \#490 [\#491](https://github.com/mvndaemon/mvnd/pull/491) ([gnodet](https://github.com/gnodet))
+- Download required native JNI headers [\#481](https://github.com/mvndaemon/mvnd/pull/481) ([gnodet](https://github.com/gnodet))
 - Use a single jni.h and use more recent headers clearly labelled as GP… [\#479](https://github.com/mvndaemon/mvnd/pull/479) ([gnodet](https://github.com/gnodet))
 - Make sure the plugin eviction pattern also applies to extensions, fixes \#477 [\#478](https://github.com/mvndaemon/mvnd/pull/478) ([gnodet](https://github.com/gnodet))
 - Add instructions for MacPorts [\#476](https://github.com/mvndaemon/mvnd/pull/476) ([breun](https://github.com/breun))
