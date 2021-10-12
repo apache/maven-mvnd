@@ -206,4 +206,13 @@ $ ls -lh target/mvnd
 -rwxrwxr-x. 1 ppalaga ppalaga 25M Jun  2 13:23 target/mvnd
 ----
 
+=== Install `mvnd`
+
+[source, shell]
+----
+$ cp -R dist/target/mvnd-[version] [target-dir]
+----
+
+Then you can simply run add `[target-dir]/bin` to your `PATH` and run `mvnd`. 
+
 We're happy to improve `mvnd`, so https://github.com/mvndaemon/mvnd/issues[feedback] is most welcomed!
