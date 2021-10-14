@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- \[Question\] Use different maven installation for mvnd? [\#497](https://github.com/mvndaemon/mvnd/issues/497)
 - Daemon forgets about maven settings on reuse [\#490](https://github.com/mvndaemon/mvnd/issues/490)
 - Support Maven 3.8.3 [\#488](https://github.com/mvndaemon/mvnd/issues/488)
 - mvnd seems to not respect jenv local setting [\#487](https://github.com/mvndaemon/mvnd/issues/487)
