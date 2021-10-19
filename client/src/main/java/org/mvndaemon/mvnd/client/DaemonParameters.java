@@ -231,6 +231,10 @@ public class DaemonParameters {
         return property(Environment.MVND_MAX_HEAP_SIZE).asString();
     }
 
+    public String threadStackSize() {
+        return property(Environment.MVND_THREAD_STACK_SIZE).asString();
+    }
+
     public String jvmArgs() {
         return property(Environment.MVND_JVM_ARGS).asString();
     }
