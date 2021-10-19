@@ -115,7 +115,7 @@ public class MvndSyncContextFactory implements SyncContextFactory {
                     }
                 } catch (Exception e) {
                     close();
-                    throw new IllegalStateException("Could not acquire lock for '" + current + "'" );
+                    throw new IllegalStateException("Could not acquire lock for '" + current + "'", e);
                 }
             }
 
