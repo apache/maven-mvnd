@@ -211,6 +211,10 @@ public enum Environment {
      */
     MVND_MAX_HEAP_SIZE("mvnd.maxHeapSize", null, "2G", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
     /**
+     * The <code>-Xss</code> value to pass to the daemon
+     */
+    MVND_THREAD_STACK_SIZE("mvnd.threadStackSize", null, "1M", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
+    /**
      * Additional JVM args to pass to the daemon
      */
     MVND_JVM_ARGS("mvnd.jvmArgs", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.OPTIONAL),
