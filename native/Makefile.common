@@ -17,7 +17,7 @@
 
 # os=Default is meant to be generic unix/linux
 
-known_targets := Linux-x86 Linux-x86_64 Linux-arm Linux-armv6 Linux-armv7 Linux-android-arm Linux-ppc64 Mac-x86 Mac-x86_64 DragonFly-x86_64 FreeBSD-x86_64 OpenBSD-x86_64 Windows-x86 Windows-x86_64 SunOS-sparcv9 HPUX-ia64_32
+known_targets := Linux-x86 Linux-x86_64 Linux-arm Linux-armv6 Linux-armv7 Linux-android-arm Linux-ppc64 Mac-x86 Mac-x86_64 Mac-arm64 DragonFly-x86_64 FreeBSD-x86_64 OpenBSD-x86_64 Windows-x86 Windows-x86_64 SunOS-sparcv9 HPUX-ia64_32
 target := $(OS_NAME)-$(OS_ARCH)
 
 ifeq (,$(findstring $(strip $(target)),$(known_targets)))
@@ -142,6 +142,14 @@ Mac-x86_64_CCFLAGS    := -I$(MAC_SDK)/System/Library/Frameworks/JavaVM.framework
 Mac-x86_64_LINKFLAGS := -dynamiclib 
 Mac-x86_64_LIBNAME   := libmvndnative.jnilib
 Mac-x86_64_JANSI_FLAGS  := 
+
+Mac-arm64_CC        := $(CROSS_PREFIX)clang -v
+Mac-arm64_STRIP     := $(CROSS_PREFIX)strip -x
+MAC_SDK := /usr/local/osxcross/SDK/MacOSX11.3.sdk/
+Mac-arm64_CCFLAGS    := -I$(MAC_SDK)/System/Library/Frameworks/JavaVM.framework/Headers -Itarget/inc -Itarget/inc/unix -Os -fPIC -mmacosx-version-min=11.0 -fvisibility=hidden
+Mac-arm64_LINKFLAGS := -shared
+Mac-arm64_LIBNAME   := libmvndnative.jnilib
+Mac-arm64_JANSI_FLAGS  :=
 
 Windows-x86_CC           := $(CROSS_PREFIX)gcc
 Windows-x86_STRIP        := $(CROSS_PREFIX)strip
