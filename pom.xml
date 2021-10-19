@@ -41,8 +41,8 @@
         <graalvm.version>20.3.2</graalvm.version>
         <groovy.version>3.0.7</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
-        <jansi.version>2.3.4</jansi.version>
-        <jline.version>3.20.0</jline.version>
+        <jansi.version>2.4.0</jansi.version>
+        <jline.version>3.21.0</jline.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
         <logback.version>1.2.3</logback.version>
         <maven.version>3.8.3</maven.version>
