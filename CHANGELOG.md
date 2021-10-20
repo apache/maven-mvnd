@@ -15,19 +15,27 @@
 - Windows+Cygwin - Why do I get weird output? [\#483](https://github.com/mvndaemon/mvnd/issues/483)
 - Negative local Maven repo lookup persists after installing the artifact [\#482](https://github.com/mvndaemon/mvnd/issues/482)
 - Build fails on a tycho-based eclipse project [\#477](https://github.com/mvndaemon/mvnd/issues/477)
+- No native library found for os.name=Linux, os.arch=aarch64 [\#474](https://github.com/mvndaemon/mvnd/issues/474)
 - release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
+- ASCII Colors not rendered under Cygwin [\#456](https://github.com/mvndaemon/mvnd/issues/456)
 - Use custom wrapper [\#455](https://github.com/mvndaemon/mvnd/issues/455)
 
 **Merged pull requests:**
 
+- NativeLoader code cleanup [\#504](https://github.com/mvndaemon/mvnd/pull/504) ([gnodet](https://github.com/gnodet))
+- Add support for linux-armv6 [\#503](https://github.com/mvndaemon/mvnd/pull/503) ([gnodet](https://github.com/gnodet))
+- Support mac-arm64 platform [\#502](https://github.com/mvndaemon/mvnd/pull/502) ([gnodet](https://github.com/gnodet))
+- Upgrade JLine to 3.21.0 [\#501](https://github.com/mvndaemon/mvnd/pull/501) ([gnodet](https://github.com/gnodet))
 - Negative local Maven repo lookup persists after installing the artifa… [\#495](https://github.com/mvndaemon/mvnd/pull/495) ([gnodet](https://github.com/gnodet))
 - The maven.multiModuleProjectDirectory is badly set when using -f \[pat… [\#494](https://github.com/mvndaemon/mvnd/pull/494) ([gnodet](https://github.com/gnodet))
 - Support Maven 3.8.3, fixes \#488 [\#493](https://github.com/mvndaemon/mvnd/pull/493) ([gnodet](https://github.com/gnodet))
 - Fix mvnd command line aliases, fixes \#490 [\#491](https://github.com/mvndaemon/mvnd/pull/491) ([gnodet](https://github.com/gnodet))
+- Add thread stack size \(-Xss\) option [\#489](https://github.com/mvndaemon/mvnd/pull/489) ([Apanatshka](https://github.com/Apanatshka))
 - Download required native JNI headers [\#481](https://github.com/mvndaemon/mvnd/pull/481) ([gnodet](https://github.com/gnodet))
 - Use a single jni.h and use more recent headers clearly labelled as GP… [\#479](https://github.com/mvndaemon/mvnd/pull/479) ([gnodet](https://github.com/gnodet))
 - Make sure the plugin eviction pattern also applies to extensions, fixes \#477 [\#478](https://github.com/mvndaemon/mvnd/pull/478) ([gnodet](https://github.com/gnodet))
 - Add instructions for MacPorts [\#476](https://github.com/mvndaemon/mvnd/pull/476) ([breun](https://github.com/breun))
+- Fix native-image mapping for aarch64, \#474 [\#475](https://github.com/mvndaemon/mvnd/pull/475) ([lanmaoxinqing](https://github.com/lanmaoxinqing))
 
 ## [0.6.0](https://github.com/mvndaemon/mvnd/tree/0.6.0) (2021-09-07)
 
