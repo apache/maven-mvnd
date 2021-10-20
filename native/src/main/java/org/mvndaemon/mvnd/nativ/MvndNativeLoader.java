@@ -193,7 +193,8 @@ public class MvndNativeLoader {
                 try (InputStream extractedLibIn = new FileInputStream(extractedLibFile)) {
                     String eq = contentsEquals(nativeIn, extractedLibIn);
                     if (eq != null) {
-                        throw new RuntimeException(String.format("Failed to write a native library file at %s because %s", extractedLibFile, eq));
+                        throw new RuntimeException(
+                                String.format("Failed to write a native library file at %s because %s", extractedLibFile, eq));
                     }
                 }
             }

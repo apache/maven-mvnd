@@ -40,7 +40,6 @@ public class SpecificFileNativeIT {
     void version() throws IOException, InterruptedException {
         TestClientOutput output = new TestClientOutput();
 
-
         Path prj1 = parameters.getTestDir().resolve("project/prj1").toAbsolutePath();
         Path prj2 = parameters.getTestDir().resolve("project/prj2").toAbsolutePath();
 
