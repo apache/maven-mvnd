@@ -17,6 +17,8 @@ package org.apache.maven.cli;
 
 import java.io.File;
 import java.nio.file.Paths;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,6 +33,12 @@ public class DaemonMavenCliTest {
         assertEquals(new File(d, "test").getAbsolutePath(), new File("test").getAbsolutePath());
         assertEquals(d.toPath().resolve("test").toAbsolutePath().toString(),
                 Paths.get("test").toAbsolutePath().toString());
+    }
+
+    @Test
+    @Disabled
+    void testCygwin() throws Exception {
+        assertEquals("/cygdrive/c/work/tmp/", DaemonMavenCli.toCygwin("C:\\work\\tmp\\"));
     }
 
 }

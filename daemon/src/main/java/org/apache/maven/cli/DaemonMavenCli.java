@@ -22,6 +22,7 @@ import com.google.inject.AbstractModule;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
@@ -97,14 +98,15 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.util.Os;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
+import org.jline.utils.ExecHelper;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.execution.BuildResumptionPersistenceException;
 import org.mvndaemon.mvnd.execution.DefaultBuildResumptionAnalyzer;
 import org.mvndaemon.mvnd.execution.DefaultBuildResumptionDataRepository;
@@ -685,7 +687,7 @@ public class DaemonMavenCli {
     private void environment(String workingDir, Map<String, String> clientEnv) {
         Map<String, String> requested = new TreeMap<>(clientEnv);
         Map<String, String> actual = new TreeMap<>(System.getenv());
-        requested.put("PWD", workingDir);
+        requested.put("PWD", Os.current().isCygwin() ? toCygwin(workingDir) : workingDir);
         List<String> diffs = Stream.concat(requested.keySet().stream(), actual.keySet().stream())
                 .sorted()
                 .distinct()
@@ -697,7 +699,7 @@ public class DaemonMavenCli {
                 String vr = requested.get(key);
                 CLibrary.setenv(key, vr);
             }
-            setEnv(clientEnv);
+            setEnv(requested);
             chDir(workingDir);
         } catch (Exception e) {
             slf4jLogger.warn("Environment mismatch ! Could not set the environment (" + e + ")");
@@ -714,11 +716,26 @@ public class DaemonMavenCli {
             diffs.forEach(key -> {
                 String vr = requested.get(key);
                 String va = nactual.get(key);
-                slf4jLogger.warn("   {} -> {} instead of {}", key, va, vr);
+                slf4jLogger.warn("   {} -> {} instead of {}", key,
+                        va != null ? "'" + va + "'" : "<null>", vr != null ? "'" + vr + "'" : "<null>");
             });
             slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
             slf4jLogger.warn("start a new daemon from the current environment by issuing any mvnd build command.");
         }
+    }
+
+    static String toCygwin(String path) {
+        if (path.length() >= 3 && ":\\".equals(path.substring(1, 3))) {
+            try {
+                String p = path.endsWith("\\") ? path.substring(0, path.length() - 1) : path;
+                return ExecHelper.exec(false, "cygpath", p).trim();
+            } catch (IOException e) {
+                String root = path.substring(0, 1);
+                String p = path.substring(3);
+                return "/cygdrive/" + root.toLowerCase() + "/" + p.replace('\\', '/');
+            }
+        }
+        return path;
     }
 
     private static float javaSpec = 0.0f;
@@ -1429,7 +1446,7 @@ public class DaemonMavenCli {
 
     public static void addEnvVars(Properties props) {
         if (props != null) {
-            boolean caseSensitive = !Os.isFamily(Os.FAMILY_WINDOWS);
+            boolean caseSensitive = Os.current() == Os.WINDOWS;
             for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
                 String key = "env." + (caseSensitive ? entry.getKey() : entry.getKey().toUpperCase(Locale.ENGLISH));
                 props.setProperty(key, entry.getValue());
