@@ -19,7 +19,7 @@ name: GitHub Actions
 on: [push, pull_request]
 
 env:
-  GRAALVM_VERSION: '20.3.0.java11'
+  GRAALVM_VERSION: '21.3.0.java11'
 
 jobs:
 
