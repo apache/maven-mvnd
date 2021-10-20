@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.eclipse.aether.RepositorySystemSession;
@@ -93,6 +92,7 @@ public class MvndSyncContextFactory implements SyncContextFactory {
 
     private static class LocalSyncContextFactory implements SyncContextFactory {
         final Map<String, Lock> locks = new ConcurrentHashMap<>();
+
         @Override
         public SyncContext newInstance(RepositorySystemSession session, boolean shared) {
             return new LocalSyncContext();
@@ -103,19 +103,17 @@ public class MvndSyncContextFactory implements SyncContextFactory {
 
             @Override
             public void acquire(Collection<? extends Artifact> artifacts, Collection<? extends Metadata> metadatas) {
-                Collection<String> keys = new TreeSet<>();
-                stream(artifacts).map(this::getKey).forEach(keys::add);
-                stream(metadatas).map(this::getKey).forEach(keys::add);
-                String current = null;
+                stream(artifacts).map(this::getKey).sorted().forEach(this::acquire);
+                stream(metadatas).map(this::getKey).sorted().forEach(this::acquire);
+            }
+
+            private void acquire(String key) {
                 try {
-                    for (String key : keys) {
-                        current = key;
-                        getLock(key).lock();
-                        locked.add(key);
-                    }
+                    getLock(key).lock();
+                    locked.add(key);
                 } catch (Exception e) {
                     close();
-                    throw new IllegalStateException("Could not acquire lock for '" + current + "'", e);
+                    throw new IllegalStateException("Could not acquire lock for '" + key + "'", e);
                 }
             }
 
