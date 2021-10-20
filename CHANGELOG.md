@@ -1,11 +1,12 @@
 # Changelog
 
-## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+## [0.7.0](https://github.com/mvndaemon/mvnd/tree/0.7.0) (2021-10-20)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.6.0...HEAD)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.6.0...0.7.0)
 
 **Closed issues:**
 
+- PATH computation problems with Cygwin [\#499](https://github.com/mvndaemon/mvnd/issues/499)
 - \[Question\] Use different maven installation for mvnd? [\#497](https://github.com/mvndaemon/mvnd/issues/497)
 - Daemon forgets about maven settings on reuse [\#490](https://github.com/mvndaemon/mvnd/issues/490)
 - Support Maven 3.8.3 [\#488](https://github.com/mvndaemon/mvnd/issues/488)
@@ -22,6 +23,8 @@
 
 **Merged pull requests:**
 
+- Upgrade to GraalVM 21.3.0 and JDK 17 [\#506](https://github.com/mvndaemon/mvnd/pull/506) ([gnodet](https://github.com/gnodet))
+- I499 [\#505](https://github.com/mvndaemon/mvnd/pull/505) ([gnodet](https://github.com/gnodet))
 - NativeLoader code cleanup [\#504](https://github.com/mvndaemon/mvnd/pull/504) ([gnodet](https://github.com/gnodet))
 - Add support for linux-armv6 [\#503](https://github.com/mvndaemon/mvnd/pull/503) ([gnodet](https://github.com/gnodet))
 - Support mac-arm64 platform [\#502](https://github.com/mvndaemon/mvnd/pull/502) ([gnodet](https://github.com/gnodet))
@@ -32,6 +35,7 @@
 - Fix mvnd command line aliases, fixes \#490 [\#491](https://github.com/mvndaemon/mvnd/pull/491) ([gnodet](https://github.com/gnodet))
 - Add thread stack size \(-Xss\) option [\#489](https://github.com/mvndaemon/mvnd/pull/489) ([Apanatshka](https://github.com/Apanatshka))
 - Download required native JNI headers [\#481](https://github.com/mvndaemon/mvnd/pull/481) ([gnodet](https://github.com/gnodet))
+- Provide a local \(semaphore based\) sync context and use it as the default [\#480](https://github.com/mvndaemon/mvnd/pull/480) ([gnodet](https://github.com/gnodet))
 - Use a single jni.h and use more recent headers clearly labelled as GP… [\#479](https://github.com/mvndaemon/mvnd/pull/479) ([gnodet](https://github.com/gnodet))
 - Make sure the plugin eviction pattern also applies to extensions, fixes \#477 [\#478](https://github.com/mvndaemon/mvnd/pull/478) ([gnodet](https://github.com/gnodet))
 - Add instructions for MacPorts [\#476](https://github.com/mvndaemon/mvnd/pull/476) ([breun](https://github.com/breun))
