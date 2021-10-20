@@ -34,12 +34,10 @@
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-api</artifactId>
-            <version>${maven.resolver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.resolver</groupId>
             <artifactId>maven-resolver-impl</artifactId>
-            <version>${maven.resolver.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
