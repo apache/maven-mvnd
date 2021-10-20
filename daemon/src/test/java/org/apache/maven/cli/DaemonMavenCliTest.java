@@ -17,7 +17,6 @@ package org.apache.maven.cli;
 
 import java.io.File;
 import java.nio.file.Paths;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
