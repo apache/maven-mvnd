@@ -42,7 +42,7 @@
         <tar.long.file.mode>gnu</tar.long.file.mode>
         
         <!-- Quarkus Version -->
-        <quarkus.version>1.10.2.Final</quarkus.version>
+        <quarkus.version>2.3.1.Final</quarkus.version>
 
         <!-- Jandex -->
         <jandex.version>1.0.8</jandex.version>
