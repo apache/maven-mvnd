@@ -20,8 +20,17 @@
     <artifactSet to="/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
-                    excludes="lib/*slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*"/>
+                    excludes="lib/*slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*,lib/maven-resolver-api-*,lib/maven-resolver-impl-*,lib/maven-resolver-spi-*,lib/maven-resolver-util-*,lib/maven-resolver-connector-*,lib/maven-resolver-transport-*"/>
         </artifact>
+    </artifactSet>
+
+    <artifactSet to="/mvn/lib">
+        <artifact id="org.apache.maven.resolver:maven-resolver-api"/>
+        <artifact id="org.apache.maven.resolver:maven-resolver-impl"/>
+        <artifact id="org.apache.maven.resolver:maven-resolver-spi"/>
+        <artifact id="org.apache.maven.resolver:maven-resolver-util"/>
+        <artifact id="org.apache.maven.resolver:maven-resolver-connector-basic"/>
+        <artifact id="org.apache.maven.resolver:maven-resolver-transport-wagon"/>
     </artifactSet>
 
     <artifactSet to="/mvn/lib/ext">
