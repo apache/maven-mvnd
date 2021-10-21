@@ -257,7 +257,7 @@ public enum Environment {
     /**
      * The SyncContextFactory to use (can be either 'noop' or 'ipc' for a server-wide factory).
      */
-    MVND_SYNC_CONTEXT_FACTORY("mvnd.syncContextFactory", null, "noop", OptionType.BOOLEAN, Flags.OPTIONAL);
+    MVND_SYNC_CONTEXT_FACTORY("mvnd.syncContextFactory", null, "local", OptionType.BOOLEAN, Flags.OPTIONAL);
 
     static Properties properties;
 

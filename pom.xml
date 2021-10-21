@@ -22,7 +22,7 @@
 
     <groupId>org.mvndaemon.mvnd</groupId>
     <artifactId>mvnd</artifactId>
-    <version>0.6.1-SNAPSHOT</version>
+    <version>0.7.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
     <name>Maven Daemon - Parent</name>
@@ -39,7 +39,7 @@
         <assertj.version>3.16.1</assertj.version>
         <commons-compress.version>1.21</commons-compress.version>
         <graalvm.version>20.3.2</graalvm.version>
-        <groovy.version>3.0.7</groovy.version>
+        <groovy.version>3.0.9</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
         <jansi.version>2.4.0</jansi.version>
         <jline.version>3.21.0</jline.version>
@@ -203,38 +203,38 @@
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-native</artifactId>
-                <version>0.6.1-SNAPSHOT</version>
+                <version>0.7.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-agent</artifactId>
-                <version>0.6.1-SNAPSHOT</version>
+                <version>0.7.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-client</artifactId>
-                <version>0.6.1-SNAPSHOT</version>
+                <version>0.7.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-common</artifactId>
-                <version>0.6.1-SNAPSHOT</version>
+                <version>0.7.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
-                <version>0.6.1-SNAPSHOT</version>
+                <version>0.7.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-daemon</artifactId>
-                <version>0.6.1-SNAPSHOT</version>
+                <version>0.7.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-helper-agent</artifactId>
-                <version>0.6.1-SNAPSHOT</version>
+                <version>0.7.1-SNAPSHOT</version>
             </dependency>
 
             <dependency>
