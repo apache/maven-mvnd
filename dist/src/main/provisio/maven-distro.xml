@@ -74,9 +74,6 @@
         <artifact id="org.mvndaemon.mvnd:mvnd-client:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
-        <artifact id="org.mvndaemon.mvnd:mvnd-synccontext:${project.version}">
-            <exclusion id="*:*"/>
-        </artifact>
         <artifact id="org.mvndaemon.mvnd:mvnd-agent:${project.version}"/>
         <artifact id="org.mvndaemon.mvnd:mvnd-helper-agent:${project.version}"/>
     </artifactSet>
@@ -93,10 +90,6 @@
         <directory path="${basedir}/../client/target">
             <include>mvnd</include>
             <include>mvnd.exe</include>
-        </directory>
-        <directory path="${basedir}/../sync/target">
-            <include>mvnd-sync</include>
-            <include>mvnd-sync.exe</include>
         </directory>
     </fileSet>
 

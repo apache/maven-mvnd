@@ -253,11 +253,7 @@ public enum Environment {
     /**
      * Regexp pattern that will force eviction of the plugin realms if one of its dependencies matches.
      */
-    MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL),
-    /**
-     * The SyncContextFactory to use (can be either 'noop' or 'ipc' for a server-wide factory).
-     */
-    MVND_SYNC_CONTEXT_FACTORY("mvnd.syncContextFactory", null, "local", OptionType.BOOLEAN, Flags.OPTIONAL);
+    MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL);
 
     static Properties properties;
 
