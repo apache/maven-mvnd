@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.7.0...HEAD)
+
+**Closed issues:**
+
+- Hangs after dumping all the Maven output on WSL1 [\#363](https://github.com/mvndaemon/mvnd/issues/363)
+
 ## [0.7.0](https://github.com/mvndaemon/mvnd/tree/0.7.0) (2021-10-20)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.6.0...0.7.0)
