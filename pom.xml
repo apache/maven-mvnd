@@ -39,6 +39,7 @@
         <assertj.version>3.16.1</assertj.version>
         <commons-compress.version>1.21</commons-compress.version>
         <graalvm.version>21.3.0</graalvm.version>
+        <graalvm.plugin.version>21.2.0</graalvm.plugin.version>
         <groovy.version>3.0.9</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
         <jansi.version>2.4.0</jansi.version>
@@ -407,7 +408,7 @@ limitations under the License.</inlineHeader>
                 <plugin>
                     <groupId>org.graalvm.nativeimage</groupId>
                     <artifactId>native-image-maven-plugin</artifactId>
-                    <version>${graalvm.version}</version>
+                    <version>${graalvm.plugin.version}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
