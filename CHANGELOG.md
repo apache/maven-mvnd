@@ -69,13 +69,14 @@
 
 **Closed issues:**
 
-- Mvnd runs on several projects while mvn only runs on the top level project [\#464](https://github.com/mvndaemon/mvnd/issues/464)
-- Better progress report [\#463](https://github.com/mvndaemon/mvnd/issues/463)
-- Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
 - maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
 - use client env vars [\#445](https://github.com/mvndaemon/mvnd/issues/445)
 - Broken cache? [\#342](https://github.com/mvndaemon/mvnd/issues/342)
+- Mvnd runs on several projects while mvn only runs on the top level project [\#464](https://github.com/mvndaemon/mvnd/issues/464)
+- Better progress report [\#463](https://github.com/mvndaemon/mvnd/issues/463)
+- Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
 - use unix domain socket if available [\#417](https://github.com/mvndaemon/mvnd/issues/417)
+- Could not find artifact org.apache.maven.surefire:surefire-providers:pom:2.22.2 [\#281](https://github.com/mvndaemon/mvnd/issues/281)
 
 **Merged pull requests:**
 
@@ -157,20 +158,18 @@
 
 - Race conditions when building https://github.com/apache/jackrabbit-filevault [\#408](https://github.com/mvndaemon/mvnd/issues/408)
 - Offer a way to hide the original maven output [\#407](https://github.com/mvndaemon/mvnd/issues/407)
-- java.util.ConcurrentModificationException in the cache [\#405](https://github.com/mvndaemon/mvnd/issues/405)
-- openapi-generator-maven-plugin:5.0.1:generate  Unable to read location `src/main/openapi/project.yaml` [\#397](https://github.com/mvndaemon/mvnd/issues/397)
 - Global mvn settings.xml via mvnd.properties [\#383](https://github.com/mvndaemon/mvnd/issues/383)
-- Build failing with a NPE [\#372](https://github.com/mvndaemon/mvnd/issues/372)
-- Support -r / --resume option [\#351](https://github.com/mvndaemon/mvnd/issues/351)
-- Could not find artifact org.apache.maven.surefire:surefire-providers:pom:2.22.2 [\#281](https://github.com/mvndaemon/mvnd/issues/281)
 - Decide the defaults L&F of the multithread terminal view [\#210](https://github.com/mvndaemon/mvnd/issues/210)
 - Set maven version like maven-wrapper [\#143](https://github.com/mvndaemon/mvnd/issues/143)
 - The client should reserve lines to avoid hops in the output display [\#414](https://github.com/mvndaemon/mvnd/issues/414)
+- java.util.ConcurrentModificationException in the cache [\#405](https://github.com/mvndaemon/mvnd/issues/405)
 - Provide a native library for mvnd specific needs [\#400](https://github.com/mvndaemon/mvnd/issues/400)
+- openapi-generator-maven-plugin:5.0.1:generate  Unable to read location `src/main/openapi/project.yaml` [\#397](https://github.com/mvndaemon/mvnd/issues/397)
 - Support Maven 3.8.1 [\#393](https://github.com/mvndaemon/mvnd/issues/393)
 - \[Security\] Possible RCE [\#390](https://github.com/mvndaemon/mvnd/issues/390)
 - The build time spy sometimes prints info for other modules [\#389](https://github.com/mvndaemon/mvnd/issues/389)
 - NPE on Windows using "Git for Windows" \(MINGW\) [\#387](https://github.com/mvndaemon/mvnd/issues/387)
+- Support -r / --resume option [\#351](https://github.com/mvndaemon/mvnd/issues/351)
 - Compilation fails when using a plugin and try to provide additional dependencies to that plugin [\#276](https://github.com/mvndaemon/mvnd/issues/276)
 
 **Merged pull requests:**
@@ -238,6 +237,7 @@
 - Incremental builds [\#345](https://github.com/mvndaemon/mvnd/issues/345)
 - Installed on RHEL 7.9 fails to load native library.  It works on CentOS 8 though [\#341](https://github.com/mvndaemon/mvnd/issues/341)
 - MultipleArtifactsNotFoundException: Missing: org.apache.maven.surefire:surefire-junit-platform:jar:2.22.2 [\#256](https://github.com/mvndaemon/mvnd/issues/256)
+- Build failing with a NPE [\#372](https://github.com/mvndaemon/mvnd/issues/372)
 - Release 0.4.2 [\#369](https://github.com/mvndaemon/mvnd/issues/369)
 - Environment mismatches should ignore the PWD var [\#234](https://github.com/mvndaemon/mvnd/issues/234)
 - maven-checkstyle-plugin: NoSuchMethodError: 'void org.slf4j.spi.LocationAwareLogger.log\(org.slf4j.Marker, java.lang.String, int, java.lang.String, java.lang.Throwable\)' [\#183](https://github.com/mvndaemon/mvnd/issues/183)
