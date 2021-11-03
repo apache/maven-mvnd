@@ -8,6 +8,10 @@
 
 - Hangs after dumping all the Maven output on WSL1 [\#363](https://github.com/mvndaemon/mvnd/issues/363)
 
+**Merged pull requests:**
+
+- Upgrade GraalVM version used [\#509](https://github.com/mvndaemon/mvnd/pull/509) ([gnodet](https://github.com/gnodet))
+
 ## [0.7.0](https://github.com/mvndaemon/mvnd/tree/0.7.0) (2021-10-20)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.6.0...0.7.0)
