@@ -6,6 +6,9 @@
 
 **Closed issues:**
 
+- mvnd modifies original output when using quiet flag [\#513](https://github.com/mvndaemon/mvnd/issues/513)
+- Different java versions for mvnd and maven [\#512](https://github.com/mvndaemon/mvnd/issues/512)
+- bad CPU type in executable: mvnd [\#510](https://github.com/mvndaemon/mvnd/issues/510)
 - Hangs after dumping all the Maven output on WSL1 [\#363](https://github.com/mvndaemon/mvnd/issues/363)
 
 **Merged pull requests:**
