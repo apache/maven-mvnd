@@ -6,6 +6,7 @@
 
 **Closed issues:**
 
+- Unsupported address error when running linux machine [\#514](https://github.com/mvndaemon/mvnd/issues/514)
 - mvnd modifies original output when using quiet flag [\#513](https://github.com/mvndaemon/mvnd/issues/513)
 - Different java versions for mvnd and maven [\#512](https://github.com/mvndaemon/mvnd/issues/512)
 - bad CPU type in executable: mvnd [\#510](https://github.com/mvndaemon/mvnd/issues/510)
