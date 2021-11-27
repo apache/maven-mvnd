@@ -15,6 +15,7 @@
 **Merged pull requests:**
 
 - Upgrade GraalVM version used [\#509](https://github.com/mvndaemon/mvnd/pull/509) ([gnodet](https://github.com/gnodet))
+- Update mvnd to include Maven Resolver 1.7 [\#507](https://github.com/mvndaemon/mvnd/pull/507) ([cstamas](https://github.com/cstamas))
 
 ## [0.7.0](https://github.com/mvndaemon/mvnd/tree/0.7.0) (2021-10-20)
 
