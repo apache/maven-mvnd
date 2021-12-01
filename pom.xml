@@ -64,7 +64,7 @@
         <surefire.version>3.0.0-M5</surefire.version><!-- keep in sync with junit-platform-launcher.version -->
         <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version><!-- keep in sync with surefire.version -->
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
-        <takari-provisio.version>1.0.15</takari-provisio.version>
+        <takari-provisio.version>1.0.19</takari-provisio.version>
 
         <javassist.version>3.27.0-GA</javassist.version>
     </properties>
