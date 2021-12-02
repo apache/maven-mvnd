@@ -14,6 +14,7 @@
 
 **Merged pull requests:**
 
+- Update Provisio plugin [\#517](https://github.com/mvndaemon/mvnd/pull/517) ([cstamas](https://github.com/cstamas))
 - Upgrade GraalVM version used [\#509](https://github.com/mvndaemon/mvnd/pull/509) ([gnodet](https://github.com/gnodet))
 - Update mvnd to include Maven Resolver 1.7 [\#507](https://github.com/mvndaemon/mvnd/pull/507) ([cstamas](https://github.com/cstamas))
 
