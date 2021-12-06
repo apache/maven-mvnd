@@ -252,7 +252,12 @@ public class DefaultClient implements Client {
                 Environment.MAVEN_REPO_LOCAL.addCommandLineOption(args, localMavenRepository.toString());
             }
 
-            Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
+            String width = Optional.ofNullable(Environment.MVND_TERMINAL_WIDTH.removeCommandLineOption(args))
+                    .orElseGet(() -> {
+                        int w = output.getTerminalWidth();
+                        return Integer.toString(w > 0 ? Math.max(w, 80) : 120);
+                    });
+            Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, width);
 
             Path dir;
             if (Environment.MAVEN_FILE.hasCommandLineOption(args)) {
