@@ -195,9 +195,9 @@ public class DefaultClient implements Client {
 
         try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
             if (Environment.STATUS.removeCommandLineOption(args) != null) {
-                final String template = "%8s  %7s  %5s  %7s  %5s  %23s  %s";
+                final String template = "%8s  %7s  %24s  %7s  %5s  %23s  %s";
                 output.accept(Message.log(String.format(template,
-                        "ID", "PID", "Port", "Status", "RSS", "Last activity", "Java home")));
+                        "ID", "PID", "Address", "Status", "RSS", "Last activity", "Java home")));
                 for (DaemonInfo d : registry.getAll()) {
                     if (ProcessHandle.of(d.getPid()).isEmpty()) {
                         /* The process does not exist anymore - remove it from the registry */
