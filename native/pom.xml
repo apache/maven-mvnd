@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.mvndaemon.mvnd</groupId>
         <artifactId>mvnd</artifactId>
-        <version>0.7.1</version>
+        <version>0.7.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>mvnd-native</artifactId>
