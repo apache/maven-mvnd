@@ -149,7 +149,7 @@ public class TerminalOutput implements ClientOutput {
     public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
         TerminalBuilder builder = TerminalBuilder.builder();
-        boolean outRedirected = CLibrary.isatty(0) == 1 && CLibrary.isatty(1) == 0;
+        boolean outRedirected = CLibrary.isatty(1) == 0;
         if (outRedirected) {
             builder.dumb(true);
         }
