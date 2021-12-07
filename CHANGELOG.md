@@ -6,11 +6,9 @@
 
 **Closed issues:**
 
-- Unsupported address error when running linux machine [\#514](https://github.com/mvndaemon/mvnd/issues/514)
 - mvnd modifies original output when using quiet flag [\#513](https://github.com/mvndaemon/mvnd/issues/513)
 - Different java versions for mvnd and maven [\#512](https://github.com/mvndaemon/mvnd/issues/512)
 - bad CPU type in executable: mvnd [\#510](https://github.com/mvndaemon/mvnd/issues/510)
-- Hangs after dumping all the Maven output on WSL1 [\#363](https://github.com/mvndaemon/mvnd/issues/363)
 - Pipe does not output anything [\#519](https://github.com/mvndaemon/mvnd/issues/519)
 - mvnd --status - output in columns is too narrow [\#518](https://github.com/mvndaemon/mvnd/issues/518)
 - -T/--threads is ignored in 0.7.0, only -Dmvnd.threads works [\#515](https://github.com/mvndaemon/mvnd/issues/515)
@@ -32,11 +30,6 @@
 
 **Closed issues:**
 
-- \[Question\] Use different maven installation for mvnd? [\#497](https://github.com/mvndaemon/mvnd/issues/497)
-- mvnd seems to not respect jenv local setting [\#487](https://github.com/mvndaemon/mvnd/issues/487)
-- Windows+Cygwin - Why do I get weird output? [\#483](https://github.com/mvndaemon/mvnd/issues/483)
-- release 0.5.3? [\#473](https://github.com/mvndaemon/mvnd/issues/473)
-- Use custom wrapper [\#455](https://github.com/mvndaemon/mvnd/issues/455)
 - PATH computation problems with Cygwin [\#499](https://github.com/mvndaemon/mvnd/issues/499)
 - Support Maven 3.8.3 [\#488](https://github.com/mvndaemon/mvnd/issues/488)
 - `IllegalStateException` on multi module project failure [\#486](https://github.com/mvndaemon/mvnd/issues/486)
@@ -72,23 +65,18 @@
 
 **Implemented enhancements:**
 
-- If a failure happens in a module, the client should display it as soon as possible [\#438](https://github.com/mvndaemon/mvnd/issues/438)
 - The build time event spy should aggregate values for each mojo [\#430](https://github.com/mvndaemon/mvnd/issues/430)
 - Display the current build status [\#361](https://github.com/mvndaemon/mvnd/issues/361)
 - Provide a way to remove decoration on the standard out/err streams [\#356](https://github.com/mvndaemon/mvnd/issues/356)
 
 **Fixed bugs:**
 
-- Files still locked after earlier stopped / failed build on Windows [\#440](https://github.com/mvndaemon/mvnd/issues/440)
 - The IPC sync context fails instead of reconnecting [\#446](https://github.com/mvndaemon/mvnd/issues/446)
 - Progress is computed incorrectly \(above 100%\) [\#443](https://github.com/mvndaemon/mvnd/issues/443)
 - Incorrect charset display in Terminal output [\#441](https://github.com/mvndaemon/mvnd/issues/441)
 
 **Closed issues:**
 
-- maven-notifier extension not working as expected [\#452](https://github.com/mvndaemon/mvnd/issues/452)
-- use client env vars [\#445](https://github.com/mvndaemon/mvnd/issues/445)
-- Broken cache? [\#342](https://github.com/mvndaemon/mvnd/issues/342)
 - Mvnd runs on several projects while mvn only runs on the top level project [\#464](https://github.com/mvndaemon/mvnd/issues/464)
 - Better progress report [\#463](https://github.com/mvndaemon/mvnd/issues/463)
 - Support Maven 3.8.2 [\#457](https://github.com/mvndaemon/mvnd/issues/457)
@@ -127,11 +115,6 @@
 - The JDK\_JAVA\_OPTIONS environment variable is not honoured [\#429](https://github.com/mvndaemon/mvnd/issues/429)
 - The environment set up does not work well on JDK \>= 16 [\#427](https://github.com/mvndaemon/mvnd/issues/427)
 
-**Closed issues:**
-
-- GitHub workflow: Cache dependencies [\#426](https://github.com/mvndaemon/mvnd/issues/426)
-- NullPointerException in integration tests with maven-surefire-plugin 3.0.0-M5 [\#103](https://github.com/mvndaemon/mvnd/issues/103)
-
 **Merged pull requests:**
 
 - Attempt to fix bad registry errors, fixes \#432 and \#433 [\#439](https://github.com/mvndaemon/mvnd/pull/439) ([gnodet](https://github.com/gnodet))
@@ -151,10 +134,6 @@
 - Fix concurrent build of projects when using forked lifecycles [\#419](https://github.com/mvndaemon/mvnd/issues/419)
 - Parallel build fails due to missing JAR artifacts in compilePath [\#418](https://github.com/mvndaemon/mvnd/issues/418)
 
-**Closed issues:**
-
-- Improve support for forked lifecycles [\#410](https://github.com/mvndaemon/mvnd/issues/410)
-
 **Merged pull requests:**
 
 - The IPC server shuts down after one minute during the build [\#425](https://github.com/mvndaemon/mvnd/pull/425) ([gnodet](https://github.com/gnodet))
@@ -173,11 +152,6 @@
 
 **Closed issues:**
 
-- Race conditions when building https://github.com/apache/jackrabbit-filevault [\#408](https://github.com/mvndaemon/mvnd/issues/408)
-- Offer a way to hide the original maven output [\#407](https://github.com/mvndaemon/mvnd/issues/407)
-- Global mvn settings.xml via mvnd.properties [\#383](https://github.com/mvndaemon/mvnd/issues/383)
-- Decide the defaults L&F of the multithread terminal view [\#210](https://github.com/mvndaemon/mvnd/issues/210)
-- Set maven version like maven-wrapper [\#143](https://github.com/mvndaemon/mvnd/issues/143)
 - The client should reserve lines to avoid hops in the output display [\#414](https://github.com/mvndaemon/mvnd/issues/414)
 - java.util.ConcurrentModificationException in the cache [\#405](https://github.com/mvndaemon/mvnd/issues/405)
 - Provide a native library for mvnd specific needs [\#400](https://github.com/mvndaemon/mvnd/issues/400)
@@ -220,8 +194,6 @@
 
 **Closed issues:**
 
-- There is also jansi [\#379](https://github.com/mvndaemon/mvnd/issues/379)
-- Upon installing release for Windows MVND not responsive [\#152](https://github.com/mvndaemon/mvnd/issues/152)
 - Release 0.4.3 [\#382](https://github.com/mvndaemon/mvnd/issues/382)
 
 **Merged pull requests:**
@@ -248,12 +220,6 @@
 
 **Closed issues:**
 
-- Keep daemon alive in Docker? [\#365](https://github.com/mvndaemon/mvnd/issues/365)
-- mvnd assumes an .m2 folder in home directory [\#360](https://github.com/mvndaemon/mvnd/issues/360)
-- Support Arquillian builds [\#346](https://github.com/mvndaemon/mvnd/issues/346)
-- Incremental builds [\#345](https://github.com/mvndaemon/mvnd/issues/345)
-- Installed on RHEL 7.9 fails to load native library.  It works on CentOS 8 though [\#341](https://github.com/mvndaemon/mvnd/issues/341)
-- MultipleArtifactsNotFoundException: Missing: org.apache.maven.surefire:surefire-junit-platform:jar:2.22.2 [\#256](https://github.com/mvndaemon/mvnd/issues/256)
 - Build failing with a NPE [\#372](https://github.com/mvndaemon/mvnd/issues/372)
 - Release 0.4.2 [\#369](https://github.com/mvndaemon/mvnd/issues/369)
 - Environment mismatches should ignore the PWD var [\#234](https://github.com/mvndaemon/mvnd/issues/234)
@@ -278,10 +244,6 @@
 
 **Closed issues:**
 
-- maven.compiler.source & maven.compiler.target 8 [\#320](https://github.com/mvndaemon/mvnd/issues/320)
-- Execution of liquibase scripts is shown with level "error" [\#319](https://github.com/mvndaemon/mvnd/issues/319)
-- Daemon crashing when building big project. [\#291](https://github.com/mvndaemon/mvnd/issues/291)
-- Status should indicate from which path the daemon was spawned [\#283](https://github.com/mvndaemon/mvnd/issues/283)
 - \[ERROR\] Multiple entries with same key [\#333](https://github.com/mvndaemon/mvnd/issues/333)
 - NPE after pressing CTRL+B in the client [\#324](https://github.com/mvndaemon/mvnd/issues/324)
 - Readme: "mvnd specific options" is incomplete [\#316](https://github.com/mvndaemon/mvnd/issues/316)
@@ -319,10 +281,6 @@
 
 **Closed issues:**
 
-- Enable some output per module or globally [\#292](https://github.com/mvndaemon/mvnd/issues/292)
-- \[ENHANCEMENT\] mvnd failed while I purposely disabled ~/.m2 directory [\#278](https://github.com/mvndaemon/mvnd/issues/278)
-- mvnd 0.2.0 can no longer resolve our Artifactory server \(works for 0.1.1 in same shell\) [\#274](https://github.com/mvndaemon/mvnd/issues/274)
-- Cannot build Quarkus after removing ~/.m2/repository/io/quarkus/ or ~/.m2/repository/io/quarkus/gizmo [\#26](https://github.com/mvndaemon/mvnd/issues/26)
 - Messages sent from the server to the client should not end with a \r on windows [\#304](https://github.com/mvndaemon/mvnd/issues/304)
 - Extension support fails to resolve dependencies [\#300](https://github.com/mvndaemon/mvnd/issues/300)
 - Speed up bash completion loading by packaging it as a file in the ZIP distribution [\#296](https://github.com/mvndaemon/mvnd/issues/296)
@@ -418,8 +376,6 @@
 
 **Closed issues:**
 
-- Performance regression after 668d4e4 [\#231](https://github.com/mvndaemon/mvnd/issues/231)
-- The daemon is probably leaking memory [\#18](https://github.com/mvndaemon/mvnd/issues/18)
 - Move mvnd logback config file into \[MVND\_HOME\]/conf and use the standard name for the mvn specific config file [\#226](https://github.com/mvndaemon/mvnd/issues/226)
 - Duration properties are not passed correctly to the daemon [\#225](https://github.com/mvndaemon/mvnd/issues/225)
 - When the build does not produce any output, the elapsed time can be sluggish [\#224](https://github.com/mvndaemon/mvnd/issues/224)
@@ -509,9 +465,6 @@
 
 **Closed issues:**
 
-- exec-maven-plugin fails to run maven wrapper when run via maven daemon [\#171](https://github.com/mvndaemon/mvnd/issues/171)
-- Error when using axistools-maven-plugin [\#87](https://github.com/mvndaemon/mvnd/issues/87)
-- Support for failsafe? [\#86](https://github.com/mvndaemon/mvnd/issues/86)
 - ProjectBuildLogAppender not found when starting the daemon [\#165](https://github.com/mvndaemon/mvnd/issues/165)
 - mvnd --status complains about Unexpected output of ps -o rss= when the process is not alive anymore [\#163](https://github.com/mvndaemon/mvnd/issues/163)
 - mvnd native executable is not passing -Dkey=val to the daemon [\#157](https://github.com/mvndaemon/mvnd/issues/157)
@@ -539,7 +492,6 @@
 
 **Closed issues:**
 
-- Provide build output when cancelling a job [\#142](https://github.com/mvndaemon/mvnd/issues/142)
 - mvnd --status throws NumberFormatException in 0.0.9 [\#147](https://github.com/mvndaemon/mvnd/issues/147)
 
 **Merged pull requests:**
@@ -640,7 +592,6 @@
 
 **Closed issues:**
 
-- Goals of mvnd [\#71](https://github.com/mvndaemon/mvnd/issues/71)
 - CachingProjectBuilder ignored [\#72](https://github.com/mvndaemon/mvnd/issues/72)
 - Keep a changelog file [\#64](https://github.com/mvndaemon/mvnd/issues/64)
 
@@ -670,11 +621,6 @@
 ## [0.0.4](https://github.com/mvndaemon/mvnd/tree/0.0.4) (2020-08-20)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.3...0.0.4)
-
-**Closed issues:**
-
-- Question: when running mvnd, it looks like regular mvn is still running [\#60](https://github.com/mvndaemon/mvnd/issues/60)
-- Question: is there a way to limit the concurrency? [\#59](https://github.com/mvndaemon/mvnd/issues/59)
 
 **Merged pull requests:**
 
@@ -712,25 +658,6 @@
 
 **Closed issues:**
 
-- Running maven daemon fails on windows [\#35](https://github.com/mvndaemon/mvnd/issues/35)
-- Add some integration tests [\#23](https://github.com/mvndaemon/mvnd/issues/23)
-- Class loader clash during Quarkus augmentation [\#22](https://github.com/mvndaemon/mvnd/issues/22)
-- Allow to plug a custom rule resolver  [\#19](https://github.com/mvndaemon/mvnd/issues/19)
-- Chaotic output if the console's height is less then the number of threads [\#17](https://github.com/mvndaemon/mvnd/issues/17)
-- Concurrency issues while handling log events in the daemon [\#16](https://github.com/mvndaemon/mvnd/issues/16)
-- Do not display exceptions stack trace when trying to stop already stopped daemons [\#15](https://github.com/mvndaemon/mvnd/issues/15)
-- Concurrent access to the local repository [\#14](https://github.com/mvndaemon/mvnd/issues/14)
-- Support for hidden dependencies [\#12](https://github.com/mvndaemon/mvnd/issues/12)
-- mvnd should fail cleanly with unknown CLI options [\#11](https://github.com/mvndaemon/mvnd/issues/11)
-- Properly configure logging in the client [\#10](https://github.com/mvndaemon/mvnd/issues/10)
-- mvnd does not pick the BoM from the source tree [\#9](https://github.com/mvndaemon/mvnd/issues/9)
-- Add a correct NOTICE file [\#8](https://github.com/mvndaemon/mvnd/issues/8)
-- Do not require the mvn in PATH to come from mvnd dist [\#7](https://github.com/mvndaemon/mvnd/issues/7)
-- Provide an option to kill/stop the daemon [\#6](https://github.com/mvndaemon/mvnd/issues/6)
-- Options / system properties are not reset in the daemon after a build [\#5](https://github.com/mvndaemon/mvnd/issues/5)
-- Add a LICENSE file [\#4](https://github.com/mvndaemon/mvnd/issues/4)
-- The mvn output appears all at once at the very end [\#3](https://github.com/mvndaemon/mvnd/issues/3)
-- mvnd -version does not work [\#2](https://github.com/mvndaemon/mvnd/issues/2)
 - mvnd fails if there is no .mvn/ dir in the user home [\#42](https://github.com/mvndaemon/mvnd/issues/42)
 - Cannot clean on Windows as long as mvnd keeps a plugin from the tree loaded [\#40](https://github.com/mvndaemon/mvnd/issues/40)
 - Maven mojo change ignored [\#33](https://github.com/mvndaemon/mvnd/issues/33)
