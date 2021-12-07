@@ -6,6 +6,9 @@
 
 **Closed issues:**
 
+- Pipe does not output anything [\#519](https://github.com/mvndaemon/mvnd/issues/519)
+- mvnd --status - output in columns is too narrow [\#518](https://github.com/mvndaemon/mvnd/issues/518)
+- -T/--threads is ignored in 0.7.0, only -Dmvnd.threads works [\#515](https://github.com/mvndaemon/mvnd/issues/515)
 - Unsupported address error when running linux machine [\#514](https://github.com/mvndaemon/mvnd/issues/514)
 - mvnd modifies original output when using quiet flag [\#513](https://github.com/mvndaemon/mvnd/issues/513)
 - Different java versions for mvnd and maven [\#512](https://github.com/mvndaemon/mvnd/issues/512)
@@ -14,8 +17,14 @@
 
 **Merged pull requests:**
 
+- Replace the locking spy with locking in the MojoExecutor [\#523](https://github.com/mvndaemon/mvnd/pull/523) ([gnodet](https://github.com/gnodet))
+- mvnd status output columns are too narrow, fixes \#518 [\#522](https://github.com/mvndaemon/mvnd/pull/522) ([gnodet](https://github.com/gnodet))
+- Fix client not responding when using help with an output redirection, fixes \#519 [\#521](https://github.com/mvndaemon/mvnd/pull/521) ([gnodet](https://github.com/gnodet))
+- Fix passing options, fixes \#515 [\#520](https://github.com/mvndaemon/mvnd/pull/520) ([gnodet](https://github.com/gnodet))
+- Update Provisio plugin [\#517](https://github.com/mvndaemon/mvnd/pull/517) ([cstamas](https://github.com/cstamas))
 - Upgrade GraalVM version used [\#509](https://github.com/mvndaemon/mvnd/pull/509) ([gnodet](https://github.com/gnodet))
 - Update mvnd to include Maven Resolver 1.7 [\#507](https://github.com/mvndaemon/mvnd/pull/507) ([cstamas](https://github.com/cstamas))
+- Bump xstream from 1.4.17 to 1.4.18 [\#460](https://github.com/mvndaemon/mvnd/pull/460) ([dependabot[bot]](https://github.com/apps/dependabot))
 
 ## [0.7.0](https://github.com/mvndaemon/mvnd/tree/0.7.0) (2021-10-20)
 

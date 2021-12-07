@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.internal.CLibrary;
@@ -194,9 +195,9 @@ public class DefaultClient implements Client {
 
         try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
             if (Environment.STATUS.removeCommandLineOption(args) != null) {
-                final String template = "%8s  %7s  %5s  %7s  %5s  %23s  %s";
+                final String template = "%8s  %7s  %24s  %7s  %5s  %23s  %s";
                 output.accept(Message.log(String.format(template,
-                        "ID", "PID", "Port", "Status", "RSS", "Last activity", "Java home")));
+                        "ID", "PID", "Address", "Status", "RSS", "Last activity", "Java home")));
                 for (DaemonInfo d : registry.getAll()) {
                     if (ProcessHandle.of(d.getPid()).isEmpty()) {
                         /* The process does not exist anymore - remove it from the registry */
@@ -235,24 +236,26 @@ public class DefaultClient implements Client {
                 return DefaultResult.success(argv);
             }
 
-            Environment.MVND_THREADS.removeCommandLineOption(args);
-            Environment.MVND_THREADS.addCommandLineOption(args, parameters.threads());
+            Optional<String> threads = Optional.ofNullable(Environment.MVND_THREADS.removeCommandLineOption(args));
+            Environment.MVND_THREADS.addCommandLineOption(args, threads.orElseGet(parameters::threads));
 
-            Environment.MVND_BUILDER.removeCommandLineOption(args);
-            Environment.MVND_BUILDER.addCommandLineOption(args, parameters.builder());
+            Optional<String> builder = Optional.ofNullable(Environment.MVND_BUILDER.removeCommandLineOption(args));
+            Environment.MVND_BUILDER.addCommandLineOption(args, builder.orElseGet(parameters::builder));
 
-            final Path settings = parameters.settings();
-            if (settings != null) {
-                Environment.MAVEN_SETTINGS.removeCommandLineOption(args);
-                Environment.MAVEN_SETTINGS.addCommandLineOption(args, settings.toString());
-            }
+            Optional<String> settings = Optional.ofNullable(Environment.MAVEN_SETTINGS.removeCommandLineOption(args))
+                    .or(() -> Optional.ofNullable(parameters.settings()).map(Path::toString));
+            settings.ifPresent(s -> Environment.MAVEN_SETTINGS.addCommandLineOption(args, s));
 
-            final Path localMavenRepository = parameters.mavenRepoLocal();
-            if (localMavenRepository != null && !Environment.MAVEN_REPO_LOCAL.hasCommandLineOption(args)) {
-                Environment.MAVEN_REPO_LOCAL.addCommandLineOption(args, localMavenRepository.toString());
-            }
+            Optional<String> repo = Optional.ofNullable(Environment.MAVEN_REPO_LOCAL.removeCommandLineOption(args))
+                    .or(() -> Optional.ofNullable(parameters.mavenRepoLocal()).map(Path::toString));
+            repo.ifPresent(r -> Environment.MAVEN_REPO_LOCAL.addCommandLineOption(args, r));
 
-            Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, Integer.toString(output.getTerminalWidth()));
+            String width = Optional.ofNullable(Environment.MVND_TERMINAL_WIDTH.removeCommandLineOption(args))
+                    .orElseGet(() -> {
+                        int w = output.getTerminalWidth();
+                        return Integer.toString(w > 0 ? Math.max(w, 80) : 120);
+                    });
+            Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, width);
 
             Path dir;
             if (Environment.MAVEN_FILE.hasCommandLineOption(args)) {

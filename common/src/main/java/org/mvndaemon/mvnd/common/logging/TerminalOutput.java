@@ -35,6 +35,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import org.fusesource.jansi.internal.CLibrary;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
@@ -147,7 +148,12 @@ public class TerminalOutput implements ClientOutput {
 
     public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
-        this.terminal = TerminalBuilder.terminal();
+        TerminalBuilder builder = TerminalBuilder.builder();
+        boolean outRedirected = CLibrary.isatty(1) == 0;
+        if (outRedirected) {
+            builder.dumb(true);
+        }
+        this.terminal = builder.build();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
         this.linesPerProject = rollingWindowSize;
