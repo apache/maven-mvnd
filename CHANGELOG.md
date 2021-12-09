@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased](https://github.com/mvndaemon/mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.7.1...HEAD)
+
+**Merged pull requests:**
+
+- Upgrade to maven 3.8.4 [\#524](https://github.com/mvndaemon/mvnd/pull/524) ([gnodet](https://github.com/gnodet))
+
 ## [0.7.1](https://github.com/mvndaemon/mvnd/tree/0.7.1) (2021-12-07)
 
 [Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.7.0...0.7.1)
