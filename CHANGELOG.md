@@ -376,7 +376,7 @@
 
 ## [0.1.0](https://github.com/mvndaemon/mvnd/tree/0.1.0) (2020-11-18)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.12...0.1.0)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/i218.t...0.1.0)
 
 **Implemented enhancements:**
 
@@ -408,6 +408,10 @@
 - Messages associated with projectId from the previous build in the ter… [\#217](https://github.com/mvndaemon/mvnd/pull/217) ([ppalaga](https://github.com/ppalaga))
 - Ignore INT and TSTP signals in the daemon [\#214](https://github.com/mvndaemon/mvnd/pull/214) ([gnodet](https://github.com/gnodet))
 - Automatic purge of daemon logs [\#213](https://github.com/mvndaemon/mvnd/pull/213) ([gnodet](https://github.com/gnodet))
+
+## [i218.t](https://github.com/mvndaemon/mvnd/tree/i218.t) (2020-11-13)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.12...i218.t)
 
 ## [0.0.12](https://github.com/mvndaemon/mvnd/tree/0.0.12) (2020-11-12)
 
@@ -662,7 +666,7 @@
 
 ## [0.0.1](https://github.com/mvndaemon/mvnd/tree/0.0.1) (2020-07-30)
 
-[Full Changelog](https://github.com/mvndaemon/mvnd/compare/844f3ddd7f4278b2ba097d817def4c3b46d574e7...0.0.1)
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/0.0.0.0...0.0.1)
 
 **Closed issues:**
 
@@ -676,6 +680,34 @@
 - Fix \#42 mvnd fails if there is no .mvn/ dir in the user home [\#46](https://github.com/mvndaemon/mvnd/pull/46) ([ppalaga](https://github.com/ppalaga))
 - Fix \#40 Cannot clean on Windows as long as mvnd keeps a plugin from t… [\#45](https://github.com/mvndaemon/mvnd/pull/45) ([ppalaga](https://github.com/ppalaga))
 - Add code formatter plugins [\#44](https://github.com/mvndaemon/mvnd/pull/44) ([ppalaga](https://github.com/ppalaga))
+
+## [0.0.0.0](https://github.com/mvndaemon/mvnd/tree/0.0.0.0) (2020-06-21)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/200611-client-logging-15f559eb...0.0.0.0)
+
+## [200611-client-logging-15f559eb](https://github.com/mvndaemon/mvnd/tree/200611-client-logging-15f559eb) (2019-09-27)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/200611-client-logging-5b542cab...200611-client-logging-15f559eb)
+
+## [200611-client-logging-5b542cab](https://github.com/mvndaemon/mvnd/tree/200611-client-logging-5b542cab) (2019-09-27)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/200611-client-logging-bc063301...200611-client-logging-5b542cab)
+
+## [200611-client-logging-bc063301](https://github.com/mvndaemon/mvnd/tree/200611-client-logging-bc063301) (2019-09-27)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/200611-client-logging-bdf5f8af...200611-client-logging-bc063301)
+
+## [200611-client-logging-bdf5f8af](https://github.com/mvndaemon/mvnd/tree/200611-client-logging-bdf5f8af) (2019-09-27)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/200611-client-logging-f2a61e8c...200611-client-logging-bdf5f8af)
+
+## [200611-client-logging-f2a61e8c](https://github.com/mvndaemon/mvnd/tree/200611-client-logging-f2a61e8c) (2019-09-27)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/200611-client-logging-54e2c6ef...200611-client-logging-f2a61e8c)
+
+## [200611-client-logging-54e2c6ef](https://github.com/mvndaemon/mvnd/tree/200611-client-logging-54e2c6ef) (2019-09-27)
+
+[Full Changelog](https://github.com/mvndaemon/mvnd/compare/844f3ddd7f4278b2ba097d817def4c3b46d574e7...200611-client-logging-54e2c6ef)
 
 
 
