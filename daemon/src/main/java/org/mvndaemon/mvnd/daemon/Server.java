@@ -17,6 +17,8 @@ package org.mvndaemon.mvnd.daemon;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -40,7 +42,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import org.apache.maven.cli.DaemonMavenCli;
 import org.mvndaemon.mvnd.builder.SmartBuilder;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
@@ -79,7 +80,6 @@ public class Server implements AutoCloseable, Runnable {
     private final String daemonId;
     private final boolean noDaemon;
     private final ServerSocketChannel socket;
-    private final DaemonMavenCli cli;
     private volatile DaemonInfo info;
     private final DaemonRegistry registry;
 
@@ -118,7 +118,6 @@ public class Server implements AutoCloseable, Runnable {
                 .orElse(SocketFamily.inet);
 
         try {
-            cli = new DaemonMavenCli();
             registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
             socket = socketFamily.openServerSocket();
             executor = Executors.newScheduledThreadPool(1);
@@ -570,14 +569,32 @@ public class Server implements AutoCloseable, Runnable {
                 });
                 System.setOut(new LoggingOutputStream(s -> sendQueue.add(Message.out(s))).printStream());
                 System.setErr(new LoggingOutputStream(s -> sendQueue.add(Message.err(s))).printStream());
-                int exitCode = cli.main(
-                        buildRequest.getArgs(),
-                        buildRequest.getWorkingDir(),
-                        buildRequest.getProjectDir(),
-                        buildRequest.getEnv(),
-                        buildEventListener);
-                LOGGER.info("Build finished, finishing message dispatch");
-                buildEventListener.finish(exitCode);
+
+                final ClassLoader original = Thread.currentThread().getContextClassLoader();
+                try {
+                    URLClassLoader disposableClassLoader = new URLClassLoader(new URL[0], original);
+                    Thread.currentThread().setContextClassLoader(disposableClassLoader);
+                    Class<?> disposableCliClass = disposableClassLoader.loadClass("org.apache.maven.cli.DaemonMavenCli");
+                    int exitCode = (int) disposableCliClass.getMethod(
+                            "main",
+                            List.class,
+                            String.class,
+                            String.class,
+                            Map.class,
+                            BuildEventListener.class).invoke(
+                                    disposableCliClass.getConstructor().newInstance(),
+                                    buildRequest.getArgs(),
+                                    buildRequest.getWorkingDir(),
+                                    buildRequest.getProjectDir(),
+                                    buildRequest.getEnv(),
+                                    buildEventListener);
+                    LOGGER.info("Build finished, finishing message dispatch");
+                    buildEventListener.finish(exitCode);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(original);
+                    clearCache("sun.net.www.protocol.jar.JarFileFactory", "urlCache");
+                    clearCache("sun.net.www.protocol.jar.JarFileFactory", "fileCache");
+                }
             } catch (Throwable t) {
                 LOGGER.error("Error while building project", t);
                 buildEventListener.fail(t);
