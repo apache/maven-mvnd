@@ -25,18 +25,18 @@ import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
-public class ClassLoaderHelper {
+public final class ClassLoaderHelper {
 
     private ClassLoaderHelper() {
         // no instances
     }
 
     /**
-     * Creates mvndaemon loader based on mvnd home (and known layout).
+     * Creates mvndaemon class loader based on {@link Environment#MVND_HOME} and known layout.
      *
      * @param  filter non-null filter applied to findClass method.
-     * @param  parent nullable parent classloader.
-     * @return        a {@link ClassLoader} that uses passes in filter and parent.
+     * @param  parent nullable parent class loader.
+     * @return        a built {@link ClassLoader} that uses passed in filter and optionally parent.
      */
     public static ClassLoader createLoader(final Predicate<String> filter, final ClassLoader parent) {
 
