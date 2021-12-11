@@ -17,8 +17,6 @@ package org.mvndaemon.mvnd.daemon;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -43,6 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.mvndaemon.mvnd.builder.SmartBuilder;
+import org.mvndaemon.mvnd.common.ClassLoaderHelper;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
 import org.mvndaemon.mvnd.common.DaemonExpirationStatus;
@@ -572,7 +571,8 @@ public class Server implements AutoCloseable, Runnable {
 
                 final ClassLoader original = Thread.currentThread().getContextClassLoader();
                 try {
-                    URLClassLoader disposableClassLoader = new URLClassLoader(new URL[0], original);
+                    ClassLoader disposableClassLoader = ClassLoaderHelper
+                            .createLoader(s -> s.startsWith("org.apache.maven.cli.DaemonMavenCli"), original);
                     Thread.currentThread().setContextClassLoader(disposableClassLoader);
                     Class<?> disposableCliClass = disposableClassLoader.loadClass("org.apache.maven.cli.DaemonMavenCli");
                     int exitCode = (int) disposableCliClass.getMethod(
