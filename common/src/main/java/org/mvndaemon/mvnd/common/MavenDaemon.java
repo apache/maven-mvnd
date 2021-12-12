@@ -25,10 +25,6 @@ import java.util.stream.Stream;
 
 public class MavenDaemon {
 
-    static {
-
-    }
-
     public static void main(String[] args) throws Exception {
         // Disable URL caching so that  the JVM does not try to cache resources
         // loaded from jars that are built by a previous run
