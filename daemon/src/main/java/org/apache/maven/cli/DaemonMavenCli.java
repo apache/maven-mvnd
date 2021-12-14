@@ -227,7 +227,9 @@ public class DaemonMavenCli {
 
     public int doMain(CliRequest cliRequest, Map<String, String> clientEnv) throws Exception {
         Properties props = (Properties) System.getProperties().clone();
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
+            Thread.currentThread().setContextClassLoader(container.getContainerRealm());
             initialize(cliRequest);
             environment(cliRequest.workingDirectory, clientEnv);
             cli(cliRequest);
@@ -247,6 +249,7 @@ public class DaemonMavenCli {
         } finally {
             System.setProperties(props);
             eventSpyDispatcher.close();
+            Thread.currentThread().setContextClassLoader(tccl);
         }
     }
 

@@ -49,6 +49,10 @@ public class TestParameters extends DaemonParameters {
         return derive(b -> b.put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, null));
     }
 
+    public DaemonParameters withMavenMultiModuleProjectDirectory(Path dir) {
+        return derive(b -> b.put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, dir.toString()));
+    }
+
     public Path getTestDir() {
         return testDir;
     }
