@@ -17,7 +17,10 @@ package org.mvndaemon.mvnd.cli;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -32,12 +35,14 @@ public class EnvHelperTest {
 
     @Test
     void testSetEnv() throws Exception {
+        List<String> log = new ArrayList<>();
         String id = "Aa" + UUID.randomUUID();
         assertNull(System.getenv(id));
         assertNull(System.getenv().get(id));
         Map<String, String> env = new HashMap<>(System.getenv());
         env.put(id, id);
-        EnvHelper.environment(System.getProperty("user.dir"), env);
+        EnvHelper.environment(System.getProperty("user.dir"), env, log::add);
+        assertEquals(Collections.emptyList(), log);
         assertEquals(id, System.getenv(id));
         assertEquals(id, System.getenv().get(id));
         assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv(id.toLowerCase(Locale.ROOT)));
@@ -45,7 +50,8 @@ public class EnvHelperTest {
         assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv(id.toUpperCase(Locale.ROOT)));
         assertNull(System.getenv().get(id.toUpperCase(Locale.ROOT)));
         env.remove(id);
-        EnvHelper.environment(System.getProperty("user.dir"), env);
+        EnvHelper.environment(System.getProperty("user.dir"), env, log::add);
+        assertEquals(Collections.emptyList(), log);
         assertNull(System.getenv(id));
         assertNull(System.getenv().get(id));
     }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jline.utils.ExecHelper;
@@ -42,6 +43,10 @@ public class EnvHelper {
     }
 
     public static void environment(String workingDir, Map<String, String> clientEnv) {
+        environment(workingDir, clientEnv, LOGGER::warn);
+    }
+
+    public static void environment(String workingDir, Map<String, String> clientEnv, Consumer<String> log) {
         Map<String, String> requested = new TreeMap<>(clientEnv);
         Map<String, String> actual = new TreeMap<>(System.getenv());
         requested.put("PWD", Os.current().isCygwin() ? toCygwin(workingDir) : workingDir);
@@ -54,12 +59,15 @@ public class EnvHelper {
         try {
             for (String key : diffs) {
                 String vr = requested.get(key);
-                CLibrary.setenv(key, vr);
+                int rc = CLibrary.setenv(key, vr);
+                if (Os.current() == Os.WINDOWS ^ rc != 0) {
+                    log.accept(String.format("Error setting environment value %s = %s", key, vr));
+                }
             }
             setEnv(requested);
             chDir(workingDir);
         } catch (Exception e) {
-            LOGGER.warn("Environment mismatch ! Could not set the environment (" + e + ")");
+            log.accept("Environment mismatch ! Could not set the environment (" + e + ")");
         }
         Map<String, String> nactual = new TreeMap<>(System.getenv());
         diffs = Stream.concat(requested.keySet().stream(), actual.keySet().stream())
@@ -69,15 +77,15 @@ public class EnvHelper {
                 .filter(key -> !Objects.equals(requested.get(key), nactual.get(key)))
                 .collect(Collectors.toList());
         if (!diffs.isEmpty()) {
-            LOGGER.warn("A few environment mismatches have been detected between the client and the daemon.");
+            log.accept("A few environment mismatches have been detected between the client and the daemon.");
             diffs.forEach(key -> {
                 String vr = requested.get(key);
                 String va = nactual.get(key);
-                LOGGER.warn("   {} -> {} instead of {}", key,
-                        va != null ? "'" + va + "'" : "<null>", vr != null ? "'" + vr + "'" : "<null>");
+                log.accept(String.format("   %s -> %s instead of %s", key,
+                        va != null ? "'" + va + "'" : "<null>", vr != null ? "'" + vr + "'" : "<null>"));
             });
-            LOGGER.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
-            LOGGER.warn("start a new daemon from the current environment by issuing any mvnd build command.");
+            log.accept("If the difference matters to you, stop the running daemons using mvnd --stop and");
+            log.accept("start a new daemon from the current environment by issuing any mvnd build command.");
         }
     }
 
