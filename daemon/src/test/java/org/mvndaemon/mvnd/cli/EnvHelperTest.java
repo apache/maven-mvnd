@@ -41,9 +41,9 @@ public class EnvHelperTest {
         assertEquals(id, System.getenv(id));
         assertEquals(id, System.getenv().get(id));
         assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv(id.toLowerCase(Locale.ROOT)));
-        assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv().get(id.toLowerCase(Locale.ROOT)));
+        assertNull(System.getenv().get(id.toLowerCase(Locale.ROOT)));
         assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv(id.toUpperCase(Locale.ROOT)));
-        assertEquals(Os.current() == Os.WINDOWS ? id : null, System.getenv().get(id.toUpperCase(Locale.ROOT)));
+        assertNull(System.getenv().get(id.toUpperCase(Locale.ROOT)));
         env.remove(id);
         EnvHelper.environment(System.getProperty("user.dir"), env);
         assertNull(System.getenv(id));
