@@ -260,7 +260,7 @@ public enum Environment {
      * <code>'mvn:[groupId]:[artifactId]'</code> or <code>'mvn:[artifactId]</code>'.</li>
      * </ul>
      * This pattern will be evaluated against the full path of the dependencies, so it is usually desirable to
-     * start with <code>"glob:**&#47;"</code> to support any location of the local repository.
+     * start with <code>'glob:**&#47;'</code> to support any location of the local repository.
      */
     MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL),
     /**
