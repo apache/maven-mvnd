@@ -22,6 +22,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -97,7 +98,7 @@ public class EnvHelper {
             } catch (IOException e) {
                 String root = path.substring(0, 1);
                 String p = path.substring(3);
-                return "/cygdrive/" + root.toLowerCase() + "/" + p.replace('\\', '/');
+                return "/cygdrive/" + root.toLowerCase(Locale.ROOT) + "/" + p.replace('\\', '/');
             }
         }
         return path;
