@@ -252,15 +252,15 @@ public enum Environment {
     MVND_SOCKET_FAMILY("mvnd.socketFamily", null, "inet", OptionType.STRING, Flags.DISCRIMINATING),
     /**
      * Pattern that will force eviction of the plugin realms if one of its dependencies matches.
-     * The overall pattern is a comma separated list of:
+     * The overall pattern is a comma separated list of either:
      * <ul>
-     * <li>a glob pattern starting with <code>glob:</code> (the default syntax if no scheme is specified)</li>
-     * <li>a regex pattern starting with <code>regex:</code></li>
-     * <li>a maven expression, either <code>mvn:[groupId]:[artifactId]:[version]</code>,
-     * <code>mvn:[groupId]:[artifactId]</code> or <code>mvn:[artifactId]</code></li>
+     * <li>a glob pattern starting with <code>'glob:'</code> (the default syntax if no scheme is specified),</li>
+     * <li>a regex pattern starting with <code>'regex:'</code>,</li>
+     * <li>a maven expression, either <code>'mvn:[groupId]:[artifactId]:[version]'</code>,
+     * <code>'mvn:[groupId]:[artifactId]'</code> or <code>'mvn:[artifactId]</code>'.</li>
      * </ul>
      * This pattern will be evaluated against the full path of the dependencies, so it is usually desirable to
-     * start with <code>"glob:**{@literal /}"</code> to support any location of the local repository.
+     * start with <code>"glob:**&#47;"</code> to support any location of the local repository.
      */
     MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL),
     /**
