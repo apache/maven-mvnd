@@ -79,6 +79,7 @@
         <module>daemon</module>
         <module>sync</module>
         <module>dist</module>
+        <module>fastclean</module>
         <module>integration-tests</module>
     </modules>
 
