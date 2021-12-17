@@ -103,7 +103,7 @@ public class IpcClient {
                 : JavaVersion.getJavaSpec() >= 16.0f ? SocketFamily.unix : SocketFamily.inet;
 
         Path lockPath = this.lockPath.toAbsolutePath().normalize();
-        Path lockFile = lockPath.resolve(".maven-resolver-ipc-lock-" + family.name().toLowerCase());
+        Path lockFile = lockPath.resolve(".maven-resolver-ipc-lock-" + family.name().toLowerCase(Locale.ROOT));
         if (!Files.isRegularFile(lockFile)) {
             if (!Files.isDirectory(lockFile.getParent())) {
                 Files.createDirectories(lockFile.getParent());
