@@ -191,9 +191,9 @@ jobs:
 
     - name: Compute sha256 checksums
       run: |
-        sha256sum mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip | cut -d ' ' -f 1 > mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
-        sha256sum mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip | cut -d ' ' -f 1 > mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
-        sha256sum mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip | cut -d ' ' -f 1 > mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
+        sha256sum mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip > mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
+        sha256sum mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip > mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
+        sha256sum mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip > mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
 
     - name: Create Release
       id: create_release
