@@ -1,0 +1,17 @@
+# see https://s.apache.org/asfyaml
+github:
+  description: "Apache Maven Daemon"
+  homepage: https://maven.apache.org/
+  labels:
+    - java
+    - build-management
+    - apache-maven
+    - maven
+  enabled_merge_buttons:
+    squash: true
+    merge: false
+    rebase: true
+notifications:
+  commits: commits@maven.apache.org
+  issues: issues@maven.apache.org
+  jira_options: link label comment
