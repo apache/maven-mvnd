@@ -33,7 +33,7 @@ jobs:
         run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: setup-graalvm-ce
-        uses: DeLaGuardo/setup-graalvm@8bbfe44ef9c6f5c07e5af036a1bffd561c037d18
+        uses: DeLaGuardo/setup-graalvm@5.0
         with:
           graalvm-version: ${{ env.GRAALVM_VERSION }}
 
@@ -65,44 +65,20 @@ jobs:
     runs-on: windows-2019
     steps:
 
+      - uses: actions/checkout@v1
+
+      - name: Set VERSION env var
+        shell: bash
+        run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
       - name: setup-graalvm-ce
-        uses: DeLaGuardo/setup-graalvm@8bbfe44ef9c6f5c07e5af036a1bffd561c037d18
+        uses: DeLaGuardo/setup-graalvm@5.0
         with:
           graalvm-version: ${{ env.GRAALVM_VERSION }}
 
       - name: gu install native-image
         shell: cmd
         run: gu install native-image
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ env.JAVA_HOME }}\bin\native-image.exe
-          key: ${{ runner.os }}-native-image-${{ env.GRAALVM_VERSION }}
-
-      - name: Check if native-image.exe exists
-        id: native_image_exe_exists
-        uses: andstor/file-existence-action@v1
-        with:
-          files: ${{ env.JAVA_HOME }}\bin\native-image.exe
-
-      - name: Compile native-image.cmd to native-image.exe
-        if: ${{ steps.native_image_exe_exists.outputs.files_exists == 'false' }}
-        shell: cmd
-        run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          "%JAVA_HOME%\bin\native-image.cmd" -jar "%JAVA_HOME%\lib\graalvm\svm-driver.jar" native-image
-
-      - name: move native-image.exe %JAVA_HOME%\bin\
-        if: ${{ steps.native_image_exe_exists.outputs.files_exists == 'false' }}
-        shell: cmd
-        run: |
-          move native-image.exe "%JAVA_HOME%\bin\"
-
-      - uses: actions/checkout@v1
-
-      - name: Set VERSION env var
-        shell: bash
-        run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: Skip tests when releasing from a tag
         if: startsWith(github.ref, 'refs/tags')
@@ -138,7 +114,7 @@ jobs:
         run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: setup-graalvm-ce
-        uses: DeLaGuardo/setup-graalvm@8bbfe44ef9c6f5c07e5af036a1bffd561c037d18
+        uses: DeLaGuardo/setup-graalvm@5.0
         with:
           graalvm-version: ${{ env.GRAALVM_VERSION }}
 

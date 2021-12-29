@@ -6,6 +6,7 @@
 
 **Merged pull requests:**
 
+- Fix resident extensions [\#531](https://github.com/mvndaemon/mvnd/pull/531) ([gnodet](https://github.com/gnodet))
 - Upgrade to maven 3.8.4 [\#524](https://github.com/mvndaemon/mvnd/pull/524) ([gnodet](https://github.com/gnodet))
 
 ## [0.7.1](https://github.com/mvndaemon/mvnd/tree/0.7.1) (2021-12-07)
