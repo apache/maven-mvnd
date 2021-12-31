@@ -14,4 +14,5 @@ github:
 notifications:
   commits: commits@maven.apache.org
   issues: issues@maven.apache.org
+  pullrequests: issues@maven.apache.org
   jira_options: link label comment
