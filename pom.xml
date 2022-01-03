@@ -45,7 +45,7 @@
         <jansi.version>2.4.0</jansi.version>
         <jline.version>3.21.0</jline.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.2.10</logback.version>
         <maven.version>3.8.4</maven.version>
         <maven.resolver.version>1.7.2</maven.resolver.version>
         <slf4j.version>1.7.32</slf4j.version>
