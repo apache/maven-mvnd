@@ -189,7 +189,7 @@ $ $JAVA_HOME/bin/gu install native-image
 ----
 
 * `native-image` may require additional software to be installed depending on your platform - see the
-https://www.graalvm.org/docs/reference-manual/native-image/#prerequisites[`native-image` documentation].
+https://www.graalvm.org/reference-manual/native-image/#prerequisites[`native-image` documentation].
 
 === Build `mvnd`
 
