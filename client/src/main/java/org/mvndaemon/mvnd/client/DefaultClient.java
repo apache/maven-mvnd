@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.internal.CLibrary;
 import org.jline.utils.AttributedString;
@@ -332,9 +333,8 @@ public class DefaultClient implements Client {
         List<Path> deleted = new ArrayList<>();
         List<Throwable> exceptions = new ArrayList<>();
         FileTime limit = FileTime.from(Instant.now().minus(purgeLogPeriod));
-        try {
-            Files.list(storage)
-                    .filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
+        try (Stream<Path> storagePath = Files.list(storage)) {
+            storagePath.filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
                     .filter(p -> !log.equals(p))
                     .filter(p -> {
                         try {

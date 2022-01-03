@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -307,7 +308,7 @@ public class DaemonConnector {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
-        try {
+        try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("mvn/lib/ext"))) {
             List<String> args = new ArrayList<>();
             // executable
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
@@ -315,7 +316,7 @@ public class DaemonConnector {
             // classpath
             String mvndCommonPath = null;
             String mvndAgentPath = null;
-            for (Path jar : Files.newDirectoryStream(mvndHome.resolve("mvn/lib/ext"))) {
+            for (Path jar : jarPaths) {
                 String s = jar.getFileName().toString();
                 if (s.endsWith(".jar")) {
                     if (s.startsWith("mvnd-common-")) {
@@ -349,11 +350,12 @@ public class DaemonConnector {
             }
             // .mvn/jvm.config
             if (Files.isRegularFile(parameters.jvmConfigPath())) {
-                Files.lines(parameters.jvmConfigPath())
-                        .flatMap(l -> Stream.of(l.split(" ")))
-                        .map(String::trim)
-                        .filter(StringUtils::isNotEmpty)
-                        .forEach(args::add);
+                try (Stream<String> lines = Files.lines(parameters.jvmConfigPath())) {
+                    lines.flatMap(l -> Stream.of(l.split(" ")))
+                            .map(String::trim)
+                            .filter(StringUtils::isNotEmpty)
+                            .forEach(args::add);
+                }
             }
             // memory
             String minHeapSize = parameters.minHeapSize();
