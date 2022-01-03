@@ -168,14 +168,7 @@ public class Server implements AutoCloseable, Runnable {
                     try {
                         registry.close();
                     } finally {
-                        try {
-                            socket.close();
-                        } finally {
-                            if (!noDaemon) {
-                                clearCache("sun.net.www.protocol.jar.JarFileFactory", "urlCache");
-                                clearCache("sun.net.www.protocol.jar.JarFileFactory", "fileCache");
-                            }
-                        }
+                        socket.close();
                     }
                 }
             }
@@ -193,6 +186,7 @@ public class Server implements AutoCloseable, Runnable {
             cache.clear();
         } catch (Throwable t) {
             // ignore
+            LOGGER.warn("Error clearing cache {}.{}", clazzName, fieldName, t);
         }
     }
 
@@ -263,6 +257,11 @@ public class Server implements AutoCloseable, Runnable {
             }
         } catch (Throwable t) {
             LOGGER.error("Error reading request", t);
+        } finally {
+            if (!noDaemon) {
+                clearCache("sun.net.www.protocol.jar.JarFileFactory", "urlCache");
+                clearCache("sun.net.www.protocol.jar.JarFileFactory", "fileCache");
+            }
         }
     }
 

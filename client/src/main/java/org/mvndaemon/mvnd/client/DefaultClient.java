@@ -151,6 +151,7 @@ public class DefaultClient implements Client {
                 " --add-opens java.base/java.io=ALL-UNNAMED"
                         + " --add-opens java.base/java.lang=ALL-UNNAMED"
                         + " --add-opens java.base/java.util=ALL-UNNAMED"
+                        + " --add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED"
                         + " --add-opens java.base/sun.nio.fs=ALL-UNNAMED");
     }
 
