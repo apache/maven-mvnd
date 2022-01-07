@@ -372,6 +372,9 @@ public class DaemonConnector {
             }
 
             Environment.MVND_HOME.addCommandLineOption(args, mvndHome.toString());
+            args.add("-Dmaven.home=" + mvndHome.resolve("mvn"));
+            args.add("-Dmaven.conf=" + mvndHome.resolve("mvn/conf"));
+
             Environment.MVND_JAVA_HOME.addCommandLineOption(args, parameters.javaHome().toString());
             Environment.LOGBACK_CONFIGURATION_FILE
                     .addCommandLineOption(args, parameters.logbackConfigurationPath().toString());

@@ -79,7 +79,7 @@ public enum Environment {
      * The daemon installation directory. The client normally sets this according to where its <code>mvnd</code>
      * executable is located
      */
-    MVND_HOME("mvnd.home", "MVND_HOME", null, OptionType.PATH, Flags.NONE),
+    MVND_HOME("mvnd.home", "MVND_HOME", null, OptionType.PATH, Flags.DISCRIMINATING),
     /** The user home directory */
     USER_HOME("user.home", null, null, OptionType.PATH, Flags.NONE),
     /** The current working directory */
