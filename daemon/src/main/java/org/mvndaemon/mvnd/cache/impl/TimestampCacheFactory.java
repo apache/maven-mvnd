@@ -17,6 +17,7 @@ package org.mvndaemon.mvnd.cache.impl;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -57,13 +58,17 @@ public class TimestampCacheFactory implements CacheFactory {
 
         FileState(Path path) {
             this.path = path;
+            BasicFileAttributes attrs;
             try {
-                BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
-                this.lastModifiedTime = attrs.lastModifiedTime();
-                this.fileKey = attrs.fileKey();
+                attrs = Files.readAttributes(path, BasicFileAttributes.class);
+            } catch (NoSuchFileException e) {
+                // we allow this exception in case of a missing reactor artifact
+                attrs = null;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            this.lastModifiedTime = attrs != null ? attrs.lastModifiedTime() : FileTime.fromMillis(0);
+            this.fileKey = attrs != null ? attrs.fileKey() : null;
         }
 
         @Override
