@@ -17,6 +17,7 @@ package org.mvndaemon.mvnd.cache.impl;
 
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
@@ -102,6 +103,9 @@ public class WatchServiceCacheFactory implements CacheFactory {
                         new WatchEvent.Kind[] { StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY },
                         mods);
                 return new Registration(watchKey);
+            } catch (NoSuchFileException e) {
+                // we allow this exception in case of a missing reactor artifact
+                return null;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
