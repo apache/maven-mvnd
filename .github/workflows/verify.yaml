@@ -15,247 +15,110 @@
 # limitations under the License.
 #
 
-name: GitHub Actions
-on: [push, pull_request]
+name: Early Access
+
+on:
+  push:
+  pull_request:
 
 env:
   GRAALVM_VERSION: '21.3.0.java17'
 
 jobs:
 
-  linux:
+  build:
+    name: 'Build with Graal on ${{ matrix.os }}'
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Set VERSION env var
+        run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - uses: bluwy/substitute-string-action@v1
+        id: os
+        with:
+          _input-text: '${{ runner.os }}'
+          Linux: linux
+          Windows: windows
+          MacOs: darwin
+          macOs: darwin
+
+      - name: 'Set up Graal'
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: GRAALVM_VERSION
+          java-version: '17 '
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: mvn clean verify
+        if: ${{ runner.os != 'Windows' }}
+        run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
+
+      - name: mvn clean verify
+        if: ${{ runner.os == 'Windows' }}
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
+
+      - name: Upload daemon test logs
+        if: ${{ success() || failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: daemon-test-logs-${{ steps.os.outputs.result }}
+          path: integration-tests/target/mvnd-tests/**/daemon*.log
+
+      - name: Upload mvnd.zip
+        uses: actions/upload-artifact@v2
+        with:
+          name: mvnd-${{ env.VERSION }}-${{ steps.os.outputs.result }}-amd64.zip
+          path: dist/target/mvnd-*.zip
+
+  early-access:
     runs-on: ubuntu-18.04
+    needs: [build]
+    # Only post early access releases when push to master
+    if: ${{ !github.event.issue.pull_request } # && startsWith(github.ref, 'refs/heads/master')
+
     steps:
+      - name: 'Check out repository'
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-    - uses: actions/checkout@v1
+      - name: 'Download all build artifacts'
+        uses: actions/download-artifact@v2
 
-    - name: Set VERSION env var
-      run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: 'Set up Java'
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: 'zulu'
 
-    - name: setup-graalvm-ce
-      uses: DeLaGuardo/setup-graalvm@5.0
-      with:
-        graalvm-version: ${{ env.GRAALVM_VERSION }}
+      - name: 'Cache Maven packages'
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
 
-    - name: gu install native-image
-      run: gu install native-image
+      - name: 'Release with JReleaser'
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./mvnw -B --file pom.xml -pl :mvnd -DartifactsDir=. jreleaser:release
 
-    - name: Skip tests when releasing from a tag
-      if: startsWith(github.ref, 'refs/tags')
-      shell: bash
-      run: echo "SKIP_TESTS_OPT=-DskipTests" >> $GITHUB_ENV
-
-    - name: mvn clean verify
-      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e $SKIP_TESTS_OPT
-
-    - name: Upload daemon test logs
-      if: ${{ success() || failure() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: daemon-test-logs-linux
-        path: integration-tests/target/mvnd-tests/**/daemon*.log
-
-    - name: Upload mvnd.zip
-      uses: actions/upload-artifact@v2
-      with:
-        name: mvnd-linux-amd64.zip
-        path: dist/target/mvnd-*.zip
-
-  windows:
-    runs-on: windows-2019
-    steps:
-
-    - uses: actions/checkout@v1
-
-    - name: Set VERSION env var
-      shell: bash
-      run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-
-    - name: setup-graalvm-ce
-      uses: DeLaGuardo/setup-graalvm@5.0
-      with:
-        graalvm-version: ${{ env.GRAALVM_VERSION }}
-
-    - name: gu install native-image
-      shell: cmd
-      run: gu install native-image
-
-    - name: Skip tests when releasing from a tag
-      if: startsWith(github.ref, 'refs/tags')
-      shell: bash
-      run: echo "SKIP_TESTS_OPT=-DskipTests" >> $GITHUB_ENV
-
-    - name: mvn clean verify
-      shell: cmd
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e %SKIP_TESTS_OPT%
-
-    - name: Upload daemon test logs
-      if: ${{ success() || failure() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: daemon-test-logs-windows
-        path: integration-tests/target/mvnd-tests/**/daemon*.log
-
-    - name: Upload mvnd.zip
-      uses: actions/upload-artifact@v2
-      with:
-        name: mvnd-windows-amd64.zip
-        path: dist/target/mvnd-*.zip
-
-  darwin:
-    runs-on: macos-10.15
-    steps:
-
-    - uses: actions/checkout@v1
-
-    - name: Set VERSION env var
-      run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-
-    - name: setup-graalvm-ce
-      uses: DeLaGuardo/setup-graalvm@5.0
-      with:
-        graalvm-version: ${{ env.GRAALVM_VERSION }}
-
-    - name: gu install native-image
-      run: gu install native-image
-
-    - name: Skip tests when releasing from a tag
-      if: startsWith(github.ref, 'refs/tags')
-      shell: bash
-      run: echo "SKIP_TESTS_OPT=-DskipTests" >> $GITHUB_ENV
-
-    - name: mvn clean verify
-      run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e $SKIP_TESTS_OPT
-
-    - name: Upload daemon test logs
-      if: ${{ success() || failure() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: daemon-test-logs-darwin
-        path: integration-tests/target/mvnd-tests/**/daemon*.log
-
-    - name: Upload mvnd.zip
-      uses: actions/upload-artifact@v2
-      with:
-        name: mvnd-darwin-amd64.zip
-        path: dist/target/mvnd-*.zip
-
-  deploy:
-    runs-on: ubuntu-18.04
-    needs: [linux, windows, darwin]
-    if: startsWith(github.ref, 'refs/tags') # deploy only for tags
-    steps:
-
-    - name: Download artifacts
-      uses: actions/download-artifact@v2
-
-    - name: ls -R
-      run: ls -R
-
-    - name: Set environment
-      run: |
-        if [[ ${GITHUB_REF} = refs/heads/* ]]
-        then
-            VERSION=${GITHUB_REF##*/}-${GITHUB_SHA::8}
-        else
-            VERSION=${GITHUB_REF##*/}
-        fi
-        echo "Using VERSION=$VERSION"
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-    - name: Compute sha256 checksums
-      run: |
-        sha256sum mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip | cut -d ' ' -f 1 > mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
-        sha256sum mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip | cut -d ' ' -f 1 > mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
-        sha256sum mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip | cut -d ' ' -f 1 > mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
-
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.VERSION }}
-        release_name: ${{ env.VERSION }}
-        draft: false
-        prerelease: false
-
-    - name: Deploy mvnd-linux-amd64.zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip
-        asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip
-        asset_content_type: application/zip
-
-    - name: Deploy mvnd-linux-amd64.zip.sha256
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-linux-amd64.zip/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
-        asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
-        asset_content_type: text/plain
-
-    - name: Deploy mvnd-darwin-amd64.zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip
-        asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip
-        asset_content_type: application/zip
-
-    - name: Deploy mvnd-darwin-amd64.zip.sha256
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-darwin-amd64.zip/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
-        asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
-        asset_content_type: text/plain
-
-    - name: Deploy mvnd-windows-amd64.zip
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip
-        asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip
-        asset_content_type: application/zip
-
-    - name: Deploy mvnd-windows-amd64.zip.sha256
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: mvnd-windows-amd64.zip/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
-        asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
-        asset_content_type: text/plain
-
-    - uses: actions/checkout@v1
-
-    - name: Publish on sdkman.io
-      env:
-        SDKMAN_CONSUMER_KEY: ${{ secrets.SDKMAN_CONSUMER_KEY }}
-        SDKMAN_CONSUMER_TOKEN: ${{ secrets.SDKMAN_CONSUMER_TOKEN }}
-      run: ./build/publish-on-sdkman.sh "${{ env.VERSION }}"
-
-    - name: Update the mvnd Homebrew tap
-      env:
-        MVND_CI_TOKEN: ${{ secrets.MVND_CI_TOKEN }}
-      run: |
-        curl -u ":$MVND_CI_TOKEN" \
-        -X POST \
-        -H "Accept: application/vnd.github.v3+json" \
-        https://api.github.com/repos/mvndaemon/homebrew-mvnd/actions/workflows/release.yaml/dispatches \
-        -d '{"ref": "master"}'
+      - name: JReleaser output
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: jreleaser-logs
+          path: |
+            target/jreleaser/trace.log
+            target/jreleaser/output.properties

@@ -74,6 +74,12 @@
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
         <takari-provisio.version>1.0.19</takari-provisio.version>
 
+        <jreleaser.version>0.10.0</jreleaser.version>
+        <jreleaser.prerelease>false</jreleaser.prerelease>
+        <jreleaser.upload.assets>ALWAYS</jreleaser.upload.assets>
+        <jreleaser.overwrite>true</jreleaser.overwrite>
+        <jreleaser.update>false</jreleaser.update>
+
         <javassist.version>3.27.0-GA</javassist.version>
     </properties>
 
@@ -528,7 +534,83 @@ limitations under the License.</inlineHeader>
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.jreleaser</groupId>
+                <artifactId>jreleaser-maven-plugin</artifactId>
+                <version>${jreleaser.version}</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <jreleaser>
+                        <environment>
+                            <properties>
+                                <artifactsDir>dist/target</artifactsDir>
+                            </properties>
+                        </environment>
+                        <project>
+                            <name>mvnd</name>
+                            <description>Maven Daemon</description>
+                            <license>APACHE-2.0</license>
+                            <website>https://github.com/mvndaemon/mvnd</website>
+                            <authors>The Maven project</authors>
+                        </project>
+                        <release>
+                          <github>
+                              <previousTagName>0.7.1</previousTagName>
+                              <branch>master</branch>
+                              <tagName>{{projectVersion}}</tagName>
+                              <releaseName>{{projectVersion}}</releaseName>
+                              <prerelease>
+                                  <enabled>${jreleaser.prerelease}</enabled>
+                              </prerelease>
+                              <overwrite>${jreleaser.overwrite}</overwrite>
+                              <update>${jreleaser.update}</update>
+                              <!--uploadAssets>${jreleaser.upload.assets}</uploadAssets-->
+                          </github>
+                        </release>
+                        <distributions>
+                            <mvnd>
+                                <type>NATIVE_IMAGE</type>
+                                <artifacts>
+                                    <artifact>
+                                        <path>{{artifactsDir}}/mvnd-{{projectVersion}}-linux-amd64.zip</path>
+                                        <platform>linux-x86_64</platform>
+                                    </artifact>
+                                    <artifact>
+                                        <path>{{artifactsDir}}/mvnd-{{projectVersion}}-windows-amd64.zip</path>
+                                        <platform>windows-x86_64</platform>
+                                    </artifact>
+                                    <artifact>
+                                        <path>{{artifactsDir}}/mvnd-{{projectVersion}}-darwin-amd64.zip</path>
+                                        <platform>osx-x86_64</platform>
+                                    </artifact>
+                                </artifacts>
+                            </mvnd>
+                        </distributions>
+                    </jreleaser>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>prerelease</id>
+            <properties>
+                <jreleaser.prerelease>true</jreleaser.prerelease>
+                <jreleaser.upload.assets>PRERELEASE</jreleaser.upload.assets>
+                <jreleaser.overwrite>false</jreleaser.overwrite>
+                <jreleaser.update>false</jreleaser.update>
+            </properties>
+        </profile>
+        <profile>
+            <id>release</id>
+            <properties>
+                <jreleaser.prerelease>false</jreleaser.prerelease>
+                <jreleaser.upload.assets>RELEASE</jreleaser.upload.assets>
+                <jreleaser.overwrite>false</jreleaser.overwrite>
+                <jreleaser.update>true</jreleaser.update>
+            </properties>
+        </profile>
+    </profiles>
 </project>
