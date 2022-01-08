@@ -74,11 +74,13 @@
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
         <takari-provisio.version>1.0.19</takari-provisio.version>
 
-        <jreleaser.version>0.10.0</jreleaser.version>
+        <jreleaser.version>1.0.0-SNAPSHOT</jreleaser.version>
         <jreleaser.prerelease>false</jreleaser.prerelease>
         <jreleaser.upload.assets>ALWAYS</jreleaser.upload.assets>
         <jreleaser.overwrite>true</jreleaser.overwrite>
         <jreleaser.update>false</jreleaser.update>
+        <jreleaser.brew.active>NEVER</jreleaser.brew.active>
+        <jreleaser.sdkman.active>NEVER</jreleaser.sdkman.active>
 
         <javassist.version>3.27.0-GA</javassist.version>
     </properties>
@@ -550,13 +552,12 @@ limitations under the License.</inlineHeader>
                         <project>
                             <name>mvnd</name>
                             <description>Maven Daemon</description>
-                            <license>APACHE-2.0</license>
+                            <license>Apache-2.0</license>
                             <website>https://github.com/mvndaemon/mvnd</website>
                             <authors>The Maven project</authors>
                         </project>
                         <release>
                           <github>
-                              <previousTagName>0.7.1</previousTagName>
                               <branch>master</branch>
                               <tagName>{{projectVersion}}</tagName>
                               <releaseName>{{projectVersion}}</releaseName>
@@ -565,7 +566,7 @@ limitations under the License.</inlineHeader>
                               </prerelease>
                               <overwrite>${jreleaser.overwrite}</overwrite>
                               <update>${jreleaser.update}</update>
-                              <!--uploadAssets>${jreleaser.upload.assets}</uploadAssets-->
+                              <uploadAssets>${jreleaser.upload.assets}</uploadAssets>
                           </github>
                         </release>
                         <distributions>
@@ -585,6 +586,18 @@ limitations under the License.</inlineHeader>
                                         <platform>osx-x86_64</platform>
                                     </artifact>
                                 </artifacts>
+                                <brew>
+                                    <active>${jreleaser.brew.active}</active>
+                                    <multiPlatform>true</multiPlatform>
+                                    <tap>
+                                        <owner>mvndaemon</owner>
+                                        <name>homebrew-mvnd</name>
+                                        <commitMessage>Release {{tagName}}</commitMessage>
+                                    </tap>
+                                </brew>
+                                <sdkman>
+                                    <active>${jreleaser.sdkman.active}</active>
+                                </sdkman>
                             </mvnd>
                         </distributions>
                     </jreleaser>
@@ -610,6 +623,8 @@ limitations under the License.</inlineHeader>
                 <jreleaser.upload.assets>RELEASE</jreleaser.upload.assets>
                 <jreleaser.overwrite>false</jreleaser.overwrite>
                 <jreleaser.update>true</jreleaser.update>
+                <jreleaser.brew.active>RELEASE</jreleaser.brew.active>
+                <jreleaser.sdkman.active>RELEASE</jreleaser.sdkman.active>
             </properties>
         </profile>
     </profiles>
