@@ -77,7 +77,8 @@
         <jreleaser.version>1.0.0-SNAPSHOT</jreleaser.version>
         <jreleaser.prerelease>false</jreleaser.prerelease>
         <jreleaser.upload.assets>ALWAYS</jreleaser.upload.assets>
-        <jreleaser.overwrite>true</jreleaser.overwrite>
+        <jreleaser.distribution.active>ALWAYS</jreleaser.distribution.active>
+        <jreleaser.overwrite>false</jreleaser.overwrite>
         <jreleaser.update>false</jreleaser.update>
         <jreleaser.brew.active>NEVER</jreleaser.brew.active>
         <jreleaser.sdkman.active>NEVER</jreleaser.sdkman.active>
@@ -557,45 +558,47 @@ limitations under the License.</inlineHeader>
                             <authors>The Maven project</authors>
                         </project>
                         <release>
-                          <github>
-                              <branch>master</branch>
-                              <tagName>{{projectVersion}}</tagName>
-                              <releaseName>{{projectVersion}}</releaseName>
-                              <prerelease>
-                                  <enabled>${jreleaser.prerelease}</enabled>
-                              </prerelease>
-                              <overwrite>${jreleaser.overwrite}</overwrite>
-                              <update>${jreleaser.update}</update>
-                              <uploadAssets>${jreleaser.upload.assets}</uploadAssets>
-                              <changelog>
-                                  <formatted>ALWAYS</formatted>
-                                  <format>- {{commitShortHash}} {{commitTitle}}</format>
-                                  <contributors>
-                                    <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
-                                  </contributors>
-                                  <labelers>
-                                      <labeler>
-                                          <label>update-changelog</label>
-                                          <title>Updated CHANGELOG.md</title>
-                                      </labeler>
-                                  </labelers>
-                                  <categories>
-                                      <category>
-                                          <key>changelog</key>
-                                          <title>changelog</title>
-                                          <labels>update-changelog</labels>
-                                      </category>
-                                  </categories>
-                                  <hide>
-                                      <categories>changelog</categories>
-                                      <contributors>GitHub,bot</contributors>
-                                  </hide>
-                              </changelog>
-                          </github>
+                            <github>
+                                <branch>master</branch>
+                                <skipTag>true</skipTag>
+                                <tagName>{{projectVersion}}</tagName>
+                                <releaseName>{{projectVersion}}</releaseName>
+                                <prerelease>
+                                    <enabled>${jreleaser.prerelease}</enabled>
+                                </prerelease>
+                                <overwrite>${jreleaser.overwrite}</overwrite>
+                                <update>${jreleaser.update}</update>
+                                <uploadAssets>${jreleaser.upload.assets}</uploadAssets>
+                                <changelog>
+                                    <formatted>ALWAYS</formatted>
+                                    <format>- {{commitShortHash}} {{commitTitle}}</format>
+                                    <contributors>
+                                        <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
+                                    </contributors>
+                                    <labelers>
+                                        <labeler>
+                                            <label>update-changelog</label>
+                                            <title>Updated CHANGELOG.md</title>
+                                        </labeler>
+                                    </labelers>
+                                    <categories>
+                                        <category>
+                                            <key>changelog</key>
+                                            <title>changelog</title>
+                                            <labels>update-changelog</labels>
+                                        </category>
+                                    </categories>
+                                    <hide>
+                                        <categories>changelog</categories>
+                                        <contributors>GitHub,bot</contributors>
+                                    </hide>
+                                </changelog>
+                            </github>
                         </release>
                         <distributions>
                             <mvnd>
                                 <type>NATIVE_IMAGE</type>
+                                <active>${jreleaser.distribution.active}</active>
                                 <artifacts>
                                     <artifact>
                                         <path>{{artifactsDir}}/mvnd-{{projectVersion}}-linux-amd64.zip</path>
@@ -636,6 +639,7 @@ limitations under the License.</inlineHeader>
             <properties>
                 <jreleaser.prerelease>true</jreleaser.prerelease>
                 <jreleaser.upload.assets>PRERELEASE</jreleaser.upload.assets>
+                <jreleaser.distribution.active>NEVER</jreleaser.distribution.active>
                 <jreleaser.overwrite>false</jreleaser.overwrite>
                 <jreleaser.update>false</jreleaser.update>
             </properties>
@@ -645,6 +649,7 @@ limitations under the License.</inlineHeader>
             <properties>
                 <jreleaser.prerelease>false</jreleaser.prerelease>
                 <jreleaser.upload.assets>RELEASE</jreleaser.upload.assets>
+                <jreleaser.distribution.active>ALWAYS</jreleaser.distribution.active>
                 <jreleaser.overwrite>false</jreleaser.overwrite>
                 <jreleaser.update>true</jreleaser.update>
                 <jreleaser.brew.active>RELEASE</jreleaser.brew.active>

@@ -15,11 +15,10 @@
 # limitations under the License.
 #
 
-name: Early Access
+name: Release
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 env:
   GRAALVM_VERSION: '21.3.0.java17'
@@ -28,7 +27,6 @@ jobs:
 
   build:
     name: 'Build with Graal on ${{ matrix.os }}'
-    if: startsWith(github.event.head_commit.message, 'Updated CHANGELOG.md') != true
     strategy:
       fail-fast: true
       matrix:
@@ -82,11 +80,9 @@ jobs:
           name: mvnd-${{ env.VERSION }}-${{ steps.os.outputs.result }}-amd64.zip
           path: dist/target/mvnd-*.zip
 
-  early-access:
+  release:
     runs-on: ubuntu-18.04
     needs: [build]
-    # Only post early access releases when push to master
-    if: ${{ !github.event.issue.pull_request } && startsWith(github.ref, 'refs/heads/master')
 
     steps:
       - name: 'Check out repository'
@@ -113,7 +109,7 @@ jobs:
       - name: 'Release to GitHub'
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./mvnw -B --file pom.xml -pl :mvnd -DartifactsDir=. jreleaser:release
+        run: ./mvnw -B --file pom.xml -pl :mvnd -Prelease -DartifactsDir=. jreleaser:full-release
 
       - name: JReleaser output
         if: always()
