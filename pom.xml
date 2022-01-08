@@ -567,6 +567,30 @@ limitations under the License.</inlineHeader>
                               <overwrite>${jreleaser.overwrite}</overwrite>
                               <update>${jreleaser.update}</update>
                               <uploadAssets>${jreleaser.upload.assets}</uploadAssets>
+                              <changelog>
+                                  <formatted>ALWAYS</formatted>
+                                  <format>- {{commitShortHash}} {{commitTitle}}</format>
+                                  <contributors>
+                                    <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
+                                  </contributors>
+                                  <labelers>
+                                      <labeler>
+                                          <label>update-changelog</label>
+                                          <title>Updated CHANGELOG.md</title>
+                                      </labeler>
+                                  </labelers>
+                                  <categories>
+                                      <category>
+                                          <key>changelog</key>
+                                          <title>changelog</title>
+                                          <labels>update-changelog</labels>
+                                      </category>
+                                  </categories>
+                                  <hide>
+                                      <categories>changelog</categories>
+                                      <contributors>GitHub,bot</contributors>
+                                  </hide>
+                              </changelog>
                           </github>
                         </release>
                         <distributions>
