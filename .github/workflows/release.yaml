@@ -20,9 +20,6 @@ name: Release
 on:
   workflow_dispatch:
 
-env:
-  GRAALVM_VERSION: '21.3.0.java17'
-
 jobs:
 
   build:
@@ -51,7 +48,7 @@ jobs:
       - name: 'Set up Graal'
         uses: graalvm/setup-graalvm@v1
         with:
-          version: GRAALVM_VERSION
+          version: '21.3.0'
           java-version: '17 '
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
