@@ -28,6 +28,7 @@ jobs:
 
   build:
     name: 'Build with Graal on ${{ matrix.os }}'
+    if: startsWith(github.event.head_commit.message, 'Updated CHANGELOG.md') != true
     strategy:
       fail-fast: true
       matrix:
