@@ -341,6 +341,7 @@ limitations under the License.</inlineHeader>
                             <exclude>**/*.jnilib</exclude>
                             <exclude>**/Makefile*</exclude>
                             <exclude>**/docker/*</exclude>
+                            <exclude>**/*.tpl</exclude>
                         </excludes>
                         <mapping>
                             <bash>SCRIPT_STYLE</bash>

@@ -1,4 +1,4 @@
-# Generated with JReleaser 1.0.0-SNAPSHOT at 2022-01-08T14:25:32.361735+01:00
+# {{jreleaserCreationStamp}}
 class {{brewFormulaName}} < Formula
   desc "{{projectDescription}}"
   homepage "{{projectWebsite}}"
