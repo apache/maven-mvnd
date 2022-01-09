@@ -54,15 +54,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: mvn clean verify
-        if: ${{ runner.os != 'Windows' }}
         run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
-
-      - name: mvn clean verify
-        if: ${{ runner.os == 'Windows' }}
-        shell: cmd
-        run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
 
       - name: Upload daemon test logs
         if: ${{ success() || failure() }}
