@@ -209,7 +209,7 @@ public enum Environment {
      * The <code>-Xmx</code> value to pass to the daemon.
      * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
-    MVND_MAX_HEAP_SIZE("mvnd.maxHeapSize", null, "2G", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
+    MVND_MAX_HEAP_SIZE("mvnd.maxHeapSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
      * The <code>-Xss</code> value to pass to the daemon.
      * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
