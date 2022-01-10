@@ -16,16 +16,12 @@
 package org.mvndaemon.mvnd.it;
 
 import java.io.IOException;
-
 import javax.inject.Inject;
-
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
-import org.mvndaemon.mvnd.junit.MvndTest;
-import org.mvndaemon.mvnd.junit.TestRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
