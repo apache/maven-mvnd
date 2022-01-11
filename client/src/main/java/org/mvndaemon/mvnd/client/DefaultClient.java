@@ -112,6 +112,8 @@ public class DefaultClient implements Client {
             System.setProperty(Environment.MVND_NO_BUFERING.getProperty(), Boolean.toString(true));
         }
 
+        System.setProperty(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
+
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();
         try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {

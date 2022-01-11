@@ -260,17 +260,6 @@ public class DaemonMavenCli {
             throw new ExitException(1);
         }
         System.setProperty("maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString());
-
-        //
-        // Make sure the Maven home directory is an absolute path to save us from confusion with say drive-relative
-        // Windows paths.
-        //
-        String mvndHome = System.getProperty("mvnd.home");
-
-        if (mvndHome != null) {
-            System.setProperty("mvnd.home", new File(mvndHome).getAbsolutePath());
-            System.setProperty("maven.home", new File(mvndHome + "/mvn").getAbsolutePath());
-        }
     }
 
     void cli(CliRequest cliRequest)
