@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.internal.CLibrary;
@@ -113,6 +114,12 @@ public class DefaultClient implements Client {
         }
 
         System.setProperty(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
+
+        // .mvn/jvm.config
+        if (Files.isRegularFile(parameters.jvmConfigPath())) {
+            String jvmArgs = Files.lines(parameters.jvmConfigPath()).collect(Collectors.joining(" "));
+            parameters = parameters.withJvmArgs(" " + jvmArgs);
+        }
 
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();

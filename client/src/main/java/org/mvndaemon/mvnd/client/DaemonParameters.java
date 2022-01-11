@@ -316,6 +316,11 @@ public class DaemonParameters {
         return derive(b -> b.put(Environment.JDK_JAVA_OPTIONS, org + opts));
     }
 
+    public DaemonParameters withJvmArgs(String opts) {
+        String org = this.properties.getOrDefault(Environment.MVND_JVM_ARGS.getProperty(), "");
+        return derive(b -> b.put(Environment.MVND_JVM_ARGS, org.isEmpty() ? opts : org + opts));
+    }
+
     protected DaemonParameters derive(Consumer<PropertiesBuilder> customizer) {
         PropertiesBuilder builder = new PropertiesBuilder().putAll(this.properties);
         customizer.accept(builder);
