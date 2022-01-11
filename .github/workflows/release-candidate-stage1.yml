@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-name: Release
+name: Release Candidate - Stage1
 
 # manual trigger
 on:
@@ -35,7 +35,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: 'Check out repository'
+      - name: 'Checkout'
         uses: actions/checkout@v2
 
       - name: 'Set vars'
@@ -64,55 +64,16 @@ jobs:
           name: daemon-test-logs-${{ env.OS }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
-      - name: 'Upload artifact'
-        uses: actions/upload-artifact@v2
-        with:
-          name: artifacts
-          path: dist/target/mvnd-*.zip
-
   release:
     runs-on: ubuntu-18.04
     needs: [build]
 
     steps:
-      - name: 'Checkout JReleaser'
-        uses: actions/checkout@v2
-        with:
-          repository: jreleaser/jreleaser
-          path: jreleaser
-
-      - name: 'Set up Java'
-        uses: actions/setup-java@v2
-        with:
-          java-version: 11
-          distribution: 'zulu'
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-cache-${{ hashFiles('**/*.gradle') }}-${{ hashFiles('**/gradle.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - uses: actions/cache@v2
-        with:
-          path: ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradlew') }}
-          restore-keys: |
-            ${{ runner.os }}-gradlew-
-
-      - name: 'Install JReleaser'
-        run: |
-          cd jreleaser
-          ./gradlew -Prelease=true publishToMavenLocal
-
       - name: 'Check out repository'
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
-
-      - name: 'Download all build artifacts'
-        uses: actions/download-artifact@v2
+          # required for triggering release-candidate-stage2
+          token: ${{ secrets.GIT_ACCESS_TOKEN }}
 
       - name: 'Set up Java'
         uses: actions/setup-java@v2
@@ -127,19 +88,5 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: 'Release to GitHub'
-        env:
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
-          #JRELEASER_SDKMAN_CONSUMER_KEY: ${{ secrets.SDKMAN_CONSUMER_KEY }}
-          #JRELEASER_SDKMAN_CONSUMER_TOKEN: ${{ secrets.SDKMAN_CONSUMER_TOKEN }}
-        run: ./mvnw -B --file pom.xml -pl :mvnd -Prelease -DartifactsDir=artifacts jreleaser:full-release
-
-      - name: 'JReleaser output'
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: jreleaser-logs
-          path: |
-            target/jreleaser/trace.log
-            target/jreleaser/output.properties
+      - name: 'Release'
+        run: ./mvnw -B --file pom.xml release:prepare

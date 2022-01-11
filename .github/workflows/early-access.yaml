@@ -17,67 +17,100 @@
 
 name: Early Access
 
+# trigger on push to branches and PR
 on:
   push:
+    branch:
   pull_request:
 
-jobs:
+env:
+  GRAALVM_VERSION: '21.3.0'
+  JAVA_VERSION: '17'
 
+jobs:
   build:
     name: 'Build with Graal on ${{ matrix.os }}'
-    if: startsWith(github.event.head_commit.message, 'Updated CHANGELOG.md') != true
+    if: startsWith(github.event.head_commit.message, 'Updated CHANGELOG.md') != true && startsWith(github.event.head_commit.message, '[maven-release-plugin]') != true
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v1
+      - name: 'Checkout'
+        uses: actions/checkout@v2
 
-      - name: Set VERSION env var
-        run: echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-
-      - uses: bluwy/substitute-string-action@v1
-        id: os
-        with:
-          _input-text: '${{ runner.os }}'
-          Linux: linux
-          Windows: windows
-          MacOs: darwin
-          macOs: darwin
+      - name: 'Set vars'
+        shell: bash
+        run: |
+          OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
+          [[ $OS == 'ubuntu' ]] && echo "OS=linux" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up Graal'
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '21.3.0'
-          java-version: '17 '
+          version: ${{ env.GRAALVM_VERSION }}
+          java-version: ${{ env.JAVA_VERSION }}
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: mvn clean verify
+      - name: 'Build native distribution'
         run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
 
-      - name: Upload daemon test logs
-        if: ${{ success() || failure() }}
+      - name: 'Upload daemon test logs'
+        if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: daemon-test-logs-${{ steps.os.outputs.result }}
+          name: daemon-test-logs-${{ env.OS }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
-      - name: Upload mvnd.zip
+      - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
         with:
-          name: mvnd-${{ env.VERSION }}-${{ steps.os.outputs.result }}-amd64.zip
+          name: artifacts
           path: dist/target/mvnd-*.zip
 
   early-access:
     runs-on: ubuntu-18.04
     needs: [build]
     # Only post early access releases when push to master
-    if: ${{ !github.event.issue.pull_request } && startsWith(github.ref, 'refs/heads/master')
+    if: ${{ !github.event.issue.pull_request }} && startsWith(github.ref, 'refs/heads/master')
 
     steps:
+      - name: 'Checkout JReleaser'
+        uses: actions/checkout@v2
+        with:
+          repository: jreleaser/jreleaser
+          path: jreleaser
+
+      - name: 'Set up Java'
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: 'zulu'
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-cache-${{ hashFiles('**/*.gradle') }}-${{ hashFiles('**/gradle.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-wrapper-${{ hashFiles('**/gradlew') }}
+          restore-keys: |
+            ${{ runner.os }}-gradlew-
+
+      - name: 'Install JReleaser'
+        run: |
+          cd jreleaser
+          ./gradlew -Prelease=true publishToMavenLocal
+
       - name: 'Check out repository'
         uses: actions/checkout@v2
         with:
@@ -89,7 +122,7 @@ jobs:
       - name: 'Set up Java'
         uses: actions/setup-java@v2
         with:
-          java-version: 17
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: 'zulu'
 
       - name: 'Cache Maven packages'
@@ -102,9 +135,9 @@ jobs:
       - name: 'Release to GitHub'
         env:
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./mvnw -B --file pom.xml -pl :mvnd -DartifactsDir=. jreleaser:release
+        run: ./mvnw -B --file pom.xml -pl :mvnd -DartifactsDir=artifacts jreleaser:release
 
-      - name: JReleaser output
+      - name: 'JReleaser output'
         if: always()
         uses: actions/upload-artifact@v2
         with:

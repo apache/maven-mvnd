@@ -71,6 +71,7 @@
         <mrm.version>1.2.0</mrm.version>
         <surefire.version>3.0.0-M5</surefire.version><!-- keep in sync with junit-platform-launcher.version -->
         <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version><!-- keep in sync with surefire.version -->
+        <release.plugin.version>3.0.0-M5</release.plugin.version>
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
         <takari-provisio.version>1.0.19</takari-provisio.version>
 
@@ -460,6 +461,16 @@ limitations under the License.</inlineHeader>
                     <groupId>org.graalvm.nativeimage</groupId>
                     <artifactId>native-image-maven-plugin</artifactId>
                     <version>${graalvm.plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${release.plugin.version}</version>
+                    <configuration>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
