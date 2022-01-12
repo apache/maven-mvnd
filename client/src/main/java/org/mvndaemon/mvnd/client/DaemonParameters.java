@@ -168,6 +168,11 @@ public class DaemonParameters {
                 .asPath();
     }
 
+    /**
+     * The content of the <code>.mvn/jvm.config</code> file will be read
+     * and used as arguments when starting a daemon JVM.
+     * See {@link Environment#MVND_JVM_ARGS}.
+     */
     public Path jvmConfigPath() {
         return multiModuleProjectDirectory().resolve(".mvn/jvm.config");
     }
@@ -311,14 +316,16 @@ public class DaemonParameters {
         return derive(b -> b.put(Environment.USER_DIR, newUserDir));
     }
 
-    public DaemonParameters withJdkJavaOpts(String opts) {
+    public DaemonParameters withJdkJavaOpts(String opts, boolean before) {
         String org = this.properties.getOrDefault(Environment.JDK_JAVA_OPTIONS.getProperty(), "");
-        return derive(b -> b.put(Environment.JDK_JAVA_OPTIONS, org + opts));
+        return derive(b -> b.put(Environment.JDK_JAVA_OPTIONS,
+                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
     }
 
-    public DaemonParameters withJvmArgs(String opts) {
+    public DaemonParameters withJvmArgs(String opts, boolean before) {
         String org = this.properties.getOrDefault(Environment.MVND_JVM_ARGS.getProperty(), "");
-        return derive(b -> b.put(Environment.MVND_JVM_ARGS, org.isEmpty() ? opts : org + opts));
+        return derive(b -> b.put(Environment.MVND_JVM_ARGS,
+                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
     }
 
     protected DaemonParameters derive(Consumer<PropertiesBuilder> customizer) {

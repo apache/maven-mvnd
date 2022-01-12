@@ -117,8 +117,10 @@ public class DefaultClient implements Client {
 
         // .mvn/jvm.config
         if (Files.isRegularFile(parameters.jvmConfigPath())) {
-            String jvmArgs = Files.lines(parameters.jvmConfigPath()).collect(Collectors.joining(" "));
-            parameters = parameters.withJvmArgs(" " + jvmArgs);
+            try (Stream<String> jvmArgs = Files.lines(parameters.jvmConfigPath())) {
+                String jvmArgsStr = jvmArgs.collect(Collectors.joining(" "));
+                parameters = parameters.withJvmArgs(jvmArgsStr, false);
+            }
         }
 
         int exitCode = 0;
@@ -158,11 +160,12 @@ public class DefaultClient implements Client {
     public DefaultClient(DaemonParameters parameters) {
         // Those options are needed in order to be able to set the environment correctly
         this.parameters = parameters.withJdkJavaOpts(
-                " --add-opens java.base/java.io=ALL-UNNAMED"
-                        + " --add-opens java.base/java.lang=ALL-UNNAMED"
-                        + " --add-opens java.base/java.util=ALL-UNNAMED"
-                        + " --add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED"
-                        + " --add-opens java.base/sun.nio.fs=ALL-UNNAMED");
+                "--add-opens java.base/java.io=ALL-UNNAMED "
+                        + "--add-opens java.base/java.lang=ALL-UNNAMED "
+                        + "--add-opens java.base/java.util=ALL-UNNAMED "
+                        + "--add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED "
+                        + "--add-opens java.base/sun.nio.fs=ALL-UNNAMED",
+                true);
     }
 
     @Override
