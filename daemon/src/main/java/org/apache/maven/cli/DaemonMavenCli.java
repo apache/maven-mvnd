@@ -394,7 +394,7 @@ public class DaemonMavenCli {
 
             // redirect stdout and stderr to file
             try {
-                PrintStream ps = new PrintStream(new FileOutputStream(logFile));
+                PrintStream ps = new PrintStream(new FileOutputStream(logFile), true);
                 System.setOut(ps);
                 System.setErr(ps);
             } catch (FileNotFoundException e) {

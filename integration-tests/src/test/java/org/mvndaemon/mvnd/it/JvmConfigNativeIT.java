@@ -16,6 +16,7 @@
 package org.mvndaemon.mvnd.it;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
@@ -38,11 +39,12 @@ public class JvmConfigNativeIT {
     void version() throws IOException, InterruptedException {
         final TestClientOutput o = new TestClientOutput();
         client.execute(o, "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
-                "-Dsource=\"println java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments()\"")
+                "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
                 .assertSuccess();
         String xmx = "-Xmx512k";
         assertTrue(o.getMessages().stream()
-                .anyMatch(m -> m.toString().contains(xmx)), "Output should contain " + xmx);
+                .anyMatch(m -> m.toString().contains(xmx)), "Output should contain " + xmx + " but is:\n"
+                        + o.getMessages().stream().map(Object::toString).collect(Collectors.joining("\n")));
     }
 
 }
