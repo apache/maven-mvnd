@@ -17,7 +17,7 @@ package org.mvndaemon.mvnd.it;
 
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/maven-conf")
+@MvndTest(projectDir = "src/test/projects/jvm-config")
 public class JvmConfigTest extends JvmConfigNativeIT {
 
 }

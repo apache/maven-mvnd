@@ -25,7 +25,7 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndNativeTest(projectDir = "src/test/projects/maven-conf")
+@MvndNativeTest(projectDir = "src/test/projects/jvm-config")
 public class JvmConfigNativeIT {
 
     @Inject
