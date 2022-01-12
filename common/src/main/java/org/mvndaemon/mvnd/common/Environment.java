@@ -85,9 +85,7 @@ public enum Environment {
     /** The current working directory */
     USER_DIR("user.dir", null, null, OptionType.PATH, Flags.NONE),
     /** The JDK_JAVA_OPTIONS option */
-    JDK_JAVA_OPTIONS("jdk.java.options", "JDK_JAVA_OPTIONS", "", OptionType.STRING, Flags.DISCRIMINATING) {
-
-    },
+    JDK_JAVA_OPTIONS("jdk.java.options", "JDK_JAVA_OPTIONS", "", OptionType.STRING, Flags.DISCRIMINATING),
 
     //
     // Maven properties
