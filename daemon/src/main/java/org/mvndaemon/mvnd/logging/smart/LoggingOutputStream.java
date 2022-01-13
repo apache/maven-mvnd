@@ -78,7 +78,7 @@ public class LoggingOutputStream extends FilterOutputStream {
 
     public static class LoggingPrintStream extends PrintStream {
         public LoggingPrintStream(LoggingOutputStream out) {
-            super(out);
+            super(out, true);
         }
 
         public void forceFlush() {

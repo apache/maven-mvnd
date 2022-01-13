@@ -185,35 +185,41 @@ public enum Environment {
      */
     MVND_THREADS("mvnd.threads", null, null, OptionType.STRING, Flags.NONE, "mvn:-T", "mvn:--threads"),
     /**
-     * The builder implementation the daemon should use
+     * The builder implementation the daemon should use.
      */
     MVND_BUILDER("mvnd.builder", null, "smart", OptionType.STRING, Flags.NONE, "mvn:-b", "mvn:--builder"),
     /**
-     * An ID for a newly started daemon
+     * An ID for a newly started daemon.
      */
     MVND_ID("mvnd.id", null, null, OptionType.STRING, Flags.INTERNAL),
     /**
-     * Internal option to specify the maven extension classpath
+     * Internal option to specify the maven extension classpath.
      */
     MVND_EXT_CLASSPATH("mvnd.extClasspath", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * Internal option to specify the list of maven extension to register
+     * Internal option to specify the list of maven extension to register.
      */
     MVND_CORE_EXTENSIONS("mvnd.coreExtensions", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * The <code>-Xms</code> value to pass to the daemon
+     * The <code>-Xms</code> value to pass to the daemon.
+     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
     MVND_MIN_HEAP_SIZE("mvnd.minHeapSize", null, "128M", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
     /**
-     * The <code>-Xmx</code> value to pass to the daemon
+     * The <code>-Xmx</code> value to pass to the daemon.
+     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
     MVND_MAX_HEAP_SIZE("mvnd.maxHeapSize", null, "2G", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
     /**
-     * The <code>-Xss</code> value to pass to the daemon
+     * The <code>-Xss</code> value to pass to the daemon.
+     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
     MVND_THREAD_STACK_SIZE("mvnd.threadStackSize", null, "1M", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
     /**
-     * Additional JVM args to pass to the daemon
+     * Additional JVM args to pass to the daemon.
+     * The content of the <code>.mvn/jvm.config</code> file will prepended (and thus with
+     * a lesser priority) to the user supplied value for this parameter before being used
+     * as startup options for the daemon JVM.
      */
     MVND_JVM_ARGS("mvnd.jvmArgs", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**

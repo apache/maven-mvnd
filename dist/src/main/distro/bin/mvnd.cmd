@@ -160,15 +160,6 @@ cd "%EXEC_DIR%"
 
 :endDetectBaseDir
 
-set "jvmConfig=\.mvn\jvm.config"
-if not exist "%MAVEN_PROJECTBASEDIR%%jvmConfig%" goto endReadAdditionalConfig
-
-@setlocal EnableExtensions EnableDelayedExpansion
-for /F "usebackq delims=" %%a in ("%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a
-@endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%
-
-:endReadAdditionalConfig
-
 @setlocal EnableExtensions EnableDelayedExpansion
 for %%i in ("%MVND_HOME%"\mvn\boot\*.jar "%MVND_HOME%"\mvn\lib\ext\*.jar "%MVND_HOME%"\mvn\lib\*.jar) do set DAEMON_JAR=!DAEMON_JAR!;%%i
 @endlocal & set DAEMON_JAR="%DAEMON_JAR%"

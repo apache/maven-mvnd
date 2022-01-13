@@ -309,6 +309,7 @@ limitations under the License.</inlineHeader>
                             <exclude>**/m2.conf</exclude>
                             <exclude>**/mvnd</exclude>
                             <exclude>**/.mvn/maven.config</exclude>
+                            <exclude>**/.mvn/jvm.config</exclude>
                             <exclude>.gitattributes/</exclude>
                             <exclude>.mvn/maven.config</exclude>
                             <exclude>.mvn/wrapper/</exclude>

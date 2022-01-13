@@ -36,8 +36,6 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.maven.shared.utils.StringUtils;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -346,15 +344,6 @@ public class DaemonConnector {
                     if (!arg.isEmpty()) {
                         args.add(arg);
                     }
-                }
-            }
-            // .mvn/jvm.config
-            if (Files.isRegularFile(parameters.jvmConfigPath())) {
-                try (Stream<String> lines = Files.lines(parameters.jvmConfigPath())) {
-                    lines.flatMap(l -> Stream.of(l.split(" ")))
-                            .map(String::trim)
-                            .filter(StringUtils::isNotEmpty)
-                            .forEach(args::add);
                 }
             }
             // memory
