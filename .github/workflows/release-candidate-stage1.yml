@@ -89,4 +89,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: 'Release'
-        run: ./mvnw -B --file pom.xml release:prepare
+        run: |
+          ./mvnw -B -ntp \
+          -Drepository.url=https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git \
+          release:prepare

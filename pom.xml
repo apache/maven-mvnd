@@ -41,6 +41,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
         <trimStackTrace>false</trimStackTrace>
+        <project.github.repository>apache/maven-mvnd</project.github.repository>
+        <repository.url>github.com:${project.github.repository}</repository.url>
 
         <!-- dependency versions a..z -->
         <apiguardian-api.version>1.0.0</apiguardian-api.version>
@@ -101,9 +103,9 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git@github.com:mvndaemon/mvnd.git</connection>
-        <developerConnection>scm:git:git@github.com:mvndaemon/mvnd.git</developerConnection>
-        <url>https://github.com/mvndaemon/mvnd</url>
+        <url>${repository.url}</url>
+        <connection>scm:git:${repository.url}.git</connection>
+        <developerConnection>scm:git:${repository.url}.git</developerConnection>
         <tag>head</tag>
     </scm>
 
