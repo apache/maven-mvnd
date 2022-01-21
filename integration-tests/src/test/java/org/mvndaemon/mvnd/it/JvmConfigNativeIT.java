@@ -43,7 +43,8 @@ public class JvmConfigNativeIT {
                 .assertSuccess();
         String xmx = "-Xmx512k";
         assertTrue(o.getMessages().stream()
-                .anyMatch(m -> m.toString().contains(xmx)), "Output should contain " + xmx + " but is:\n"
+                .anyMatch(m -> m.toString().contains(xmx)),
+                "Output should contain " + xmx + " but is:\n"
                         + o.getMessages().stream().map(Object::toString).collect(Collectors.joining("\n")));
     }
 
