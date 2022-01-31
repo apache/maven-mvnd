@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -35,8 +36,6 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.maven.shared.utils.StringUtils;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -307,7 +306,7 @@ public class DaemonConnector {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
-        try {
+        try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("mvn/lib/ext"))) {
             List<String> args = new ArrayList<>();
             // executable
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
@@ -315,7 +314,7 @@ public class DaemonConnector {
             // classpath
             String mvndCommonPath = null;
             String mvndAgentPath = null;
-            for (Path jar : Files.newDirectoryStream(mvndHome.resolve("mvn/lib/ext"))) {
+            for (Path jar : jarPaths) {
                 String s = jar.getFileName().toString();
                 if (s.endsWith(".jar")) {
                     if (s.startsWith("mvnd-common-")) {
@@ -347,14 +346,6 @@ public class DaemonConnector {
                     }
                 }
             }
-            // .mvn/jvm.config
-            if (Files.isRegularFile(parameters.jvmConfigPath())) {
-                Files.lines(parameters.jvmConfigPath())
-                        .flatMap(l -> Stream.of(l.split(" ")))
-                        .map(String::trim)
-                        .filter(StringUtils::isNotEmpty)
-                        .forEach(args::add);
-            }
             // memory
             String minHeapSize = parameters.minHeapSize();
             if (minHeapSize != null) {
@@ -370,6 +361,9 @@ public class DaemonConnector {
             }
 
             Environment.MVND_HOME.addCommandLineOption(args, mvndHome.toString());
+            args.add("-Dmaven.home=" + mvndHome.resolve("mvn"));
+            args.add("-Dmaven.conf=" + mvndHome.resolve("mvn/conf"));
+
             Environment.MVND_JAVA_HOME.addCommandLineOption(args, parameters.javaHome().toString());
             Environment.LOGBACK_CONFIGURATION_FILE
                     .addCommandLineOption(args, parameters.logbackConfigurationPath().toString());

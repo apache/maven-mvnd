@@ -33,6 +33,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.internal.CLibrary;
 import org.jline.utils.AttributedString;
@@ -111,6 +113,16 @@ public class DefaultClient implements Client {
             System.setProperty(Environment.MVND_NO_BUFERING.getProperty(), Boolean.toString(true));
         }
 
+        System.setProperty(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
+
+        // .mvn/jvm.config
+        if (Files.isRegularFile(parameters.jvmConfigPath())) {
+            try (Stream<String> jvmArgs = Files.lines(parameters.jvmConfigPath())) {
+                String jvmArgsStr = jvmArgs.collect(Collectors.joining(" "));
+                parameters = parameters.withJvmArgs(jvmArgsStr, false);
+            }
+        }
+
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();
         try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
@@ -148,10 +160,12 @@ public class DefaultClient implements Client {
     public DefaultClient(DaemonParameters parameters) {
         // Those options are needed in order to be able to set the environment correctly
         this.parameters = parameters.withJdkJavaOpts(
-                " --add-opens java.base/java.io=ALL-UNNAMED"
-                        + " --add-opens java.base/java.lang=ALL-UNNAMED"
-                        + " --add-opens java.base/java.util=ALL-UNNAMED"
-                        + " --add-opens java.base/sun.nio.fs=ALL-UNNAMED");
+                "--add-opens java.base/java.io=ALL-UNNAMED "
+                        + "--add-opens java.base/java.lang=ALL-UNNAMED "
+                        + "--add-opens java.base/java.util=ALL-UNNAMED "
+                        + "--add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED "
+                        + "--add-opens java.base/sun.nio.fs=ALL-UNNAMED",
+                true);
     }
 
     @Override
@@ -331,9 +345,8 @@ public class DefaultClient implements Client {
         List<Path> deleted = new ArrayList<>();
         List<Throwable> exceptions = new ArrayList<>();
         FileTime limit = FileTime.from(Instant.now().minus(purgeLogPeriod));
-        try {
-            Files.list(storage)
-                    .filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
+        try (Stream<Path> storagePath = Files.list(storage)) {
+            storagePath.filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
                     .filter(p -> !log.equals(p))
                     .filter(p -> {
                         try {

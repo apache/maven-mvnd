@@ -22,11 +22,7 @@ import com.google.inject.AbstractModule;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.nio.charset.Charset;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,11 +35,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -100,11 +94,11 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
-import org.jline.utils.ExecHelper;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
+import org.mvndaemon.mvnd.cli.EnvHelper;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.execution.BuildResumptionPersistenceException;
@@ -114,7 +108,6 @@ import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
-import org.mvndaemon.mvnd.nativ.CLibrary;
 import org.mvndaemon.mvnd.plugin.CachingPluginVersionResolver;
 import org.mvndaemon.mvnd.plugin.CliMavenPluginManager;
 import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
@@ -267,17 +260,6 @@ public class DaemonMavenCli {
             throw new ExitException(1);
         }
         System.setProperty("maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString());
-
-        //
-        // Make sure the Maven home directory is an absolute path to save us from confusion with say drive-relative
-        // Windows paths.
-        //
-        String mvndHome = System.getProperty("mvnd.home");
-
-        if (mvndHome != null) {
-            System.setProperty("mvnd.home", new File(mvndHome).getAbsolutePath());
-            System.setProperty("maven.home", new File(mvndHome + "/mvn").getAbsolutePath());
-        }
     }
 
     void cli(CliRequest cliRequest)
@@ -412,7 +394,7 @@ public class DaemonMavenCli {
 
             // redirect stdout and stderr to file
             try {
-                PrintStream ps = new PrintStream(new FileOutputStream(logFile));
+                PrintStream ps = new PrintStream(new FileOutputStream(logFile), true);
                 System.setOut(ps);
                 System.setErr(ps);
             } catch (FileNotFoundException e) {
@@ -688,130 +670,7 @@ public class DaemonMavenCli {
     }
 
     private void environment(String workingDir, Map<String, String> clientEnv) {
-        Map<String, String> requested = new TreeMap<>(clientEnv);
-        Map<String, String> actual = new TreeMap<>(System.getenv());
-        requested.put("PWD", Os.current().isCygwin() ? toCygwin(workingDir) : workingDir);
-        List<String> diffs = Stream.concat(requested.keySet().stream(), actual.keySet().stream())
-                .sorted()
-                .distinct()
-                .filter(s -> !s.startsWith("JAVA_MAIN_CLASS_"))
-                .filter(key -> !Objects.equals(requested.get(key), actual.get(key)))
-                .collect(Collectors.toList());
-        try {
-            for (String key : diffs) {
-                String vr = requested.get(key);
-                CLibrary.setenv(key, vr);
-            }
-            setEnv(requested);
-            chDir(workingDir);
-        } catch (Exception e) {
-            slf4jLogger.warn("Environment mismatch ! Could not set the environment (" + e + ")");
-        }
-        Map<String, String> nactual = new TreeMap<>(System.getenv());
-        diffs = Stream.concat(requested.keySet().stream(), actual.keySet().stream())
-                .sorted()
-                .distinct()
-                .filter(s -> !s.startsWith("JAVA_MAIN_CLASS_"))
-                .filter(key -> !Objects.equals(requested.get(key), nactual.get(key)))
-                .collect(Collectors.toList());
-        if (!diffs.isEmpty()) {
-            slf4jLogger.warn("A few environment mismatches have been detected between the client and the daemon.");
-            diffs.forEach(key -> {
-                String vr = requested.get(key);
-                String va = nactual.get(key);
-                slf4jLogger.warn("   {} -> {} instead of {}", key,
-                        va != null ? "'" + va + "'" : "<null>", vr != null ? "'" + vr + "'" : "<null>");
-            });
-            slf4jLogger.warn("If the difference matters to you, stop the running daemons using mvnd --stop and");
-            slf4jLogger.warn("start a new daemon from the current environment by issuing any mvnd build command.");
-        }
-    }
-
-    static String toCygwin(String path) {
-        if (path.length() >= 3 && ":\\".equals(path.substring(1, 3))) {
-            try {
-                String p = path.endsWith("\\") ? path.substring(0, path.length() - 1) : path;
-                return ExecHelper.exec(false, "cygpath", p).trim();
-            } catch (IOException e) {
-                String root = path.substring(0, 1);
-                String p = path.substring(3);
-                return "/cygdrive/" + root.toLowerCase() + "/" + p.replace('\\', '/');
-            }
-        }
-        return path;
-    }
-
-    private static float javaSpec = 0.0f;
-
-    protected static void chDir(String workingDir) throws Exception {
-        CLibrary.chdir(workingDir);
-        System.setProperty("user.dir", workingDir);
-        // change current dir for the java.io.File class
-        Class<?> fileClass = Class.forName("java.io.File");
-        if (javaSpec <= 0.0f) {
-            javaSpec = Float.parseFloat(System.getProperty("java.specification.version"));
-        }
-        if (javaSpec >= 11.0) {
-            Field fsField = fileClass.getDeclaredField("fs");
-            fsField.setAccessible(true);
-            Object fs = fsField.get(null);
-            Field userDirField = fs.getClass().getDeclaredField("userDir");
-            userDirField.setAccessible(true);
-            userDirField.set(fs, workingDir);
-        }
-        // change current dir for the java.nio.Path class
-        Object fs = FileSystems.getDefault();
-        Class<?> fsClass = fs.getClass();
-        while (fsClass != Object.class) {
-            if ("sun.nio.fs.UnixFileSystem".equals(fsClass.getName())) {
-                Field defaultDirectoryField = fsClass.getDeclaredField("defaultDirectory");
-                defaultDirectoryField.setAccessible(true);
-                String encoding = System.getProperty("sun.jnu.encoding");
-                Charset charset = encoding != null ? Charset.forName(encoding) : Charset.defaultCharset();
-                defaultDirectoryField.set(fs, workingDir.getBytes(charset));
-            } else if ("sun.nio.fs.WindowsFileSystem".equals(fsClass.getName())) {
-                Field defaultDirectoryField = fsClass.getDeclaredField("defaultDirectory");
-                Field defaultRootField = fsClass.getDeclaredField("defaultRoot");
-                defaultDirectoryField.setAccessible(true);
-                defaultRootField.setAccessible(true);
-                Path wdir = Paths.get(workingDir);
-                Path root = wdir.getRoot();
-                defaultDirectoryField.set(fs, wdir.toString());
-                defaultRootField.set(fs, root.toString());
-            }
-            fsClass = fsClass.getSuperclass();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    protected static void setEnv(Map<String, String> newenv) throws Exception {
-        try {
-            Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
-            Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
-            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
-            env.clear();
-            env.putAll(newenv);
-            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass
-                    .getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
-            Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
-            cienv.clear();
-            cienv.putAll(newenv);
-        } catch (NoSuchFieldException e) {
-            Class<?>[] classes = Collections.class.getDeclaredClasses();
-            Map<String, String> env = System.getenv();
-            for (Class<?> cl : classes) {
-                if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
-                    Field field = cl.getDeclaredField("m");
-                    field.setAccessible(true);
-                    Object obj = field.get(env);
-                    Map<String, String> map = (Map<String, String>) obj;
-                    map.clear();
-                    map.putAll(newenv);
-                }
-            }
-        }
+        EnvHelper.environment(workingDir, clientEnv);
     }
 
     private int execute(CliRequest cliRequest)

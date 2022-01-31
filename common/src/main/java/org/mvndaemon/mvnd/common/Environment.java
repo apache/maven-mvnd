@@ -79,15 +79,13 @@ public enum Environment {
      * The daemon installation directory. The client normally sets this according to where its <code>mvnd</code>
      * executable is located
      */
-    MVND_HOME("mvnd.home", "MVND_HOME", null, OptionType.PATH, Flags.NONE),
+    MVND_HOME("mvnd.home", "MVND_HOME", null, OptionType.PATH, Flags.DISCRIMINATING),
     /** The user home directory */
     USER_HOME("user.home", null, null, OptionType.PATH, Flags.NONE),
     /** The current working directory */
     USER_DIR("user.dir", null, null, OptionType.PATH, Flags.NONE),
     /** The JDK_JAVA_OPTIONS option */
-    JDK_JAVA_OPTIONS("jdk.java.options", "JDK_JAVA_OPTIONS", "", OptionType.STRING, Flags.DISCRIMINATING) {
-
-    },
+    JDK_JAVA_OPTIONS("jdk.java.options", "JDK_JAVA_OPTIONS", "", OptionType.STRING, Flags.DISCRIMINATING),
 
     //
     // Maven properties
@@ -187,35 +185,41 @@ public enum Environment {
      */
     MVND_THREADS("mvnd.threads", null, null, OptionType.STRING, Flags.NONE, "mvn:-T", "mvn:--threads"),
     /**
-     * The builder implementation the daemon should use
+     * The builder implementation the daemon should use.
      */
     MVND_BUILDER("mvnd.builder", null, "smart", OptionType.STRING, Flags.NONE, "mvn:-b", "mvn:--builder"),
     /**
-     * An ID for a newly started daemon
+     * An ID for a newly started daemon.
      */
     MVND_ID("mvnd.id", null, null, OptionType.STRING, Flags.INTERNAL),
     /**
-     * Internal option to specify the maven extension classpath
+     * Internal option to specify the maven extension classpath.
      */
     MVND_EXT_CLASSPATH("mvnd.extClasspath", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * Internal option to specify the list of maven extension to register
+     * Internal option to specify the list of maven extension to register.
      */
     MVND_CORE_EXTENSIONS("mvnd.coreExtensions", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * The <code>-Xms</code> value to pass to the daemon
+     * The <code>-Xms</code> value to pass to the daemon.
+     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
     MVND_MIN_HEAP_SIZE("mvnd.minHeapSize", null, "128M", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
     /**
-     * The <code>-Xmx</code> value to pass to the daemon
+     * The <code>-Xmx</code> value to pass to the daemon.
+     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
     MVND_MAX_HEAP_SIZE("mvnd.maxHeapSize", null, "2G", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
     /**
-     * The <code>-Xss</code> value to pass to the daemon
+     * The <code>-Xss</code> value to pass to the daemon.
+     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
     MVND_THREAD_STACK_SIZE("mvnd.threadStackSize", null, "1M", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
     /**
-     * Additional JVM args to pass to the daemon
+     * Additional JVM args to pass to the daemon.
+     * The content of the <code>.mvn/jvm.config</code> file will prepended (and thus with
+     * a lesser priority) to the user supplied value for this parameter before being used
+     * as startup options for the daemon JVM.
      */
     MVND_JVM_ARGS("mvnd.jvmArgs", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
@@ -251,7 +255,16 @@ public enum Environment {
      */
     MVND_SOCKET_FAMILY("mvnd.socketFamily", null, "inet", OptionType.STRING, Flags.DISCRIMINATING),
     /**
-     * Regexp pattern that will force eviction of the plugin realms if one of its dependencies matches.
+     * Pattern that will force eviction of the plugin realms if one of its dependencies matches.
+     * The overall pattern is a comma separated list of either:
+     * <ul>
+     * <li>a glob pattern starting with <code>'glob:'</code> (the default syntax if no scheme is specified),</li>
+     * <li>a regex pattern starting with <code>'regex:'</code>,</li>
+     * <li>a maven expression, either <code>'mvn:[groupId]:[artifactId]:[version]'</code>,
+     * <code>'mvn:[groupId]:[artifactId]'</code> or <code>'mvn:[artifactId]</code>'.</li>
+     * </ul>
+     * This pattern will be evaluated against the full path of the dependencies, so it is usually desirable to
+     * start with <code>'glob:**&#47;'</code> to support any location of the local repository.
      */
     MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL);
 

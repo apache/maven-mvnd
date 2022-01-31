@@ -1,5 +1,5 @@
 #
-# Copyright 2021-2022 the original author or authors.
+# Copyright 2022 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,21 +14,12 @@
 # limitations under the License.
 #
 
-# see https://s.apache.org/asfyaml
-github:
-  description: "Apache Maven Daemon"
-  homepage: https://maven.apache.org/
-  labels:
-    - java
-    - build-management
-    - apache-maven
-    - maven
-  enabled_merge_buttons:
-    squash: true
-    merge: false
-    rebase: true
-notifications:
-  commits: commits@maven.apache.org
-  issues: issues@maven.apache.org
-  pullrequests: issues@maven.apache.org
-  jira_options: link label comment
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: '/'
+    schedule:
+      interval: daily
+    # see https://docs.github.com/en/code-security/supply-chain-security/keeping-your-dependencies-updated-automatically/configuration-options-for-dependency-updates#open-pull-requests-limit
+    # open-pull-requests-limit: 10
+    versioning-strategy: increase

@@ -99,7 +99,8 @@ public class DocMojo extends AbstractMojo {
             final Properties optionsProperties = new SortedProperties();
             for (EnumConstantSource enumConst : source.getEnumConstants()) {
                 final JavaDocSource<EnumConstantSource> javaDoc = enumConst.getJavaDoc();
-                final String javadocText = javaDoc.getText();
+                final String javadocText = javaDoc.getText()
+                        .replaceAll("&#47;", "/");
                 optionsProperties.setProperty(enumConst.getName(), javadocText);
             }
             optionsProperties.store(Files.newOutputStream(propsPath), null);

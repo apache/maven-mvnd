@@ -28,6 +28,14 @@
     <name>Maven Daemon - Parent</name>
     <inceptionYear>2019</inceptionYear>
 
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -45,10 +53,10 @@
         <jansi.version>2.4.0</jansi.version>
         <jline.version>3.21.0</jline.version>
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.2.10</logback.version>
         <maven.version>3.8.4</maven.version>
         <maven.resolver.version>1.7.3</maven.resolver.version>
-        <slf4j.version>1.7.32</slf4j.version>
+        <slf4j.version>1.7.35</slf4j.version>
 
         <!-- plugin versions a..z -->
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
@@ -308,6 +316,7 @@ limitations under the License.</inlineHeader>
                             <exclude>**/m2.conf</exclude>
                             <exclude>**/mvnd</exclude>
                             <exclude>**/.mvn/maven.config</exclude>
+                            <exclude>**/.mvn/jvm.config</exclude>
                             <exclude>.gitattributes/</exclude>
                             <exclude>.mvn/maven.config</exclude>
                             <exclude>.mvn/wrapper/</exclude>
