@@ -38,6 +38,7 @@ public class SnapshotModelCache implements ModelCache {
     }
 
     private ModelCache getDelegate(String version) {
-        return version.contains("SNAPSHOT") ? reactorCache : globalCache;
+        return version.contains("SNAPSHOT") || version.contains("${")
+                ? reactorCache : globalCache;
     }
 }
