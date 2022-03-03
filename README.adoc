@@ -123,7 +123,12 @@ OS name: "linux", version: "5.6.13-200.fc31.x86_64", arch: "amd64", family: "uni
 If you are on Windows and see a message that `VCRUNTIME140.dll was not found`, you need to install
 `vc_redist.x64.exe` from https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads.
 See https://github.com/oracle/graal/issues/1762 for more information.
-
++
+If you are on macOS, you'll need to remove the quarantine flags from all the files after unpacking the archive:
+[source,shell]
+----
+$ xattr -r -d com.apple.quarantine mvnd-x.y.z-darwin-amd64
+----
 
 == Usage
 
