@@ -316,6 +316,7 @@ limitations under the License.</inlineHeader>
                             <exclude>**/mvnd.properties.template</exclude>
                             <exclude>**/m2.conf</exclude>
                             <exclude>**/mvnd</exclude>
+                            <exclude>**/mvnDebug</exclude>
                             <exclude>**/.mvn/maven.config</exclude>
                             <exclude>**/.mvn/jvm.config</exclude>
                             <exclude>.gitattributes/</exclude>
