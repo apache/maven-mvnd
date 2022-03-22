@@ -271,23 +271,33 @@ public class DaemonRegistry implements AutoCloseable {
     private static final int PROCESS_ID = getProcessId0();
 
     private static int getProcessId0() {
-        String pid = null;
         try {
             final Path self = Paths.get("/proc/self");
             if (Files.exists(self)) {
-                pid = self.toRealPath().getFileName().toString();
+                String pid = self.toRealPath().getFileName().toString();
+                if (pid.equals("self")) {
+                    LOGGER.debug("/proc/self symlink could not be followed");
+                } else {
+                    LOGGER.debug("loading own PID from /proc/self link: {}", pid);
+                    try {
+                        return Integer.parseInt(pid);
+                    } catch (NumberFormatException x) {
+                        LOGGER.warn("Unable to determine PID from malformed /proc/self link `" + pid + "`");
+                    }
+                }
             }
         } catch (IOException ignored) {
+            LOGGER.debug("could not load /proc/self", ignored);
         }
-        if (pid == null) {
-            pid = ManagementFactory.getRuntimeMXBean().getName().split("@", 0)[0];
-        }
-        if (pid == null) {
-            int rpid = new Random().nextInt(1 << 16);
-            LOGGER.warn("Unable to determine PID, picked a random number=" + rpid);
-            return rpid;
-        } else {
+        String vmname = ManagementFactory.getRuntimeMXBean().getName();
+        String pid = vmname.split("@", 0)[0];
+        LOGGER.debug("loading own PID from VM name: {}", pid);
+        try {
             return Integer.parseInt(pid);
+        } catch (NumberFormatException x) {
+            int rpid = new Random().nextInt(1 << 16);
+            LOGGER.warn("Unable to determine PID from malformed VM name `" + vmname + "`, picked a random number=" + rpid);
+            return rpid;
         }
     }
 
