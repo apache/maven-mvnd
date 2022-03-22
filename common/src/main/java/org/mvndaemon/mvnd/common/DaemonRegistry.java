@@ -271,23 +271,25 @@ public class DaemonRegistry implements AutoCloseable {
     private static final int PROCESS_ID = getProcessId0();
 
     private static int getProcessId0() {
-        try {
-            final Path self = Paths.get("/proc/self");
-            if (Files.exists(self)) {
-                String pid = self.toRealPath().getFileName().toString();
-                if (pid.equals("self")) {
-                    LOGGER.debug("/proc/self symlink could not be followed");
-                } else {
-                    LOGGER.debug("loading own PID from /proc/self link: {}", pid);
-                    try {
-                        return Integer.parseInt(pid);
-                    } catch (NumberFormatException x) {
-                        LOGGER.warn("Unable to determine PID from malformed /proc/self link `" + pid + "`");
+        if (Os.current() == Os.LINUX) {
+            try {
+                final Path self = Paths.get("/proc/self");
+                if (Files.exists(self)) {
+                    String pid = self.toRealPath().getFileName().toString();
+                    if (pid.equals("self")) {
+                        LOGGER.debug("/proc/self symlink could not be followed");
+                    } else {
+                        LOGGER.debug("loading own PID from /proc/self link: {}", pid);
+                        try {
+                            return Integer.parseInt(pid);
+                        } catch (NumberFormatException x) {
+                            LOGGER.warn("Unable to determine PID from malformed /proc/self link `" + pid + "`");
+                        }
                     }
                 }
+            } catch (IOException ignored) {
+                LOGGER.debug("could not load /proc/self", ignored);
             }
-        } catch (IOException ignored) {
-            LOGGER.debug("could not load /proc/self", ignored);
         }
         String vmname = ManagementFactory.getRuntimeMXBean().getName();
         String pid = vmname.split("@", 0)[0];
