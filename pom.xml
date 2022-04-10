@@ -77,7 +77,7 @@
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
         <takari-provisio.version>1.0.19</takari-provisio.version>
 
-        <jreleaser.version>1.0.0-RC2</jreleaser.version>
+        <jreleaser.version>1.0.0</jreleaser.version>
         <jreleaser.prerelease>false</jreleaser.prerelease>
         <jreleaser.upload.assets>ALWAYS</jreleaser.upload.assets>
         <jreleaser.distribution.active>ALWAYS</jreleaser.distribution.active>
