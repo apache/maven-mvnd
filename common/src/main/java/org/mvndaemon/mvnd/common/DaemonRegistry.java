@@ -18,6 +18,7 @@ package org.mvndaemon.mvnd.common;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
@@ -246,7 +247,7 @@ public class DaemonRegistry implements AutoCloseable {
                     return;
                 } catch (IOException e) {
                     throw new RuntimeException("Could not lock offset 0 of " + registryFile);
-                } catch (IllegalStateException | ArrayIndexOutOfBoundsException e) {
+                } catch (IllegalStateException | ArrayIndexOutOfBoundsException | BufferUnderflowException e) {
                     String absPath = registryFile.toAbsolutePath().normalize().toString();
                     LOGGER.warn("Invalid daemon registry info, " +
                             "trying to recover from this issue. " +
