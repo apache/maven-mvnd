@@ -34,11 +34,11 @@ jobs:
         os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
         gu-binary: [gu, gu.cmd]
         exclude:
-          - os: ubuntu-latest
+          - os: ubuntu-18.04
             gu-binary: gu.cmd
-          - os: macos-latest
+          - os: macOS-10.15
             gu-binary: gu.cmd
-          - os: windows-latest
+          - os: windows-2019
             gu-binary: gu
     runs-on: ${{ matrix.os }}
 
