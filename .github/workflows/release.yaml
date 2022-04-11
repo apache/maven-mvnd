@@ -50,7 +50,7 @@ jobs:
         uses: DeLaGuardo/setup-graalvm@5.0
         with:
           version: ${{ env.GRAALVM_VERSION }}
-          java-version: ${{ env.JAVA_VERSION }}
+          java: java${{ env.JAVA_VERSION }}
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
