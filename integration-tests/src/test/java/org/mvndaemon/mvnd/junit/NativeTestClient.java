@@ -132,7 +132,7 @@ public class NativeTestClient implements Client {
         public Result assertSuccess() {
             if (exitCode != 0) {
                 final StringBuilder sb = ExecutionResult.appendCommand(
-                        new StringBuilder("mvnd returned ").append(exitCode),
+                        new StringBuilder("mvnd returned ").append(exitCode).append(", args: "),
                         args);
                 if (exitCode == CommandProcess.TIMEOUT_EXIT_CODE) {
                     sb.append(" (timeout)");
