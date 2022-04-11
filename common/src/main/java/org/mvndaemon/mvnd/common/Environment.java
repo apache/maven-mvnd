@@ -204,7 +204,7 @@ public enum Environment {
      * The <code>-Xms</code> value to pass to the daemon.
      * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
-    MVND_MIN_HEAP_SIZE("mvnd.minHeapSize", null, "128M", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
+    MVND_MIN_HEAP_SIZE("mvnd.minHeapSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
      * The <code>-Xmx</code> value to pass to the daemon.
      * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
@@ -214,7 +214,7 @@ public enum Environment {
      * The <code>-Xss</code> value to pass to the daemon.
      * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
-    MVND_THREAD_STACK_SIZE("mvnd.threadStackSize", null, "1M", OptionType.MEMORY_SIZE, Flags.DISCRIMINATING),
+    MVND_THREAD_STACK_SIZE("mvnd.threadStackSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
      * Additional JVM args to pass to the daemon.
      * The content of the <code>.mvn/jvm.config</code> file will prepended (and thus with
