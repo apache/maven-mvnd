@@ -47,7 +47,7 @@ jobs:
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up Graal'
-        uses: graalvm/setup-graalvm@v1
+        uses: DeLaGuardo/setup-graalvm@5.0
         with:
           version: ${{ env.GRAALVM_VERSION }}
           java-version: ${{ env.JAVA_VERSION }}
