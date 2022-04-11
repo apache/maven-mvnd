@@ -24,7 +24,7 @@ on:
   pull_request:
 
 env:
-  GRAALVM_VERSION: '21.3.0'
+  GRAALVM_VERSION: '22.0.0.2'
   JAVA_VERSION: '17'
 
 jobs:
@@ -35,6 +35,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
+        gu-binary: [gu, gu.cmd]
+        exclude:
+          - os: ubuntu-latest
+            gu-binary: gu.cmd
+          - os: macos-latest
+            gu-binary: gu.cmd
+          - os: windows-latest
+            gu-binary: gu
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -52,10 +60,13 @@ jobs:
       - name: 'Set up Graal'
         uses: DeLaGuardo/setup-graalvm@5.0
         with:
-          version: ${{ env.GRAALVM_VERSION }}
-          java: java${{ env.JAVA_VERSION }}
-          components: 'native-image'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          graalvm: '${{ env.GRAALVM_VERSION }}'
+          java: 'java${{ env.JAVA_VERSION }}'
+          personal-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install native-image component
+        run: |
+          ${{ matrix.gu-binary }} install native-image
 
       - name: 'Build native distribution'
         run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
