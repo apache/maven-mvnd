@@ -266,11 +266,7 @@ public enum Environment {
      * This pattern will be evaluated against the full path of the dependencies, so it is usually desirable to
      * start with <code>'glob:**&#47;'</code> to support any location of the local repository.
      */
-    MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL),
-    /**
-     * The SyncContextFactory to use (can be either 'noop' or 'ipc' for a server-wide factory).
-     */
-    MVND_SYNC_CONTEXT_FACTORY("mvnd.syncContextFactory", null, "local", OptionType.BOOLEAN, Flags.OPTIONAL);
+    MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL);
 
     static Properties properties;
 
