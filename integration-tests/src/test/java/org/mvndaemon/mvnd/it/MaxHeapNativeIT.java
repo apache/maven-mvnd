@@ -15,71 +15,103 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import java.nio.file.Path;
-import java.util.stream.Collectors;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import javax.inject.Inject;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
-import org.mvndaemon.mvnd.junit.ClientFactory;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
-import org.mvndaemon.mvnd.junit.TestParameters;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MvndNativeTest(projectDir = "src/test/projects/max-heap")
 public class MaxHeapNativeIT {
 
-    @Inject
-    ClientFactory clientFactory;
+    static class BaseTest {
 
-    @Inject
-    TestParameters parameters;
+        @Inject
+        Client client;
 
-    @Test
-    void noXmxPassedByDefault() throws InterruptedException {
-        Path dir = parameters.getTestDir().resolve("project/default-heap");
-        final Client client = clientFactory.newClient(parameters.cd(dir));
-        final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
-                "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
-                .assertSuccess();
-        assertTrue(output.getMessages().stream()
-                .noneMatch(m -> m.toString().contains("-Xmx") || m.toString().contains("mvnd.maxHeapSize")),
-                "Output must not contain -Xmx or mvnd.maxHeapSize but is:\n"
-                        + output.getMessages().stream().map(Object::toString).collect(Collectors.joining("\n")));
+        static ListAppender<ILoggingEvent> appender = new ListAppender<>();
+
+        @BeforeAll
+        static void setup() {
+            Logger logger = (Logger) LoggerFactory.getLogger("org.mvndaemon.mvnd.client.DaemonConnector");
+            logger.setLevel(Level.DEBUG);
+            logger.addAppender(appender);
+            appender.start();
+        }
+
+        @AfterAll
+        static void tearDown() {
+            Logger logger = (Logger) LoggerFactory.getLogger("org.mvndaemon.mvnd.client.DaemonConnector");
+            logger.detachAppender(appender);
+        }
+
+        static String getDaemonArgs() {
+            return appender.list.stream()
+                    .filter(e -> e.getMessage().contains("Starting daemon process"))
+                    .map(e -> e.getArgumentArray()[2].toString())
+                    .findAny().orElseThrow();
+        }
+
+        @BeforeEach
+        void unitSetup() {
+            appender.list.clear();
+        }
+
     }
 
-    @Test
-    void XmxFromJvmConfig() throws InterruptedException {
-        Path dir = parameters.getTestDir().resolve("project/jvm-config");
-        final Client client = clientFactory.newClient(parameters.cd(dir));
-        final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
-                "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
-                .assertSuccess();
-        assertTrue(output.getMessages().stream()
-                .anyMatch(m -> m.toString().contains("-Xmx140M") && !m.toString().contains("mvnd.maxHeapSize")),
-                "Output must contain -Xmx140M or mvnd.maxHeapSize=140M but is:\n"
-                        + output.getMessages().stream().map(Object::toString).collect(Collectors.joining("\n")));
+    @MvndNativeTest(projectDir = "src/test/projects/max-heap/default-heap")
+    static class DefaultConfig extends BaseTest {
+
+        @Test
+        void noXmxPassedByDefault() throws InterruptedException {
+            final TestClientOutput output = new TestClientOutput();
+            client.execute(output, "-Dmvnd.log.level=DEBUG", "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
+                    "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
+                    .assertSuccess();
+            String daemonArgs = getDaemonArgs();
+            assertTrue(!daemonArgs.contains("-Xmx") && !daemonArgs.contains("mvnd.maxHeapSize"),
+                    "Args must not contain -Xmx or mvnd.maxHeapSize but is:\n" + daemonArgs);
+        }
     }
 
-    @Test
-    void XmxFromMvndProperties() throws InterruptedException {
-        Path dir = parameters.getTestDir().resolve("project/mvnd-props");
-        final Client client = clientFactory.newClient(parameters.cd(dir));
-        final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
-                "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
-                .assertSuccess();
-        assertTrue(output.getMessages().stream()
-                .anyMatch(m -> m.toString().contains("-Xmx130M") && m.toString().contains("mvnd.maxHeapSize=130M")),
-                "Output must contain -Xmx130M or mvnd.maxHeapSize=130M but is:\n"
-                        + output.getMessages().stream().map(Object::toString).collect(Collectors.joining("\n")));
+    @MvndNativeTest(projectDir = "src/test/projects/max-heap/jvm-heap")
+    static class JvmConfig extends BaseTest {
+
+        @Test
+        void xmxFromJvmConfig() throws InterruptedException {
+            final TestClientOutput output = new TestClientOutput();
+            client.execute(output, "-Dmvnd.log.level=DEBUG", "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
+                    "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
+                    .assertSuccess();
+            String daemonArgs = getDaemonArgs();
+            assertTrue(!daemonArgs.contains("-Xmx") && !daemonArgs.contains("mvnd.maxHeapSize"),
+                    "Args must not contain -Xmx or mvnd.maxHeapSize but is:\n" + daemonArgs);
+        }
     }
 
-    protected boolean isNative() {
-        return true;
+    @MvndNativeTest(projectDir = "src/test/projects/max-heap/mvnd-props")
+    static class MvndProps extends BaseTest {
+
+        @Test
+        void xmxFromMvndProperties() throws InterruptedException {
+            final TestClientOutput output = new TestClientOutput();
+            client.execute(output, "-Dmvnd.log.level=DEBUG", "org.codehaus.gmaven:groovy-maven-plugin:2.1.1:execute",
+                    "-Dsource=System.out.println(java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments())")
+                    .assertSuccess();
+            String daemonArgs = getDaemonArgs();
+            assertTrue(daemonArgs.contains("-Xmx130M") && daemonArgs.contains("mvnd.maxHeapSize=130M"),
+                    "Args must contain -Xmx130M or mvnd.maxHeapSize=130M but is:\n" + daemonArgs);
+        }
+
     }
 
 }
