@@ -210,14 +210,14 @@ public class DefaultClient implements Client {
         try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
             if (Environment.STATUS.removeCommandLineOption(args) != null) {
                 final String template = "%8s  %7s  %24s  %7s  %5s  %23s  %s";
-                output.accept(Message.log(String.format(template,
+                output.accept(Message.out(String.format(template,
                         "ID", "PID", "Address", "Status", "RSS", "Last activity", "Java home")));
                 for (DaemonInfo d : registry.getAll()) {
                     if (ProcessHandle.of(d.getPid()).isEmpty()) {
                         /* The process does not exist anymore - remove it from the registry */
                         registry.remove(d.getId());
                     } else {
-                        output.accept(Message.log(String.format(template,
+                        output.accept(Message.out(String.format(template,
                                 d.getId(), d.getPid(), d.getAddress(), d.getState(),
                                 OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
                                 LocalDateTime.ofInstant(
@@ -231,7 +231,7 @@ public class DefaultClient implements Client {
             if (Environment.STOP.removeCommandLineOption(args) != null) {
                 DaemonInfo[] dis = registry.getAll().toArray(new DaemonInfo[0]);
                 if (dis.length > 0) {
-                    output.accept(Message.display("Stopping " + dis.length + " running daemons"));
+                    output.accept(Message.out("Stopping " + dis.length + " running daemons"));
                     for (DaemonInfo di : dis) {
                         try {
                             ProcessHandle.of(di.getPid()).ifPresent(ProcessHandle::destroyForcibly);
@@ -246,7 +246,7 @@ public class DefaultClient implements Client {
             }
             if (Environment.PURGE.removeCommandLineOption(args) != null) {
                 String result = purgeLogs();
-                output.accept(Message.display(result != null ? result : "Nothing to purge"));
+                output.accept(Message.out(result != null ? result : "Nothing to purge"));
                 return DefaultResult.success(argv);
             }
 
@@ -327,7 +327,7 @@ public class DefaultClient implements Client {
                 } finally {
                     String msg = purgeMessage.get();
                     if (msg != null) {
-                        output.accept(Message.display(msg));
+                        output.accept(Message.err(msg));
                     }
                 }
             }
