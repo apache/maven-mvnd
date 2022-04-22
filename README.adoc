@@ -37,12 +37,12 @@ This architecture brings the following advantages:
   given by the formula `Math.max(Runtime.getRuntime().availableProcessors() - 1, 1)`. If your source tree does not
   support parallel builds, pass `-T1` on the command line to make your build serial.
 * Improved console output: we believe that the output of a parallel build on a stock Maven is hard to follow. Therefore,
-we implemented a simplified a non-rolling view showing the status of each build thread on a separate line. This is
+we implemented a simplified non-rolling view showing the status of each build thread on a separate line. This is
 what it looks like on a machine with 24 cores:
 +
 image::https://user-images.githubusercontent.com/1826249/103917178-94ee4500-510d-11eb-9abb-f52dae58a544.gif[]
 +
-Once the build is finshed, the complete Maven output is forwarded to the console.
+Once the build is finished, the complete Maven output is forwarded to the console.
 
 == How to install `mvnd`
 
@@ -218,6 +218,6 @@ $ ls -lh target/mvnd
 $ cp -R dist/target/mvnd-[version] [target-dir]
 ----
 
-Then you can simply run add `[target-dir]/bin` to your `PATH` and run `mvnd`. 
+Then you can simply add `[target-dir]/bin` to your `PATH` and run `mvnd`. 
 
-We're happy to improve `mvnd`, so https://github.com/mvndaemon/mvnd/issues[feedback] is most welcomed!
+We're happy to improve `mvnd`, so https://github.com/mvndaemon/mvnd/issues[feedback] is most welcome!
