@@ -1,0 +1,116 @@
+#
+# Copyright (c) 2017 Angelo Zerr and other contributors as
+# indicated by the @author tags.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: Early Access
+
+# trigger on push to branches and PR
+on:
+  push:
+    branch:
+  pull_request:
+
+env:
+  GRAALVM_VERSION: '21.3.0'
+  JAVA_VERSION: '17'
+
+jobs:
+  build:
+    name: 'Build with Graal on ${{ matrix.os }}'
+    if: startsWith(github.event.head_commit.message, 'Updated CHANGELOG.md') != true && startsWith(github.event.head_commit.message, '[maven-release-plugin]') != true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+
+      - name: 'Set vars'
+        shell: bash
+        run: |
+          OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
+          [[ $OS == 'ubuntu' ]] && echo "OS=linux" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: 'Set up Graal'
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: ${{ env.GRAALVM_VERSION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Build native distribution'
+        run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
+
+      - name: 'Upload daemon test logs'
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: daemon-test-logs-${{ env.OS }}
+          path: integration-tests/target/mvnd-tests/**/daemon*.log
+
+      - name: 'Upload artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: dist/target/mvnd-*.zip
+
+  early-access:
+    runs-on: ubuntu-18.04
+    needs: [build]
+    # Only post early access releases when push to master
+    if: ${{ !github.event.issue.pull_request }} && startsWith(github.ref, 'refs/heads/master')
+
+    steps:
+      - name: 'Check out repository'
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: 'Download all build artifacts'
+        uses: actions/download-artifact@v2
+
+      - name: 'Set up Java'
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'zulu'
+
+      - name: 'Cache Maven packages'
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: 'Release to GitHub'
+        env:
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./mvnw -B --file pom.xml -pl :mvnd -DartifactsDir=artifacts jreleaser:release
+
+      - name: 'JReleaser output'
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: jreleaser-logs
+          path: |
+            target/jreleaser/trace.log
+            target/jreleaser/output.properties

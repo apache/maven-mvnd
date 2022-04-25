@@ -41,6 +41,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
         <trimStackTrace>false</trimStackTrace>
+        <project.github.repository>apache/maven-mvnd</project.github.repository>
+        <repository.url>github.com:${project.github.repository}</repository.url>
 
         <!-- dependency versions a..z -->
         <apiguardian-api.version>1.0.0</apiguardian-api.version>
@@ -71,8 +73,18 @@
         <mrm.version>1.2.0</mrm.version>
         <surefire.version>3.0.0-M5</surefire.version><!-- keep in sync with junit-platform-launcher.version -->
         <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version><!-- keep in sync with surefire.version -->
+        <release.plugin.version>3.0.0-M5</release.plugin.version>
         <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
         <takari-provisio.version>1.0.19</takari-provisio.version>
+
+        <jreleaser.version>1.0.0</jreleaser.version>
+        <jreleaser.prerelease>false</jreleaser.prerelease>
+        <jreleaser.upload.assets>ALWAYS</jreleaser.upload.assets>
+        <jreleaser.distribution.active>ALWAYS</jreleaser.distribution.active>
+        <jreleaser.overwrite>false</jreleaser.overwrite>
+        <jreleaser.update>false</jreleaser.update>
+        <jreleaser.brew.active>NEVER</jreleaser.brew.active>
+        <jreleaser.sdkman.active>NEVER</jreleaser.sdkman.active>
 
         <javassist.version>3.27.0-GA</javassist.version>
     </properties>
@@ -90,9 +102,9 @@
     </modules>
 
     <scm>
-        <connection>scm:git:git@github.com:mvndaemon/mvnd.git</connection>
-        <developerConnection>scm:git:git@github.com:mvndaemon/mvnd.git</developerConnection>
-        <url>https://github.com/mvndaemon/mvnd</url>
+        <url>${repository.url}</url>
+        <connection>scm:git:${repository.url}.git</connection>
+        <developerConnection>scm:git:${repository.url}.git</developerConnection>
         <tag>head</tag>
     </scm>
 
@@ -331,6 +343,7 @@ limitations under the License.</inlineHeader>
                             <exclude>**/*.jnilib</exclude>
                             <exclude>**/Makefile*</exclude>
                             <exclude>**/docker/*</exclude>
+                            <exclude>**/*.tpl</exclude>
                         </excludes>
                         <mapping>
                             <bash>SCRIPT_STYLE</bash>
@@ -450,6 +463,16 @@ limitations under the License.</inlineHeader>
                     <artifactId>native-image-maven-plugin</artifactId>
                     <version>${graalvm.plugin.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${release.plugin.version}</version>
+                    <configuration>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -527,7 +550,127 @@ limitations under the License.</inlineHeader>
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.jreleaser</groupId>
+                <artifactId>jreleaser-maven-plugin</artifactId>
+                <version>${jreleaser.version}</version>
+                <inherited>false</inherited>
+                <configuration>
+                    <jreleaser>
+                        <environment>
+                            <properties>
+                                <artifactsDir>dist/target</artifactsDir>
+                            </properties>
+                        </environment>
+                        <project>
+                            <name>mvnd</name>
+                            <description>Maven Daemon</description>
+                            <license>Apache-2.0</license>
+                            <website>https://github.com/mvndaemon/mvnd</website>
+                            <authors>The Maven project</authors>
+                            <tags>maven,mvn,daemon,graalvm</tags>
+                        </project>
+                        <release>
+                            <github>
+                                <branch>master</branch>
+                                <skipTag>true</skipTag>
+                                <tagName>{{projectVersion}}</tagName>
+                                <releaseName>{{projectVersion}}</releaseName>
+                                <prerelease>
+                                    <enabled>${jreleaser.prerelease}</enabled>
+                                </prerelease>
+                                <overwrite>${jreleaser.overwrite}</overwrite>
+                                <update>
+                                    <enabled>${jreleaser.update}</enabled>
+                                </update>
+                                <uploadAssets>${jreleaser.upload.assets}</uploadAssets>
+                                <changelog>
+                                    <formatted>ALWAYS</formatted>
+                                    <format>- {{commitShortHash}} {{commitTitle}}</format>
+                                    <contributors>
+                                        <format>- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}</format>
+                                    </contributors>
+                                    <labelers>
+                                        <labeler>
+                                            <label>update-changelog</label>
+                                            <title>Updated CHANGELOG.md</title>
+                                        </labeler>
+                                    </labelers>
+                                    <categories>
+                                        <category>
+                                            <key>changelog</key>
+                                            <title>changelog</title>
+                                            <labels>update-changelog</labels>
+                                        </category>
+                                    </categories>
+                                    <hide>
+                                        <categories>changelog</categories>
+                                        <contributors>GitHub,bot</contributors>
+                                    </hide>
+                                </changelog>
+                            </github>
+                        </release>
+                        <distributions>
+                            <mvnd>
+                                <type>NATIVE_IMAGE</type>
+                                <active>${jreleaser.distribution.active}</active>
+                                <artifacts>
+                                    <artifact>
+                                        <path>{{artifactsDir}}/mvnd-{{projectVersion}}-linux-amd64.zip</path>
+                                        <platform>linux-x86_64</platform>
+                                    </artifact>
+                                    <artifact>
+                                        <path>{{artifactsDir}}/mvnd-{{projectVersion}}-windows-amd64.zip</path>
+                                        <platform>windows-x86_64</platform>
+                                    </artifact>
+                                    <artifact>
+                                        <path>{{artifactsDir}}/mvnd-{{projectVersion}}-darwin-amd64.zip</path>
+                                        <platform>osx-x86_64</platform>
+                                    </artifact>
+                                </artifacts>
+                                <brew>
+                                    <active>${jreleaser.brew.active}</active>
+                                    <multiPlatform>true</multiPlatform>
+                                    <tap>
+                                        <owner>mvndaemon</owner>
+                                        <name>homebrew-mvnd</name>
+                                        <commitMessage>Release {{tagName}}</commitMessage>
+                                    </tap>
+                                </brew>
+                                <sdkman>
+                                    <active>${jreleaser.sdkman.active}</active>
+                                </sdkman>
+                            </mvnd>
+                        </distributions>
+                    </jreleaser>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>prerelease</id>
+            <properties>
+                <jreleaser.prerelease>true</jreleaser.prerelease>
+                <jreleaser.upload.assets>PRERELEASE</jreleaser.upload.assets>
+                <jreleaser.distribution.active>NEVER</jreleaser.distribution.active>
+                <jreleaser.overwrite>false</jreleaser.overwrite>
+                <jreleaser.update>false</jreleaser.update>
+            </properties>
+        </profile>
+        <profile>
+            <id>release</id>
+            <properties>
+                <jreleaser.prerelease>false</jreleaser.prerelease>
+                <jreleaser.upload.assets>RELEASE</jreleaser.upload.assets>
+                <jreleaser.distribution.active>ALWAYS</jreleaser.distribution.active>
+                <jreleaser.overwrite>false</jreleaser.overwrite>
+                <jreleaser.update>true</jreleaser.update>
+                <jreleaser.brew.active>RELEASE</jreleaser.brew.active>
+                <jreleaser.sdkman.active>RELEASE</jreleaser.sdkman.active>
+            </properties>
+        </profile>
+    </profiles>
 </project>
