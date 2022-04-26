@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-18.04
     needs: [build]
     # Only post early access releases when push to master
-    if: ${{ !github.event.issue.pull_request }} && startsWith(github.ref, 'refs/heads/master')
+    if: false && ${{ !github.event.issue.pull_request }} && startsWith(github.ref, 'refs/heads/master')
 
     steps:
       - name: 'Check out repository'
