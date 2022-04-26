@@ -17,7 +17,21 @@ package org.mvndaemon.mvnd.it;
 
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-@MvndTest(projectDir = "src/test/projects/maven-conf")
-public class MavenConfTest extends MavenConfNativeIT {
+public class MaxHeapTest extends MaxHeapNativeIT {
+
+    @MvndTest(projectDir = "src/test/projects/max-heap/default-heap")
+    static class DefaultConfig extends MaxHeapNativeIT.DefaultConfig {
+
+    }
+
+    @MvndTest(projectDir = "src/test/projects/max-heap/jvm-config")
+    static class JvmConfig extends MaxHeapNativeIT.JvmConfig {
+
+    }
+
+    @MvndTest(projectDir = "src/test/projects/max-heap/mvnd-props")
+    static class MvndProps extends MaxHeapNativeIT.MvndProps {
+
+    }
 
 }
