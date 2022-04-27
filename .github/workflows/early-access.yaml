@@ -30,7 +30,7 @@ env:
 jobs:
   build:
     name: 'Build with Graal on ${{ matrix.os }}'
-    if: startsWith(github.event.head_commit.message, 'Updated CHANGELOG.md') != true && startsWith(github.event.head_commit.message, '[maven-release-plugin]') != true
+    if: startsWith(github.event.head_commit.message, '[release] Release ') != true
     strategy:
       fail-fast: false
       matrix:
@@ -70,47 +70,5 @@ jobs:
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
         with:
-          name: artifacts
+          name: mvnd-${{ env.OS }}
           path: dist/target/mvnd-*.zip
-
-  early-access:
-    runs-on: ubuntu-18.04
-    needs: [build]
-    # Only post early access releases when push to master
-    if: false && ${{ !github.event.issue.pull_request }} && startsWith(github.ref, 'refs/heads/master')
-
-    steps:
-      - name: 'Check out repository'
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: 'Download all build artifacts'
-        uses: actions/download-artifact@v2
-
-      - name: 'Set up Java'
-        uses: actions/setup-java@v2
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'zulu'
-
-      - name: 'Cache Maven packages'
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
-      - name: 'Release to GitHub'
-        env:
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: ./mvnw -B --file pom.xml -pl :mvnd -DartifactsDir=artifacts jreleaser:release
-
-      - name: 'JReleaser output'
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: jreleaser-logs
-          path: |
-            target/jreleaser/trace.log
-            target/jreleaser/output.properties

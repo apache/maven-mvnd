@@ -25,11 +25,14 @@ git checkout master
 git fetch upstream
 git reset --hard upstream/master
 mvn versions:set -DnewVersion=$VERSION
+docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator \
+    --user apache --project maven-mvnd --token GITHUB_TOKEN
 git add -A
-git commit -m "Release $VERSION"
+git commit -m "[release] Release $VERSION"
 git tag $VERSION
 git push upstream $VERSION
-# Pushing a tag will trigger the CI to build the release and publish the artifacts on https://github.com/mvndaemon/mvnd/releases
+# Pushing a tag will trigger the CI to build the release and publish
+# the artifacts on https://github.com/mvndaemon/mvnd/releases
 
 mvn versions:set -DnewVersion=$NEXT_VERSION
 git add -A

@@ -17,9 +17,13 @@
 
 name: Release
 
-# manual trigger
 on:
+  # manual trigger
   workflow_dispatch:
+  # build on new tags
+  push:
+    tags:
+      - '*'
 
 env:
   GRAALVM_VERSION: '21.3.0'
@@ -55,14 +59,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Build native distribution'
-        run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
-
-      - name: 'Upload daemon test logs'
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: daemon-test-logs-${{ env.OS }}
-          path: integration-tests/target/mvnd-tests/**/daemon*.log
+        run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e -DskipTests
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
@@ -70,9 +67,44 @@ jobs:
           name: artifacts
           path: dist/target/mvnd-*.zip
 
+  source:
+    name: 'Build source distributions'
+    runs-on: ubuntu-18.04
+    steps:
+      - name: 'Check out repository'
+        uses: actions/checkout@v2
+
+      - name: 'Set vars'
+        shell: bash
+        run: |
+          OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
+          [[ $OS == 'ubuntu' ]] && echo "OS=linux" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: 'Set up Graal'
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: ${{ env.GRAALVM_VERSION }}
+          java-version: ${{ env.JAVA_VERSION }}
+          components: 'native-image'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Build native distribution'
+        run: ./mvnw clean verify -Psource-distribution -pl :mvnd -Dmrm=false -B -ntp -e
+
+      - name: 'Upload artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: |
+            target/mvnd-*-src.zip
+            target/mvnd-*-src.tar.gz
+
+
   release:
     runs-on: ubuntu-18.04
-    needs: [build]
+    needs: [build, source]
 
     steps:
       - name: 'Check out repository'
@@ -96,19 +128,129 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: 'Release to GitHub'
-        env:
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          JRELEASER_HOMEBREW_GITHUB_TOKEN: ${{ secrets.GIT_ACCESS_TOKEN }}
-          JRELEASER_SDKMAN_CONSUMER_KEY: ${{ secrets.SDKMAN_CONSUMER_KEY }}
-          JRELEASER_SDKMAN_CONSUMER_TOKEN: ${{ secrets.SDKMAN_CONSUMER_TOKEN }}
-        run: ./mvnw -B --file pom.xml -pl :mvnd -Prelease -DartifactsDir=artifacts jreleaser:full-release
+      - name: ls -R
+        run: ls -R
 
-      - name: 'JReleaser output'
-        if: always()
-        uses: actions/upload-artifact@v2
+      - name: Set environment
+        run: |
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      - name: Compute sha256 checksums
+        run: |
+          sha256sum artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
+          sha256sum artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
+          sha256sum artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
+          sha256sum artifacts/mvnd-${{ env.VERSION }}-src.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-src.zip.sha256
+          sha256sum artifacts/mvnd-${{ env.VERSION }}-src.tar.gz | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-src.tar.gz.sha256
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: jreleaser-logs
-          path: |
-            target/jreleaser/trace.log
-            target/jreleaser/output.properties
+          tag_name: ${{ env.VERSION }}
+          release_name: ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Deploy mvnd-src.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.zip
+          asset_name: mvnd-${{ env.VERSION }}-src.zip
+          asset_content_type: application/zip
+
+      - name: Deploy mvnd-src.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.zip.sha256
+          asset_name: mvnd-${{ env.VERSION }}-src.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Deploy mvnd-src.tar.gz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.tar.gz
+          asset_name: mvnd-${{ env.VERSION }}-src.tar.gz
+          asset_content_type: application/tar.gz
+
+      - name: Deploy mvnd-src.tar.gz.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.tar.gz.sha256
+          asset_name: mvnd-${{ env.VERSION }}-src.tar.gz.sha256
+          asset_content_type: text/plain
+
+      - name: Deploy mvnd-linux-amd64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip
+          asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Deploy mvnd-linux-amd64.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
+          asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Deploy mvnd-darwin-amd64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip
+          asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Deploy mvnd-darwin-amd64.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
+          asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
+          asset_content_type: text/plain
+
+      - name: Deploy mvnd-windows-amd64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip
+          asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip
+          asset_content_type: application/zip
+
+      - name: Deploy mvnd-windows-amd64.zip.sha256
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
+          asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
+          asset_content_type: text/plain
+
