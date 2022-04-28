@@ -32,7 +32,7 @@ function publishRelease() {
     MVND_PLATFORM=$3
 
     FILE="mvnd-${VERSION}-${MVND_PLATFORM}.zip"
-    URL="https://github.com/mvndaemon/mvnd/releases/download/${VERSION}/${FILE}"
+    URL="https://github.com/apache/maven-mvnd/releases/download/${VERSION}/${FILE}"
     RESPONSE="$(curl -s -X POST \
         -H "Consumer-Key: ${SDKMAN_CONSUMER_KEY}" \
         -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
@@ -75,7 +75,7 @@ node -pe "
     }
 " "${RESPONSE}"
 
-RELEASE_URL=`curl -s -i https://git.io -F url=https://github.com/mvndaemon/mvnd/releases/tag/${VERSION} | grep Location | sed -e 's/Location: //g' | tr -d '\n' | tr -d '\r'`
+RELEASE_URL=`curl -s -i https://git.io -F url=https://github.com/apache/maven-mvnd/releases/tag/${VERSION} | grep Location | sed -e 's/Location: //g' | tr -d '\n' | tr -d '\r'`
 echo "RELEASE_URL = $RELEASE_URL"
 
 RESPONSE="$(curl -s -X POST \
