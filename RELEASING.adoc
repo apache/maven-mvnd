@@ -5,7 +5,7 @@
 ./build/release.sh <released-version> <next-SNAPSHOT>
 ----
 
-* Re-run the https://github.com/mvndaemon/mvnd/actions?query=workflow%3A%22Mvnd+Changelog%22[Changelog update] manually.
+* Re-run the https://github.com/apache/maven-mvnd/actions?query=workflow%3A%22Mvnd+Changelog%22[Changelog update] manually.
 * When it terminates, find the section about the current release
   in the https://raw.githubusercontent.com/mvndaemon/mvnd/master/CHANGELOG.md[Changelog] and copy its MarkDown source
   to the respective release page. The release page will appear once the release build is finished.

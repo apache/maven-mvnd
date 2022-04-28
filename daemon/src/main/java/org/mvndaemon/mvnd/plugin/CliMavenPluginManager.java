@@ -113,7 +113,7 @@ import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
 
 /*
  * gnodet: This file is based on maven DefaultMavenPluginManager and changed in order
- * to better support parallel builds. See https://github.com/mvndaemon/mvnd/issues/310
+ * to better support parallel builds. See https://github.com/apache/maven-mvnd/issues/310
  */
 /**
  * Provides basic services to manage Maven plugins and their mojos. This component is kept general in its design such

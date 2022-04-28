@@ -101,7 +101,7 @@ $ unalias mvnd
 
 === Install manually
 
-* Download the latest ZIP suitable for your platform from https://github.com/mvndaemon/mvnd/releases
+* Download the latest ZIP suitable for your platform from https://github.com/apache/maven-mvnd/releases
 * Unzip to a directory of your choice
 * Add the `bin` directory to `PATH`
 * Optionally, you can create `~/.m2/mvnd.properties` and set the `java.home` property in case you do not want to bother
@@ -166,7 +166,7 @@ A few special properties do not follow the above mechanism:
 * `mvnd.coreExtensions`: internal option to specify the list of maven extension to register
 
 For a full list of available properties please see 
-https://github.com/mvndaemon/mvnd/blob/master/dist/src/main/distro/conf/mvnd.properties[/dist/src/main/distro/conf/mvnd.properties].  
+https://github.com/apache/maven-mvnd/blob/master/dist/src/main/distro/conf/mvnd.properties[/dist/src/main/distro/conf/mvnd.properties].
 
 == Build `mvnd` from source
 
@@ -200,7 +200,7 @@ https://www.graalvm.org/reference-manual/native-image/#prerequisites[`native-ima
 
 [source,shell]
 ----
-$ git clone https://github.com/mvndaemon/mvnd.git
+$ git clone https://github.com/apache/maven-mvnd.git
 $ cd mvnd
 $ mvn clean verify -Pnative
 ...
@@ -220,4 +220,4 @@ $ cp -R dist/target/mvnd-[version] [target-dir]
 
 Then you can simply add `[target-dir]/bin` to your `PATH` and run `mvnd`. 
 
-We're happy to improve `mvnd`, so https://github.com/mvndaemon/mvnd/issues[feedback] is most welcome!
+We're happy to improve `mvnd`, so https://github.com/apache/maven-mvnd/issues[feedback] is most welcome!

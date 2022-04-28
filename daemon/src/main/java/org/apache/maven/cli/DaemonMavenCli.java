@@ -382,7 +382,7 @@ public class DaemonMavenCli {
             MessageUtils.setColorEnabled(false);
         }
 
-        // Workaround for https://github.com/mvndaemon/mvnd/issues/39
+        // Workaround for https://github.com/apache/maven-mvnd/issues/39
         final ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
                 .getLogger("org.mvndaemon.mvnd");
         mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level"), null));

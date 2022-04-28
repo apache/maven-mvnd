@@ -32,7 +32,7 @@ git commit -m "[release] Release $VERSION"
 git tag $VERSION
 git push upstream $VERSION
 # Pushing a tag will trigger the CI to build the release and publish
-# the artifacts on https://github.com/mvndaemon/mvnd/releases
+# the artifacts on https://github.com/apache/maven-mvnd/releases
 
 mvn versions:set -DnewVersion=$NEXT_VERSION
 git add -A

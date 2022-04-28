@@ -236,7 +236,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         }
 
         private static void prefillLocalRepo(final Path localMavenRepository) {
-            /* Workaround for https://github.com/mvndaemon/mvnd/issues/281 */
+            /* Workaround for https://github.com/apache/maven-mvnd/issues/281 */
             final String preinstallArtifacts = System.getProperty("preinstall.artifacts").trim();
             final Path hostLocalMavenRepo = Paths.get(System.getProperty("mvnd.test.hostLocalMavenRepo"));
 
