@@ -1,21 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/apache/maven-mvnd/tree/HEAD)
+## [0.8.0](https://github.com/apache/maven-mvnd/tree/0.8.0) (2022-04-29)
 
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/early-access...HEAD)
-
-**Closed issues:**
-
-- create Apache source-release distribution archive [\#543](https://github.com/apache/maven-mvnd/issues/543)
-- Parallel build fails with NoSuchFileException for target/classes [\#500](https://github.com/apache/maven-mvnd/issues/500)
-
-**Merged pull requests:**
-
-- Replace `github.com/mvndaemon/mvnd` references [\#622](https://github.com/apache/maven-mvnd/pull/622) ([Stephan202](https://github.com/Stephan202))
-
-## [early-access](https://github.com/apache/maven-mvnd/tree/early-access) (2022-04-26)
-
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/0.7.1...early-access)
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/0.7.1...0.8.0)
 
 **Closed issues:**
 
@@ -53,6 +40,7 @@
 - mvnd maven plugin [\#546](https://github.com/apache/maven-mvnd/issues/546)
 - git bash show “bash: mvnd: command not found” on win 10  [\#545](https://github.com/apache/maven-mvnd/issues/545)
 - jdk 1.8 exception [\#544](https://github.com/apache/maven-mvnd/issues/544)
+- create Apache source-release distribution archive [\#543](https://github.com/apache/maven-mvnd/issues/543)
 - Refactor build & release workflow [\#542](https://github.com/apache/maven-mvnd/issues/542)
 - Does not support the spring-boot-maven-plugin [\#537](https://github.com/apache/maven-mvnd/issues/537)
 - mvn clean slow on Windows - alternative implementation [\#536](https://github.com/apache/maven-mvnd/issues/536)
@@ -60,10 +48,12 @@
 - Investigate the setEnv logic across JDK / OS [\#528](https://github.com/apache/maven-mvnd/issues/528)
 - Build hang and CPU skyrocket with sisu-index:indexMojo [\#527](https://github.com/apache/maven-mvnd/issues/527)
 - \[discuss\]`maven.version` conflict in pom.xml & system property [\#516](https://github.com/apache/maven-mvnd/issues/516)
+- Parallel build fails with NoSuchFileException for target/classes [\#500](https://github.com/apache/maven-mvnd/issues/500)
 - Second "clean" build in fails on Windows due to locked files [\#115](https://github.com/apache/maven-mvnd/issues/115)
 
 **Merged pull requests:**
 
+- Replace `github.com/mvndaemon/mvnd` references [\#622](https://github.com/apache/maven-mvnd/pull/622) ([Stephan202](https://github.com/Stephan202))
 - Upgrade to auto changelog 1.2 [\#621](https://github.com/apache/maven-mvnd/pull/621) ([gnodet](https://github.com/gnodet))
 - Reapply Refactor build and release workflows apache\#574 [\#620](https://github.com/apache/maven-mvnd/pull/620) ([gnodet](https://github.com/gnodet))
 - Fix typos in readme [\#618](https://github.com/apache/maven-mvnd/pull/618) ([Bananeweizen](https://github.com/Bananeweizen))
