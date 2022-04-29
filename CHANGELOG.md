@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased](https://github.com/apache/maven-mvnd/tree/HEAD)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/early-access...HEAD)
+
+**Closed issues:**
+
+- create Apache source-release distribution archive [\#543](https://github.com/apache/maven-mvnd/issues/543)
+- Parallel build fails with NoSuchFileException for target/classes [\#500](https://github.com/apache/maven-mvnd/issues/500)
+
+**Merged pull requests:**
+
+- Replace `github.com/mvndaemon/mvnd` references [\#622](https://github.com/apache/maven-mvnd/pull/622) ([Stephan202](https://github.com/Stephan202))
+
 ## [early-access](https://github.com/apache/maven-mvnd/tree/early-access) (2022-04-26)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/0.7.1...early-access)
@@ -22,7 +35,7 @@
 - No message received within 3000ms,  [\#584](https://github.com/apache/maven-mvnd/issues/584)
 - `java.lang.NoSuchMethodError: org.apache.maven.project.MavenProject.setArtifacts(Ljava/util/Set;)V` [\#579](https://github.com/apache/maven-mvnd/issues/579)
 - Daemon reuse ignores differences in `.mvn/jvm.config` [\#576](https://github.com/apache/maven-mvnd/issues/576)
-- 并不快，对比了mvn 和mvnd的速度 [\#575](https://github.com/apache/maven-mvnd/issues/575)
+- Speed comparison between mvn and mvnd [\#575](https://github.com/apache/maven-mvnd/issues/575)
 - not fast [\#570](https://github.com/apache/maven-mvnd/issues/570)
 - I failed to execute 'mvnd -version' on my MAC [\#569](https://github.com/apache/maven-mvnd/issues/569)
 - I failed to execute MVND on MAC [\#568](https://github.com/apache/maven-mvnd/issues/568)
