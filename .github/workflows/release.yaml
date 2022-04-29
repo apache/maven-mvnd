@@ -61,19 +61,12 @@ jobs:
       - name: 'Build native distribution'
         run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e -DskipTests
 
-      - name: Compute sha256 checksums
-        run: |
-          for file in dist/target/mvnd-*.zip ; do
-            sha256sum ${file} | cut -d ' ' -f 1 > ${file}.sha256
-          done
-
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
           path: |
             dist/target/mvnd-*.zip
-            dist/target/mvnd-*.sha256
 
   source:
     name: 'Build source distributions'
@@ -101,12 +94,6 @@ jobs:
       - name: 'Build source distribution'
         run: ./mvnw clean verify -Psource-distribution -pl :mvnd -Dmrm=false -B -ntp -e
 
-      - name: Compute sha256 checksums
-        run: |
-          for file in target/mvnd-*.zip target/mvnd-*.tar.gz ; do
-            sha256sum ${file} | cut -d ' ' -f 1 > ${file}.sha256
-          done
-
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
         with:
@@ -114,8 +101,6 @@ jobs:
           path: |
             target/mvnd-*.zip
             target/mvnd-*.tar.gz
-            target/mvnd-*.sha256
-
 
   release:
     runs-on: ubuntu-18.04
@@ -171,16 +156,6 @@ jobs:
           asset_name: mvnd-${{ env.VERSION }}-src.zip
           asset_content_type: application/zip
 
-      - name: Deploy mvnd-src.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.zip.sha256
-          asset_name: mvnd-${{ env.VERSION }}-src.zip.sha256
-          asset_content_type: text/plain
-
       - name: Deploy mvnd-src.tar.gz
         uses: actions/upload-release-asset@v1
         env:
@@ -190,16 +165,6 @@ jobs:
           asset_path: artifacts/mvnd-${{ env.VERSION }}-src.tar.gz
           asset_name: mvnd-${{ env.VERSION }}-src.tar.gz
           asset_content_type: application/tar.gz
-
-      - name: Deploy mvnd-src.tar.gz.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.tar.gz.sha256
-          asset_name: mvnd-${{ env.VERSION }}-src.tar.gz.sha256
-          asset_content_type: text/plain
 
       - name: Deploy mvnd-linux-amd64.zip
         uses: actions/upload-release-asset@v1
@@ -211,16 +176,6 @@ jobs:
           asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy mvnd-linux-amd64.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
-          asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
-          asset_content_type: text/plain
-
       - name: Deploy mvnd-darwin-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
@@ -231,16 +186,6 @@ jobs:
           asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy mvnd-darwin-amd64.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
-          asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
-          asset_content_type: text/plain
-
       - name: Deploy mvnd-windows-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
@@ -250,13 +195,3 @@ jobs:
           asset_path: artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip
           asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip
           asset_content_type: application/zip
-
-      - name: Deploy mvnd-windows-amd64.zip.sha256
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
-          asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
-          asset_content_type: text/plain
