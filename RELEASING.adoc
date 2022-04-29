@@ -1,11 +1,16 @@
 = How to release `mnvd`
 
+* Run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release.sh[release script] which will update the versions, the changelog, the native binaries and will tag the new git commit. This new tag will trigger the https://raw.githubusercontent.com/apache/maven-mvnd/master/.github/workflows/release.yaml[release workflow] on this newly created tag.
 [source,shell]
 ----
 ./build/release.sh <released-version> <next-SNAPSHOT>
 ----
 
-* Re-run the https://github.com/apache/maven-mvnd/actions?query=workflow%3A%22Mvnd+Changelog%22[Changelog update] manually.
-* When it terminates, find the section about the current release
-  in the https://raw.githubusercontent.com/mvndaemon/mvnd/master/CHANGELOG.md[Changelog] and copy its MarkDown source
-  to the respective release page. The release page will appear once the release build is finished.
+
+* Once the workflow completes, run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/publish.sh[publish script] which will download the built assemblies, compute the checksums and signatures and commit them to the https://dist.apache.org/repos/dist/dev/maven/mvnd/[dev distribution repository]
+https://github.com/apache/maven-mvnd/releases[releases].
+You can now call a vote on the mailto:dev@maven.apache.org[dev mailing list] pointing to that release candidate.
+
+* Once the vote passes, publish the release.
+
+WARNING: *TODO*: document the publication process (move to the final svn area, homebrew, sdkman, choco updates...)

@@ -58,6 +58,7 @@ do
   gpg --detach-sign --armor ${FILE}
 done
 
+cd ..
 svn co https://dist.apache.org/repos/dist/dev/maven/mvnd
 mv ${VERSION} mvnd
 cd mvnd
