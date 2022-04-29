@@ -32,32 +32,35 @@ startup_check()
   git fetch
   # Most of this code was taken from the __git_ps1_changes method of https://github.com/markgandolfo/git-bash-completion
   local branch_ref
-  branch_ref="$(git symbolic-ref -q HEAD 2>/dev/null)";
-  if [ -n "$branch_ref" ]; then
+  branch_ref=$(git symbolic-ref -q HEAD 2>/dev/null)
+  if [ -n "$branch_ref" ]
+  then
     local branch_origin
-    branch_origin="$(git for-each-ref --format='%(upstream:short)' $branch_ref)";
-    if [ -n "$branch_origin" ]; then
+    branch_origin=$(git for-each-ref --format='%(upstream:short)' $branch_ref)
+    if [ -n "$branch_origin" ]
+    then
       local branch
-      branch=${branch_ref##refs/heads/};
+      branch=${branch_ref##refs/heads/}
 
-      if [ "$branch" != "master" ]; then
+      if [ "$branch" != "master" ]
+      then
         echo "Not working on the master - cannot proceed"
         exit 1
       fi
 
       local unpush
-      unpush=$(git rev-list $branch_origin..$branch --count);
+      unpush=$(git rev-list $branch_origin..$branch --count)
       local unpull
-      unpull=$(git rev-list $branch..$branch_origin --count);
+      unpull=$(git rev-list $branch..$branch_origin --count)
       local staged
-      staged=$(git diff --staged --name-status | wc -l);
+      staged=$(git diff --staged --name-status | wc -l)
       local uncommits
-      uncommits=$(git status -s -uall --porcelain);
+      uncommits=$(git status -s -uall --porcelain)
 
       if [[ $unpush -gt 0 ]]; then
         echo "There are changes which have not been pushed - cannot proceed. The following commits need to be pushed:"
         local unpushed
-        unpushed=$(git rev-list $branch_origin..$branch);
+        unpushed=$(git rev-list $branch_origin..$branch)
         for commit in $unpushed; do
           git --no-pager log --pretty=format:"%H - %an, %ar : %s" -n 1 $commit
         done
@@ -67,7 +70,7 @@ startup_check()
       if [[ $unpull -gt 0 ]]; then
         echo "There are changes which have not been pulled - cannot proceed. The following commits have been added to master since your last pull:"
         local unpulled
-        unpulled=$(git rev-list $branch..$branch_origin);
+        unpulled=$(git rev-list $branch..$branch_origin)
         for commit in $unpulled; do
           git --no-pager log --pretty=format:"%H - %an, %ar : %s" -n 1 $commit
         done
@@ -76,14 +79,14 @@ startup_check()
 
       if [[ $staged -gt 0 ]]; then
         local staging
-        staging=$(git diff --staged --name-status);
+        staging=$(git diff --staged --name-status)
         echo "There are changes which are staged but have been commited - cannot proceed"
         echo $staging
         exit 1
       fi
 
       local unstaged
-      unstaged=$(echo "$uncommits" | grep -c "^ [A-Z]");
+      unstaged=$(echo "$uncommits" | grep -c "^ [A-Z]")
       if [[ $unstaged -gt 0 ]]; then
         echo "There are unstaged changes - cannot proceed"
         echo $(echo "$uncommits" | grep "^ [A-Z]")
