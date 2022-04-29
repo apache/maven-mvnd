@@ -86,7 +86,7 @@ startup_check()
       fi
 
       local unstaged
-      unstaged=$(echo "$uncommits" | grep -c "^ [A-Z]")
+      unstaged=$(echo "$uncommits" | grep -c "^ [A-Z]") || true
       if [[ $unstaged -gt 0 ]]; then
         echo "There are unstaged changes - cannot proceed"
         echo $(echo "$uncommits" | grep "^ [A-Z]")
@@ -94,7 +94,7 @@ startup_check()
       fi
 
       local untracked
-      untracked=$(echo "$uncommits" | grep -c "^??");
+      untracked=$(echo "$uncommits" | grep -c "^??") || true
       if [[ $untracked -gt 0 ]]; then
         echo "There are untracked changes - cannot proceed"
         echo $(echo "$uncommits" | grep "^??")
