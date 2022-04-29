@@ -17,24 +17,46 @@
 
 
 set -e
-set -x
 export VERSION=$1
 export NEXT_VERSION=$2
 
+if [ "${VERSION}x" = "x" ] || [ "${NEXT_VERSION}x" = "x" ]
+then
+  echo "Specify the version: $0 [version] [next-version]"
+  exit 1
+fi
+
+# checkout
 git checkout master
-git fetch upstream
-git reset --hard upstream/master
+git fetch origin
+git reset --hard origin/master
+
+# update version
 mvn versions:set -DnewVersion=$VERSION
+
+# udpate changelog
 docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator \
     --user apache --project maven-mvnd --token GITHUB_TOKEN
+
+# rebuild native libraries
+pushd native
+make native-all
+popd
+
+# commit
 git add -A
 git commit -m "[release] Release $VERSION"
+
+# Create and push tag
 git tag $VERSION
-git push upstream $VERSION
+git push origin $VERSION
 # Pushing a tag will trigger the CI to build the release and publish
 # the artifacts on https://github.com/apache/maven-mvnd/releases
 
+# update version
 mvn versions:set -DnewVersion=$NEXT_VERSION
+
+# commit
 git add -A
 git commit -m "Next is $NEXT_VERSION"
-git push upstream master
+git push origin master
