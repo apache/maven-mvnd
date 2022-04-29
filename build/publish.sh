@@ -15,8 +15,19 @@
 # limitations under the License.
 #
 
+#
+# TODO: if multiple runs are available on the same tag, the artifactsUrl variable will contain several urls:
+# TODO:   artifactsUrl='/repos/apache/maven-mvnd/actions/runs/2245126309/artifacts /repos/apache/maven-mvnd/actions/runs/2245048166/artifacts /repos/apache/maven-mvnd/actions/runs/2235462006/artifacts'
+# TODO: the script should detect and print a meaningful error instead of a cryptic failure:
+# TODO:   accepts 1 arg(s), received 3
+# TODO:   Downloading artifacts from
+# TODO:   accepts 1 arg(s), received 0
+#
+
+# Enable for debug execution
+# set -x
+
 set -e
-set -x
 export VERSION=$1
 
 if [ "${VERSION}x" = "x" ]

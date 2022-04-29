@@ -61,11 +61,19 @@ jobs:
       - name: 'Build native distribution'
         run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e -DskipTests
 
+      - name: Compute sha256 checksums
+        run: |
+          for file in dist/target/mvnd-*.zip ; do
+            sha256sum ${file} | cut -d ' ' -f 1 > ${file}.sha256
+          done
+
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
-          path: dist/target/mvnd-*.zip
+          path: |
+            dist/target/mvnd-*.zip
+            dist/target/mvnd-*.sha256
 
   source:
     name: 'Build source distributions'
@@ -90,16 +98,23 @@ jobs:
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Build native distribution'
+      - name: 'Build source distribution'
         run: ./mvnw clean verify -Psource-distribution -pl :mvnd -Dmrm=false -B -ntp -e
+
+      - name: Compute sha256 checksums
+        run: |
+          for file in target/mvnd-*.zip target/mvnd-*.tar.gz ; do
+            sha256sum ${file} | cut -d ' ' -f 1 > ${file}.sha256
+          done
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
         with:
           name: artifacts
           path: |
-            target/mvnd-*-src.zip
-            target/mvnd-*-src.tar.gz
+            target/mvnd-*.zip
+            target/mvnd-*.tar.gz
+            target/mvnd-*.sha256
 
 
   release:
@@ -135,14 +150,6 @@ jobs:
         run: |
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-      - name: Compute sha256 checksums
-        run: |
-          sha256sum artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip.sha256
-          sha256sum artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip.sha256
-          sha256sum artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
-          sha256sum artifacts/mvnd-${{ env.VERSION }}-src.zip | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-src.zip.sha256
-          sha256sum artifacts/mvnd-${{ env.VERSION }}-src.tar.gz | cut -d ' ' -f 1 > artifacts/mvnd-${{ env.VERSION }}-src.tar.gz.sha256
-
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -151,7 +158,7 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           release_name: ${{ env.VERSION }}
-          draft: false
+          draft: true
           prerelease: false
 
       - name: Deploy mvnd-src.zip
@@ -253,4 +260,3 @@ jobs:
           asset_path: artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
           asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip.sha256
           asset_content_type: text/plain
-
