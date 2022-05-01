@@ -40,6 +40,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
+        <project.build.outputTimestamp>2021-04-05T08:12:18Z</project.build.outputTimestamp>
         <trimStackTrace>false</trimStackTrace>
         <project.github.repository>apache/maven-mvnd</project.github.repository>
         <repository.url>github.com:${project.github.repository}</repository.url>
@@ -67,7 +68,7 @@
         <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
         <impsort-maven-plugin.version>1.6.0</impsort-maven-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
-        <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
+        <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
         <maven-install-plugin.version>2.4</maven-install-plugin.version>
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
         <mrm.version>1.2.0</mrm.version>
