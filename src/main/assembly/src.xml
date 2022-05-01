@@ -42,7 +42,6 @@ under the License.
         <exclude>**/*.ipr</exclude>
         <exclude>**/.idea/**</exclude>
         <exclude>**/.DS_Store</exclude>
-        <exclude>**/build/**</exclude>
       </excludes>
     </fileSet>
     <fileSet>
