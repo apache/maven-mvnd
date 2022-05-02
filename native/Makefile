@@ -26,9 +26,10 @@ MVNDNATIVE_OUT:=target/native-$(OS_NAME)-$(OS_ARCH)
 CCFLAGS:= -I$(MVNDNATIVE_OUT) $(CCFLAGS)
 
 download-includes:
-	test -d target/inc || mkdir target/inc
-	test -d target/inc/unix || mkdir target/inc/unix
-	test -d target/inc/windows || mkdir target/inc/windows
+	@test -d target || mkdir target
+	@test -d target/inc || mkdir target/inc
+	@test -d target/inc/unix || mkdir target/inc/unix
+	@test -d target/inc/windows || mkdir target/inc/windows
 	test -f target/inc/jni.h || wget -O target/inc/jni.h https://raw.githubusercontent.com/openjdk/jdk/jdk-11%2B28/src/java.base/share/native/include/jni.h
 	test -f target/inc/unix/jni_md.h || wget -O target/inc/unix/jni_md.h https://raw.githubusercontent.com/openjdk/jdk/jdk-11%2B28/src/java.base/unix/native/include/jni_md.h
 	test -f target/inc/windows/jni_md.h || wget -O target/inc/windows/jni_md.h https://raw.githubusercontent.com/openjdk/jdk/jdk-11%2B28/src/java.base/windows/native/include/jni_md.h
@@ -41,9 +42,18 @@ $(MVNDNATIVE_OUT)/%.o: src/main/native/%.c
 	$(info running: $(CC) $(CCFLAGS) -c $< -o $@)
 	$(CC) $(CCFLAGS) -c $< -o $@
 
+ifeq ($(OS_NAME), Windows)
+$(MVNDNATIVE_OUT)/$(LIBNAME): ducible
+endif
 $(MVNDNATIVE_OUT)/$(LIBNAME): $(MVNDNATIVE_OUT)/mvndnative.o
 	@mkdir -p $(@D)
 	$(CC) $(CCFLAGS) -o $@ $(MVNDNATIVE_OUT)/mvndnative.o $(LINKFLAGS)
+ifeq ($(OS_NAME), Windows)
+	echo "running ducible on $(OS_NAME)"
+	target/ducible/ducible $(MVNDNATIVE_OUT)/$(LIBNAME)
+else
+	echo "not running ducible on $(OS_NAME)"
+endif
 
 NATIVE_DIR=src/main/resources/org/mvndaemon/mvnd/nativ/$(OS_NAME)/$(OS_ARCH)
 NATIVE_TARGET_DIR:=target/classes/org/mvndaemon/mvnd/nativ/$(OS_NAME)/$(OS_ARCH)
@@ -107,5 +117,7 @@ freebsd-x86_64: download-includes
 #sparcv9:
 #	$(MAKE) native OS_NAME=SunOS OS_ARCH=sparcv9
 
-
+ducible:
+	test -d target/ducible || git clone --branch v1.2.2 https://github.com/jasonwhite/ducible.git target/ducible
+	make --directory=target/ducible ducible CROSS_PREFIX= CXX=g++ CC=gcc
 
