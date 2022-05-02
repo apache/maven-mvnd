@@ -334,7 +334,7 @@ limitations under the License.</inlineHeader>
                             <exclude>**/*.dll</exclude>
                             <exclude>**/*.jnilib</exclude>
                             <exclude>**/Makefile*</exclude>
-                            <exclude>**/docker/*</exclude>
+                            <exclude>**/docker/**</exclude>
                             <exclude>**/*.tpl</exclude>
                         </excludes>
                         <mapping>
