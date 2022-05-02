@@ -51,7 +51,7 @@ cd ${VERSION}
 for dist in darwin-amd64.zip linux-amd64.zip windows-amd64.zip src.zip src.tar.gz
 do
   FILE=mvnd-${VERSION}-${dist}
-  shasum -a 512 -b ${FILE} | cut -d ' ' -f 1 > ${FILE}.sha512
+  shasum -a 256 -b ${FILE} | cut -d ' ' -f 1 > ${FILE}.sha256
   gpg --detach-sign --armor ${FILE}
 done
 
