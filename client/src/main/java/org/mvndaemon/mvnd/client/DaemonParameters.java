@@ -41,7 +41,6 @@ import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3Reader;
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.mvndaemon.mvnd.common.BuildProperties;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.SocketFamily;

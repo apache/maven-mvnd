@@ -39,7 +39,6 @@ import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.internal.CLibrary;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStyle;
-import org.mvndaemon.mvnd.common.BuildProperties;
 import org.mvndaemon.mvnd.common.DaemonException;
 import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.common.DaemonRegistry;
@@ -187,11 +186,10 @@ public class DefaultClient implements Client {
         if (version || showVersion || debug) {
             // Print mvnd version
             BuildProperties buildProperties = BuildProperties.getInstance();
-            final String mvndVersionString = "mvnd "
-                    + (Environment.isNative() ? "native client " : "JVM client ")
-                    + buildProperties.getVersion()
-                    + "-" + buildProperties.getOsName()
-                    + "-" + buildProperties.getOsArch()
+            final String mvndVersionString = "mvnd " + buildProperties.getVersion() + " "
+                    + (Environment.isNative()
+                            ? buildProperties.getOsName() + "-" + buildProperties.getOsArch() + " native client"
+                            : "JVM client")
                     + " (" + buildProperties.getRevision() + ")";
 
             boolean isColored = !"never".equals(Environment.MAVEN_COLOR.getCommandLineOption(args));
