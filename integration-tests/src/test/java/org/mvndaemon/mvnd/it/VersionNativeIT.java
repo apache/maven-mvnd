@@ -40,10 +40,13 @@ public class VersionNativeIT {
         client.execute(output, "-v").assertSuccess();
 
         output.assertContainsMatchingSubsequence(
-                "\\Qmvnd " + (isNative() ? "native client " : "JVM client ")
+                "\\Qmvnd "
                         + System.getProperty("project.version")
-                        + "-" + System.getProperty("os.detected.name")
-                        + "-" + System.getProperty("os.detected.arch")
+                        + " "
+                        + (isNative()
+                                ? System.getProperty("os.detected.name")
+                                        + "-" + System.getProperty("os.detected.arch") + " native client"
+                                : "JVM client")
                         + "\\E",
                 "\\QMaven home: " + parameters.mvndHome() + "\\E");
     }
