@@ -75,7 +75,7 @@
         <surefire.version>3.0.0-M5</surefire.version><!-- keep in sync with junit-platform-launcher.version -->
         <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version><!-- keep in sync with surefire.version -->
         <release.plugin.version>3.0.0-M5</release.plugin.version>
-        <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
+        <sisu.version>0.3.5</sisu.version>
         <takari-provisio.version>1.0.19</takari-provisio.version>
 
         <javassist.version>3.27.0-GA</javassist.version>
@@ -363,9 +363,17 @@ limitations under the License.</inlineHeader>
                     </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>io.takari.maven.plugins</groupId>
-                    <artifactId>takari-lifecycle-plugin</artifactId>
-                    <version>${takari-lifecycle.version}</version>
+                    <groupId>org.eclipse.sisu</groupId>
+                    <artifactId>sisu-maven-plugin</artifactId>
+                    <version>${sisu.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>main-index</goal>
+                                <goal>test-index</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>net.revelc.code.formatter</groupId>
