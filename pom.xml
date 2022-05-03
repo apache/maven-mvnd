@@ -60,6 +60,7 @@
         <maven.version>3.8.5</maven.version>
         <maven.resolver.version>1.7.3</maven.resolver.version>
         <slf4j.version>1.7.35</slf4j.version>
+        <sisu.version>0.3.5</sisu.version>
 
         <!-- plugin versions a..z -->
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
@@ -250,6 +251,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.eclipse.sisu</groupId>
+                <artifactId>org.eclipse.sisu.inject</artifactId>
+                <version>${sisu.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jline</groupId>
                 <artifactId>jline-terminal</artifactId>
                 <version>${jline.version}</version>
@@ -361,11 +368,6 @@ limitations under the License.</inlineHeader>
                             <version>1.4.19</version>
                         </dependency>
                     </dependencies>
-                </plugin>
-                <plugin>
-                    <groupId>io.takari.maven.plugins</groupId>
-                    <artifactId>takari-lifecycle-plugin</artifactId>
-                    <version>${takari-lifecycle.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>net.revelc.code.formatter</groupId>

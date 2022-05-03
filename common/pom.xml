@@ -74,16 +74,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>io.takari.maven.plugins</groupId>
-                <artifactId>takari-lifecycle-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>sisu-index</goal>
-                        </goals>
-                        <phase>process-classes</phase>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
