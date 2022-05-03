@@ -17,7 +17,7 @@
 
 include Makefile.common
 
-.phony: all package native native-all deploy
+.PHONY: all package native native-all deploy crossbuild crossbuild-uid ducible clean-native
 
 all: package
 
@@ -25,14 +25,29 @@ MVNDNATIVE_OUT:=target/native-$(OS_NAME)-$(OS_ARCH)
 
 CCFLAGS:= -I$(MVNDNATIVE_OUT) $(CCFLAGS)
 
-download-includes:
+target:
 	@test -d target || mkdir target
+
+download-includes: target
 	@test -d target/inc || mkdir target/inc
 	@test -d target/inc/unix || mkdir target/inc/unix
 	@test -d target/inc/windows || mkdir target/inc/windows
 	test -f target/inc/jni.h || wget -O target/inc/jni.h https://raw.githubusercontent.com/openjdk/jdk/jdk-11%2B28/src/java.base/share/native/include/jni.h
 	test -f target/inc/unix/jni_md.h || wget -O target/inc/unix/jni_md.h https://raw.githubusercontent.com/openjdk/jdk/jdk-11%2B28/src/java.base/unix/native/include/jni_md.h
 	test -f target/inc/windows/jni_md.h || wget -O target/inc/windows/jni_md.h https://raw.githubusercontent.com/openjdk/jdk/jdk-11%2B28/src/java.base/windows/native/include/jni_md.h
+
+crossbuild: target
+	@test -d target || mkdir target
+	test -d target/crossbuild || git clone https://github.com/multiarch/crossbuild.git target/crossbuild
+	git -C target/crossbuild reset --hard d06cdc31fce0c85ad78408b44794366dafd59554
+	docker build target/crossbuild -t multiarch/crossbuild
+
+crossbuild-uid: crossbuild
+	docker build docker/crossbuild-uid -t maven-mvnd/crossbuild
+
+ducible: target
+	test -d target/ducible || git clone --branch v1.2.2 https://github.com/jasonwhite/ducible.git target/ducible
+	make --directory=target/ducible ducible CROSS_PREFIX= CXX=g++ CC=gcc
 
 clean-native:
 	rm -rf $(MVNDNATIVE_OUT)
@@ -62,9 +77,6 @@ native-all: linux-x86 linux-x86_64 linux-arm linux-armv6 linux-armv7 \
 	linux-arm64 linux-ppc64 win-x86 win-x86_64 mac-x86 mac-x86_64 mac-arm64 freebsd-x86 freebsd-x86_64
 
 native: $(NATIVE_DLL)
-
-crossbuild-uid:
-	docker build docker/crossbuild -t maven-mvnd/crossbuild
 
 $(NATIVE_DLL): $(MVNDNATIVE_OUT)/$(LIBNAME)
 	@mkdir -p $(@D)
@@ -133,8 +145,4 @@ freebsd-x86_64: download-includes
 
 #sparcv9:
 #	$(MAKE) native OS_NAME=SunOS OS_ARCH=sparcv9
-
-ducible:
-	test -d target/ducible || git clone --branch v1.2.2 https://github.com/jasonwhite/ducible.git target/ducible
-	make --directory=target/ducible ducible CROSS_PREFIX= CXX=g++ CC=gcc
 
