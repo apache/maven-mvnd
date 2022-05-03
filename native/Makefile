@@ -49,10 +49,7 @@ $(MVNDNATIVE_OUT)/$(LIBNAME): $(MVNDNATIVE_OUT)/mvndnative.o
 	@mkdir -p $(@D)
 	$(CC) $(CCFLAGS) -o $@ $(MVNDNATIVE_OUT)/mvndnative.o $(LINKFLAGS)
 ifeq ($(OS_NAME), Windows)
-	echo "running ducible on $(OS_NAME)"
 	target/ducible/ducible $(MVNDNATIVE_OUT)/$(LIBNAME)
-else
-	echo "not running ducible on $(OS_NAME)"
 endif
 
 NATIVE_DIR=src/main/resources/org/mvndaemon/mvnd/nativ/$(OS_NAME)/$(OS_ARCH)
