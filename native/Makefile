@@ -17,7 +17,7 @@
 
 include Makefile.common
 
-.PHONY: all package native native-all deploy crossbuild crossbuild-uid ducible clean-native
+.PHONY: all package native native-all deploy crossbuild ducible clean-native
 
 all: package
 
@@ -41,9 +41,6 @@ crossbuild: target
 	test -d target/crossbuild || git clone https://github.com/multiarch/crossbuild.git target/crossbuild
 	git -C target/crossbuild reset --hard d06cdc31fce0c85ad78408b44794366dafd59554
 	docker build target/crossbuild -t multiarch/crossbuild
-
-crossbuild-uid: crossbuild
-	docker build docker/crossbuild-uid -t maven-mvnd/crossbuild
 
 ducible: target
 	test -d target/ducible || git clone --branch v1.2.2 https://github.com/jasonwhite/ducible.git target/ducible
@@ -87,33 +84,28 @@ $(NATIVE_DLL): $(MVNDNATIVE_OUT)/$(LIBNAME)
 linux-x86: download-includes
 	./docker/dockcross-linux-x86 bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86'
 
-linux-x86_64: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/workdir \
-		-e BUILDER_UID=$$( id -u ) -e BUILDER_GID=$$( id -g ) -e BUILDER_USER=$$( id -un ) -e BUILDER_GROUP=$$( id -gn ) \
-		-e CROSS_TRIPLE=x86_64-linux-gnu maven-mvnd/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=x86_64
+linux-x86_64: download-includes
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+		-e CROSS_TRIPLE=x86_64-linux-gnu multiarch/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=x86_64
 
-linux-arm: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/workdir \
-		-e BUILDER_UID=$$( id -u ) -e BUILDER_GID=$$( id -g ) -e BUILDER_USER=$$( id -un ) -e BUILDER_GROUP=$$( id -gn ) \
-		-e CROSS_TRIPLE=arm-linux-gnueabi maven-mvnd/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=arm
+linux-arm: download-includes
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+		-e CROSS_TRIPLE=arm-linux-gnueabi multiarch/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=arm
 
 linux-armv6:
 	./docker/dockcross-linux-armv6 bash -c 'make clean-native native CROSS_PREFIX=armv6-unknown-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
 
-linux-armv7: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/workdir \
-		-e BUILDER_UID=$$( id -u ) -e BUILDER_GID=$$( id -g ) -e BUILDER_USER=$$( id -un ) -e BUILDER_GROUP=$$( id -gn ) \
-		-e CROSS_TRIPLE=arm-linux-gnueabihf maven-mvnd/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=armv7
+linux-armv7: download-includes
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+		-e CROSS_TRIPLE=arm-linux-gnueabihf multiarch/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=armv7
 
-linux-arm64: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/workdir \
-		-e BUILDER_UID=$$( id -u ) -e BUILDER_GID=$$( id -g ) -e BUILDER_USER=$$( id -un ) -e BUILDER_GROUP=$$( id -gn ) \
-		-e CROSS_TRIPLE=aarch64-linux-gnu maven-mvnd/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=arm64
+linux-arm64: download-includes
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+		-e CROSS_TRIPLE=aarch64-linux-gnu multiarch/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=arm64
 
-linux-ppc64: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/workdir \
-		-e BUILDER_UID=$$( id -u ) -e BUILDER_GID=$$( id -g ) -e BUILDER_USER=$$( id -un ) -e BUILDER_GROUP=$$( id -gn ) \
-		-e CROSS_TRIPLE=powerpc64le-linux-gnu maven-mvnd/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=ppc64
+linux-ppc64: download-includes
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+		-e CROSS_TRIPLE=powerpc64le-linux-gnu multiarch/crossbuild make clean-native native OS_NAME=Linux OS_ARCH=ppc64
 
 win-x86: download-includes
 	./docker/dockcross-windows-static-x86 bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
@@ -121,26 +113,24 @@ win-x86: download-includes
 win-x86_64: download-includes
 	./docker/dockcross-windows-static-x64 bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
 
-mac-x86: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/workdir \
-		-e BUILDER_UID=$$( id -u ) -e BUILDER_GID=$$( id -g ) -e BUILDER_USER=$$( id -un ) -e BUILDER_GROUP=$$( id -gn ) \
-		-e CROSS_TRIPLE=i386-apple-darwin maven-mvnd/crossbuild make clean-native native OS_NAME=Mac OS_ARCH=x86
+mac-x86: download-includes
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+		-e CROSS_TRIPLE=i386-apple-darwin multiarch/crossbuild make clean-native native OS_NAME=Mac OS_ARCH=x86
 
-mac-x86_64: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/workdir \
-		-e BUILDER_UID=$$( id -u ) -e BUILDER_GID=$$( id -g ) -e BUILDER_USER=$$( id -un ) -e BUILDER_GROUP=$$( id -gn ) \
-		-e CROSS_TRIPLE=x86_64-apple-darwin maven-mvnd/crossbuild make clean-native native OS_NAME=Mac OS_ARCH=x86_64
+mac-x86_64: download-includes
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+		-e CROSS_TRIPLE=x86_64-apple-darwin multiarch/crossbuild make clean-native native OS_NAME=Mac OS_ARCH=x86_64
 
-mac-arm64: download-includes crossbuild-uid
-	docker run -it --rm -v $$PWD:/src \
+mac-arm64: download-includes
+	docker run -it --rm -v $$PWD:/src --user $$(id -u):$$(id -g) \
 		-e TARGET=arm64-apple-darwin mcandre/snek:darwin sh -c "make clean-native native CROSS_PREFIX=arm64-apple-darwin20.4- OS_NAME=Mac OS_ARCH=arm64"
 
 freebsd-x86: download-includes
-	docker run -it --rm -v $$PWD:/workdir \
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		empterdose/freebsd-cross-build:9.3 make clean-native native CROSS_PREFIX=i386-freebsd9- OS_NAME=FreeBSD OS_ARCH=x86
 
 freebsd-x86_64: download-includes
-	docker run -it --rm -v $$PWD:/workdir \
+	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		empterdose/freebsd-cross-build:9.3 make clean-native native CROSS_PREFIX=x86_64-freebsd9- OS_NAME=FreeBSD OS_ARCH=x86_64
 
 #sparcv9:
