@@ -1,4 +1,4 @@
-= How to release `mnvd`
+= How to release `mvnd`
 
 * Run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release.sh[release script] which will update the versions, the changelog, the native binaries and will tag the new git commit. This new tag will trigger the https://raw.githubusercontent.com/apache/maven-mvnd/master/.github/workflows/release.yaml[release workflow] on this newly created tag.
 [source,shell]
