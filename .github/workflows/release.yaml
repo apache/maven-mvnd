@@ -66,7 +66,7 @@ jobs:
         with:
           name: artifacts
           path: |
-            dist/target/mvnd-*.zip
+            dist/target/maven-mvnd-*.zip
 
   source:
     name: 'Build source distributions'
@@ -99,8 +99,8 @@ jobs:
         with:
           name: artifacts
           path: |
-            target/mvnd-*.zip
-            target/mvnd-*.tar.gz
+            target/maven-mvnd-*.zip
+            target/maven-mvnd-*.tar.gz
 
   release:
     runs-on: ubuntu-18.04
@@ -146,52 +146,52 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Deploy mvnd-src.zip
+      - name: Deploy maven-mvnd-src.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.zip
-          asset_name: mvnd-${{ env.VERSION }}-src.zip
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-src.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-src.zip
           asset_content_type: application/zip
 
-      - name: Deploy mvnd-src.tar.gz
+      - name: Deploy maven-mvnd-src.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-src.tar.gz
-          asset_name: mvnd-${{ env.VERSION }}-src.tar.gz
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-src.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-src.tar.gz
           asset_content_type: application/tar.gz
 
-      - name: Deploy mvnd-linux-amd64.zip
+      - name: Deploy maven-mvnd-linux-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-linux-amd64.zip
-          asset_name: mvnd-${{ env.VERSION }}-linux-amd64.zip
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-linux-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-linux-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy mvnd-darwin-amd64.zip
+      - name: Deploy maven-mvnd-darwin-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-darwin-amd64.zip
-          asset_name: mvnd-${{ env.VERSION }}-darwin-amd64.zip
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy mvnd-windows-amd64.zip
+      - name: Deploy maven-mvnd-windows-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/mvnd-${{ env.VERSION }}-windows-amd64.zip
-          asset_name: mvnd-${{ env.VERSION }}-windows-amd64.zip
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-windows-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-windows-amd64.zip
           asset_content_type: application/zip

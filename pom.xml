@@ -564,6 +564,7 @@ limitations under the License.</inlineHeader>
                                     <goal>single</goal>
                                 </goals>
                                 <configuration>
+                                    <finalName>maven-mvnd-${project.version}</finalName>
                                     <descriptors>
                                         <descriptor>src/main/assembly/src.xml</descriptor>
                                     </descriptors>
