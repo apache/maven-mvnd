@@ -22,7 +22,7 @@
 
     <groupId>org.mvndaemon.mvnd</groupId>
     <artifactId>mvnd</artifactId>
-    <version>0.8.1-SNAPSHOT</version>
+    <version>0.8.0</version>
 
     <packaging>pom</packaging>
     <name>Maven Daemon - Parent</name>
@@ -40,7 +40,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <project.build.outputTimestamp>2021-04-05T08:12:18Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2022-05-04T12:20:35Z</project.build.outputTimestamp>
         <trimStackTrace>false</trimStackTrace>
         <project.github.repository>apache/maven-mvnd</project.github.repository>
         <repository.url>github.com:${project.github.repository}</repository.url>
@@ -216,38 +216,38 @@
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-native</artifactId>
-                <version>0.8.1-SNAPSHOT</version>
+                <version>0.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-agent</artifactId>
-                <version>0.8.1-SNAPSHOT</version>
+                <version>0.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-client</artifactId>
-                <version>0.8.1-SNAPSHOT</version>
+                <version>0.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-common</artifactId>
-                <version>0.8.1-SNAPSHOT</version>
+                <version>0.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
-                <version>0.8.1-SNAPSHOT</version>
+                <version>0.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-daemon</artifactId>
-                <version>0.8.1-SNAPSHOT</version>
+                <version>0.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mvndaemon.mvnd</groupId>
                 <artifactId>mvnd-helper-agent</artifactId>
-                <version>0.8.1-SNAPSHOT</version>
+                <version>0.8.0</version>
             </dependency>
 
             <dependency>

@@ -1,11 +1,12 @@
 # Changelog
 
-## [0.8.0](https://github.com/apache/maven-mvnd/tree/0.8.0) (2022-04-29)
+## [0.8.0](https://github.com/apache/maven-mvnd/tree/0.8.0) (2022-05-04)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/0.7.1...0.8.0)
 
 **Closed issues:**
 
+- building libmvndnative.\* creates root files in target directory [\#627](https://github.com/apache/maven-mvnd/issues/627)
 -  Update to latest maven 3.8.5? [\#615](https://github.com/apache/maven-mvnd/issues/615)
 - \[bug\] The first exec mvnd clean install is failed every time [\#613](https://github.com/apache/maven-mvnd/issues/613)
 - clean fails cause of locked files [\#611](https://github.com/apache/maven-mvnd/issues/611)
@@ -13,6 +14,7 @@
 - `mvnd.exe` gives error about DLL [\#607](https://github.com/apache/maven-mvnd/issues/607)
 - Log purging goes to stdout breaking scripts [\#604](https://github.com/apache/maven-mvnd/issues/604)
 - java.nio.BufferUnderflowException occurs when I run any mvnd command [\#601](https://github.com/apache/maven-mvnd/issues/601)
+- NPE [\#597](https://github.com/apache/maven-mvnd/issues/597)
 - Avoid caching parent with a version containing a property [\#594](https://github.com/apache/maven-mvnd/issues/594)
 - How to integrate mvnd in jenkins? [\#592](https://github.com/apache/maven-mvnd/issues/592)
 - When MVND is used to compile a project, the addClasspath parameter in the manifest of the configuration item compiled by maven-jar-plugin is invalid, and the class-path parameter is missing in the manifest. MF file in the compiled JAR package [\#590](https://github.com/apache/maven-mvnd/issues/590)
@@ -53,6 +55,16 @@
 
 **Merged pull requests:**
 
+- Use the easier --user option of docker [\#639](https://github.com/apache/maven-mvnd/pull/639) ([gnodet](https://github.com/gnodet))
+- Use maven-mvnd as a distribution name [\#638](https://github.com/apache/maven-mvnd/pull/638) ([gnodet](https://github.com/gnodet))
+- Use sisu apt processor [\#636](https://github.com/apache/maven-mvnd/pull/636) ([gnodet](https://github.com/gnodet))
+- Drop Maven dupe classes [\#633](https://github.com/apache/maven-mvnd/pull/633) ([cstamas](https://github.com/cstamas))
+- FIx files generated with wrong user id, fixes \#627 [\#632](https://github.com/apache/maven-mvnd/pull/632) ([gnodet](https://github.com/gnodet))
+- Reproducible build for the native library on windows [\#631](https://github.com/apache/maven-mvnd/pull/631) ([gnodet](https://github.com/gnodet))
+- Move BuildProperties to the client [\#630](https://github.com/apache/maven-mvnd/pull/630) ([gnodet](https://github.com/gnodet))
+- don't skip build/ in source archive [\#629](https://github.com/apache/maven-mvnd/pull/629) ([hboutemy](https://github.com/hboutemy))
+- prepare Reproducible Builds [\#626](https://github.com/apache/maven-mvnd/pull/626) ([hboutemy](https://github.com/hboutemy))
+- only publish sha256, skip md5+sha1+sha512 [\#625](https://github.com/apache/maven-mvnd/pull/625) ([hboutemy](https://github.com/hboutemy))
 - Replace `github.com/mvndaemon/mvnd` references [\#622](https://github.com/apache/maven-mvnd/pull/622) ([Stephan202](https://github.com/Stephan202))
 - Upgrade to auto changelog 1.2 [\#621](https://github.com/apache/maven-mvnd/pull/621) ([gnodet](https://github.com/gnodet))
 - Reapply Refactor build and release workflows apache\#574 [\#620](https://github.com/apache/maven-mvnd/pull/620) ([gnodet](https://github.com/gnodet))
