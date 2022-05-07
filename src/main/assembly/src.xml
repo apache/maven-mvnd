@@ -28,6 +28,16 @@ under the License.
     <fileSet>
       <directory>${project.basedir}</directory>
       <outputDirectory>/</outputDirectory>
+      <includes>
+        <include>mvnw</include>
+        <include>native/docker/*</include>
+        <include>build/*.sh</include>
+      </includes>
+      <fileMode>0755</fileMode>
+    </fileSet>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <outputDirectory>/</outputDirectory>
       <excludes>
         <exclude>%regex[(?!((?!target/)[^/]+/)*src/).*target.*]</exclude>
         <exclude>**/*.log</exclude>

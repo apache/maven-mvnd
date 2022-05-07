@@ -92,7 +92,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Build source distribution'
-        run: ./mvnw clean verify -Psource-distribution -pl :mvnd -Dmrm=false -B -ntp -e
+        run: ./mvnw clean verify -Psource-distribution -N -B -ntp -e
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
