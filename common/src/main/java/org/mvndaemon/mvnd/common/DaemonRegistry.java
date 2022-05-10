@@ -18,6 +18,7 @@ package org.mvndaemon.mvnd.common;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
@@ -59,7 +60,8 @@ public class DaemonRegistry implements AutoCloseable {
     private static final Map<Path, Object> locks = new ConcurrentHashMap<>();
     private final Object lck;
     private final FileChannel channel;
-    private final MappedByteBuffer buffer;
+    private MappedByteBuffer buffer;
+    private long size;
 
     private final Map<String, DaemonInfo> infosMap = new HashMap<>();
     private final List<DaemonStopEvent> stopEvents = new ArrayList<>();
@@ -76,10 +78,19 @@ public class DaemonRegistry implements AutoCloseable {
             }
             channel = FileChannel.open(absPath,
                     StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
-            buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, MAX_LENGTH);
+            size = nextPowerOf2(channel.size(), MAX_LENGTH);
+            buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
         } catch (IOException e) {
             throw new DaemonException(e);
         }
+    }
+
+    private long nextPowerOf2(long a, long min) {
+        long b = min;
+        while (b < a) {
+            b = b << 1;
+        }
+        return b;
     }
 
     public void close() {
@@ -177,7 +188,7 @@ public class DaemonRegistry implements AutoCloseable {
         synchronized (lck) {
             final long deadline = System.currentTimeMillis() + LOCK_TIMEOUT_MS;
             while (System.currentTimeMillis() < deadline) {
-                try (FileLock l = channel.tryLock(0, MAX_LENGTH, false)) {
+                try (FileLock l = channel.tryLock(0, size, false)) {
                     BufferCaster.cast(buffer).position(0);
                     infosMap.clear();
                     int nb = buffer.getInt();
@@ -244,7 +255,28 @@ public class DaemonRegistry implements AutoCloseable {
                             writeString(dse.getReason());
                         }
                     }
+                    if (buffer.remaining() >= buffer.position() * 2) {
+                        long ns = nextPowerOf2(buffer.position(), MAX_LENGTH);
+                        if (ns != size) {
+                            size = ns;
+                            LOGGER.info("Resizing registry to {} kb due to buffer underflow", (size / 1024));
+                            channel.truncate(size);
+                            try {
+                                buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
+                            } catch (IOException ex) {
+                                throw new DaemonException("Could not resize registry " + registryFile, ex);
+                            }
+                        }
+                    }
                     return;
+                } catch (BufferOverflowException e) {
+                    size <<= 1;
+                    LOGGER.info("Resizing registry to {} kb due to buffer overflow", (size / 1024));
+                    try {
+                        buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
+                    } catch (IOException ex) {
+                        throw new DaemonException("Could not resize registry " + registryFile, ex);
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException("Could not lock offset 0 of " + registryFile);
                 } catch (IllegalStateException | ArrayIndexOutOfBoundsException | BufferUnderflowException e) {
