@@ -188,7 +188,7 @@ public class DaemonRegistry implements AutoCloseable {
         synchronized (lck) {
             final long deadline = System.currentTimeMillis() + LOCK_TIMEOUT_MS;
             while (System.currentTimeMillis() < deadline) {
-                try (FileLock l = channel.tryLock(0, size, false)) {
+                try (FileLock l = tryLock() ) {
                     BufferCaster.cast(buffer).position(0);
                     infosMap.clear();
                     int nb = buffer.getInt();
@@ -275,10 +275,12 @@ public class DaemonRegistry implements AutoCloseable {
                     try {
                         buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
                     } catch (IOException ex) {
+                        ex.addSuppressed(e);
                         throw new DaemonException("Could not resize registry " + registryFile, ex);
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException("Could not lock offset 0 of " + registryFile);
+                    throw new DaemonException("Exception while "
+                            + (updater != null ? "updating " : "reading ") + registryFile, e);
                 } catch (IllegalStateException | ArrayIndexOutOfBoundsException | BufferUnderflowException e) {
                     String absPath = registryFile.toAbsolutePath().normalize().toString();
                     LOGGER.warn("Invalid daemon registry info, " +
@@ -290,6 +292,14 @@ public class DaemonRegistry implements AutoCloseable {
                 }
             }
             throw new RuntimeException("Could not lock " + registryFile + " within " + LOCK_TIMEOUT_MS + " ms");
+        }
+    }
+
+    private FileLock tryLock() {
+        try {
+            return channel.tryLock(0, size, false);
+        } catch (IOException e) {
+            throw new DaemonException("Could not lock " + registryFile, e);
         }
     }
 
