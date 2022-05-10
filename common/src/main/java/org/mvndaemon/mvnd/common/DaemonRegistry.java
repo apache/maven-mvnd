@@ -188,7 +188,7 @@ public class DaemonRegistry implements AutoCloseable {
         synchronized (lck) {
             final long deadline = System.currentTimeMillis() + LOCK_TIMEOUT_MS;
             while (System.currentTimeMillis() < deadline) {
-                try (FileLock l = tryLock() ) {
+                try (FileLock l = tryLock()) {
                     BufferCaster.cast(buffer).position(0);
                     infosMap.clear();
                     int nb = buffer.getInt();
@@ -260,6 +260,7 @@ public class DaemonRegistry implements AutoCloseable {
                         if (ns != size) {
                             size = ns;
                             LOGGER.info("Resizing registry to {} kb due to buffer underflow", (size / 1024));
+                            l.release();
                             channel.truncate(size);
                             try {
                                 buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
