@@ -261,6 +261,7 @@ public class DaemonRegistry implements AutoCloseable {
                             size = ns;
                             LOGGER.info("Resizing registry to {} kb due to buffer underflow", (size / 1024));
                             l.release();
+                            BufferHelper.closeDirectByteBuffer(buffer, LOGGER::debug);
                             channel.truncate(size);
                             try {
                                 buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
