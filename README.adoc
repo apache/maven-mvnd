@@ -80,6 +80,13 @@ $ sudo port install mvnd
 $ choco install mvndaemon
 ----
 
+=== Install using https://scoop.sh/[Scoop]
+
+[source,shell]
+----
+$ scoop install mvndaemon
+----
+
 === Set up completion
 
 Optionally, you can set up completion as follows:
