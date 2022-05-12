@@ -21,6 +21,12 @@ set -e
 
 VERSION=$1
 
+if [ "${VERSION}x" = "x" ]
+then
+  echo "Specify the version: $0 [version]"
+  exit 1
+fi
+
 echo "SDKMAN_CONSUMER_KEY: $(echo ${SDKMAN_CONSUMER_KEY} | cut -c-3)..."
 echo "SDKMAN_CONSUMER_TOKEN: $(echo ${SDKMAN_CONSUMER_TOKEN} | cut -c-3)..."
 
@@ -31,8 +37,8 @@ function publishRelease() {
     SDKMAN_PLATFORM=$2
     MVND_PLATFORM=$3
 
-    FILE="mvnd-${VERSION}-${MVND_PLATFORM}.zip"
-    URL="https://github.com/apache/maven-mvnd/releases/download/${VERSION}/${FILE}"
+    FILE="maven-mvnd-${VERSION}-${MVND_PLATFORM}.zip"
+    URL="https://dist.apache.org/repos/dist/release/maven/mvnd/${VERSION}/${FILE}"
     RESPONSE="$(curl -s -X POST \
         -H "Consumer-Key: ${SDKMAN_CONSUMER_KEY}" \
         -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
@@ -75,7 +81,7 @@ node -pe "
     }
 " "${RESPONSE}"
 
-RELEASE_URL=`curl -s -i https://git.io -F url=https://github.com/apache/maven-mvnd/releases/tag/${VERSION} | grep Location | sed -e 's/Location: //g' | tr -d '\n' | tr -d '\r'`
+RELEASE_URL=`curl -s -i https://git.io -F url=https://dist.apache.org/repos/dist/release/maven/mvnd/${VERSION} | grep Location | sed -e 's/Location: //g' | tr -d '\n' | tr -d '\r'`
 echo "RELEASE_URL = $RELEASE_URL"
 
 RESPONSE="$(curl -s -X POST \
