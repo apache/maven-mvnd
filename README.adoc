@@ -108,7 +108,7 @@ $ unalias mvnd
 
 === Install manually
 
-* Download the latest ZIP suitable for your platform from https://github.com/apache/maven-mvnd/releases
+* Download the latest ZIP suitable for your platform from https://downloads.apache.org/maven/mvnd/
 * Unzip to a directory of your choice
 * Add the `bin` directory to `PATH`
 * Optionally, you can create `~/.m2/mvnd.properties` and set the `java.home` property in case you do not want to bother
