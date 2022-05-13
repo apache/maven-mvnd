@@ -36,7 +36,7 @@
     </artifactSet>
 
     <artifactSet to="/mvn/lib/ext">
-        <artifact id="org.mvndaemon.mvnd:mvnd-daemon:${project.version}">
+        <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
             <exclusion id="org.codehaus.plexus:plexus-classworlds"/>
             <exclusion id="*:cdi-api"/>
             <exclusion id="*:commons-cli"/>
@@ -71,11 +71,11 @@
             <exclusion id="*:plexus-utils"/>
             <exclusion id="*:plexus-container-default"/>
         </artifact>
-        <artifact id="org.mvndaemon.mvnd:mvnd-client:${project.version}">
+        <artifact id="org.apache.maven.daemon:mvnd-client:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
-        <artifact id="org.mvndaemon.mvnd:mvnd-agent:${project.version}"/>
-        <artifact id="org.mvndaemon.mvnd:mvnd-helper-agent:${project.version}"/>
+        <artifact id="org.apache.maven.daemon:mvnd-agent:${project.version}"/>
+        <artifact id="org.apache.maven.daemon:mvnd-helper-agent:${project.version}"/>
     </artifactSet>
 
     <fileSet to="/">
