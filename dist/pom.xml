@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.mvndaemon.mvnd</groupId>
+        <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd</artifactId>
         <version>0.8.1-SNAPSHOT</version>
     </parent>
@@ -30,21 +30,26 @@
     <packaging>pom</packaging>
     <name>Maven Daemon - Distribution</name>
 
+    <properties>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+    </properties>
+
     <dependencies>
         <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
+            <groupId>org.apache.maven.daemon</groupId>
             <artifactId>mvnd-agent</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
+            <groupId>org.apache.maven.daemon</groupId>
             <artifactId>mvnd-helper-agent</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
+            <groupId>org.apache.maven.daemon</groupId>
             <artifactId>mvnd-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
+            <groupId>org.apache.maven.daemon</groupId>
             <artifactId>mvnd-daemon</artifactId>
         </dependency>
     </dependencies>

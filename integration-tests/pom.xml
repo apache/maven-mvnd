@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.mvndaemon.mvnd</groupId>
+        <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd</artifactId>
         <version>0.8.1-SNAPSHOT</version>
     </parent>
@@ -57,7 +57,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mvndaemon.mvnd</groupId>
+            <groupId>org.apache.maven.daemon</groupId>
             <artifactId>mvnd-dist</artifactId>
             <type>pom</type>
             <scope>test</scope>

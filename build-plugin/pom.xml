@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.mvndaemon.mvnd</groupId>
+        <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd</artifactId>
         <version>0.8.1-SNAPSHOT</version>
     </parent>
@@ -31,8 +31,8 @@
     <name>Maven Daemon - Documentation Maven Plugin</name>
 
     <properties>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
 
         <roaster.version>2.23.2.Final</roaster.version>
         <maven.plugin-tools.version>3.6.0</maven.plugin-tools.version>
