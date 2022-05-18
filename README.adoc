@@ -87,6 +87,15 @@ $ choco install mvndaemon
 $ scoop install mvndaemon
 ----
 
+=== Install using https://github.com/joschi/asdf-mvnd#install[asdf]
+
+[source,shell]
+----
+$ asdf plugin-add mvnd
+$ asdf install mvnd latest
+----
+
+
 === Set up completion
 
 Optionally, you can set up completion as follows:
