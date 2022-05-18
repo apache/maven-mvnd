@@ -91,7 +91,7 @@ $ scoop install mvndaemon
 
 [source,shell]
 ----
-$ asdf plugin-add mvnd https://github.com/joschi/asdf-mvnd
+$ asdf plugin-add mvnd
 $ asdf install mvnd latest
 ----
 
