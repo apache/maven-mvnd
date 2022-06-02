@@ -125,13 +125,13 @@ linux-ppc64: download-includes
 		-e CROSS_TRIPLE=powerpc64le-linux-gnu multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=ppc64
 
 target/dockcross/dockcross-windows-static-x86: dockcross
-	docker run --rm dockcross-windows-static-x86$(windows-static-x86-digest) > target/dockcross/dockcross-windows-static-x86
+	docker run --rm dockcross/windows-static-x86$(windows-static-x86-digest) > target/dockcross/dockcross-windows-static-x86
 	chmod +x target/dockcross/dockcross-windows-static-x86
 win-x86: download-includes target/dockcross/dockcross-windows-static-x86
 	target/dockcross/dockcross-windows-static-x86 bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
 
 target/dockcross/dockcross-windows-static-x64: dockcross
-	docker run --rm dockcross-windows-static-x64$(windows-static-x64-digest) > target/dockcross/dockcross-windows-static-x64
+	docker run --rm dockcross/windows-static-x64$(windows-static-x64-digest) > target/dockcross/dockcross-windows-static-x64
 	chmod +x target/dockcross/dockcross-windows-static-x64
 win-x86_64: download-includes target/dockcross/dockcross-windows-static-x64
 	target/dockcross/dockcross-windows-static-x64 bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
