@@ -19,14 +19,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DaemonRegistryTest {
 
@@ -52,6 +57,44 @@ public class DaemonRegistryTest {
             assertNotNull(reg2.getAll());
             assertEquals(1, reg2.getAll().size());
         }
+    }
+
+    @Test
+    public void testBigRegistry() throws IOException {
+        int nbDaemons = 512;
+
+        Path temp = File.createTempFile("reg", ".data").toPath();
+        Random random = new Random();
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            for (int i = 0; i < nbDaemons; i++) {
+                byte[] token = new byte[16];
+                random.nextBytes(token);
+                reg.store(new DaemonInfo(UUID.randomUUID().toString(), "/java/home/",
+                        "/data/reg/", random.nextInt(), "inet:/127.0.0.1:7502", token,
+                        Locale.getDefault().toLanguageTag(), Collections.singletonList("-Xmx"),
+                        DaemonState.Idle, System.currentTimeMillis(), System.currentTimeMillis()));
+            }
+        }
+
+        long size = Files.size(temp);
+        assertTrue(size >= 128 * 1024);
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            assertEquals(nbDaemons, reg.getAll().size());
+        }
+
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            for (int i = 0; i < nbDaemons / 2; i++) {
+                List<DaemonInfo> list = reg.getAll();
+                reg.remove(list.get(random.nextInt(list.size())).getId());
+            }
+        }
+
+        long size2 = Files.size(temp);
+        assertTrue(size2 < 128 * 1024);
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            assertEquals(nbDaemons / 2, reg.getAll().size());
+        }
+
     }
 
     @Test
