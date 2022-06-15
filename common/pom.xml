@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.mvndaemon.mvnd</groupId>
+        <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd</artifactId>
         <version>0.8.1-SNAPSHOT</version>
     </parent>
@@ -61,7 +61,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-build-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <executions>
@@ -123,7 +123,9 @@
                         <artifactId>maven-jar-plugin</artifactId>
                         <configuration>
                             <archive>
-                                <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
+                                <manifestEntries>
+                                    <Multi-Release>true</Multi-Release>
+                                </manifestEntries>
                             </archive>
                         </configuration>
                     </plugin>
@@ -187,15 +189,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <configuration>
-                            <archive>
-                                <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
-                            </archive>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

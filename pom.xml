@@ -20,7 +20,14 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.mvndaemon.mvnd</groupId>
+    <parent>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-parent</artifactId>
+        <version>36</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>org.apache.maven.daemon</groupId>
     <artifactId>mvnd</artifactId>
     <version>0.8.1-SNAPSHOT</version>
 
@@ -214,38 +221,38 @@
             </dependency>
 
             <dependency>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-native</artifactId>
                 <version>0.8.1-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-agent</artifactId>
                 <version>0.8.1-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-client</artifactId>
                 <version>0.8.1-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-common</artifactId>
                 <version>0.8.1-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
                 <version>0.8.1-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-daemon</artifactId>
                 <version>0.8.1-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.mvndaemon.mvnd</groupId>
+                <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-helper-agent</artifactId>
                 <version>0.8.1-SNAPSHOT</version>
             </dependency>
@@ -301,6 +308,20 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.rat</groupId>
+                    <artifactId>apache-rat-plugin</artifactId>
+                    <configuration>
+                        <excludes combine.children="append">
+                            <exclude>**/*.png</exclude>
+                            <exclude>**/*.json</exclude>
+                            <exclude>**/.mvn/*</exclude>
+                            <exclude>.mvn/**/*</exclude>
+                            <exclude>*.adoc</exclude>
+                            <exclude>*.md</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+               <plugin>
                     <groupId>com.mycila</groupId>
                     <artifactId>license-maven-plugin</artifactId>
                     <version>${license-maven-plugin.version}</version>
@@ -471,6 +492,16 @@ limitations under the License.</inlineHeader>
         </pluginManagement>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>checkstyle-check</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
