@@ -776,17 +776,17 @@ public class TerminalOutput implements ClientOutput {
         } else {
             asb
                     .append(':')
+                    .style(CYAN_FOREGROUND)
                     .append(String.format(artifactIdFormat, prj.id))
-                    .style(GREEN_FOREGROUND);
-            asb
+                    .style(GREEN_FOREGROUND)
                     .append(execution.getPluginArtifactId())
                     .append(':')
                     .append(execution.getMojo())
+                    .append(' ')
                     .style(AttributedStyle.DEFAULT)
-                    .append(" @ ")
-                    .style(CYAN_FOREGROUND)
+                    .append('(')
                     .append(execution.getExecutionId())
-                    .style(AttributedStyle.DEFAULT);
+                    .append(')');
         }
         lines.add(asb.toAttributedString());
     }
