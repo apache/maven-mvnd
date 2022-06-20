@@ -90,7 +90,7 @@ public class TerminalOutput implements ClientOutput {
 
     private static final AttributedStyle GREEN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.GREEN);
     private static final AttributedStyle CYAN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.CYAN);
-    private static final AttributedStyle STRONG_FOREGROUND = new AttributedStyle().bold();
+    private static final AttributedStyle STANDARD_FOREGROUND = new AttributedStyle().foregroundDefault();
 
     private final Terminal terminal;
     private final Terminal.SignalHandler previousIntHandler;
@@ -779,13 +779,12 @@ public class TerminalOutput implements ClientOutput {
                     .append(':')
                     .style(CYAN_FOREGROUND)
                     .append(String.format(artifactIdFormat, prj.id))
-                    .style(GREEN_FOREGROUND);
-            asb
+                    .style(GREEN_FOREGROUND)
                     .append(execution.getPluginArtifactId())
                     .append(':')
                     .append(execution.getMojo())
                     .append(' ')
-                    .style(STRONG_FOREGROUND)
+                    .style(STANDARD_FOREGROUND)
                     .append('(')
                     .append(execution.getExecutionId())
                     .append(')')
