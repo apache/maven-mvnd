@@ -27,11 +27,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -139,9 +135,23 @@ public class DefaultClient implements Client {
     }
 
     public static void setSystemPropertiesFromCommandLine(List<String> args) {
-        for (String arg : args) {
+        final Iterator<String> iterator = args.iterator();
+        boolean defineIsEmpty = false;
+        while (iterator.hasNext()) {
+            final String arg = iterator.next();
             String val = Environment.MAVEN_DEFINE.removeCommandLineOption(new ArrayList<>(Collections.singletonList(arg)));
+            /* not -D or --define and pre define is empty */
+            if (val == null && defineIsEmpty) {
+                defineIsEmpty = false;
+                /* not all of Environment, use arg as pre define value */
+                val = maybeDefineCommandLineOption(arg) ? arg : "";
+            }
             if (val != null) {
+                /* empty -D or --define, next arg is value */
+                if (val.isEmpty() && iterator.hasNext()) {
+                    defineIsEmpty = true;
+                    continue;
+                }
                 if (val.isEmpty()) {
                     throw new IllegalArgumentException("Missing argument for option " + arg);
                 }
@@ -154,6 +164,14 @@ public class DefaultClient implements Client {
                 }
             }
         }
+    }
+
+    private static boolean maybeDefineCommandLineOption(String arg) {
+        // if arg maybe MAVEN_DEFINE value
+        return EnumSet.allOf(Environment.class)
+                .stream()
+                .filter(e -> e != Environment.MAVEN_DEFINE)
+                .noneMatch(e -> e.hasCommandLineOption(Collections.singletonList(arg)));
     }
 
     public DefaultClient(DaemonParameters parameters) {
