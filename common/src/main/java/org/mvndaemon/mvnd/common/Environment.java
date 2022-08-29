@@ -125,7 +125,7 @@ public enum Environment {
      * The directory under which the daemon stores its registry, log files, etc.
      * Default: <code>${user.home}/.m2/mvnd</code>
      */
-    MVND_DAEMON_STORAGE("mvnd.daemonStorage", null, null, OptionType.PATH, Flags.NONE),
+    MVND_DAEMON_STORAGE("mvnd.daemonStorage", "MVND_DAEMON_STORAGE", null, OptionType.PATH, Flags.NONE),
     /**
      * The path to the daemon registry.
      * Default: <code>${mvnd.daemonStorage}/registry.bin</code>
