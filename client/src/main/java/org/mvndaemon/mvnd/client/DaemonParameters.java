@@ -42,6 +42,7 @@ import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3R
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.common.InterpolationHelper;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.TimeUtils;
@@ -451,6 +452,8 @@ public class DaemonParameters {
         if (Files.exists(path)) {
             try (InputStream in = Files.newInputStream(path)) {
                 result.load(in);
+                InterpolationHelper.performSubstitution( ( Map<String, String> ) (Map) result,
+                        new InterpolationHelper.SystemPropertiesSubstitutionCallback() );
             } catch (IOException e) {
                 throw new RuntimeException("Could not read " + path);
             }
