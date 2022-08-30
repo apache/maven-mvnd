@@ -37,11 +37,11 @@ public class InterpolationHelper {
     private static final String DELIM_START = "${";
     private static final String DELIM_STOP = "}";
     private static final String MARKER = "$__";
-    private static final String ENV_PREFIX = "env:";
 
     /**
      * Callback for substitution
      */
+    @FunctionalInterface
     public interface SubstitutionCallback {
 
         String getValue(String key);
@@ -51,42 +51,22 @@ public class InterpolationHelper {
     /**
      * Perform substitution on a property set
      *
-     * @param properties the property set to perform substitution on
+     * @param properties            the property set to perform substitution on
+     * @param callback              the callback to obtain substitution values
+     * @param substituteFromConfig  If substitute from configuration
+     * @param defaultsToEmptyString sets an empty string if a replacement value is not found, leaves intact
+     *                              otherwise
      */
-    public static void performSubstitution(Map<String, String> properties) {
-        performSubstitution(properties, new SystemPropertiesSubstitutionCallback());
-    }
-
-    /**
-     * Perform substitution on a property set
-     *
-     * @param properties the property set to perform substitution on
-     * @param callback   Callback for substituion
-     */
-    public static void performSubstitution(Map<String, String> properties, SubstitutionCallback callback) {
-        performSubstitution(properties, callback, true, true, true);
-    }
-
-    /**
-     * Perform substitution on a property set
-     *
-     * @param properties                     the property set to perform substitution on
-     * @param callback                       the callback to obtain substitution values
-     * @param substituteFromConfig           If substitute from configuration
-     * @param substituteFromSystemProperties If substitute from system properties
-     * @param defaultsToEmptyString          sets an empty string if a replacement value is not found, leaves intact
-     *                                       otherwise
-     */
-    public static void performSubstitution(Map<String, String> properties,
+    public static void performSubstitution(Properties properties,
             SubstitutionCallback callback,
             boolean substituteFromConfig,
-            boolean substituteFromSystemProperties,
             boolean defaultsToEmptyString) {
-        Map<String, String> org = new HashMap<String, String>(properties);
-        for (String name : properties.keySet()) {
-            String value = properties.get(name);
-            properties.put(name,
-                    substVars(value, name, null, org, callback, substituteFromConfig, substituteFromSystemProperties,
+        Map<String, String> org = new HashMap<>();
+        properties.stringPropertyNames().forEach(n -> org.put(n, properties.getProperty(n)));
+        for (String name : properties.stringPropertyNames()) {
+            String value = properties.getProperty(name);
+            properties.setProperty(name,
+                    substVars(value, name, null, org, callback, substituteFromConfig,
                             defaultsToEmptyString));
         }
     }
@@ -109,76 +89,13 @@ public class InterpolationHelper {
      *                                  detect cycles.
      * @param  cycleMap                 Map of variable references used to detect nested cycles.
      * @param  configProps              Set of configuration properties.
-     * @return                          The value of the specified string after system property substitution.
-     * @throws IllegalArgumentException If there was a syntax error in the
-     *                                  property placeholder syntax or a recursive variable reference.
-     **/
-    public static String substVars(String val,
-            String currentKey,
-            Map<String, String> cycleMap,
-            Map<String, String> configProps)
-            throws IllegalArgumentException {
-        return substVars(val, currentKey, cycleMap, configProps, new SystemPropertiesSubstitutionCallback());
-    }
-
-    /**
-     * <p>
-     * This method performs property variable substitution on the
-     * specified value. If the specified value contains the syntax
-     * <tt>${&lt;prop-name&gt;}</tt>, where <tt>&lt;prop-name&gt;</tt>
-     * refers to either a configuration property or a system property,
-     * then the corresponding property value is substituted for the variable
-     * placeholder. Multiple variable placeholders may exist in the
-     * specified value as well as nested variable placeholders, which
-     * are substituted from inner most to outer most. Configuration
-     * properties override system properties.
-     * </p>
-     *
-     * @param  val                      The string on which to perform property substitution.
-     * @param  currentKey               The key of the property being evaluated used to
-     *                                  detect cycles.
-     * @param  cycleMap                 Map of variable references used to detect nested cycles.
-     * @param  configProps              Set of configuration properties.
      * @param  callback                 the callback to obtain substitution values
+     * @param  substituteFromConfig     If substitute from configuration
+     * @param  defaultsToEmptyString    sets an empty string if a replacement value is not found, leaves intact
+     *                                  otherwise
      * @return                          The value of the specified string after system property substitution.
      * @throws IllegalArgumentException If there was a syntax error in the
      *                                  property placeholder syntax or a recursive variable reference.
-     **/
-    public static String substVars(String val,
-            String currentKey,
-            Map<String, String> cycleMap,
-            Map<String, String> configProps,
-            SubstitutionCallback callback)
-            throws IllegalArgumentException {
-        return substVars(val, currentKey, cycleMap, configProps, callback, true, true, true);
-    }
-
-    /**
-     * <p>
-     * This method performs property variable substitution on the
-     * specified value. If the specified value contains the syntax
-     * <tt>${&lt;prop-name&gt;}</tt>, where <tt>&lt;prop-name&gt;</tt>
-     * refers to either a configuration property or a system property,
-     * then the corresponding property value is substituted for the variable
-     * placeholder. Multiple variable placeholders may exist in the
-     * specified value as well as nested variable placeholders, which
-     * are substituted from inner most to outer most. Configuration
-     * properties override system properties.
-     * </p>
-     *
-     * @param  val                            The string on which to perform property substitution.
-     * @param  currentKey                     The key of the property being evaluated used to
-     *                                        detect cycles.
-     * @param  cycleMap                       Map of variable references used to detect nested cycles.
-     * @param  configProps                    Set of configuration properties.
-     * @param  callback                       the callback to obtain substitution values
-     * @param  substituteFromConfig           If substitute from configuration
-     * @param  substituteFromSystemProperties If substitute from system properties
-     * @param  defaultsToEmptyString          sets an empty string if a replacement value is not found, leaves intact
-     *                                        otherwise
-     * @return                                The value of the specified string after system property substitution.
-     * @throws IllegalArgumentException       If there was a syntax error in the
-     *                                        property placeholder syntax or a recursive variable reference.
      **/
     public static String substVars(String val,
             String currentKey,
@@ -186,11 +103,10 @@ public class InterpolationHelper {
             Map<String, String> configProps,
             SubstitutionCallback callback,
             boolean substituteFromConfig,
-            boolean substituteFromSystemProperties,
             boolean defaultsToEmptyString)
             throws IllegalArgumentException {
         return unescape(doSubstVars(val, currentKey, cycleMap, configProps, callback, substituteFromConfig,
-                substituteFromSystemProperties, defaultsToEmptyString));
+                defaultsToEmptyString));
     }
 
     private static String doSubstVars(String val,
@@ -199,11 +115,10 @@ public class InterpolationHelper {
             Map<String, String> configProps,
             SubstitutionCallback callback,
             boolean substituteFromConfig,
-            boolean substituteFromSystemProperties,
             boolean defaultsToEmptyString)
             throws IllegalArgumentException {
         if (cycleMap == null) {
-            cycleMap = new HashMap<String, String>();
+            cycleMap = new HashMap<>();
         }
 
         // Put the current key in the cycle map.
@@ -277,9 +192,6 @@ public class InterpolationHelper {
                 if (callback != null) {
                     substValue = callback.getValue(variable);
                 }
-                if (substValue == null && substituteFromSystemProperties) {
-                    substValue = System.getProperty(variable);
-                }
             }
         }
 
@@ -315,13 +227,12 @@ public class InterpolationHelper {
         // Append the leading characters, the substituted value of
         // the variable, and the trailing characters to get the new
         // value.
-        val = val.substring(0, startDelim) + substValue + val.substring(stopDelim + DELIM_STOP.length(),
-                val.length());
+        val = val.substring(0, startDelim) + substValue + val.substring(stopDelim + DELIM_STOP.length());
 
         // Now perform substitution again, since there could still
         // be substitutions to make.
         val = doSubstVars(val, currentKey, cycleMap, configProps, callback, substituteFromConfig,
-                substituteFromSystemProperties, defaultsToEmptyString);
+                defaultsToEmptyString);
 
         cycleMap.remove(currentKey);
 
@@ -340,28 +251,6 @@ public class InterpolationHelper {
             escape = val.indexOf(ESCAPE_CHAR, escape + 1);
         }
         return val;
-    }
-
-    public static class SystemPropertiesSubstitutionCallback implements SubstitutionCallback {
-        private final Properties systemProperties;
-
-        public SystemPropertiesSubstitutionCallback() {
-            this(null);
-        }
-
-        public SystemPropertiesSubstitutionCallback(Properties systemProperties) {
-            this.systemProperties = systemProperties == null ? System.getProperties() : systemProperties;
-        }
-
-        public String getValue(String key) {
-            String value = null;
-            if (key.startsWith(ENV_PREFIX)) {
-                value = System.getenv(key.substring(ENV_PREFIX.length()));
-            } else {
-                value = systemProperties.getProperty(key);
-            }
-            return value;
-        }
     }
 
 }
