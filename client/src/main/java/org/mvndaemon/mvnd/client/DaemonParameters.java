@@ -454,8 +454,8 @@ public class DaemonParameters {
         if (Files.exists(path)) {
             try (InputStream in = Files.newInputStream(path)) {
                 result.load(in);
-                InterpolationHelper.performSubstitution( ( Map<String, String> ) (Map) result,
-                        new InterpolationHelper.SystemPropertiesSubstitutionCallback() );
+                InterpolationHelper.performSubstitution((Map<String, String>) (Map) result,
+                        new InterpolationHelper.SystemPropertiesSubstitutionCallback());
             } catch (IOException e) {
                 throw new RuntimeException("Could not read " + path);
             }
