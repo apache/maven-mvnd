@@ -37,8 +37,9 @@ public class MavenConfNativeIT {
     @Test
     void version() throws IOException, InterruptedException {
         final TestClientOutput o = new TestClientOutput();
+        // this test also exercise the "-D foo=bar" syntax for defining properties
         client.execute(o, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
-                "-Dexpression=maven.conf", "-q", "-DforceStdout", "--raw-streams").assertSuccess();
+                "-D", "expression=maven.conf", "-q", "-DforceStdout", "--raw-streams").assertSuccess();
         String conf = parameters.mvndHome().resolve("mvn/conf").toString();
         assertTrue(o.getMessages().stream()
                 .anyMatch(m -> m.toString().contains(conf)), "Output should contain " + conf);
