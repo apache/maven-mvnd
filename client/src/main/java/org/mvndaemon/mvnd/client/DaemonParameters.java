@@ -59,6 +59,7 @@ public class DaemonParameters {
     private static final Logger LOG = LoggerFactory.getLogger(DaemonParameters.class);
     private static final String EXT_CLASS_PATH = "maven.ext.class.path";
     private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
+    private static final String ENV_PREFIX = "env.";
 
     protected final Map<Path, Properties> mvndProperties = new ConcurrentHashMap<>();
     protected final Function<Path, Properties> provider = path -> mvndProperties.computeIfAbsent(path,
@@ -104,10 +105,10 @@ public class DaemonParameters {
                         description -> description.append("path relative to the mvnd executable"),
                         this::mvndHomeFromExecutable))
                 .orSystemProperty()
-                .orEnvironmentVariable()
                 .orLocalProperty(provider, suppliedPropertiesPath())
                 .orLocalProperty(provider, localPropertiesPath())
                 .orLocalProperty(provider, userPropertiesPath())
+                .orEnvironmentVariable()
                 .orFail()
                 .asPath()
                 .toAbsolutePath().normalize();
@@ -130,12 +131,12 @@ public class DaemonParameters {
 
     public Path javaHome() {
         final Path result = value(Environment.JAVA_HOME)
-                .orEnvironmentVariable()
                 .orLocalProperty(provider, suppliedPropertiesPath())
                 .orLocalProperty(provider, localPropertiesPath())
                 .orLocalProperty(provider, userPropertiesPath())
                 .orLocalProperty(provider, globalPropertiesPath())
                 .orSystemProperty()
+                .orEnvironmentVariable()
                 .orFail()
                 .asPath();
         try {
@@ -163,8 +164,8 @@ public class DaemonParameters {
 
     public Path suppliedPropertiesPath() {
         return value(Environment.MVND_PROPERTIES_PATH)
-                .orEnvironmentVariable()
                 .orSystemProperty()
+                .orEnvironmentVariable()
                 .asPath();
     }
 
@@ -191,9 +192,9 @@ public class DaemonParameters {
 
     public Path daemonStorage() {
         return value(Environment.MVND_DAEMON_STORAGE)
-                .orEnvironmentVariable()
                 .orSystemProperty()
                 .orLocalProperty(provider, globalPropertiesPath())
+                .orEnvironmentVariable()
                 .orDefault(
                         () -> userHome().resolve(".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion()).toString())
                 .asPath();
