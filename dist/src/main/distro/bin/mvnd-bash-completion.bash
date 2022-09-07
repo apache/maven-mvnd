@@ -23,6 +23,77 @@ function_exists()
     return $?
 }
 
+# This function can be used to access a tokenized list of words
+# on the command line:
+#
+#   __git_reassemble_comp_words_by_ref '=:'
+#   if test "${words_[cword_-1]}" = -w
+#   then
+#       ...
+#   fi
+#
+# The argument should be a collection of characters from the list of
+# word completion separators (COMP_WORDBREAKS) to treat as ordinary
+# characters.
+#
+# This is roughly equivalent to going back in time and setting
+# COMP_WORDBREAKS to exclude those characters.  The intent is to
+# make option types like --date=<type> and <rev>:<path> easy to
+# recognize by treating each shell word as a single token.
+#
+# It is best not to set COMP_WORDBREAKS directly because the value is
+# shared with other completion scripts.  By the time the completion
+# function gets called, COMP_WORDS has already been populated so local
+# changes to COMP_WORDBREAKS have no effect.
+#
+# Output: words_, cword_, cur_.
+function_exists __git_reassemble_comp_words_by_ref ||
+__git_reassemble_comp_words_by_ref()
+{
+    local exclude i j first
+    # Which word separators to exclude?
+    exclude="${1//[^$COMP_WORDBREAKS]}"
+    cword_=$COMP_CWORD
+    if [ -z "$exclude" ]; then
+        words_=("${COMP_WORDS[@]}")
+        return
+    fi
+    # List of word completion separators has shrunk;
+    # re-assemble words to complete.
+    for ((i=0, j=0; i < ${#COMP_WORDS[@]}; i++, j++)); do
+        # Append each nonempty word consisting of just
+        # word separator characters to the current word.
+        first=t
+        while
+            [ $i -gt 0 ] &&
+            [ -n "${COMP_WORDS[$i]}" ] &&
+            # word consists of excluded word separators
+            [ "${COMP_WORDS[$i]//[^$exclude]}" = "${COMP_WORDS[$i]}" ]
+        do
+            # Attach to the previous token,
+            # unless the previous token is the command name.
+            if [ $j -ge 2 ] && [ -n "$first" ]; then
+                ((j--))
+            fi
+            first=
+                words_[$j]=${words_[j]}${COMP_WORDS[i]}
+            if [ $i = $COMP_CWORD ]; then
+                cword_=$j
+            fi
+            if (($i < ${#COMP_WORDS[@]} - 1)); then
+                ((i++))
+            else
+                # Done.
+                return
+            fi
+        done
+        words_[$j]=${words_[j]}${COMP_WORDS[i]}
+        if [ $i = $COMP_CWORD ]; then
+            cword_=$j
+        fi
+    done
+}
+
 function_exists _get_comp_words_by_ref ||
 _get_comp_words_by_ref ()
 {
