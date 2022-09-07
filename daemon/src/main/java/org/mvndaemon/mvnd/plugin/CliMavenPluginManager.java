@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -372,6 +374,9 @@ public class CliMavenPluginManager
 
         pluginArtifacts = toMavenArtifacts(root, nlg);
 
+        if (parent == null) {
+            parent = new URLClassLoader(new URL[0]);
+        }
         pluginRealm = classRealmManager.createPluginRealm(plugin, parent, null, foreignImports,
                 toAetherArtifacts(pluginArtifacts));
 
