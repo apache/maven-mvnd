@@ -25,7 +25,6 @@
     </artifactSet>
 
     <artifactSet to="/mvn/lib">
-        <exclusion id="org.slf4j:slf4j-api"/>
         <exclusion id="javax.annotation:javax.annotation-api"/>
         <artifact id="org.apache.maven.resolver:maven-resolver-api"/>
         <artifact id="org.apache.maven.resolver:maven-resolver-impl"/>
@@ -36,6 +35,7 @@
     </artifactSet>
 
     <artifactSet to="/mvn/lib/ext">
+        <exclusion id="org.slf4j:slf4j-api"/>
         <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
             <exclusion id="org.codehaus.plexus:plexus-classworlds"/>
             <exclusion id="*:cdi-api"/>
