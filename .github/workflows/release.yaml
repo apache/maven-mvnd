@@ -26,7 +26,7 @@ on:
       - '*'
 
 env:
-  GRAALVM_VERSION: '21.3.0'
+  GRAALVM_VERSION: '22.2.0'
   JAVA_VERSION: '17'
 
 jobs:
