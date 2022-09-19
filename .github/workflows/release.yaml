@@ -67,6 +67,7 @@ jobs:
           name: artifacts
           path: |
             dist/target/maven-mvnd-*.zip
+            dist/target/maven-mvnd-*.tar.gz
 
   source:
     name: 'Build source distributions'
