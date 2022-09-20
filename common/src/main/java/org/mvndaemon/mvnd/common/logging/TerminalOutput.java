@@ -767,11 +767,14 @@ public class TerminalOutput implements ClientOutput {
         if (transfer != null) {
             asb
                     .append(':')
+                    .style(CYAN_FOREGROUND)
                     .append(String.format(artifactIdFormat, prj.id))
+                    .style(AttributedStyle.DEFAULT)
                     .append(transfer);
         } else if (execution == null) {
             asb
                     .append(':')
+                    .style(CYAN_FOREGROUND)
                     .append(prj.id);
         } else {
             asb
