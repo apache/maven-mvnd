@@ -15,27 +15,50 @@
  */
 package org.mvndaemon.mvnd.junit;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.client.DefaultClient;
 import org.mvndaemon.mvnd.client.ExecutionResult;
+import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
 public class JvmTestClient extends DefaultClient {
 
+    private DaemonParameters parameters;
+
     public JvmTestClient(DaemonParameters parameters) {
         super(parameters);
+        this.parameters = parameters;
     }
 
     @Override
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
+        setMultiModuleProjectDirectory(argv);
         setSystemPropertiesFromCommandLine(argv);
         final ExecutionResult delegate = super.execute(output, argv);
         if (output instanceof TestClientOutput) {
             return new JvmTestResult(delegate, ((TestClientOutput) output).messagesToString());
         }
         return delegate;
+    }
+
+    private void setMultiModuleProjectDirectory(List<String> args) {
+        // Specific parameters
+        Path dir;
+        if (Environment.MAVEN_FILE.hasCommandLineOption(args)) {
+            dir = parameters.userDir().resolve(Environment.MAVEN_FILE.getCommandLineOption(args));
+            if (Files.isRegularFile(dir)) {
+                dir = dir.getParent();
+            }
+            dir = dir.normalize();
+        } else {
+            dir = parameters.userDir();
+        }
+        System.setProperty(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.getProperty(),
+                parameters.multiModuleProjectDirectory(dir).toString());
     }
 
     public static class JvmTestResult implements ExecutionResult {

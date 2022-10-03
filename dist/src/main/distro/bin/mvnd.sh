@@ -118,23 +118,6 @@ if $cygwin ; then
     DAEMON_JAR=`cygpath --path --windows "$DAEMON_JAR"`
 fi
 
-# traverses directory structure from process work directory to filesystem root
-# first directory with .mvn subdirectory is considered project base directory
-find_maven_basedir() {
-(
-  basedir=`find_file_argument_basedir "$@"`
-  wdir="${basedir}"
-  while [ "$wdir" != '/' ] ; do
-    if [ -d "$wdir"/.mvn ] ; then
-      basedir=$wdir
-      break
-    fi
-    wdir=`cd "$wdir/.."; pwd`
-  done
-  echo "${basedir}"
-)
-}
-
 find_file_argument_basedir() {
 (
   basedir=`pwd`
@@ -172,17 +155,6 @@ concat_lines() {
   fi
 }
 
-MAVEN_PROJECTBASEDIR="${MAVEN_BASEDIR:-`find_maven_basedir "$@"`}"
-
-# For Cygwin, switch project base directory path to Windows format before
-# executing Maven otherwise this will cause Maven not to consider it.
-if $cygwin ; then
-  [ -n "$MAVEN_PROJECTBASEDIR" ] &&
-  MAVEN_PROJECTBASEDIR=`cygpath --path --windows "$MAVEN_PROJECTBASEDIR"`
-fi
-
-export MAVEN_PROJECTBASEDIR
-
 # Provide a "standardized" way to retrieve the CLI args that will
 # work with both Windows and non-Windows executions.
 MAVEN_CMD_LINE_ARGS="$MAVEN_CONFIG $@"
@@ -196,5 +168,4 @@ exec "$JAVACMD" \
   "-Dmvnd.home=${MVND_HOME}" \
   "-Dmaven.home=${MVND_HOME}/mvn" \
   "-Dlibrary.jansi.path=${MVND_HOME}/mvn/lib/jansi-native" \
-  "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
   ${DAEMON_LAUNCHER} "$@"

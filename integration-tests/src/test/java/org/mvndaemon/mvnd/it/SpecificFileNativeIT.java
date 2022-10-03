@@ -27,6 +27,13 @@ import org.mvndaemon.mvnd.junit.TestParameters;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * NOTE: there is no related JVM test because the support for the maven
+ * multiModuleProjectDiscovery is done very early in the client in order
+ * to be able to load the JVM parameters from the .mvn/jvm.config file.
+ * Thus, there's point in setting because it would have to be done
+ * in the test iself.
+ */
 @MvndNativeTest(projectDir = "src/test/projects/specific-file")
 public class SpecificFileNativeIT {
 
@@ -49,6 +56,12 @@ public class SpecificFileNativeIT {
                 "-Dexpression=maven.multiModuleProjectDirectory", "-f", "../prj2/pom.xml", "-e").assertSuccess();
         assertTrue(output.getMessages().stream()
                 .anyMatch(m -> m.toString().contains(prj2.toString())), "Output should contain " + prj2);
+
+        output.getMessages().clear();
+        cl.execute(output, "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
+                "-Dexpression=foo-bar", "-f", "../prj2/pom.xml", "-e").assertSuccess();
+        assertTrue(output.getMessages().stream()
+                .anyMatch(m -> m.toString().contains("xx-prj2-xx")), "Output should contain " + prj2);
     }
 
     protected boolean isNative() {
