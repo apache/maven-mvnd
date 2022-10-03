@@ -67,7 +67,7 @@ public class MvndClassRealmManager
      * flexibility to load multiple version of maven into dedicated classloaders without assuming state of jvm system
      * classloader.
      */
-    private static final ClassLoader PARENT_CLASSLOADER = null;
+    private static final ClassLoader PARENT_CLASSLOADER = ClassLoader.getSystemClassLoader();
 
     private final Logger logger;
 
