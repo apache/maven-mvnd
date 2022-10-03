@@ -16,9 +16,9 @@
 package org.mvndaemon.mvnd.logging.internal;
 
 import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.CoreConstants;
 
@@ -42,7 +42,7 @@ public class SimpleAppender extends AppenderBase<ILoggingEvent> {
         IThrowableProxy tp = eventObject.getThrowableProxy();
         if (tp != null) {
             buf.append(CoreConstants.LINE_SEPARATOR);
-            buf.append(new ThrowableProxyConverter().convert(eventObject));
+            buf.append(ThrowableProxyUtil.asString(tp));
         }
         System.out.print(buf.toString());
     }
