@@ -48,7 +48,7 @@ import org.eclipse.sisu.Priority;
  * the {@link #PARENT_CLASSLOADER} is set to null instead of classworld's classloader.
  * The reason is that mvnd is booted by {@link org.mvndaemon.mvnd.common.MavenDaemon}
  * instead of {@link org.codehaus.plexus.classworlds.launcher.Launcher} and classworld
- * is contained by the maven classloader.  This can cause problems with extensions
+ * is contained by the maven classloader. This can cause problems with extensions
  * as their parent contains the whole maven classloader.
  * See <a href="https://github.com/apache/maven-mvnd/issues/690">mvnd#690</a>
  */
