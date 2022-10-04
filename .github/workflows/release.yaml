@@ -177,6 +177,16 @@ jobs:
           asset_name: maven-mvnd-${{ env.VERSION }}-linux-amd64.zip
           asset_content_type: application/zip
 
+      - name: Deploy maven-mvnd-linux-amd64.tar.gz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-linux-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-linux-amd64.tar.gz
+          asset_content_type: application/x-gzip
+
       - name: Deploy maven-mvnd-darwin-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
@@ -187,6 +197,16 @@ jobs:
           asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
           asset_content_type: application/zip
 
+      - name: Deploy maven-mvnd-darwin-amd64.tar.gz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
+          asset_content_type: application/x-gzip
+
       - name: Deploy maven-mvnd-windows-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
@@ -196,3 +216,13 @@ jobs:
           asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-windows-amd64.zip
           asset_name: maven-mvnd-${{ env.VERSION }}-windows-amd64.zip
           asset_content_type: application/zip
+
+      - name: Deploy maven-mvnd-windows-amd64.tar.gz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/maven-mvnd-${{ env.VERSION }}-windows-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-windows-amd64.tar.gz
+          asset_content_type: application/x-gzip
