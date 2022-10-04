@@ -29,7 +29,7 @@
 
     <groupId>org.apache.maven.daemon</groupId>
     <artifactId>mvnd</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.8.2</version>
 
     <packaging>pom</packaging>
     <name>Maven Daemon - Parent</name>
@@ -47,7 +47,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <project.build.outputTimestamp>2022-10-04T05:51:14Z</project.build.outputTimestamp>
+        <project.build.outputTimestamp>2022-10-04T07:04:27Z</project.build.outputTimestamp>
         <trimStackTrace>false</trimStackTrace>
         <project.github.repository>apache/maven-mvnd</project.github.repository>
         <repository.url>github.com:${project.github.repository}</repository.url>
@@ -223,38 +223,38 @@
             <dependency>
                 <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-native</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.8.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-agent</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.8.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-client</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.8.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-common</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.8.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-dist</artifactId>
                 <type>pom</type>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.8.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-daemon</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.8.2</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.maven.daemon</groupId>
                 <artifactId>mvnd-helper-agent</artifactId>
-                <version>0.9.0-SNAPSHOT</version>
+                <version>0.8.2</version>
             </dependency>
 
             <dependency>
