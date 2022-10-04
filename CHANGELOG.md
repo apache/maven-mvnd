@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.8.2](https://github.com/apache/maven-mvnd/tree/0.8.2) (2022-10-04)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/0.8.1...0.8.2)
+
+**Fixed bugs:**
+
+- SimpleAppender omits stacktraces [\#696](https://github.com/apache/maven-mvnd/issues/696)
+- Possible problem when resizing the daemon registry [\#695](https://github.com/apache/maven-mvnd/issues/695)
+- mvnd does not load from `svc/.mvn` if `-f svc/pom.xml` is applied \(mvn does\) [\#694](https://github.com/apache/maven-mvnd/issues/694)
+
+**Closed issues:**
+
+- Maven extensions have a wrong parent classloader [\#690](https://github.com/apache/maven-mvnd/issues/690)
+- Fail to install mvnd from SDKMAN! on Apple M1 machine [\#688](https://github.com/apache/maven-mvnd/issues/688)
+- M2E integration [\#687](https://github.com/apache/maven-mvnd/issues/687)
+- Console coloring is off when artifact download is under way [\#685](https://github.com/apache/maven-mvnd/issues/685)
+- mvnd not extends parent properties？ [\#674](https://github.com/apache/maven-mvnd/issues/674)
+- release .tar.gz format precompiled binary archives  [\#668](https://github.com/apache/maven-mvnd/issues/668)
+- Error occurred during initialization of VM , Could not reserve enough space for 2097152KB object heap [\#644](https://github.com/apache/maven-mvnd/issues/644)
+
+**Merged pull requests:**
+
+- Fix maven extensions' parent classloader \(fixes \#690\) [\#702](https://github.com/apache/maven-mvnd/pull/702) ([gnodet](https://github.com/gnodet))
+- SimpleAppender omits stacktraces \(fixes \#696\) [\#700](https://github.com/apache/maven-mvnd/pull/700) ([gnodet](https://github.com/gnodet))
+- Fix for JUnit test failing on Windows [\#699](https://github.com/apache/maven-mvnd/pull/699) ([theit](https://github.com/theit))
+- Fix the bash completion template \(\#670, \#682\) [\#698](https://github.com/apache/maven-mvnd/pull/698) ([gnodet](https://github.com/gnodet))
+- Handle the multimodule project directory as early as possible \(fixes \#694\) [\#697](https://github.com/apache/maven-mvnd/pull/697) ([gnodet](https://github.com/gnodet))
+- Add tar.gz binaries in the release [\#692](https://github.com/apache/maven-mvnd/pull/692) ([gnodet](https://github.com/gnodet))
+- Update GraalVM to 22.2.0 [\#689](https://github.com/apache/maven-mvnd/pull/689) ([kwin](https://github.com/kwin))
+- Fixes module id coloring on Maven transfer. [\#686](https://github.com/apache/maven-mvnd/pull/686) ([cstamas](https://github.com/cstamas))
+
 ## [0.8.1](https://github.com/apache/maven-mvnd/tree/0.8.1) (2022-09-08)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/0.8.0...0.8.1)
@@ -17,38 +48,37 @@
 
 **Closed issues:**
 
-- ClassNotFoundException when starting jetty with jetty-maven-plugin [\#681](https://github.com/apache/maven-mvnd/issues/681)
 - Use interpolation when loading properties [\#676](https://github.com/apache/maven-mvnd/issues/676)
-- How do I change the JDK dynamically [\#675](https://github.com/apache/maven-mvnd/issues/675)
 - Ability to configure the daemon storage location [\#673](https://github.com/apache/maven-mvnd/issues/673)
 - Deployed timestamped snapshot version does not change [\#672](https://github.com/apache/maven-mvnd/issues/672)
 - Logs go to stdout breaking scripts [\#671](https://github.com/apache/maven-mvnd/issues/671)
-- release .tar.gz format precompiled binary archives  [\#668](https://github.com/apache/maven-mvnd/issues/668)
 - Exception in thread "main" java.io.UncheckedIOException: java.nio.charset.MalformedInputException: Input length = 1 [\#667](https://github.com/apache/maven-mvnd/issues/667)
 - Hashes missing from latest release \(0.8.0\) [\#666](https://github.com/apache/maven-mvnd/issues/666)
+- Add scoop installation to readme [\#640](https://github.com/apache/maven-mvnd/issues/640)
+- ClassNotFoundException when starting jetty with jetty-maven-plugin [\#681](https://github.com/apache/maven-mvnd/issues/681)
+- How do I change the JDK dynamically [\#675](https://github.com/apache/maven-mvnd/issues/675)
 - Improved support for IntelliJ Idea [\#664](https://github.com/apache/maven-mvnd/issues/664)
 - Missing argument for option -D [\#662](https://github.com/apache/maven-mvnd/issues/662)
 - Support Maven 3.8.6 [\#660](https://github.com/apache/maven-mvnd/issues/660)
 - Cannot suppress debug logging as of 0.8.0 on Homebrew on M1 Mac \(previous versions didn't have this issue\) [\#656](https://github.com/apache/maven-mvnd/issues/656)
 - mvnd goal execution id display inconsistent with Maven [\#653](https://github.com/apache/maven-mvnd/issues/653)
-- Add scoop installation to readme [\#640](https://github.com/apache/maven-mvnd/issues/640)
 
 **Merged pull requests:**
 
 - Improve Intellij integration, fixes \#664 [\#684](https://github.com/apache/maven-mvnd/pull/684) ([gnodet](https://github.com/gnodet))
-- Add missing function for mvnd-bash-completion, fixes \#670 [\#682](https://github.com/apache/maven-mvnd/pull/682) ([gnodet](https://github.com/gnodet))
-- System properties should have precedence over environment variables, fixes \#675 [\#680](https://github.com/apache/maven-mvnd/pull/680) ([gnodet](https://github.com/gnodet))
 - Missing argument for option -D, fixes \#662 [\#679](https://github.com/apache/maven-mvnd/pull/679) ([gnodet](https://github.com/gnodet))
-- Ability to configure the daemon storage location, fixes \#673 [\#678](https://github.com/apache/maven-mvnd/pull/678) ([gnodet](https://github.com/gnodet))
-- Update to Maven 3.8.6 \#660 [\#661](https://github.com/apache/maven-mvnd/pull/661) ([robertk3s](https://github.com/robertk3s))
-- Revert "Remove unused logback-client.xml file", fixes \#656 [\#658](https://github.com/apache/maven-mvnd/pull/658) ([gnodet](https://github.com/gnodet))
-- Make mvnd coloring more consistent with maven, fixes \#653 [\#654](https://github.com/apache/maven-mvnd/pull/654) ([gnodet](https://github.com/gnodet))
 - Add asdf install method [\#652](https://github.com/apache/maven-mvnd/pull/652) ([mattnelson](https://github.com/mattnelson))
 - Cleanup [\#650](https://github.com/apache/maven-mvnd/pull/650) ([gnodet](https://github.com/gnodet))
 - Update release scripts [\#648](https://github.com/apache/maven-mvnd/pull/648) ([gnodet](https://github.com/gnodet))
 - Add scoop.sh to install instructions [\#647](https://github.com/apache/maven-mvnd/pull/647) ([bonepl](https://github.com/bonepl))
 - Configure execution bit for required scripts in source distribution [\#643](https://github.com/apache/maven-mvnd/pull/643) ([hboutemy](https://github.com/hboutemy))
 - Update RELEASING.adoc [\#641](https://github.com/apache/maven-mvnd/pull/641) ([delanym](https://github.com/delanym))
+- Add missing function for mvnd-bash-completion, fixes \#670 [\#682](https://github.com/apache/maven-mvnd/pull/682) ([gnodet](https://github.com/gnodet))
+- System properties should have precedence over environment variables, fixes \#675 [\#680](https://github.com/apache/maven-mvnd/pull/680) ([gnodet](https://github.com/gnodet))
+- Ability to configure the daemon storage location, fixes \#673 [\#678](https://github.com/apache/maven-mvnd/pull/678) ([gnodet](https://github.com/gnodet))
+- Update to Maven 3.8.6 \#660 [\#661](https://github.com/apache/maven-mvnd/pull/661) ([robertk3s](https://github.com/robertk3s))
+- Revert "Remove unused logback-client.xml file", fixes \#656 [\#658](https://github.com/apache/maven-mvnd/pull/658) ([gnodet](https://github.com/gnodet))
+- Make mvnd coloring more consistent with maven, fixes \#653 [\#654](https://github.com/apache/maven-mvnd/pull/654) ([gnodet](https://github.com/gnodet))
 
 ## [0.8.0](https://github.com/apache/maven-mvnd/tree/0.8.0) (2022-05-04)
 
