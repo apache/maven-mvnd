@@ -38,7 +38,7 @@ function publishRelease() {
     MVND_PLATFORM=$3
 
     FILE="maven-mvnd-${VERSION}-${MVND_PLATFORM}.zip"
-    URL="https://dist.apache.org/repos/dist/release/maven/mvnd/${VERSION}/${FILE}"
+    URL="https://downloads.apache.org/maven/mvnd/${VERSION}/${FILE}"
     RESPONSE="$(curl -s -X POST \
         -H "Consumer-Key: ${SDKMAN_CONSUMER_KEY}" \
         -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
@@ -60,6 +60,7 @@ function publishRelease() {
 
 publishRelease ${VERSION} LINUX_64 linux-amd64
 publishRelease ${VERSION} MAC_OSX darwin-amd64
+publishRelease ${VERSION} MAC_ARM64 darwin-aarch64
 publishRelease ${VERSION} WINDOWS_64 windows-amd64
 
 echo "Setting ${VERSION} as a default"
@@ -81,7 +82,7 @@ node -pe "
     }
 " "${RESPONSE}"
 
-RELEASE_URL=`curl -s -i https://git.io -F url=https://dist.apache.org/repos/dist/release/maven/mvnd/${VERSION} | grep Location | sed -e 's/Location: //g' | tr -d '\n' | tr -d '\r'`
+RELEASE_URL=`curl -s -i https://git.io -F url=https://downloads.apache.org/maven/mvnd/${VERSION} | grep Location | sed -e 's/Location: //g' | tr -d '\n' | tr -d '\r'`
 echo "RELEASE_URL = $RELEASE_URL"
 
 RESPONSE="$(curl -s -X POST \

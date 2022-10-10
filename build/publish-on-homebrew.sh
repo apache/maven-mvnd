@@ -28,15 +28,19 @@ rm -Rf target/releases/${VERSION}
 mkdir -p target/releases/${VERSION}
 pushd target/releases
 
-darwinZipUrl="https://dist.apache.org/repos/dist/release/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-darwin-amd64.zip"
-darwinSha256="$(curl -L --silent "${darwinZipUrl}.sha256")"
-linuxZipUrl="https://dist.apache.org/repos/dist/release/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-amd64.zip"
+darwinAmdZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-darwin-amd64.zip"
+darwinAmdSha256="$(curl -L --silent "${darwinAmdZipUrl}.sha256")"
+darwinArmZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-darwin-aarch64.zip"
+darwinArmSha256="$(curl -L --silent "${darwinArmZipUrl}.sha256")"
+linuxZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-amd64.zip"
 linuxSha256="$(curl -L --silent "${linuxZipUrl}.sha256")"
 
 echo "Updating Formula/mvnd.rb with"
 echo "version: ${VERSION}"
-echo "darwin-url: ${darwinZipUrl}"
-echo "darwin-sha256: ${darwinSha256}"
+echo "darwin-amd-url: ${darwinAmdZipUrl}"
+echo "darwin-amd-sha256: ${darwinAmdSha256}"
+echo "darwin-arm-url: ${darwinArmZipUrl}"
+echo "darwin-arm-sha256: ${darwinArmSha256}"
 echo "linux-url: ${linuxZipUrl}"
 echo "linux-sha256: ${linuxSha256}"
 
@@ -44,7 +48,8 @@ rm -Rf homebrew-mvnd
 git clone https://github.com/mvndaemon/homebrew-mvnd.git
 cd homebrew-mvnd
 
-perl -i -0pe 's|(on_macos do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinZipUrl}'\"$3\"'${darwinSha256}'\"|g' Formula/mvnd.rb
+perl -i -0pe 's|(on_macos do[\s\S\n]+on_intel\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinAmdZipUrl}'\"$3\"'${darwinAmdSha256}'\"|g' Formula/mvnd.rb
+perl -i -0pe 's|(on_macos do[\s\S\n]+on_arm\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinArmZipUrl}'\"$3\"'${darwinArmSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(on_linux do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${linuxZipUrl}'\"$3\"'${linuxSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(version )"([^\"]+)"|$1\"'${VERSION}'\"|g' Formula/mvnd.rb
 

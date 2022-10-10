@@ -48,7 +48,7 @@ gh api $downloadUrl > artifacts-${VERSION}.zip
 unzip artifacts-${VERSION}.zip -d ${VERSION}
 cd ${VERSION}
 
-for dist in darwin-amd64.zip linux-amd64.zip windows-amd64.zip src.zip src.tar.gz
+for dist in darwin-amd64.zip darwin-amd64.tar.gz darwin-aarch64.zip darwin-aarch64.tar.gz linux-amd64.zip linux-amd64.tar.gz windows-amd64.zip windows-amd64.tar.gz src.zip src.tar.gz
 do
   FILE=maven-mvnd-${VERSION}-${dist}
   shasum -a 256 -b ${FILE} | cut -d ' ' -f 1 > ${FILE}.sha256
