@@ -90,15 +90,14 @@ if $mingw ; then
 fi
 
 if [ -z "$JAVA_HOME" ] ; then
-  JAVACMD=`which java`
+  JAVACMD="`\\unset -f command; \\command -v java`"
 else
   JAVACMD="$JAVA_HOME/bin/java"
 fi
 
 if [ ! -x "$JAVACMD" ] ; then
-  echo "The JAVA_HOME environment variable is not defined correctly" >&2
-  echo "This environment variable is needed to run this program" >&2
-  echo "NB: JAVA_HOME should point to a JDK not a JRE" >&2
+  echo "The JAVA_HOME environment variable is not defined correctly," >&2
+  echo "this environment variable is needed to run this program." >&2
   exit 1
 fi
 
@@ -140,7 +139,7 @@ find_file_argument_basedir() {
       fi
       break
     fi
-    if [ "$arg" = "-f" ] || [ "$arg" = "--file" ]; then
+    if [ "$arg" = "-f" -o "$arg" = "--file" ]; then
       found_file_switch=1
     fi
   done

@@ -35,8 +35,8 @@
 @REM Execute a user defined script before this one
 if not "%MAVEN_SKIP_RC%"=="" goto skipRcPre
 @REM check for pre script, once with legacy .bat ending and once with .cmd ending
-if exist "%USERPROFILE%\mavenrc_pre.bat" call "%USERPROFILE%\mavenrc_pre.bat"
-if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd"
+if exist "%USERPROFILE%\mavenrc_pre.bat" call "%USERPROFILE%\mavenrc_pre.bat" %*
+if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd" %*
 :skipRcPre
 
 @setlocal
@@ -54,20 +54,15 @@ set "JAVACMD=%JAVA_HOME%\bin\java.exe"
 :checkJCmd
 if exist "%JAVACMD%" goto chkMHome
 
-echo The JAVA_HOME environment variable is not defined correctly >&2
-echo This environment variable is needed to run this program >&2
-echo NB: JAVA_HOME should point to a JDK not a JRE >&2
+echo The JAVA_HOME environment variable is not defined correctly, >&2
+echo this environment variable is needed to run this program. >&2
 goto error
 
 :chkMHome
-set "MVND_HOME=%~dp0.."
-if not "%MVND_HOME%"=="" goto stripMHome
+set "MVND_HOME=%~dp0"
+set "MVND_HOME=%MVND_HOME:~0,-5%"
+if not "%MVND_HOME%"=="" goto checkMCmd
 goto error
-
-:stripMHome
-if not "_%MVND_HOME:~-1%"=="_\" goto checkMCmd
-set "MVND_HOME=%MVND_HOME:~0,-1%"
-goto stripMHome
 
 :checkMCmd
 if exist "%MVND_HOME%\bin\mvnd.cmd" goto init
@@ -93,7 +88,6 @@ set DAEMON_LAUNCHER=org.mvndaemon.mvnd.client.DefaultClient
   "-Dmvnd.home=%MVND_HOME%" ^
   "-Dmaven.home=%MVND_HOME%\mvn" ^
   "-Dlibrary.jansi.path=%MVND_HOME%\mvn\lib\jansi-native" ^
-  "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" ^
   %DAEMON_LAUNCHER% %MAVEN_CMD_LINE_ARGS%
 if ERRORLEVEL 1 goto error
 goto end
