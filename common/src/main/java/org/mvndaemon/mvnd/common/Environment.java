@@ -70,6 +70,12 @@ public enum Environment {
     /** The system property expected by logback to set the configuration file */
     LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null, null, OptionType.PATH, Flags.INTERNAL),
 
+    /** Whether or not decorate output and error streams */
+    MVND_RAW_STREAMS_PROP("mvnd.rawStreams", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.OPTIONAL),
+
+    /** Do not decorate output and error streams, will override mvnd.rawStreams property */
+    MVND_RAW_STREAMS_OPT(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--raw-streams"),
+
     //
     // System properties
     //

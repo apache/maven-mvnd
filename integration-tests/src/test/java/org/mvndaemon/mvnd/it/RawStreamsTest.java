@@ -45,7 +45,7 @@ public class RawStreamsTest {
         assertDaemonRegistrySize(0);
 
         final TestClientOutput o = new TestClientOutput();
-        client.execute(o, "validate", "--quiet", "--raw-streams").assertSuccess();
+        client.execute(o, "validate", "--quiet", "-Dmvnd.rawStreams=true").assertSuccess();
         String expected = "PrintOut{payload='Hello'}";
         o.getMessages().forEach(m -> System.out.println(m.toString()));
         assertTrue(o.getMessages().stream()

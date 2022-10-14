@@ -99,6 +99,12 @@ public class DefaultClient implements Client {
          * and --color is not supported there yet. */
         args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
 
+        // Raw Streams
+        if (Environment.MVND_RAW_STREAMS_OPT.removeCommandLineOption(args) != null) {
+            Environment.MVND_RAW_STREAMS_PROP.removeCommandLineOption(args); // override property
+            Environment.MVND_RAW_STREAMS_PROP.addCommandLineOption(args, Boolean.toString(true));
+        }
+
         String userJdkJavaOpts = System.getenv(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable());
         if (userJdkJavaOpts != null) {
             Environment.JDK_JAVA_OPTIONS.addCommandLineOption(args, userJdkJavaOpts);
