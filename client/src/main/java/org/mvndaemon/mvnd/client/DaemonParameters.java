@@ -44,6 +44,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.InterpolationHelper;
 import org.mvndaemon.mvnd.common.Os;
+import org.mvndaemon.mvnd.common.OsUtils;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.slf4j.Logger;
@@ -137,6 +138,9 @@ public class DaemonParameters {
                 .orLocalProperty(provider, globalPropertiesPath())
                 .orSystemProperty()
                 .orEnvironmentVariable()
+                .or(new ValueSource(
+                        description -> description.append("JAVA_HOME via java searched in PATH environment"),
+                        this::javaHomeFromPATH))
                 .orFail()
                 .asPath();
         try {
@@ -144,6 +148,14 @@ public class DaemonParameters {
         } catch (IOException e) {
             throw new RuntimeException("Could not get a real path from path " + result);
         }
+    }
+
+    private String javaHomeFromPATH() {
+        final String jHome = OsUtils.findJavaHomeFromPATH();
+        if (null != jHome) {
+            System.setProperty(Environment.JAVA_HOME.getProperty(), jHome);
+        }
+        return jHome;
     }
 
     public Path userDir() {
