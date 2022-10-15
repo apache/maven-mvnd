@@ -16,7 +16,6 @@
 package org.mvndaemon.mvnd.common;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -103,24 +102,13 @@ public class OsUtils {
     }
 
     public static String findJavaHomeFromPATH() {
-        final String basename = Os.current().isUnixLike() ? "java" : "java.exe";
-        final String PATH = System.getenv("PATH");
-        if (null == PATH) {
-            return null;
-        }
-        for (final String dirname : PATH.split(File.pathSeparator)) {
-            final File java = new File(dirname, basename);
-            if (java.isFile() && java.canExecute()) {
-                final String[] cmd = { java.getAbsolutePath(), "-XshowSettings:properties", "-version" };
-                final List<String> output = new ArrayList<String>(1);
-                exec(cmd, output);
-                final List<String> javaHomeLines = output.stream().filter(l -> l.contains(" java.home = "))
-                        .collect(Collectors.toList());
-                if (javaHomeLines.size() == 1) {
-                    return javaHomeLines.get(0).trim().replaceFirst("java.home = ", "");
-                }
-                break;
-            }
+        final String[] cmd = { "java", "-XshowSettings:properties", "-version" };
+        final List<String> output = new ArrayList<String>(1);
+        exec(cmd, output);
+        final List<String> javaHomeLines = output.stream().filter(l -> l.contains(" java.home = "))
+                .collect(Collectors.toList());
+        if (javaHomeLines.size() == 1) {
+            return javaHomeLines.get(0).trim().replaceFirst("java.home = ", "");
         }
         return null;
     }

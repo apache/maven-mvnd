@@ -139,7 +139,7 @@ public class DaemonParameters {
                 .orSystemProperty()
                 .orEnvironmentVariable()
                 .or(new ValueSource(
-                        description -> description.append("JAVA_HOME via java searched in PATH environment"),
+                        description -> description.append("java command"),
                         this::javaHomeFromPATH))
                 .orFail()
                 .asPath();
