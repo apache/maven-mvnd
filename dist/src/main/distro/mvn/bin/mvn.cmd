@@ -35,8 +35,8 @@
 @REM Execute a user defined script before this one
 if not "%MAVEN_SKIP_RC%"=="" goto skipRcPre
 @REM check for pre script, once with legacy .bat ending and once with .cmd ending
-if exist "%USERPROFILE%\mavenrc_pre.bat" call "%USERPROFILE%\mavenrc_pre.bat"
-if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd"
+if exist "%USERPROFILE%\mavenrc_pre.bat" call "%USERPROFILE%\mavenrc_pre.bat" %*
+if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd" %*
 :skipRcPre
 
 @setlocal
@@ -54,20 +54,15 @@ set "JAVACMD=%JAVA_HOME%\bin\java.exe"
 :checkJCmd
 if exist "%JAVACMD%" goto chkMHome
 
-echo The JAVA_HOME environment variable is not defined correctly >&2
-echo This environment variable is needed to run this program >&2
-echo NB: JAVA_HOME should point to a JDK not a JRE >&2
+echo The JAVA_HOME environment variable is not defined correctly, >&2
+echo this environment variable is needed to run this program. >&2
 goto error
 
 :chkMHome
-set "MAVEN_HOME=%~dp0.."
-if not "%MAVEN_HOME%"=="" goto stripMHome
+set "MAVEN_HOME=%~dp0"
+set "MAVEN_HOME=%MAVEN_HOME:~0,-5%"
+if not "%MAVEN_HOME%"=="" goto checkMCmd
 goto error
-
-:stripMHome
-if not "_%MAVEN_HOME:~-1%"=="_\" goto checkMCmd
-set "MAVEN_HOME=%MAVEN_HOME:~0,-1%"
-goto stripMHome
 
 :checkMCmd
 if exist "%MAVEN_HOME%\bin\mvn.cmd" goto init
@@ -78,7 +73,7 @@ goto error
 
 set MAVEN_CMD_LINE_ARGS=%*
 
-@REM Find the project basedir, i.e., the directory that contains the folder ".mvn".
+@REM Find the project basedir, i.e., the directory that contains the directory ".mvn".
 @REM Fallback to current working directory if not found.
 
 set "MAVEN_PROJECTBASEDIR=%MAVEN_BASEDIR%"
@@ -156,7 +151,7 @@ goto endDetectBaseDir
 :baseDirNotFound
 if "_%EXEC_DIR:~-1%"=="_\" set "EXEC_DIR=%EXEC_DIR:~0,-1%"
 set "MAVEN_PROJECTBASEDIR=%EXEC_DIR%"
-cd "%EXEC_DIR%"
+cd /d "%EXEC_DIR%"
 
 :endDetectBaseDir
 
