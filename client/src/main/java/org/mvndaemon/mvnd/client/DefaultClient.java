@@ -83,6 +83,11 @@ public class DefaultClient implements Client {
             System.setProperty(Environment.SERIAL.getProperty(), Boolean.toString(true));
         }
 
+        // Raw streams
+        if (Environment.MVND_RAW_STREAMS.removeCommandLineOption(args) != null) {
+            args.add("-D" + Environment.MVND_RAW_STREAMS.getProperty());
+        }
+
         // Batch mode
         final boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args)
                 || Environment.COMPLETION.hasCommandLineOption(args);
