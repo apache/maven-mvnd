@@ -217,7 +217,7 @@ https://www.graalvm.org/reference-manual/native-image/#prerequisites[`native-ima
 [source,shell]
 ----
 $ git clone https://github.com/apache/maven-mvnd.git
-$ cd mvnd
+$ cd maven-mvnd
 $ mvn clean verify -Pnative
 ...
 $ cd client
