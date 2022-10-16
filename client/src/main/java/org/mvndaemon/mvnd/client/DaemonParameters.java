@@ -140,7 +140,7 @@ public class DaemonParameters {
                 .orEnvironmentVariable()
                 .or(new ValueSource(
                         description -> description.append("java command"),
-                        this::javaHomeFromPATH))
+                        this::javaHomeFromPath))
                 .orFail()
                 .asPath();
         try {
@@ -150,8 +150,8 @@ public class DaemonParameters {
         }
     }
 
-    private String javaHomeFromPATH() {
-        final String jHome = OsUtils.findJavaHomeFromPATH();
+    private String javaHomeFromPath() {
+        final String jHome = OsUtils.findJavaHomeFromPath();
         if (null != jHome) {
             System.setProperty(Environment.JAVA_HOME.getProperty(), jHome);
         }

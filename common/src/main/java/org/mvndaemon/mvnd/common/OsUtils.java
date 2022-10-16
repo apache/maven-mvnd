@@ -101,11 +101,11 @@ public class OsUtils {
         }
     }
 
-    public static String findJavaHomeFromPATH() {
-        final String[] cmd = { "java", "-XshowSettings:properties", "-version" };
+    public static String findJavaHomeFromPath() {
+        String[] cmd = { "java", "-XshowSettings:properties", "-version" };
         final List<String> output = new ArrayList<String>(1);
         exec(cmd, output);
-        final List<String> javaHomeLines = output.stream().filter(l -> l.contains(" java.home = "))
+        List<String> javaHomeLines = output.stream().filter(l -> l.contains(" java.home = "))
                 .collect(Collectors.toList());
         if (javaHomeLines.size() == 1) {
             return javaHomeLines.get(0).trim().replaceFirst("java.home = ", "");
