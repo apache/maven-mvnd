@@ -101,16 +101,23 @@ public class OsUtils {
         }
     }
 
-    public static String findJavaHomeFromPath() {
-        String[] cmd = { "java", "-XshowSettings:properties", "-version" };
-        final List<String> output = new ArrayList<String>(1);
+    /**
+     * Executes the given {@code javaExecutable} with {@code -XshowSettings:properties -version} parameters and extracts
+     * the value of {@code java.home} from the output.
+     *
+     * @param  javaExecutable pass {@code "java"} to get {@code java} binary available in {@code PATH} environment
+     *                        variable or pass an absolute path to a {@code "java"} executable
+     * @return                a {@code java.home} value or null
+     */
+    public static String findJavaHomeFromJavaExecutable(String javaExecutable) {
+        String[] cmd = { javaExecutable, "-XshowSettings:properties", "-version" };
+        final List<String> output = new ArrayList<String>();
         exec(cmd, output);
-        List<String> javaHomeLines = output.stream().filter(l -> l.contains(" java.home = "))
-                .collect(Collectors.toList());
-        if (javaHomeLines.size() == 1) {
-            return javaHomeLines.get(0).trim().replaceFirst("java.home = ", "");
-        }
-        return null;
+        return output.stream()
+                .filter(l -> l.contains(" java.home = "))
+                .map(l -> l.substring(l.indexOf('=') + 1).trim())
+                .findFirst()
+                .orElse(null);
     }
 
     private static void exec(String[] cmd, final List<String> output) {

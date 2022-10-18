@@ -140,7 +140,7 @@ public class DaemonParameters {
                 .orEnvironmentVariable()
                 .or(new ValueSource(
                         description -> description.append("java command"),
-                        this::javaHomeFromPath))
+                        DaemonParameters::javaHomeFromPath))
                 .orFail()
                 .asPath();
         try {
@@ -150,8 +150,11 @@ public class DaemonParameters {
         }
     }
 
-    private String javaHomeFromPath() {
-        final String jHome = OsUtils.findJavaHomeFromPath();
+    private static String javaHomeFromPath() {
+        LOG.warn("Falling back to finding JAVA_HOME by running java executable available in PATH."
+                + " You may want to avoid this time consumig task by setting JAVA_HOME environment variable"
+                + " or by passing java.home system property through command line or in one of mvnd configuration files.");
+        final String jHome = OsUtils.findJavaHomeFromJavaExecutable("java");
         if (null != jHome) {
             System.setProperty(Environment.JAVA_HOME.getProperty(), jHome);
         }
