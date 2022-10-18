@@ -65,6 +65,8 @@ public class DefaultClient implements Client {
     private final DaemonParameters parameters;
 
     public static void main(String[] argv) throws Exception {
+        System.clearProperty("logback.configurationFile.fallback");
+
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
 
         // Log file

@@ -65,6 +65,7 @@
         <junit.jupiter.version>5.7.2</junit.jupiter.version>
         <logback.version>1.2.10</logback.version>
         <maven.version>3.8.6</maven.version>
+        <maven-dist.required.jdk>7</maven-dist.required.jdk><!-- maven 3.3.1+ requires JDK 1.7 -->
         <maven.resolver.version>1.7.3</maven.resolver.version>
         <slf4j.version>1.7.35</slf4j.version>
         <sisu.version>0.3.5</sisu.version>
@@ -571,6 +572,27 @@ limitations under the License.</inlineHeader>
                                     project.properties['os.detected.arch'] = osArch
                                 }
                             </source>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>build-with-jdk11+</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[11,)</version>
+                                </requireJavaVersion>
+                            </rules>
                         </configuration>
                     </execution>
                 </executions>
