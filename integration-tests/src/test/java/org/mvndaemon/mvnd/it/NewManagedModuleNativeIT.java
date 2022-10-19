@@ -62,7 +62,7 @@ public class NewManagedModuleNativeIT {
 
         /* Do the changes */
         System.gc();
-        Thread.sleep( 100 );
+        Thread.sleep(100);
         System.gc();
 
         final Path srcDir = parentDir.resolve("../changes").normalize();
