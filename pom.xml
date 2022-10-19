@@ -419,6 +419,13 @@ limitations under the License.</inlineHeader>
                         <skip>${format.skip}</skip>
                         <cachedir>${project.build.directory}/cache</cachedir>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven</groupId>
+                            <artifactId>plexus-utils</artifactId>
+                            <version>${maven.version}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
