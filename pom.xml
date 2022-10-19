@@ -66,7 +66,7 @@
         <logback.version>1.2.10</logback.version>
         <maven.version>3.8.6</maven.version>
         <maven-dist.required.jdk>7</maven-dist.required.jdk><!-- maven 3.3.1+ requires JDK 1.7 -->
-        <maven.resolver.version>1.7.3</maven.resolver.version>
+        <maven.resolver.version>1.6.3</maven.resolver.version>
         <slf4j.version>1.7.35</slf4j.version>
         <sisu.version>0.3.5</sisu.version>
 

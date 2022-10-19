@@ -115,7 +115,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>default</id>
+                        <id>default-compile</id>
                         <goals>
                             <goal>compile</goal>
                         </goals>
