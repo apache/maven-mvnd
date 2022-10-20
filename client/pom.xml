@@ -209,7 +209,7 @@
             <configuration>
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
-              <imageName>mvnd</imageName>
+              <imageName>mvnd-native-${os.detected.name}-${os.detected.arch}</imageName>
               <buildArgs>--no-server
                          --no-fallback
                          --allow-incomplete-classpath

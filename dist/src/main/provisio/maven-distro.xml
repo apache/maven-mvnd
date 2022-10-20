@@ -94,8 +94,8 @@
     </fileSet>
     <fileSet to="/bin">
         <directory path="${basedir}/../client/target">
-            <include>mvnd</include>
-            <include>mvnd.exe</include>
+            <include>mvnd-native-${os.detected.name}-${os.detected.arch}</include>
+            <include>mvnd-native-${os.detected.name}-${os.detected.arch}.exe</include>
         </directory>
     </fileSet>
 

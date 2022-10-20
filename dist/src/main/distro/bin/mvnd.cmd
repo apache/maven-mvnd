@@ -25,6 +25,9 @@
 @REM   MAVEN_BATCH_PAUSE (Optional) set to 'on' to wait for a key stroke before ending.
 @REM   MAVEN_OPTS        (Optional) Java runtime options used when Maven is executed.
 @REM   MAVEN_SKIP_RC     (Optional) Flag to disable loading of mavenrc files.
+@REM   MVND_ENTRY_FALLBACK (Optional) Flag to disable fallback to pure java mvnd,
+@REM                       default 'true' enable the fallback,
+@REM                       set to 'false' to force execute the native mvnd.
 @REM -----------------------------------------------------------------------------
 
 @REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'
@@ -42,6 +45,19 @@ if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd" %*
 @setlocal
 
 set ERROR_CODE=0
+
+@REM try execute native image
+set "MVND_CMD=%~dp0\mvnd-native-windows-%PROCESSOR_ARCHITECTURE:x64=amd64%.exe"
+if not exist "%MVND_CMD%" goto noNativeImage
+"%MVND_CMD%" %*
+if ERRORLEVEL 1 goto error
+goto end
+:noNativeImage
+if not "%MVND_ENTRY_FALLBACK%"=="false" goto fallback
+echo Cannot run native mvnd %MVND_CMD%! >&2
+goto error
+:fallback
+@REM fallback to pure java version
 
 @REM ==== START VALIDATION ====
 if not "%JAVA_HOME%"=="" goto OkJHome
