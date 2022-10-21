@@ -148,7 +148,8 @@ public class DefaultClient implements Client {
 
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();
-        try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
+        try (TerminalOutput output = new TerminalOutput(
+                noBuffering, parameters.rollingWindowSize(), logFile, parameters.preserveProjectLog())) {
             try {
                 final ExecutionResult result = new DefaultClient(parameters).execute(output, args);
                 exitCode = result.getExitCode();

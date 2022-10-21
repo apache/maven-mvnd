@@ -122,6 +122,8 @@ public enum Environment {
     MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "mvn:-D", "mvn:--define"),
     /** Whether the output should be styled using ANSI color codes; possible values: auto, always, never */
     MAVEN_COLOR("style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
+    /** Keep stdout/stderr log undecorated when not in --raw-streams mode. */
+    MVND_PRESERVE_PROJECT_LOG("mvnd.preserveProjectLog", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.OPTIONAL),
 
     //
     // mvnd properties

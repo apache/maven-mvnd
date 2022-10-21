@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -96,6 +97,8 @@ public class TerminalOutput implements ClientOutput {
     private static final AttributedStyle GREEN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.GREEN);
     private static final AttributedStyle CYAN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.CYAN);
 
+    private static final Pattern PROJECT_LOG_DECO_PATTERN = Pattern.compile("^\\[[^\\]]*\\] \\[(stdout|stderr)\\] ");
+
     private final Terminal terminal;
     private final Terminal.SignalHandler previousIntHandler;
     private final Display display;
@@ -140,6 +143,7 @@ public class TerminalOutput implements ClientOutput {
     private String buildStatus;
     private boolean displayDone = false;
     private boolean noBuffering;
+    private boolean preserveProjectLog;
 
     /**
      * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
@@ -155,7 +159,8 @@ public class TerminalOutput implements ClientOutput {
         }
     }
 
-    public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
+    public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile, boolean preserveProjectLog)
+            throws IOException {
         this.start = System.currentTimeMillis();
         TerminalBuilder builder = TerminalBuilder.builder();
         boolean outRedirected = CLibrary.isatty(1) == 0;
@@ -165,6 +170,7 @@ public class TerminalOutput implements ClientOutput {
         this.terminal = builder.build();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
+        this.preserveProjectLog = preserveProjectLog;
         this.linesPerProject = rollingWindowSize;
         terminal.enterRawMode();
         Thread mainThread = Thread.currentThread();
@@ -380,18 +386,19 @@ public class TerminalOutput implements ClientOutput {
             case Message.PROJECT_LOG_MESSAGE: {
                 final ProjectEvent bm = (ProjectEvent) entry;
                 final Project prj = projects.get(bm.getProjectId());
+                String msg = bm.getMessage();
+                if (preserveProjectLog) {
+                    msg = PROJECT_LOG_DECO_PATTERN.matcher(msg).replaceFirst("");
+                }
                 if (prj == null) {
-                    log.accept(bm.getMessage());
+                    log.accept(msg);
                 } else if (noBuffering || dumb) {
-                    String msg;
                     if (maxThreads > 1) {
-                        msg = String.format("[%s] %s", bm.getProjectId(), bm.getMessage());
-                    } else {
-                        msg = bm.getMessage();
+                        msg = String.format("[%s] %s", bm.getProjectId(), msg);
                     }
                     log.accept(msg);
                 } else {
-                    prj.log.add(bm.getMessage());
+                    prj.log.add(msg);
                 }
                 break;
             }

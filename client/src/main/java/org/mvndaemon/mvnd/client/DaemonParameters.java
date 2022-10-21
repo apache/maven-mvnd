@@ -321,6 +321,16 @@ public class DaemonParameters {
     }
 
     /**
+     * @return <code>true</code> if the stdout/stderr project log should be preserved.
+     */
+    public boolean preserveProjectLog() {
+        return value(Environment.MVND_PRESERVE_PROJECT_LOG)
+                .orSystemProperty()
+                .orDefault()
+                .asBoolean();
+    }
+
+    /**
      * @param  newUserDir where to change the current directory to
      * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
