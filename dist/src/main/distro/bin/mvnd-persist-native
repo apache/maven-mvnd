@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+set -eu
+
+# full qualified mvnd bin dir
+MVND_BIN=$(cd -- "${0%/*}" && pwd)
+
+__MVND_ALREADY_OPTIMIZED=true
+find "$MVND_BIN" -name 'mvnd-generic*' | grep -q mvnd- || __MVND_ALREADY_OPTIMIZED=false
+
+__MVND_FORCE_NATIVE_OK=true
+MVND_ENTRY_FALLBACK=false "$MVND_BIN/mvnd" --status >/dev/null 2>/dev/null || __MVND_FORCE_NATIVE_OK=false
+
+case "$__MVND_ALREADY_OPTIMIZED:$__MVND_FORCE_NATIVE_OK" in
+(true:true) exit 0 ;;
+(true:false)
+  echo "Native image does not work, but should work!" >&2
+  exit 1
+  ;;
+(false:true) ;; # should move native image as 'mvnd'
+(false:false)
+  echo "Keep using the generic entry script."
+  exit 0
+  ;;
+esac
+
+MVND_NATIVE=$(echo "$MVND_BIN"/mvnd-native-*)
+
+if [ ! -x "$MVND_NATIVE" ]; then
+  echo "Cannot find native image at '$MVND_NATIVE'" >&2
+  exit 1
+fi
+
+mv -f -- "$MVND_BIN/mvnd" "$MVND_BIN/mvnd-generic"
+if [ -f "$MVND_BIN/mvnd.cmd" ]; then
+  mv -f -- "$MVND_BIN/mvnd.cmd" "$MVND_BIN/mvnd-generic.cmd"
+fi
+
+mv -f -- "$MVND_NATIVE" "$MVND_BIN/mvnd"
+cat >"$MVND_NATIVE" <<-END
+	#!/bin/sh
+	exec "$MVND_BIN/mvnd" "\$@"
+	END
+
+chmod +x "$MVND_NATIVE"
