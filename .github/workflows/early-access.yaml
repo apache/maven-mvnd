@@ -68,7 +68,7 @@ jobs:
               output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
               objcopy --redefine-syms=client/target/glibc.redef -- "$input" "$output" 2>/dev/null
             done
-            find /usr -name libz.a | xargs -r -I {} objcopy --redefine-syms=client/target/glibc.redef {} client/target/graalvm-libs-for-glibc-2.12/libz.a
+            find /usr/lib -name libz.a | xargs -r -I {} objcopy --redefine-syms=client/target/glibc.redef {} client/target/graalvm-libs-for-glibc-2.12/libz.a
           fi
 
       - name: 'Build native distribution'
