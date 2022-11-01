@@ -66,9 +66,9 @@ jobs:
             echo "posix_spawn posix_spawn@GLIBC_2.2.5" >>client/target/glibc.redef
             find "$GRAALVM_HOME/lib/static/linux-amd64/glibc" -name '*.a' | while IFS= read -r input; do
               output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
-              objcopy --redefine-syms=client/target/glibc.redef -- "$input" "$output"
+              objcopy --redefine-syms=client/target/glibc.redef -- "$input" "$output" 2>/dev/null
             done
-            find /usr -name libz.a | head -n 1 | xargs -r -I {} objcopy --redefine-syms=client/target/glibc.redef {} client/target/graalvm-libs-for-glibc-2.12/libz.a
+            find /usr -name libz.a | xargs -r -I {} objcopy --redefine-syms=client/target/glibc.redef {} client/target/graalvm-libs-for-glibc-2.12/libz.a
           fi
 
       - name: 'Build native distribution'
