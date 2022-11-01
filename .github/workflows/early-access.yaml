@@ -57,6 +57,9 @@ jobs:
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: 'Maven clean'
+        run: ./mvnw clean -Dmrm=false -B -ntp -e
+
       - name: 'Patch Graal libs for only requiring glibc 2.12'
         shell: bash
         run: |
@@ -72,7 +75,7 @@ jobs:
           fi
 
       - name: 'Build native distribution'
-        run: ./mvnw clean verify -Pnative -Dmrm=false -B -ntp -e
+        run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e
 
       - name: 'Upload daemon test logs'
         if: always()
