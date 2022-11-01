@@ -33,6 +33,8 @@
   <properties>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
+    <graalvm-native-static-opt/>
+    <graalvm-native-glibc-opt/>
   </properties>
 
   <dependencies>
@@ -134,8 +136,34 @@
 
   <profiles>
     <profile>
-      <id>native</id>
+      <id>enable-partial-static-native</id>
+      <activation>
+        <os>
+          <family>!mac</family>
+        </os>
+      </activation>
+      <properties>
+        <graalvm-native-static-opt>-H:+StaticExecutableWithDynamicLibC</graalvm-native-static-opt>
+      </properties>
+    </profile>
 
+    <profile>
+      <id>linux-image-only-require-glibc-2.12</id>
+      <activation>
+        <os>
+          <family>linux</family>
+        </os>
+        <file>
+          <exists>target/graalvm-libs-for-glibc-2.12</exists>
+        </file>
+      </activation>
+      <properties>
+        <graalvm-native-glibc-opt>-H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</graalvm-native-glibc-opt>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>native</id>
       <build>
         <plugins>
           <plugin>
@@ -146,13 +174,16 @@
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
               <buildArgs>--no-server
-                                --no-fallback
-                                --allow-incomplete-classpath
-                                -H:IncludeResources=org/mvndaemon/mvnd/.*
-                                -H:IncludeResources=mvnd-bash-completion.bash
-                                -H:-ParseRuntimeOptions
-                                -H:+AddAllCharsets
-                                -ea</buildArgs>
+                         --no-fallback
+                         --allow-incomplete-classpath
+                         ${graalvm-native-static-opt}
+                         ${graalvm-native-glibc-opt}
+                         -H:IncludeResources=org/mvndaemon/mvnd/.*
+                         -H:IncludeResources=mvnd-bash-completion.bash
+                         -H:-ParseRuntimeOptions
+                         -H:+AddAllCharsets
+                         -H:+ReportExceptionStackTraces
+                         -ea</buildArgs>
             </configuration>
             <executions>
               <execution>
