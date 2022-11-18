@@ -453,13 +453,6 @@ limitations under the License.</inlineHeader>
                             <artifactId>groovy-all</artifactId>
                             <version>${groovy.version}</version>
                             <type>pom</type>
-                            <exclusions>
-                                <exclusion>
-                                    <!-- groovy-testng depends on testng 7.2.0 wich is not on maven central -->
-                                    <groupId>org.codehaus.groovy</groupId>
-                                    <artifactId>groovy-testng</artifactId>
-                                </exclusion>
-                            </exclusions>
                         </dependency>
                     </dependencies>
                 </plugin>
