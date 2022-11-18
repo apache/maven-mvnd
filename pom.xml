@@ -58,7 +58,7 @@
         <commons-compress.version>1.21</commons-compress.version>
         <graalvm.version>22.2.0</graalvm.version>
         <graalvm.plugin.version>0.9.13</graalvm.plugin.version>
-        <groovy.version>3.0.9</groovy.version>
+        <groovy.version>4.0.6</groovy.version>
         <jakarta.inject.version>1.0</jakarta.inject.version>
         <jansi.version>2.4.0</jansi.version>
         <jline.version>3.21.0</jline.version>
@@ -73,7 +73,7 @@
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
         <compiler.version>3.8.1</compiler.version>
         <formatter-maven-plugin.version>2.15.0</formatter-maven-plugin.version>
-        <groovy-maven-plugin.version>2.1.1</groovy-maven-plugin.version>
+        <groovy-maven-plugin.version>2.1.0</groovy-maven-plugin.version>
         <impsort-maven-plugin.version>1.6.0</impsort-maven-plugin.version>
         <license-maven-plugin.version>3.0</license-maven-plugin.version>
         <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
@@ -140,7 +140,7 @@
             </dependency>
 
             <dependency>
-                <groupId>org.codehaus.groovy</groupId>
+                <groupId>org.apache.groovy</groupId>
                 <artifactId>groovy</artifactId>
                 <version>${groovy.version}</version>
             </dependency>
@@ -444,22 +444,15 @@ limitations under the License.</inlineHeader>
                     <version>${maven-shade-plugin.version}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.codehaus.gmaven</groupId>
-                    <artifactId>groovy-maven-plugin</artifactId>
+                    <groupId>org.codehaus.gmavenplus</groupId>
+                    <artifactId>gmavenplus-plugin</artifactId>
                     <version>${groovy-maven-plugin.version}</version>
                     <dependencies>
                         <dependency>
-                            <groupId>org.codehaus.groovy</groupId>
+                            <groupId>org.apache.groovy</groupId>
                             <artifactId>groovy-all</artifactId>
                             <version>${groovy.version}</version>
                             <type>pom</type>
-                            <exclusions>
-                                <exclusion>
-                                    <!-- groovy-testng depends on testng 7.2.0 wich is not on maven central -->
-                                    <groupId>org.codehaus.groovy</groupId>
-                                    <artifactId>groovy-testng</artifactId>
-                                </exclusion>
-                            </exclusions>
                         </dependency>
                     </dependencies>
                 </plugin>
