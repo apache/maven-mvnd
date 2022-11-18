@@ -28,7 +28,7 @@ import org.mvndaemon.mvnd.common.Message.Prompt;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/single-module")
-@Timeout(60)
+@Timeout(300)
 public class InteractiveTest {
 
     @Inject
