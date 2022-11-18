@@ -469,14 +469,17 @@ public class TerminalOutput implements ClientOutput {
         try {
             while (!closing) {
                 if (readInput.readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
-                    int c = terminal.reader().read(10);
-                    if (c == -1) {
-                        break;
+                    try {
+                        int c = terminal.reader().read(10);
+                        if (c == -1) {
+                            break;
+                        }
+                        if (c == KEY_PLUS || c == KEY_MINUS || c == KEY_CTRL_L || c == KEY_CTRL_M || c == KEY_CTRL_B) {
+                            daemonReceive.accept(Message.keyboardInput((char) c));
+                        }
+                    } finally {
+                        readInput.readLock().unlock();
                     }
-                    if (c == KEY_PLUS || c == KEY_MINUS || c == KEY_CTRL_L || c == KEY_CTRL_M || c == KEY_CTRL_B) {
-                        daemonReceive.accept(Message.keyboardInput((char) c));
-                    }
-                    readInput.readLock().unlock();
                 }
             }
         } catch (InterruptedException e) {
