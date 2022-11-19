@@ -108,13 +108,6 @@
         <tag>head</tag>
     </scm>
 
-    <repositories>
-        <repository>
-            <id>maven4</id>
-            <url>https://repository.apache.org/content/repositories/maven-1811/</url>
-        </repository>
-    </repositories>
-
     <dependencyManagement>
         <dependencies>
 
