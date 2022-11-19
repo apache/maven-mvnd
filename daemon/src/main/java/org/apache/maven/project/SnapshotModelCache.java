@@ -22,9 +22,9 @@ public class SnapshotModelCache implements ModelCache {
     private final ModelCache globalCache;
     private final ModelCache reactorCache;
 
-    public SnapshotModelCache(ModelCache globalCache) {
+    public SnapshotModelCache(ModelCache globalCache, ModelCache reactorCache) {
         this.globalCache = globalCache;
-        this.reactorCache = new ReactorModelCache();
+        this.reactorCache = reactorCache;
     }
 
     @Override

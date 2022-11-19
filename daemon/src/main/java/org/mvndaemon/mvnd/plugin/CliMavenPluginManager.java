@@ -47,13 +47,11 @@ import org.apache.maven.classrealm.ClassRealmManager;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.scope.internal.MojoExecutionScopeModule;
 import org.apache.maven.model.Plugin;
-import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.plugin.ContextEnabled;
 import org.apache.maven.plugin.DebugConfigurationListener;
 import org.apache.maven.plugin.ExtensionRealmCache;
 import org.apache.maven.plugin.InvalidPluginDescriptorException;
 import org.apache.maven.plugin.MavenPluginManager;
-import org.apache.maven.plugin.MavenPluginValidator;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoNotFoundException;
@@ -72,6 +70,7 @@ import org.apache.maven.plugin.descriptor.MojoDescriptor;
 import org.apache.maven.plugin.descriptor.Parameter;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugin.descriptor.PluginDescriptorBuilder;
+import org.apache.maven.plugin.internal.MojoLogWrapper;
 import org.apache.maven.plugin.internal.PluginDependenciesResolver;
 import org.apache.maven.plugin.version.DefaultPluginVersionRequest;
 import org.apache.maven.plugin.version.PluginVersionRequest;
@@ -97,7 +96,6 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.configuration.PlexusConfiguration;
 import org.codehaus.plexus.configuration.PlexusConfigurationException;
 import org.codehaus.plexus.configuration.xml.XmlPlexusConfiguration;
-import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.logging.LoggerManager;
 import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.StringUtils;
@@ -112,6 +110,8 @@ import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginDescriptorCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * gnodet: This file is based on maven DefaultMavenPluginManager and changed in order
@@ -143,8 +143,7 @@ public class CliMavenPluginManager
      */
     public static final String KEY_EXTENSIONS_REALMS = CliMavenPluginManager.class.getName() + "/extensionsRealms";
 
-    @Inject
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Inject
     private LoggerManager loggerManager;
@@ -236,18 +235,31 @@ public class CliMavenPluginManager
             throw new PluginDescriptorParsingException(plugin, pluginFile.getAbsolutePath(), e);
         }
 
-        MavenPluginValidator validator = new MavenPluginValidator(pluginArtifact);
+        List<String> errors = new ArrayList<>();
+        validate(pluginArtifact, pluginDescriptor, errors);
 
-        validator.validate(pluginDescriptor);
-
-        if (validator.hasErrors()) {
+        if (!errors.isEmpty()) {
             throw new InvalidPluginDescriptorException(
-                    "Invalid plugin descriptor for " + plugin.getId() + " (" + pluginFile + ")", validator.getErrors());
+                    "Invalid plugin descriptor for " + plugin.getId() + " (" + pluginFile + ")", errors);
         }
 
         pluginDescriptor.setPluginArtifact(pluginArtifact);
 
         return pluginDescriptor;
+    }
+
+    private void validate(Artifact pluginArtifact, PluginDescriptor pluginDescriptor, List<String> errors) {
+        if (!pluginArtifact.getGroupId().equals(pluginDescriptor.getGroupId())) {
+            errors.add("Plugin's descriptor contains the wrong group ID: " + pluginDescriptor.getGroupId());
+        }
+
+        if (!pluginArtifact.getArtifactId().equals(pluginDescriptor.getArtifactId())) {
+            errors.add("Plugin's descriptor contains the wrong artifact ID: " + pluginDescriptor.getArtifactId());
+        }
+
+        if (!pluginArtifact.getBaseVersion().equals(pluginDescriptor.getVersion())) {
+            errors.add("Plugin's descriptor contains the wrong version: " + pluginDescriptor.getVersion());
+        }
     }
 
     private String getPluginDescriptorLocation() {
@@ -516,8 +528,8 @@ public class CliMavenPluginManager
             }
 
             if (mojo instanceof Mojo) {
-                Logger mojoLogger = loggerManager.getLoggerForComponent(mojoDescriptor.getImplementation());
-                ((Mojo) mojo).setLog(new DefaultLog(mojoLogger));
+                org.slf4j.Logger mojoLogger = LoggerFactory.getLogger(mojoDescriptor.getImplementation());
+                ((Mojo) mojo).setLog(new MojoLogWrapper(mojoLogger));
             }
 
             Xpp3Dom dom = mojoExecution.getConfiguration();

@@ -61,6 +61,10 @@ public class NewManagedModuleNativeIT {
         registry.awaitIdle(d.getId());
 
         /* Do the changes */
+        System.gc();
+        Thread.sleep(100);
+        System.gc();
+
         final Path srcDir = parentDir.resolve("../changes").normalize();
         try (Stream<Path> files = Files.walk(srcDir)) {
             files.forEach(source -> {
