@@ -13,12 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mvndaemon.mvnd.syncontext;
+package org.apache.maven.internal;
 
-import java.util.Map;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -28,7 +24,7 @@ import javax.inject.Singleton;
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -37,25 +33,32 @@ import javax.inject.Singleton;
  * specific language governing permissions and limitations
  * under the License.
  */
-import org.eclipse.aether.internal.impl.synccontext.named.FileGAVNameMapper;
-import org.eclipse.aether.internal.impl.synccontext.named.NameMapper;
-import org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactorySelectorSupport;
-import org.eclipse.aether.named.NamedLockFactory;
-import org.eclipse.aether.named.providers.FileLockNamedLockFactory;
-import org.eclipse.sisu.Priority;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.sisu.EagerSingleton;
+
+import static java.util.Objects.requireNonNull;
 
 /**
- * Mvnd selector implementation: it differs from
- * {@link org.eclipse.aether.internal.impl.synccontext.named.SimpleNamedLockFactorySelector} only by default values.
+ * Maven internal component that bridges container "shut down" to {@link RepositorySystem#shutdown()}.
+ *
+ * @since TBD
  */
-@Singleton
 @Named
-@Priority(10)
-public final class DaemonNamedLockFactorySelector
-        extends NamedLockFactorySelectorSupport {
+@EagerSingleton
+public final class ResolverLifecycle {
+    private final Provider<RepositorySystem> repositorySystemProvider;
+
     @Inject
-    public DaemonNamedLockFactorySelector(final Map<String, NamedLockFactory> factories,
-            final Map<String, NameMapper> nameMappers) {
-        super(factories, FileLockNamedLockFactory.NAME, nameMappers, FileGAVNameMapper.NAME);
+    public ResolverLifecycle(Provider<RepositorySystem> repositorySystemProvider) {
+        this.repositorySystemProvider = requireNonNull(repositorySystemProvider);
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        repositorySystemProvider.get().shutdown();
     }
 }

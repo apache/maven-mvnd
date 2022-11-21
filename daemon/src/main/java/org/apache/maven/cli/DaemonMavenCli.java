@@ -89,6 +89,8 @@ import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.codehaus.plexus.util.StringUtils;
+import org.eclipse.aether.internal.impl.synccontext.named.providers.FileGAVNameMapperProvider;
+import org.eclipse.aether.named.providers.FileLockNamedLockFactory;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
@@ -495,7 +497,7 @@ public class DaemonMavenCli {
 
         ContainerConfiguration cc = new DefaultContainerConfiguration().setClassWorld(classWorld)
                 .setRealm(containerRealm).setClassPathScanning(PlexusConstants.SCANNING_INDEX).setAutoWiring(true)
-                .setJSR250Lifecycle(true).setName("maven");
+                .setJSR250Lifecycle(true).setName("maven").setContext(containerContext());
 
         Set<String> exportedArtifacts = new HashSet<>(coreEntry.getExportedArtifacts());
         Set<String> exportedPackages = new HashSet<>(coreEntry.getExportedPackages());
@@ -548,7 +550,8 @@ public class DaemonMavenCli {
                     .setClassPathScanning(PlexusConstants.SCANNING_INDEX) //
                     .setAutoWiring(true) //
                     .setJSR250Lifecycle(true) //
-                    .setName("maven");
+                    .setName("maven")
+                    .setContext(containerContext());
 
             DefaultPlexusContainer container = new DefaultPlexusContainer(cc, new AbstractModule() {
                 @Override
@@ -589,6 +592,29 @@ public class DaemonMavenCli {
             slf4jLogger.warn("Failed to load extensions descriptor {}: {}", extensions, e.getMessage());
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Note: this method is needed only for Resolver 1.9.0. Later versions does not rely on this feature (Sisu params
+     * ctor injection), it is reverted, and hence, all this will be unneeded.
+     * <p>
+     * This merely provides the (alternate) defaults required by mvnd, to be able to let users override this, CLI
+     * request would be needed here, but as container is constructed early, unsure how to do it.
+     */
+    private Map<Object, Object> containerContext() {
+        // Two things happen here:
+        // 1st) we always provide (alternate) defaults here, unless
+        // 2nd) user overrides them (we could only if we'd have access to cli)
+
+        // aether.syncContext.named.factory
+        String factory = FileLockNamedLockFactory.NAME;
+        // aether.syncContext.named.nameMapper
+        String nameMapper = FileGAVNameMapperProvider.NAME;
+
+        HashMap<Object, Object> result = new HashMap<>();
+        result.put("aether.syncContext.named.factory", factory);
+        result.put("aether.syncContext.named.nameMapper", nameMapper);
+        return result;
     }
 
     private ClassRealm setupContainerRealm(ClassWorld classWorld, ClassRealm coreRealm, List<File> extClassPath,
