@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -17,6 +17,9 @@
  * under the License.
  */
 package org.apache.maven.cli;
+
+import static java.util.Comparator.comparing;
+import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 
 import com.google.inject.AbstractModule;
 import java.io.File;
@@ -110,9 +113,6 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
-import static java.util.Comparator.comparing;
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
-
 /**
  * File origin:
  * https://github.com/apache/maven/blob/maven-3.6.2/maven-embedder/src/main/java/org/apache/maven/cli/MavenCli.java
@@ -130,7 +130,8 @@ public class DaemonMavenCli {
 
     public static final File DEFAULT_USER_TOOLCHAINS_FILE = new File(USER_MAVEN_CONFIGURATION_HOME, "toolchains.xml");
 
-    public static final File DEFAULT_GLOBAL_TOOLCHAINS_FILE = new File(System.getProperty("maven.conf"), "toolchains.xml");
+    public static final File DEFAULT_GLOBAL_TOOLCHAINS_FILE =
+            new File(System.getProperty("maven.conf"), "toolchains.xml");
 
     private static final String EXT_CLASS_PATH = "maven.ext.class.path";
 
@@ -193,14 +194,15 @@ public class DaemonMavenCli {
         toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
         dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
         executionListener = container.lookup(LoggingExecutionListener.class);
-
     }
 
-    public int main(List<String> arguments,
+    public int main(
+            List<String> arguments,
             String workingDirectory,
             String projectDirectory,
             Map<String, String> clientEnv,
-            BuildEventListener buildEventListener) throws Exception {
+            BuildEventListener buildEventListener)
+            throws Exception {
         this.buildEventListener = buildEventListener;
         try {
             CliRequest req = new CliRequest(null, null);
@@ -241,8 +243,7 @@ public class DaemonMavenCli {
         }
     }
 
-    void initialize(CliRequest cliRequest)
-            throws ExitException {
+    void initialize(CliRequest cliRequest) throws ExitException {
         cliRequest.classWorld = classWorld;
 
         if (cliRequest.workingDirectory == null) {
@@ -250,15 +251,13 @@ public class DaemonMavenCli {
         }
 
         if (cliRequest.multiModuleProjectDirectory == null) {
-            buildEventListener.log(String.format(
-                    "-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY));
+            buildEventListener.log(String.format("-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY));
             throw new ExitException(1);
         }
         System.setProperty("maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString());
     }
 
-    void cli(CliRequest cliRequest)
-            throws Exception {
+    void cli(CliRequest cliRequest) throws Exception {
         CLIManager cliManager = newCLIManager();
 
         List<String> args = new ArrayList<>();
@@ -307,10 +306,15 @@ public class DaemonMavenCli {
 
     private CLIManager newCLIManager() {
         CLIManager cliManager = new CLIManager();
-        cliManager.options.addOption(Option.builder(RESUME).longOpt("resume").desc("Resume reactor from " +
-                "the last failed project, using the resume.properties file in the build directory").build());
-        cliManager.options.addOption(Option.builder().longOpt(RAW_STREAMS).desc("Do not decorate output and " +
-                "error streams").build());
+        cliManager.options.addOption(Option.builder(RESUME)
+                .longOpt("resume")
+                .desc("Resume reactor from "
+                        + "the last failed project, using the resume.properties file in the build directory")
+                .build());
+        cliManager.options.addOption(Option.builder()
+                .longOpt(RAW_STREAMS)
+                .desc("Do not decorate output and " + "error streams")
+                .build());
         return cliManager;
     }
 
@@ -378,8 +382,8 @@ public class DaemonMavenCli {
         }
 
         // Workaround for https://github.com/apache/maven-mvnd/issues/39
-        final ch.qos.logback.classic.Logger mvndLogger = (ch.qos.logback.classic.Logger) slf4jLoggerFactory
-                .getLogger("org.mvndaemon.mvnd");
+        final ch.qos.logback.classic.Logger mvndLogger =
+                (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("org.mvndaemon.mvnd");
         mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level"), null));
 
         // LOG STREAMS
@@ -398,8 +402,10 @@ public class DaemonMavenCli {
                 //
             }
         } else if (!cliRequest.commandLine.hasOption(RAW_STREAMS)) {
-            ch.qos.logback.classic.Logger stdout = (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stdout");
-            ch.qos.logback.classic.Logger stderr = (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stderr");
+            ch.qos.logback.classic.Logger stdout =
+                    (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stdout");
+            ch.qos.logback.classic.Logger stderr =
+                    (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stderr");
             stdout.setLevel(ch.qos.logback.classic.Level.INFO);
             stderr.setLevel(ch.qos.logback.classic.Level.INFO);
             System.setOut(new LoggingOutputStream(s -> stdout.info("[stdout] " + s)).printStream());
@@ -447,8 +453,8 @@ public class DaemonMavenCli {
         }
     }
 
-    //Needed to make this method package visible to make writing a unit test possible
-    //Maybe it's better to move some of those methods to separate class (SoC).
+    // Needed to make this method package visible to make writing a unit test possible
+    // Maybe it's better to move some of those methods to separate class (SoC).
     void properties(CliRequest cliRequest) {
         populateProperties(cliRequest.commandLine, cliRequest.systemProperties, cliRequest.userProperties);
     }
@@ -463,22 +469,21 @@ public class DaemonMavenCli {
         eventSpyDispatcher.init(() -> data);
     }
 
-    DefaultPlexusContainer container()
-            throws Exception {
+    DefaultPlexusContainer container() throws Exception {
         ClassRealm coreRealm = classWorld.getClassRealm("plexus.core");
         if (coreRealm == null) {
             coreRealm = classWorld.getRealms().iterator().next();
         }
 
-        List<File> extClassPath = Stream
-                .of(Environment.MVND_EXT_CLASSPATH.asString().split(","))
+        List<File> extClassPath = Stream.of(
+                        Environment.MVND_EXT_CLASSPATH.asString().split(","))
                 .map(File::new)
                 .collect(Collectors.toList());
 
         CoreExtensionEntry coreEntry = CoreExtensionEntry.discoverFrom(coreRealm);
 
-        List<CoreExtension> extensions = Stream
-                .of(Environment.MVND_CORE_EXTENSIONS.asString().split(";"))
+        List<CoreExtension> extensions = Stream.of(
+                        Environment.MVND_CORE_EXTENSIONS.asString().split(";"))
                 .filter(s -> s != null && !s.isEmpty())
                 .map(s -> {
                     String[] parts = s.split(":");
@@ -489,13 +494,17 @@ public class DaemonMavenCli {
                     return ce;
                 })
                 .collect(Collectors.toList());
-        List<CoreExtensionEntry> extensionsEntries = loadCoreExtensions(extensions, coreRealm,
-                coreEntry.getExportedArtifacts());
+        List<CoreExtensionEntry> extensionsEntries =
+                loadCoreExtensions(extensions, coreRealm, coreEntry.getExportedArtifacts());
         ClassRealm containerRealm = setupContainerRealm(classWorld, coreRealm, extClassPath, extensionsEntries);
 
-        ContainerConfiguration cc = new DefaultContainerConfiguration().setClassWorld(classWorld)
-                .setRealm(containerRealm).setClassPathScanning(PlexusConstants.SCANNING_INDEX).setAutoWiring(true)
-                .setJSR250Lifecycle(true).setName("maven");
+        ContainerConfiguration cc = new DefaultContainerConfiguration()
+                .setClassWorld(classWorld)
+                .setRealm(containerRealm)
+                .setClassPathScanning(PlexusConstants.SCANNING_INDEX)
+                .setAutoWiring(true)
+                .setJSR250Lifecycle(true)
+                .setName("maven");
 
         Set<String> exportedArtifacts = new HashSet<>(coreEntry.getExportedArtifacts());
         Set<String> exportedPackages = new HashSet<>(coreEntry.getExportedPackages());
@@ -530,14 +539,16 @@ public class DaemonMavenCli {
         container.setLoggerManager(plexusLoggerManager);
 
         for (CoreExtensionEntry extension : extensionsEntries) {
-            container.discoverComponents(extension.getClassRealm(), new SessionScopeModule(container),
+            container.discoverComponents(
+                    extension.getClassRealm(),
+                    new SessionScopeModule(container),
                     new MojoExecutionScopeModule(container));
         }
         return container;
     }
 
-    private List<CoreExtensionEntry> loadCoreExtensions(List<CoreExtension> extensions, ClassRealm containerRealm,
-            Set<String> providedArtifacts) {
+    private List<CoreExtensionEntry> loadCoreExtensions(
+            List<CoreExtension> extensions, ClassRealm containerRealm, Set<String> providedArtifacts) {
         try {
             if (extensions.isEmpty()) {
                 return Collections.emptyList();
@@ -565,19 +576,24 @@ public class DaemonMavenCli {
                 container.getLoggerManager().setThresholds(cliRequest.request.getLoggingLevel());
                 Thread.currentThread().setContextClassLoader(container.getContainerRealm());
                 executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
-                final Map<String, ConfigurationProcessor> configurationProcessors = container
-                        .lookupMap(ConfigurationProcessor.class);
+                final Map<String, ConfigurationProcessor> configurationProcessors =
+                        container.lookupMap(ConfigurationProcessor.class);
                 final EventSpyDispatcher eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
                 properties(cliRequest);
                 configure(cliRequest, eventSpyDispatcher, configurationProcessors);
                 LoggingExecutionListener executionListener = container.lookup(LoggingExecutionListener.class);
-                populateRequest(cliRequest, cliRequest.request, eventSpyDispatcher,
-                        container.lookup(ModelProcessor.class), createTransferListener(cliRequest), buildEventListener,
+                populateRequest(
+                        cliRequest,
+                        cliRequest.request,
+                        eventSpyDispatcher,
+                        container.lookup(ModelProcessor.class),
+                        createTransferListener(cliRequest),
+                        buildEventListener,
                         executionListener);
                 executionRequestPopulator.populateDefaults(cliRequest.request);
                 BootstrapCoreExtensionManager resolver = container.lookup(BootstrapCoreExtensionManager.class);
-                return Collections
-                        .unmodifiableList(resolver.loadCoreExtensions(cliRequest.request, providedArtifacts, extensions));
+                return Collections.unmodifiableList(
+                        resolver.loadCoreExtensions(cliRequest.request, providedArtifacts, extensions));
             } finally {
                 executionRequestPopulator = null;
                 container.dispose();
@@ -591,8 +607,9 @@ public class DaemonMavenCli {
         return Collections.emptyList();
     }
 
-    private ClassRealm setupContainerRealm(ClassWorld classWorld, ClassRealm coreRealm, List<File> extClassPath,
-            List<CoreExtensionEntry> extensions) throws Exception {
+    private ClassRealm setupContainerRealm(
+            ClassWorld classWorld, ClassRealm coreRealm, List<File> extClassPath, List<CoreExtensionEntry> extensions)
+            throws Exception {
         if (!extClassPath.isEmpty() || !extensions.isEmpty()) {
             ClassRealm extRealm = classWorld.newRealm("maven.ext", null);
             extRealm.setParentRealm(coreRealm);
@@ -647,8 +664,7 @@ public class DaemonMavenCli {
     //
     // This should probably be a separate tool and not be baked into Maven.
     //
-    private void encryption(CliRequest cliRequest)
-            throws Exception {
+    private void encryption(CliRequest cliRequest) throws Exception {
         if (cliRequest.commandLine.hasOption(CLIManager.ENCRYPT_MASTER_PASSWORD)) {
             throw new UnsupportedOperationException("Unsupported option: " + CLIManager.ENCRYPT_MASTER_PASSWORD);
         } else if (cliRequest.commandLine.hasOption(CLIManager.ENCRYPT_PASSWORD)) {
@@ -656,10 +672,9 @@ public class DaemonMavenCli {
         }
     }
 
-    private void repository(CliRequest cliRequest)
-            throws Exception {
-        if (cliRequest.commandLine.hasOption(CLIManager.LEGACY_LOCAL_REPOSITORY) || Boolean.getBoolean(
-                "maven.legacyLocalRepo")) {
+    private void repository(CliRequest cliRequest) throws Exception {
+        if (cliRequest.commandLine.hasOption(CLIManager.LEGACY_LOCAL_REPOSITORY)
+                || Boolean.getBoolean("maven.legacyLocalRepo")) {
             cliRequest.request.setUseLegacyLocalRepository(true);
         }
     }
@@ -668,8 +683,7 @@ public class DaemonMavenCli {
         EnvHelper.environment(workingDir, clientEnv);
     }
 
-    private int execute(CliRequest cliRequest)
-            throws MavenExecutionRequestPopulationException {
+    private int execute(CliRequest cliRequest) throws MavenExecutionRequestPopulationException {
         commands(cliRequest);
 
         MavenExecutionRequest request = executionRequestPopulator.populateDefaults(cliRequest.request);
@@ -677,7 +691,8 @@ public class DaemonMavenCli {
         eventSpyDispatcher.onEvent(request);
 
         slf4jLogger.info(buffer().a("Processing build on daemon ")
-                .strong(Environment.MVND_ID.asString()).toString());
+                .strong(Environment.MVND_ID.asString())
+                .toString());
 
         MavenExecutionResult result = maven.execute(request);
 
@@ -706,12 +721,13 @@ public class DaemonMavenCli {
             slf4jLogger.error("");
 
             if (!cliRequest.showErrors) {
-                slf4jLogger.error("To see the full stack trace of the errors, re-run Maven with the {} switch.",
+                slf4jLogger.error(
+                        "To see the full stack trace of the errors, re-run Maven with the {} switch.",
                         buffer().strong("-e"));
             }
             if (!slf4jLogger.isDebugEnabled()) {
-                slf4jLogger.error("Re-run Maven using the {} switch to enable full debug logging.",
-                        buffer().strong("-X"));
+                slf4jLogger.error(
+                        "Re-run Maven using the {} switch to enable full debug logging.", buffer().strong("-X"));
             }
 
             if (!references.isEmpty()) {
@@ -776,16 +792,16 @@ public class DaemonMavenCli {
      */
     private String getResumeFromSelector(List<MavenProject> mavenProjects, MavenProject failedProject) {
         for (MavenProject buildProject : mavenProjects) {
-            if (failedProject.getArtifactId().equals(buildProject.getArtifactId()) && !failedProject.equals(
-                    buildProject)) {
+            if (failedProject.getArtifactId().equals(buildProject.getArtifactId())
+                    && !failedProject.equals(buildProject)) {
                 return failedProject.getGroupId() + ":" + failedProject.getArtifactId();
             }
         }
         return ":" + failedProject.getArtifactId();
     }
 
-    private void logSummary(ExceptionSummary summary, Map<String, String> references, String indent,
-            boolean showErrors) {
+    private void logSummary(
+            ExceptionSummary summary, Map<String, String> references, String indent, boolean showErrors) {
         String referenceKey = "";
 
         if (StringUtils.isNotEmpty(summary.getReference())) {
@@ -827,8 +843,7 @@ public class DaemonMavenCli {
             // effective line, with indent and reset if end is colored
             line = indent + line + ("".equals(nextColor) ? "" : ANSI_RESET);
 
-            if ((i == lines.length - 1) && (showErrors
-                    || (summary.getException() instanceof InternalErrorException))) {
+            if ((i == lines.length - 1) && (showErrors || (summary.getException() instanceof InternalErrorException))) {
                 slf4jLogger.error(line, summary.getException());
             } else {
                 slf4jLogger.error(line);
@@ -891,14 +906,15 @@ public class DaemonMavenCli {
             //
             // There are too many ConfigurationProcessors so we don't know which one to run so report the error.
             //
-            StringBuilder sb = new StringBuilder(
-                    String.format("\nThere can only be one user supplied ConfigurationProcessor, there are %s:\n\n",
-                            userSuppliedConfigurationProcessorCount));
+            StringBuilder sb = new StringBuilder(String.format(
+                    "\nThere can only be one user supplied ConfigurationProcessor, there are %s:\n\n",
+                    userSuppliedConfigurationProcessorCount));
             for (Entry<String, ConfigurationProcessor> entry : configurationProcessors.entrySet()) {
                 String hint = entry.getKey();
                 if (!hint.equals(SettingsXmlConfigurationProcessor.HINT)) {
                     ConfigurationProcessor configurationProcessor = entry.getValue();
-                    sb.append(String.format("%s\n", configurationProcessor.getClass().getName()));
+                    sb.append(String.format(
+                            "%s\n", configurationProcessor.getClass().getName()));
                 }
             }
             sb.append("\n");
@@ -906,8 +922,7 @@ public class DaemonMavenCli {
         }
     }
 
-    void toolchains(CliRequest cliRequest)
-            throws Exception {
+    void toolchains(CliRequest cliRequest) throws Exception {
         File userToolchainsFile;
 
         if (cliRequest.commandLine.hasOption(CLIManager.ALTERNATE_USER_TOOLCHAINS)) {
@@ -925,7 +940,8 @@ public class DaemonMavenCli {
         File globalToolchainsFile;
 
         if (cliRequest.commandLine.hasOption(CLIManager.ALTERNATE_GLOBAL_TOOLCHAINS)) {
-            globalToolchainsFile = new File(cliRequest.commandLine.getOptionValue(CLIManager.ALTERNATE_GLOBAL_TOOLCHAINS));
+            globalToolchainsFile =
+                    new File(cliRequest.commandLine.getOptionValue(CLIManager.ALTERNATE_GLOBAL_TOOLCHAINS));
             globalToolchainsFile = resolveFile(globalToolchainsFile, cliRequest.workingDirectory);
 
             if (!globalToolchainsFile.isFile()) {
@@ -949,17 +965,18 @@ public class DaemonMavenCli {
 
         eventSpyDispatcher.onEvent(toolchainsRequest);
 
-        slf4jLogger.debug("Reading global toolchains from {}",
+        slf4jLogger.debug(
+                "Reading global toolchains from {}",
                 getLocation(toolchainsRequest.getGlobalToolchainsSource(), globalToolchainsFile));
-        slf4jLogger.debug("Reading user toolchains from {}",
+        slf4jLogger.debug(
+                "Reading user toolchains from {}",
                 getLocation(toolchainsRequest.getUserToolchainsSource(), userToolchainsFile));
 
         ToolchainsBuildingResult toolchainsResult = toolchainsBuilder.build(toolchainsRequest);
 
         eventSpyDispatcher.onEvent(toolchainsResult);
 
-        executionRequestPopulator.populateFromToolchains(cliRequest.request,
-                toolchainsResult.getEffectiveToolchains());
+        executionRequestPopulator.populateFromToolchains(cliRequest.request, toolchainsResult.getEffectiveToolchains());
 
         if (!toolchainsResult.getProblems().isEmpty() && slf4jLogger.isWarnEnabled()) {
             slf4jLogger.warn("");
@@ -981,8 +998,14 @@ public class DaemonMavenCli {
     }
 
     private void populateRequest(CliRequest cliRequest) {
-        populateRequest(cliRequest, cliRequest.request, eventSpyDispatcher, modelProcessor,
-                createTransferListener(cliRequest), buildEventListener, executionListener);
+        populateRequest(
+                cliRequest,
+                cliRequest.request,
+                eventSpyDispatcher,
+                modelProcessor,
+                createTransferListener(cliRequest),
+                buildEventListener,
+                executionListener);
     }
 
     private void populateRequest(
@@ -1017,9 +1040,7 @@ public class DaemonMavenCli {
         request.setExecutionListener(executionListener);
 
         ExecutionEventLogger executionEventLogger = new ExecutionEventLogger();
-        executionListener.init(
-                eventSpyDispatcher.chainListener(executionEventLogger),
-                buildEventListener);
+        executionListener.init(eventSpyDispatcher.chainListener(executionEventLogger), buildEventListener);
 
         if ((request.getPom() != null) && (request.getPom().getParentFile() != null)) {
             request.setBaseDirectory(request.getPom().getParentFile());
@@ -1072,7 +1093,10 @@ public class DaemonMavenCli {
         return request.getSystemProperties().getProperty(MavenCli.LOCAL_REPO_PROPERTY);
     }
 
-    private File determinePom(ModelProcessor modelProcessor, final CommandLine commandLine, final String workingDirectory,
+    private File determinePom(
+            ModelProcessor modelProcessor,
+            final CommandLine commandLine,
+            final String workingDirectory,
             final File baseDirectory) {
         String alternatePomFile = null;
         if (commandLine.hasOption(CLIManager.ALTERNATE_POM_FILE)) {
@@ -1199,37 +1223,32 @@ public class DaemonMavenCli {
         }
     }
 
-    private void disableOnPresentOption(final CommandLine commandLine,
-            final String option,
-            final Consumer<Boolean> setting) {
+    private void disableOnPresentOption(
+            final CommandLine commandLine, final String option, final Consumer<Boolean> setting) {
         if (commandLine.hasOption(option)) {
             setting.accept(false);
         }
     }
 
-    private void disableOnPresentOption(final CommandLine commandLine,
-            final char option,
-            final Consumer<Boolean> setting) {
+    private void disableOnPresentOption(
+            final CommandLine commandLine, final char option, final Consumer<Boolean> setting) {
         disableOnPresentOption(commandLine, String.valueOf(option), setting);
     }
 
-    private void enableOnPresentOption(final CommandLine commandLine,
-            final String option,
-            final Consumer<Boolean> setting) {
+    private void enableOnPresentOption(
+            final CommandLine commandLine, final String option, final Consumer<Boolean> setting) {
         if (commandLine.hasOption(option)) {
             setting.accept(true);
         }
     }
 
-    private void enableOnPresentOption(final CommandLine commandLine,
-            final char option,
-            final Consumer<Boolean> setting) {
+    private void enableOnPresentOption(
+            final CommandLine commandLine, final char option, final Consumer<Boolean> setting) {
         enableOnPresentOption(commandLine, String.valueOf(option), setting);
     }
 
-    private void enableOnAbsentOption(final CommandLine commandLine,
-            final char option,
-            final Consumer<Boolean> setting) {
+    private void enableOnAbsentOption(
+            final CommandLine commandLine, final char option, final Consumer<Boolean> setting) {
         if (!commandLine.hasOption(option)) {
             setting.accept(true);
         }
@@ -1256,22 +1275,22 @@ public class DaemonMavenCli {
             return threads == 0 ? 1 : threads;
         } else {
             if (!NumberUtils.isParsable(threadConfiguration)) {
-                throw new IllegalArgumentException("Invalid threads value: '" + threadConfiguration
-                        + "'. Supported are int values.");
+                throw new IllegalArgumentException(
+                        "Invalid threads value: '" + threadConfiguration + "'. Supported are int values.");
             }
 
             try {
                 int threads = Integer.parseInt(threadConfiguration);
 
                 if (threads <= 0) {
-                    throw new IllegalArgumentException("Invalid threads value: '" + threadConfiguration
-                            + "'. Value must be positive.");
+                    throw new IllegalArgumentException(
+                            "Invalid threads value: '" + threadConfiguration + "'. Value must be positive.");
                 }
 
                 return threads;
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid threads value: '" + threadConfiguration
-                        + "'. Supported are integer values.");
+                throw new IllegalArgumentException(
+                        "Invalid threads value: '" + threadConfiguration + "'. Supported are integer values.");
             }
         }
     }
@@ -1302,10 +1321,9 @@ public class DaemonMavenCli {
         // are most dominant.
         // ----------------------------------------------------------------------
 
-        final Properties userSpecifiedProperties = commandLine.getOptionProperties(
-                String.valueOf(CLIManager.SET_SYSTEM_PROPERTY));
-        userSpecifiedProperties.forEach(
-                (prop, value) -> setCliProperty((String) prop, (String) value, userProperties));
+        final Properties userSpecifiedProperties =
+                commandLine.getOptionProperties(String.valueOf(CLIManager.SET_SYSTEM_PROPERTY));
+        userSpecifiedProperties.forEach((prop, value) -> setCliProperty((String) prop, (String) value, userProperties));
 
         SystemProperties.addSystemProperties(systemProperties);
 
@@ -1327,7 +1345,8 @@ public class DaemonMavenCli {
         if (props != null) {
             boolean caseSensitive = Os.current() == Os.WINDOWS;
             for (Map.Entry<String, String> entry : System.getenv().entrySet()) {
-                String key = "env." + (caseSensitive ? entry.getKey() : entry.getKey().toUpperCase(Locale.ENGLISH));
+                String key = "env."
+                        + (caseSensitive ? entry.getKey() : entry.getKey().toUpperCase(Locale.ENGLISH));
                 props.setProperty(key, entry.getValue());
             }
         }
@@ -1344,8 +1363,7 @@ public class DaemonMavenCli {
         System.setProperty(name, value);
     }
 
-    static class ExitException
-            extends Exception {
+    static class ExitException extends Exception {
         static final long serialVersionUID = 1L;
         int exitCode;
 
@@ -1380,8 +1398,7 @@ public class DaemonMavenCli {
         return new Slf4jMavenTransferListener();
     }
 
-    protected ModelProcessor createModelProcessor(PlexusContainer container)
-            throws ComponentLookupException {
+    protected ModelProcessor createModelProcessor(PlexusContainer container) throws ComponentLookupException {
         return container.lookup(ModelProcessor.class);
     }
 }

@@ -1,19 +1,24 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.junit;
+
+import static org.mvndaemon.mvnd.junit.TestUtils.deleteDir;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -37,14 +42,13 @@ import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.TimeUtils;
 
-import static org.mvndaemon.mvnd.junit.TestUtils.deleteDir;
-
 public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
     private static final Logger LOG = Logger.getLogger(MvndTestExtension.class);
 
     /** A placeholder to replace with a temporary directory outside of the current source tree */
     public static final String TEMP_EXTERNAL = "${temp.external}";
+
     private volatile Exception bootException;
 
     public MvndTestExtension() {
@@ -59,7 +63,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final MvndTest mvndTest = testClass.getAnnotation(MvndTest.class);
             String keepAlive = Environment.MVND_KEEP_ALIVE.getDefault();
             if (mvndTest != null) {
-                store.put(MvndResource.class.getName(),
+                store.put(
+                        MvndResource.class.getName(),
                         MvndResource.create(
                                 context.getRequiredTestClass().getSimpleName(),
                                 mvndTest.projectDir(),
@@ -69,7 +74,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                                 mvndTest.maxLostKeepAlive()));
             } else {
                 final MvndNativeTest mvndNativeTest = testClass.getAnnotation(MvndNativeTest.class);
-                store.put(MvndResource.class.getName(),
+                store.put(
+                        MvndResource.class.getName(),
                         MvndResource.create(
                                 context.getRequiredTestClass().getSimpleName(),
                                 mvndNativeTest.projectDir(),
@@ -105,8 +111,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     } else if (f.getType() == Client.class) {
                         f.set(testInstance, newClient(resource.isNative, resource.parameters, resource.timeoutMs));
                     } else if (f.getType() == ClientFactory.class) {
-                        final ClientFactory cf = customParameters -> newClient(resource.isNative, customParameters,
-                                resource.timeoutMs);
+                        final ClientFactory cf =
+                                customParameters -> newClient(resource.isNative, customParameters, resource.timeoutMs);
                         f.set(testInstance, cf);
                     }
                 }
@@ -117,11 +123,16 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
 
     Client newClient(boolean isNative, DaemonParameters parameters, long timeoutMs) {
         if (isNative) {
-            final Path mvndNativeExecutablePath = parameters.mvndHome().resolve(
-                    System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows")
-                            ? "bin/mvnd.exe"
-                            : "bin/mvnd")
-                    .toAbsolutePath().normalize();
+            final Path mvndNativeExecutablePath = parameters
+                    .mvndHome()
+                    .resolve(
+                            System.getProperty("os.name")
+                                            .toLowerCase(Locale.ROOT)
+                                            .startsWith("windows")
+                                    ? "bin/mvnd.exe"
+                                    : "bin/mvnd")
+                    .toAbsolutePath()
+                    .normalize();
             if (!Files.isRegularFile(mvndNativeExecutablePath)) {
                 throw new IllegalStateException("mvnd executable does not exist: " + mvndNativeExecutablePath);
             }
@@ -147,8 +158,13 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         private final boolean isNative;
         private final long timeoutMs;
 
-        public static MvndResource create(String className, String rawProjectDir, boolean isNative, long timeoutMs,
-                String keepAlive, String maxLostKeepAlive)
+        public static MvndResource create(
+                String className,
+                String rawProjectDir,
+                boolean isNative,
+                long timeoutMs,
+                String keepAlive,
+                String maxLostKeepAlive)
                 throws IOException {
             if (rawProjectDir == null) {
                 throw new IllegalStateException("rawProjectDir of @MvndTest must be set");
@@ -164,7 +180,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     throw new RuntimeException("Could not create temporary directory", e);
                 }
             } else {
-                final Path mvndTestSrcDir = Paths.get(rawProjectDir).toAbsolutePath().normalize();
+                final Path mvndTestSrcDir =
+                        Paths.get(rawProjectDir).toAbsolutePath().normalize();
                 if (!Files.exists(mvndTestSrcDir)) {
                     throw new IllegalStateException("@MvndTest(projectDir = \"" + mvndTestSrcDir
                             + "\") points at a path that does not exist: " + mvndTestSrcDir);
@@ -186,12 +203,13 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     });
                 }
             }
-            final Path multiModuleProjectDirectory = Paths
-                    .get(DaemonParameters.findDefaultMultimoduleProjectDirectory(testExecutionDir));
+            final Path multiModuleProjectDirectory =
+                    Paths.get(DaemonParameters.findDefaultMultimoduleProjectDirectory(testExecutionDir));
 
-            final Path mvndHome = Paths
-                    .get(Objects.requireNonNull(System.getProperty("mvnd.home"), "System property mvnd.home must be set"))
-                    .normalize().toAbsolutePath();
+            final Path mvndHome = Paths.get(Objects.requireNonNull(
+                            System.getProperty("mvnd.home"), "System property mvnd.home must be set"))
+                    .normalize()
+                    .toAbsolutePath();
             if (!Files.isDirectory(mvndHome)) {
                 throw new IllegalStateException(
                         "The value of mvnd.home system property points at a path that does not exist or is not a directory: "
@@ -213,7 +231,8 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 LOG.info("Building with mrm-maven-plugin");
                 settingsPath = createSettings(testDir.resolve("settings.xml"), mrmRepoUrl);
             }
-            final Path logback = Paths.get("src/test/resources/logback/logback.xml").toAbsolutePath();
+            final Path logback =
+                    Paths.get("src/test/resources/logback/logback.xml").toAbsolutePath();
             final Path home = deleteDir(testDir.resolve("home"));
             final TestParameters parameters = new TestParameters(
                     testDir,
@@ -223,12 +242,16 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     testExecutionDir,
                     multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
-                    localMavenRepository, settingsPath,
+                    localMavenRepository,
+                    settingsPath,
                     logback,
                     TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
-                    keepAlive != null && !keepAlive.isEmpty() ? TimeUtils.toDuration(keepAlive)
-                            : TimeUtils.toDuration(Environment.MVND_KEEP_ALIVE.getDefault()).multipliedBy(10),
-                    maxLostKeepAlive != null && !maxLostKeepAlive.isEmpty() ? Integer.parseInt(maxLostKeepAlive)
+                    keepAlive != null && !keepAlive.isEmpty()
+                            ? TimeUtils.toDuration(keepAlive)
+                            : TimeUtils.toDuration(Environment.MVND_KEEP_ALIVE.getDefault())
+                                    .multipliedBy(10),
+                    maxLostKeepAlive != null && !maxLostKeepAlive.isEmpty()
+                            ? Integer.parseInt(maxLostKeepAlive)
                             : Integer.parseInt(Environment.MVND_MAX_LOST_KEEP_ALIVE.getDefault()) * 10);
             final TestRegistry registry = new TestRegistry(parameters.registry());
 
@@ -237,29 +260,29 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
 
         private static void prefillLocalRepo(final Path localMavenRepository) {
             /* Workaround for https://github.com/apache/maven-mvnd/issues/281 */
-            final String preinstallArtifacts = System.getProperty("preinstall.artifacts").trim();
+            final String preinstallArtifacts =
+                    System.getProperty("preinstall.artifacts").trim();
             final Path hostLocalMavenRepo = Paths.get(System.getProperty("mvnd.test.hostLocalMavenRepo"));
 
-            Stream.of(preinstallArtifacts.split("[\\s,]+"))
-                    .forEach(relPath -> {
-                        final Path src = hostLocalMavenRepo.resolve(relPath);
-                        if (Files.isDirectory(src)) {
-                            try (Stream<Path> files = Files.list(src)) {
-                                files.forEach(file -> {
-                                    final Path dest = localMavenRepository.resolve(relPath).resolve(file.getFileName());
-                                    try {
-                                        Files.createDirectories(dest.getParent());
-                                        Files.copy(file, dest);
-                                    } catch (IOException e) {
-                                        throw new UncheckedIOException(e);
-                                    }
-
-                                });
+            Stream.of(preinstallArtifacts.split("[\\s,]+")).forEach(relPath -> {
+                final Path src = hostLocalMavenRepo.resolve(relPath);
+                if (Files.isDirectory(src)) {
+                    try (Stream<Path> files = Files.list(src)) {
+                        files.forEach(file -> {
+                            final Path dest =
+                                    localMavenRepository.resolve(relPath).resolve(file.getFileName());
+                            try {
+                                Files.createDirectories(dest.getParent());
+                                Files.copy(file, dest);
                             } catch (IOException e) {
                                 throw new UncheckedIOException(e);
                             }
-                        }
-                    });
+                        });
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                }
+            });
         }
 
         static Path createSettings(Path settingsPath, String mrmRepoUrl) {
@@ -290,7 +313,5 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         public void close() throws Exception {
             registry.killAll();
         }
-
     }
-
 }

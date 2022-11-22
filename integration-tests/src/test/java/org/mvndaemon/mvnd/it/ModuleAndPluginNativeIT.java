@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.it;
 
@@ -41,7 +44,8 @@ public class ModuleAndPluginNativeIT {
     @Test
     void cleanInstall() throws IOException, InterruptedException {
         final Path helloPath = parameters.multiModuleProjectDirectory().resolve("hello/target/hello.txt");
-        final Path helloPropertyPath = parameters.multiModuleProjectDirectory().resolve("hello/target/hello.property.txt");
+        final Path helloPropertyPath =
+                parameters.multiModuleProjectDirectory().resolve("hello/target/hello.property.txt");
         Stream.of(helloPath, helloPropertyPath).forEach(p -> {
             try {
                 Files.deleteIfExists(p);
@@ -52,8 +56,8 @@ public class ModuleAndPluginNativeIT {
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
         final Path[] installedJars = {
-                localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/module-and-plugin/module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar"),
+            localMavenRepo.resolve(
+                    "org/mvndaemon/mvnd/test/module-and-plugin/module-and-plugin-maven-plugin/0.0.1-SNAPSHOT/module-and-plugin-maven-plugin-0.0.1-SNAPSHOT.jar"),
         };
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
@@ -64,31 +68,38 @@ public class ModuleAndPluginNativeIT {
                     .assertSuccess();
 
             Assertions.assertThat(helloPath).exists();
-            Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello");
+            Assertions.assertThat(helloPath)
+                    .usingCharset(StandardCharsets.UTF_8)
+                    .hasContent("Hello");
             Assertions.assertThat(helloPropertyPath).exists();
-            Assertions.assertThat(helloPropertyPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello1");
+            Assertions.assertThat(helloPropertyPath)
+                    .usingCharset(StandardCharsets.UTF_8)
+                    .hasContent("Hello1");
             Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).exists());
         }
 
         /* Build #2: with the mojo source changed to output "Hi" to target/hello.txt */
         {
-            final Path mojoPath = parameters.multiModuleProjectDirectory()
+            final Path mojoPath = parameters
+                    .multiModuleProjectDirectory()
                     .resolve("plugin/src/main/java/org/mvndaemon/mvnd/test/module/plugin/mojo/HelloMojo.java");
             TestUtils.replace(mojoPath, "\"Hello\".getBytes", "\"Hi\".getBytes");
 
             Thread.sleep(200); // Let's see if this helps to prevent intermittent failures on Mac
 
             final TestClientOutput output = new TestClientOutput();
-            client.execute(output,
-                    "clean",
-                    "install", "-e", "-Dmvnd.log.level=DEBUG", "-Dhello.property=Hello2").assertSuccess();
+            client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG", "-Dhello.property=Hello2")
+                    .assertSuccess();
 
             Assertions.assertThat(helloPath).exists();
-            Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hi");
+            Assertions.assertThat(helloPath)
+                    .usingCharset(StandardCharsets.UTF_8)
+                    .hasContent("Hi");
             Assertions.assertThat(helloPropertyPath).exists();
-            Assertions.assertThat(helloPropertyPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello2");
+            Assertions.assertThat(helloPropertyPath)
+                    .usingCharset(StandardCharsets.UTF_8)
+                    .hasContent("Hello2");
             Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).exists());
         }
-
     }
 }

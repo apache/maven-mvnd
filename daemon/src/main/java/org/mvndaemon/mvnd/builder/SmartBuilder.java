@@ -1,17 +1,20 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.builder;
 
@@ -86,25 +89,31 @@ public class SmartBuilder implements Builder {
     }
 
     @Override
-    public synchronized void build(final MavenSession session, final ReactorContext reactorContext,
-            ProjectBuildList projectBuilds, final List<TaskSegment> taskSegments,
-            ReactorBuildStatus reactorBuildStatus) throws ExecutionException, InterruptedException {
+    public synchronized void build(
+            final MavenSession session,
+            final ReactorContext reactorContext,
+            ProjectBuildList projectBuilds,
+            final List<TaskSegment> taskSegments,
+            ReactorBuildStatus reactorBuildStatus)
+            throws ExecutionException, InterruptedException {
 
         session.getRepositorySession().getData().set(ReactorBuildStatus.class, reactorBuildStatus);
 
-        DependencyGraph<MavenProject> graph = (DependencyGraph<MavenProject>) session.getRequest().getData()
-                .get(DependencyGraph.class.getName());
+        DependencyGraph<MavenProject> graph =
+                (DependencyGraph<MavenProject>) session.getRequest().getData().get(DependencyGraph.class.getName());
 
         // log overall build info
         final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
-        logger.info("Task segments : " + taskSegments.stream().map(Object::toString).collect(Collectors.joining(" ")));
+        logger.info(
+                "Task segments : " + taskSegments.stream().map(Object::toString).collect(Collectors.joining(" ")));
         logger.info("Build maximum degree of concurrency is " + degreeOfConcurrency);
         logger.info("Total number of projects is " + session.getProjects().size());
 
         // the actual build execution
         List<Map.Entry<TaskSegment, ReactorBuildStats>> allstats = new ArrayList<>();
         for (TaskSegment taskSegment : taskSegments) {
-            Set<MavenProject> projects = projectBuilds.getByTaskSegment(taskSegment).getProjects();
+            Set<MavenProject> projects =
+                    projectBuilds.getByTaskSegment(taskSegment).getProjects();
             if (canceled) {
                 return;
             }
@@ -126,7 +135,8 @@ public class SmartBuilder implements Builder {
         for (Map.Entry<TaskSegment, ReactorBuildStats> entry : allstats) {
             TaskSegment taskSegment = entry.getKey();
             ReactorBuildStats stats = entry.getValue();
-            Set<MavenProject> projects = projectBuilds.getByTaskSegment(taskSegment).getProjects();
+            Set<MavenProject> projects =
+                    projectBuilds.getByTaskSegment(taskSegment).getProjects();
 
             logger.debug("Task segment {}, number of projects {}", taskSegment, projects.size());
 
@@ -136,7 +146,8 @@ public class SmartBuilder implements Builder {
             logger.info(
                     "Segment walltime {} s, segment projects service time {} s, effective/maximum degree of concurrency {}/{}",
                     TimeUnit.NANOSECONDS.toSeconds(walltimeReactor),
-                    TimeUnit.NANOSECONDS.toSeconds(walltimeService), effectiveConcurrency,
+                    TimeUnit.NANOSECONDS.toSeconds(walltimeService),
+                    effectiveConcurrency,
                     degreeOfConcurrency);
 
             if (projects.size() > 1 && isProfiling(session)) {
@@ -152,5 +163,4 @@ public class SmartBuilder implements Builder {
         }
         return Boolean.parseBoolean(value);
     }
-
 }
