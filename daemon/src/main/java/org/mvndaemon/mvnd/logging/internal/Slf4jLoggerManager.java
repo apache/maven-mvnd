@@ -36,8 +36,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jason van Zyl
  */
-public class Slf4jLoggerManager
-        implements LoggerManager {
+public class Slf4jLoggerManager implements LoggerManager {
 
     private ILoggerFactory loggerFactory;
 
@@ -67,14 +66,12 @@ public class Slf4jLoggerManager
     /**
      * <b>Warning</b>: ignored.
      */
-    public void returnComponentLogger(String role) {
-    }
+    public void returnComponentLogger(String role) {}
 
     /**
      * <b>Warning</b>: ignored.
      */
-    public void returnComponentLogger(String role, String hint) {
-    }
+    public void returnComponentLogger(String role, String hint) {}
 
     /**
      * <b>Warning</b>: ignored (always return <code>0</code>).
@@ -86,14 +83,12 @@ public class Slf4jLoggerManager
     /**
      * <b>Warning</b>: ignored.
      */
-    public void setThreshold(int threshold) {
-    }
+    public void setThreshold(int threshold) {}
 
     /**
      * <b>Warning</b>: ignored.
      */
-    public void setThresholds(int threshold) {
-    }
+    public void setThresholds(int threshold) {}
 
     /**
      * <b>Warning</b>: ignored (always return <code>0</code>).
@@ -101,5 +96,4 @@ public class Slf4jLoggerManager
     public int getActiveLoggerCount() {
         return 0;
     }
-
 }

@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.it;
 
@@ -46,8 +49,8 @@ public class MultiModuleTest {
     @Test
     void cleanInstall() throws IOException, InterruptedException {
         final Path[] helloFilePaths = {
-                parameters.multiModuleProjectDirectory().resolve("hello/target/hello.txt"),
-                parameters.multiModuleProjectDirectory().resolve("hi/target/hi.txt")
+            parameters.multiModuleProjectDirectory().resolve("hello/target/hello.txt"),
+            parameters.multiModuleProjectDirectory().resolve("hi/target/hi.txt")
         };
         Stream.of(helloFilePaths).forEach(path -> {
             try {
@@ -59,12 +62,12 @@ public class MultiModuleTest {
 
         final Path localMavenRepo = parameters.mavenRepoLocal();
         final Path[] installedJars = {
-                localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
-                localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar"),
-                localMavenRepo.resolve(
-                        "org/mvndaemon/mvnd/test/multi-module/multi-module-hi/0.0.1-SNAPSHOT/multi-module-hi-0.0.1-SNAPSHOT.jar")
+            localMavenRepo.resolve(
+                    "org/mvndaemon/mvnd/test/multi-module/multi-module-api/0.0.1-SNAPSHOT/multi-module-api-0.0.1-SNAPSHOT.jar"),
+            localMavenRepo.resolve(
+                    "org/mvndaemon/mvnd/test/multi-module/multi-module-hello/0.0.1-SNAPSHOT/multi-module-hello-0.0.1-SNAPSHOT.jar"),
+            localMavenRepo.resolve(
+                    "org/mvndaemon/mvnd/test/multi-module/multi-module-hi/0.0.1-SNAPSHOT/multi-module-hi-0.0.1-SNAPSHOT.jar")
         };
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
@@ -78,19 +81,22 @@ public class MultiModuleTest {
                     .collect(Collectors.toList());
 
             Assertions.assertThat(filteredMessages)
-                    .satisfiesAnyOf( /* Two orderings are possible */
+                    .satisfiesAnyOf(
+                            /* Two orderings are possible */
                             messages -> Assertions.assertThat(messages)
-                                    .is(new MatchInOrderAmongOthers<>(
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module$",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-api",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hello",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hi")),
+                                    .is(
+                                            new MatchInOrderAmongOthers<>(
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module$",
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-api",
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hello",
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hi")),
                             messages -> Assertions.assertThat(messages)
-                                    .is(new MatchInOrderAmongOthers<>(
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module$",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-api",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hi",
-                                            "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hello")));
+                                    .is(
+                                            new MatchInOrderAmongOthers<>(
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module$",
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-api",
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hi",
+                                                    "SUCCESS build of project org.mvndaemon.mvnd.test.multi-module:multi-module-hello")));
         }
 
         {
@@ -100,7 +106,8 @@ public class MultiModuleTest {
                     .collect(Collectors.toList());
 
             Assertions.assertThat(filteredMessages)
-                    .satisfiesAnyOf( /* Two orderings are possible */
+                    .satisfiesAnyOf(
+                            /* Two orderings are possible */
                             messages -> Assertions.assertThat(messages)
                                     .isEqualTo(Arrays.asList(
                                             "multi-module",
@@ -119,6 +126,5 @@ public class MultiModuleTest {
         Stream.of(helloFilePaths).forEach(path -> Assertions.assertThat(path).exists());
 
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).exists());
-
     }
 }

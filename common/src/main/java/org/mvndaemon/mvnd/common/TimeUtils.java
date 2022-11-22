@@ -1,17 +1,20 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
@@ -32,19 +35,17 @@ public final class TimeUtils {
     public static final long SECONDS_MILLIS = TimeUnit.SECONDS.toMillis(ONE_UNIT);
 
     private static final Pattern DURATION_PATTERN = Pattern.compile(
-            "(?<n>-?\\d+)" +
-                    "|" +
-                    "(" +
-                    "((?<d>\\d+)\\s*d(ay(s)?)?)?" + "\\s*" +
-                    "((?<h>\\d+)\\s*h(our(s)?)?)?" + "\\s*" +
-                    "((?<m>\\d+)\\s*m(in(ute(s)?)?)?)?" + "\\s*" +
-                    "((?<s>\\d+(\\.\\d+)?)\\s*s(ec(ond(s)?)?)?)?" + "\\s*" +
-                    "((?<l>\\d+(\\.\\d+)?)\\s*m(illi)?s(ec(ond)?(s)?)?)?" +
-                    ")",
+            "(?<n>-?\\d+)" + "|"
+                    + "("
+                    + "((?<d>\\d+)\\s*d(ay(s)?)?)?"
+                    + "\\s*" + "((?<h>\\d+)\\s*h(our(s)?)?)?"
+                    + "\\s*" + "((?<m>\\d+)\\s*m(in(ute(s)?)?)?)?"
+                    + "\\s*" + "((?<s>\\d+(\\.\\d+)?)\\s*s(ec(ond(s)?)?)?)?"
+                    + "\\s*" + "((?<l>\\d+(\\.\\d+)?)\\s*m(illi)?s(ec(ond)?(s)?)?)?"
+                    + ")",
             Pattern.CASE_INSENSITIVE);
 
-    private TimeUtils() {
-    }
+    private TimeUtils() {}
 
     public static boolean isPositive(Duration dur) {
         return dur.getSeconds() > 0 || dur.getNano() != 0;
@@ -117,5 +118,4 @@ public final class TimeUtils {
                     + (l != null ? TimeUnit.MILLISECONDS.toMillis(Long.parseLong(l)) : 0);
         }
     }
-
 }

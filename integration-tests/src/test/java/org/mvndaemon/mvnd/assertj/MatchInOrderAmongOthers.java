@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.assertj;
 
@@ -54,7 +57,9 @@ public class MatchInOrderAmongOthers<T extends List<? extends String>> extends C
                     final boolean result = matchingPatterns.equals(patterns);
                     if (!result) {
                         LOG.warn("Actually matched:\n"
-                                + matchingPatterns.stream().map(p -> "    " + p.pattern()).collect(Collectors.joining("\n")));
+                                + matchingPatterns.stream()
+                                        .map(p -> "    " + p.pattern())
+                                        .collect(Collectors.joining("\n")));
                         LOG.warn("Did not match:\n"
                                 + patterns.stream()
                                         .filter(p -> !matchingPatterns.contains(p))
@@ -67,5 +72,4 @@ public class MatchInOrderAmongOthers<T extends List<? extends String>> extends C
                 "Match in order: " + patterns.stream().map(Pattern::pattern).collect(Collectors.joining(", ")),
                 patterns);
     }
-
 }

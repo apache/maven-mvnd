@@ -1,19 +1,24 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.client;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -27,8 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.client.DaemonParameters.EnvValue;
 import org.mvndaemon.mvnd.client.DaemonParameters.ValueSource;
 import org.mvndaemon.mvnd.common.Environment;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EnvironmentTest {
 
@@ -57,7 +60,9 @@ public class EnvironmentTest {
     void prop() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.props("mvnd.home", "/maven/home/prop");
-            assertEquals("/maven/home/prop", DaemonParameters.systemProperty(Environment.MVND_HOME).asString());
+            assertEquals(
+                    "/maven/home/prop",
+                    DaemonParameters.systemProperty(Environment.MVND_HOME).asString());
         }
     }
 
@@ -65,7 +70,9 @@ public class EnvironmentTest {
     void env() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.env("MVND_HOME", "/maven/home/env");
-            assertEquals("/maven/home/env", DaemonParameters.environmentVariable(Environment.MVND_HOME).asString());
+            assertEquals(
+                    "/maven/home/env",
+                    DaemonParameters.environmentVariable(Environment.MVND_HOME).asString());
         }
     }
 
@@ -74,9 +81,9 @@ public class EnvironmentTest {
         try (EnvironmentResource env = new EnvironmentResource()) {
             final Properties localProps = new Properties();
             localProps.put("mvnd.home", "/maven/home/local");
-            assertEquals(Paths.get("/maven/home/local"),
-                    DaemonParameters
-                            .environmentVariable(Environment.MVND_HOME)
+            assertEquals(
+                    Paths.get("/maven/home/local"),
+                    DaemonParameters.environmentVariable(Environment.MVND_HOME)
                             .orSystemProperty()
                             .orLocalProperty(path -> localProps, Paths.get("/local/properties"))
                             .orFail()
@@ -89,9 +96,9 @@ public class EnvironmentTest {
         try (EnvironmentResource env = new EnvironmentResource()) {
             env.props("mvnd.home", "/maven/home/prop");
             env.env("MVND_HOME", "/maven/home/env");
-            assertEquals("/maven/home/env",
-                    DaemonParameters
-                            .environmentVariable(Environment.MVND_HOME)
+            assertEquals(
+                    "/maven/home/env",
+                    DaemonParameters.environmentVariable(Environment.MVND_HOME)
                             .orSystemProperty()
                             .asString());
         }
@@ -101,9 +108,9 @@ public class EnvironmentTest {
     void fail() {
         try (EnvironmentResource env = new EnvironmentResource()) {
             try {
-                assertEquals("/maven/home/env",
-                        DaemonParameters
-                                .environmentVariable(Environment.MVND_HOME)
+                assertEquals(
+                        "/maven/home/env",
+                        DaemonParameters.environmentVariable(Environment.MVND_HOME)
                                 .orSystemProperty()
                                 .orFail()
                                 .asString());
@@ -124,7 +131,8 @@ public class EnvironmentTest {
     @Test
     void emptyBooleanEnvValueIsTrue() {
         final String EMPTY_STRING = "";
-        final EnvValue envVal = new EnvValue(Environment.MVND_NO_BUFERING,
+        final EnvValue envVal = new EnvValue(
+                Environment.MVND_NO_BUFERING,
                 new ValueSource(sb -> sb.append("envValueAsBoolean"), () -> EMPTY_STRING));
         assertEquals(true, envVal.asBoolean());
     }
@@ -158,7 +166,5 @@ public class EnvironmentTest {
             DaemonParameters.EnvValue.env = System.getenv();
             Environment.setProperties(System.getProperties());
         }
-
     }
-
 }

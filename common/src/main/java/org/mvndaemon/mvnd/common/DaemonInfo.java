@@ -1,24 +1,27 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
-import java.util.List;
-
 import static org.mvndaemon.mvnd.common.DaemonState.Busy;
 import static org.mvndaemon.mvnd.common.DaemonState.Idle;
+
+import java.util.List;
 
 /**
  * File origin:
@@ -40,10 +43,18 @@ public class DaemonInfo {
     private final long lastIdle;
     private final long lastBusy;
 
-    public DaemonInfo(String id, String javaHome, String mavenHome,
-            int pid, String address, byte[] token,
-            String locale, List<String> options,
-            DaemonState state, long lastIdle, long lastBusy) {
+    public DaemonInfo(
+            String id,
+            String javaHome,
+            String mavenHome,
+            int pid,
+            String address,
+            byte[] token,
+            String locale,
+            List<String> options,
+            DaemonState state,
+            long lastIdle,
+            long lastBusy) {
         this.id = id;
         this.javaHome = javaHome;
         this.mvndHome = mavenHome;
@@ -113,8 +124,7 @@ public class DaemonInfo {
             li = lastIdle;
             lb = lastBusy;
         }
-        return new DaemonInfo(id, javaHome, mvndHome, pid, address,
-                token, locale, options, state, li, lb);
+        return new DaemonInfo(id, javaHome, mvndHome, pid, address, token, locale, options, state, li, lb);
     }
 
     @Override
@@ -125,14 +135,23 @@ public class DaemonInfo {
     }
 
     public StringBuilder appendNonKeyFields(StringBuilder sb) {
-        return sb.append("javaHome=").append(javaHome)
-                .append(", options=").append(options)
-                .append(", mavenHome=").append(mvndHome)
-                .append(", pid=").append(pid)
-                .append(", address=").append(address)
-                .append(", locale=").append(locale)
-                .append(", state=").append(state)
-                .append(", lastIdle=").append(lastIdle)
-                .append(", lastBusy=").append(lastBusy);
+        return sb.append("javaHome=")
+                .append(javaHome)
+                .append(", options=")
+                .append(options)
+                .append(", mavenHome=")
+                .append(mvndHome)
+                .append(", pid=")
+                .append(pid)
+                .append(", address=")
+                .append(address)
+                .append(", locale=")
+                .append(locale)
+                .append(", state=")
+                .append(state)
+                .append(", lastIdle=")
+                .append(lastIdle)
+                .append(", lastBusy=")
+                .append(lastBusy);
     }
 }
