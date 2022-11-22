@@ -351,6 +351,7 @@ limitations under the License.</inlineHeader>
               <exclude>**/.mvn/maven.config</exclude>
               <exclude>**/.mvn/jvm.config</exclude>
               <exclude>.gitattributes/</exclude>
+              <exclude>.git-blame-ignore-revs</exclude>
               <exclude>.mvn/maven.config</exclude>
               <exclude>.mvn/wrapper/</exclude>
               <exclude>LICENSE.txt</exclude>
