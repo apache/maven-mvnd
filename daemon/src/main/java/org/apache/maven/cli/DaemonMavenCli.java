@@ -720,7 +720,10 @@ public class DaemonMavenCli {
                 logSummary(summary, references, "", cliRequest.showErrors);
 
                 if (exception instanceof LifecycleExecutionException) {
-                    failedProjects.add(((LifecycleExecutionException) exception).getProject());
+                    MavenProject project = ((LifecycleExecutionException) exception).getProject();
+                    if (project != null) {
+                        failedProjects.add(project);
+                    }
                 }
             }
 
