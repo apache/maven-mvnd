@@ -309,8 +309,8 @@
         <version>${plexus-interactivity-api.version}</version>
         <exclusions>
           <exclusion>
-            <artifactId>junit</artifactId>
             <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
