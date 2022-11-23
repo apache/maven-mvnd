@@ -48,11 +48,11 @@
         <jandex.version>1.0.8</jandex.version>
 
         <!-- Plugin Versions -->
-        <version.compiler.plugin>3.8.1</version.compiler.plugin>
+        <version.compiler.plugin>3.10.1</version.compiler.plugin>
         <version.surefire.plugin>3.0.0-M7</version.surefire.plugin>
-        <version.dependency.plugin>3.1.2</version.dependency.plugin>
-        <version.assembly.plugin>3.3.0</version.assembly.plugin>
-        <version.resources.plugin>3.2.0</version.resources.plugin>
+        <version.dependency.plugin>3.3.0</version.dependency.plugin>
+        <version.assembly.plugin>3.4.2</version.assembly.plugin>
+        <version.resources.plugin>3.3.0</version.resources.plugin>
     </properties>
 
     <dependencyManagement>
