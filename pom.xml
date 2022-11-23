@@ -73,15 +73,15 @@
 
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
-    <assertj.version>3.16.1</assertj.version>
-    <commons-compress.version>1.21</commons-compress.version>
+    <assertj.version>3.23.1</assertj.version>
+    <commons-compress.version>1.22</commons-compress.version>
     <graalvm.version>22.3.0</graalvm.version>
     <graalvm.plugin.version>0.9.18</graalvm.plugin.version>
     <groovy.version>4.0.6</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.0</jansi.version>
     <jline.version>3.21.0</jline.version>
-    <junit.jupiter.version>5.7.2</junit.jupiter.version>
+    <junit.jupiter.version>5.9.1</junit.jupiter.version>
     <logback.version>1.2.10</logback.version>
     <maven.version>3.8.6</maven.version>
     <maven.resolver.version>1.7.3</maven.resolver.version>
@@ -89,23 +89,26 @@
     <sisu.version>0.3.5</sisu.version>
 
     <!-- plugin versions a..z -->
-    <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
-    <compiler.version>3.8.1</compiler.version>
+    <buildnumber-maven-plugin.version>3.0.0</buildnumber-maven-plugin.version>
+    <compiler.version>3.10.1</compiler.version>
     <groovy-maven-plugin.version>2.1.0</groovy-maven-plugin.version>
-    <license-maven-plugin.version>3.0</license-maven-plugin.version>
-    <maven-jar-plugin.version>3.2.2</maven-jar-plugin.version>
-    <maven-install-plugin.version>2.4</maven-install-plugin.version>
+    <license-maven-plugin.version>4.2.rc3</license-maven-plugin.version>
+    <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+    <maven-install-plugin.version>3.1.0</maven-install-plugin.version>
     <maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
-    <mrm.version>1.2.0</mrm.version>
-    <surefire.version>3.0.0-M5</surefire.version>
+    <mrm.version>1.4.1</mrm.version>
+    <surefire.version>3.0.0-M7</surefire.version>
     <!-- keep in sync with junit-platform-launcher.version -->
     <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version>
     <!-- keep in sync with surefire.version -->
-    <release.plugin.version>3.0.0-M5</release.plugin.version>
+    <release.plugin.version>3.0.0-M7</release.plugin.version>
     <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
     <takari-provisio.version>1.0.19</takari-provisio.version>
 
-    <javassist.version>3.27.0-GA</javassist.version>
+    <javassist.version>3.29.2-GA</javassist.version>
+    <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+    <xstream.version>1.4.19</xstream.version>
+    <plexus-interactivity-api.version>1.0</plexus-interactivity-api.version>
   </properties>
 
   <dependencyManagement>
@@ -223,38 +226,38 @@
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-native</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-agent</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-client</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-common</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-dist</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${project.version}</version>
         <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-daemon</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-helper-agent</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
 
       <dependency>
@@ -299,6 +302,17 @@
         <groupId>org.javassist</groupId>
         <artifactId>javassist</artifactId>
         <version>${javassist.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-interactivity-api</artifactId>
+        <version>${plexus-interactivity-api.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
     </dependencies>
@@ -388,7 +402,7 @@ limitations under the License.</inlineHeader>
             <dependency>
               <groupId>com.thoughtworks.xstream</groupId>
               <artifactId>xstream</artifactId>
-              <version>1.4.19</version>
+              <version>${xstream.version}</version>
             </dependency>
           </dependencies>
         </plugin>
@@ -532,7 +546,7 @@ limitations under the License.</inlineHeader>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>${maven-assembly-plugin.version}</version>
             <executions>
               <execution>
                 <id>create-source-distribution</id>
