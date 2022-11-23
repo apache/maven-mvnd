@@ -42,10 +42,10 @@
         <tar.long.file.mode>gnu</tar.long.file.mode>
         
         <!-- Quarkus Version -->
-        <quarkus.version>2.3.1.Final</quarkus.version>
+        <quarkus.version>2.14.1.Final</quarkus.version>
 
         <!-- Jandex -->
-        <jandex.version>1.0.8</jandex.version>
+        <jandex.version>3.0.3</jandex.version>
 
         <!-- Plugin Versions -->
         <version.compiler.plugin>3.10.1</version.compiler.plugin>
@@ -85,7 +85,7 @@
                     <version>${version.surefire.plugin}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.jboss.jandex</groupId>
+                    <groupId>io.smallrye</groupId>
                     <artifactId>jandex-maven-plugin</artifactId>
                     <version>${jandex.version}</version>
                     <executions>
