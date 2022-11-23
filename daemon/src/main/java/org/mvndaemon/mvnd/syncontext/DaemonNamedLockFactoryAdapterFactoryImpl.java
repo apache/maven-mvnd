@@ -22,24 +22,27 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import org.eclipse.aether.internal.impl.synccontext.named.FileGAVNameMapper;
+import org.eclipse.aether.impl.RepositorySystemLifecycle;
 import org.eclipse.aether.internal.impl.synccontext.named.NameMapper;
-import org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactorySelectorSupport;
+import org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactoryAdapterFactoryImpl;
+import org.eclipse.aether.internal.impl.synccontext.named.providers.FileGAVNameMapperProvider;
 import org.eclipse.aether.named.NamedLockFactory;
 import org.eclipse.aether.named.providers.FileLockNamedLockFactory;
 import org.eclipse.sisu.Priority;
 
 /**
- * Mvnd selector implementation: it differs from
- * {@link org.eclipse.aether.internal.impl.synccontext.named.SimpleNamedLockFactorySelector} only by default values.
+ * Mvnd named lock factory implementation: it differs from
+ * {@link org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactoryAdapterFactoryImpl} only by default values.
  */
 @Singleton
 @Named
 @Priority(10)
-public final class DaemonNamedLockFactorySelector extends NamedLockFactorySelectorSupport {
+public final class DaemonNamedLockFactoryAdapterFactoryImpl extends NamedLockFactoryAdapterFactoryImpl {
     @Inject
-    public DaemonNamedLockFactorySelector(
-            final Map<String, NamedLockFactory> factories, final Map<String, NameMapper> nameMappers) {
-        super(factories, FileLockNamedLockFactory.NAME, nameMappers, FileGAVNameMapper.NAME);
+    public DaemonNamedLockFactoryAdapterFactoryImpl(
+            final Map<String, NamedLockFactory> factories,
+            final Map<String, NameMapper> nameMappers,
+            final RepositorySystemLifecycle lifecycle) {
+        super(factories, FileLockNamedLockFactory.NAME, nameMappers, FileGAVNameMapperProvider.NAME, lifecycle);
     }
 }

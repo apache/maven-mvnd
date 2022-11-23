@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -52,6 +53,7 @@ import org.apache.maven.plugin.DebugConfigurationListener;
 import org.apache.maven.plugin.ExtensionRealmCache;
 import org.apache.maven.plugin.InvalidPluginDescriptorException;
 import org.apache.maven.plugin.MavenPluginManager;
+import org.apache.maven.plugin.MavenPluginPrerequisitesChecker;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoNotFoundException;
@@ -79,7 +81,6 @@ import org.apache.maven.plugin.version.PluginVersionResolver;
 import org.apache.maven.project.ExtensionDescriptor;
 import org.apache.maven.project.ExtensionDescriptorBuilder;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.session.scope.internal.SessionScopeModule;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.PlexusContainer;
@@ -163,9 +164,6 @@ public class CliMavenPluginManager implements MavenPluginManager {
     private PluginDependenciesResolver pluginDependenciesResolver;
 
     @Inject
-    private RuntimeInformation runtimeInformation;
-
-    @Inject
     private ExtensionRealmCache extensionRealmCache;
 
     @Inject
@@ -173,6 +171,9 @@ public class CliMavenPluginManager implements MavenPluginManager {
 
     @Inject
     private PluginArtifactsCache pluginArtifactsCache;
+
+    @Inject
+    private List<MavenPluginPrerequisitesChecker> prerequisitesCheckers;
 
     private ExtensionDescriptorBuilder extensionDescriptorBuilder = new ExtensionDescriptorBuilder();
 
@@ -183,18 +184,19 @@ public class CliMavenPluginManager implements MavenPluginManager {
             throws PluginResolutionException, PluginDescriptorParsingException, InvalidPluginDescriptorException {
         PluginDescriptorCache.Key cacheKey = pluginDescriptorCache.createKey(plugin, repositories, session);
 
-        PluginDescriptor pluginDescriptor = pluginDescriptorCache.get(cacheKey, () -> {
-            org.eclipse.aether.artifact.Artifact artifact =
-                    pluginDependenciesResolver.resolve(plugin, repositories, session);
+        PluginDescriptor pluginDescriptor =
+                pluginDescriptorCache.get(cacheKey, (InvalidatingPluginDescriptorCache.PluginDescriptorSupplier) () -> {
+                    org.eclipse.aether.artifact.Artifact artifact =
+                            pluginDependenciesResolver.resolve(plugin, repositories, session);
 
-            Artifact pluginArtifact = RepositoryUtils.toArtifact(artifact);
+                    Artifact pluginArtifact = RepositoryUtils.toArtifact(artifact);
 
-            PluginDescriptor descriptor = extractPluginDescriptor(pluginArtifact, plugin);
+                    PluginDescriptor descriptor = extractPluginDescriptor(pluginArtifact, plugin);
 
-            descriptor.setRequiredMavenVersion(artifact.getProperty("requiredMavenVersion", null));
+                    descriptor.setRequiredMavenVersion(artifact.getProperty("requiredMavenVersion", null));
 
-            return descriptor;
-        });
+                    return descriptor;
+                });
 
         pluginDescriptor.setPlugin(plugin);
 
@@ -294,19 +296,25 @@ public class CliMavenPluginManager implements MavenPluginManager {
         return mojoDescriptor;
     }
 
-    public void checkRequiredMavenVersion(PluginDescriptor pluginDescriptor) throws PluginIncompatibleException {
-        String requiredMavenVersion = pluginDescriptor.getRequiredMavenVersion();
-        if (StringUtils.isNotBlank(requiredMavenVersion)) {
+    @Override
+    public void checkPrerequisites(PluginDescriptor pluginDescriptor) throws PluginIncompatibleException {
+        List<IllegalStateException> prerequisiteExceptions = new ArrayList();
+        this.prerequisitesCheckers.forEach((c) -> {
             try {
-                if (!runtimeInformation.isMavenVersion(requiredMavenVersion)) {
-                    throw new PluginIncompatibleException(
-                            pluginDescriptor.getPlugin(),
-                            "The plugin " + pluginDescriptor.getId() + " requires Maven version "
-                                    + requiredMavenVersion);
-                }
-            } catch (RuntimeException e) {
-                logger.warn("Could not verify plugin's Maven prerequisite: " + e.getMessage());
+                c.accept(pluginDescriptor);
+            } catch (IllegalStateException var4) {
+                prerequisiteExceptions.add(var4);
             }
+        });
+        if (!prerequisiteExceptions.isEmpty()) {
+            String messages =
+                    prerequisiteExceptions.stream().map(Throwable::getMessage).collect(Collectors.joining(", "));
+            PluginIncompatibleException pie = new PluginIncompatibleException(
+                    pluginDescriptor.getPlugin(),
+                    "The plugin " + pluginDescriptor.getId() + " has unmet prerequisites: " + messages,
+                    (Throwable) prerequisiteExceptions.get(0));
+            prerequisiteExceptions.stream().skip(1L).forEach(pie::addSuppressed);
+            throw pie;
         }
     }
 
@@ -351,11 +359,12 @@ public class CliMavenPluginManager implements MavenPluginManager {
                     project.getRemotePluginRepositories(),
                     session.getRepositorySession());
 
-            PluginRealmCache.CacheRecord cacheRecord = pluginRealmCache.get(cacheKey, () -> {
-                createPluginRealm(pluginDescriptor, session, parent, foreignImports, filter);
-                return new PluginRealmCache.CacheRecord(
-                        pluginDescriptor.getClassRealm(), pluginDescriptor.getArtifacts());
-            });
+            PluginRealmCache.CacheRecord cacheRecord =
+                    pluginRealmCache.get(cacheKey, (InvalidatingPluginRealmCache.PluginRealmSupplier) () -> {
+                        createPluginRealm(pluginDescriptor, session, parent, foreignImports, filter);
+                        return new PluginRealmCache.CacheRecord(
+                                pluginDescriptor.getClassRealm(), pluginDescriptor.getArtifacts());
+                    });
 
             if (cacheRecord != null) {
                 pluginDescriptor.setClassRealm(cacheRecord.getRealm());
