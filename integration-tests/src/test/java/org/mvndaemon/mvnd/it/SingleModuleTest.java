@@ -38,13 +38,13 @@ public class SingleModuleTest extends SingleModuleNativeIT {
 
         Assertions.assertThat(filteredMessages)
                 .is(new MatchInOrderAmongOthers<>(
-                        mojoStarted(props, "maven-clean-plugin", "clean", "default-clean"),
-                        mojoStarted(props, "maven-resources-plugin", "resources", "default-resources"),
-                        mojoStarted(props, "maven-compiler-plugin", "compile", "default-compile"),
-                        mojoStarted(props, "maven-resources-plugin", "testResources", "default-testResources"),
-                        mojoStarted(props, "maven-compiler-plugin", "testCompile", "default-testCompile"),
-                        mojoStarted(props, "maven-surefire-plugin", "test", "default-test"),
-                        mojoStarted(props, "maven-install-plugin", "install", "default-install")));
+                        mojoStarted(props, "clean", "clean", "default-clean"),
+                        mojoStarted(props, "resources", "resources", "default-resources"),
+                        mojoStarted(props, "compiler", "compile", "default-compile"),
+                        mojoStarted(props, "resources", "testResources", "default-testResources"),
+                        mojoStarted(props, "compiler", "testCompile", "default-testCompile"),
+                        mojoStarted(props, "surefire", "test", "default-test"),
+                        mojoStarted(props, "install", "install", "default-install")));
     }
 
     String mojoStarted(Properties props, String pluginArtifactId, String mojo, String executionId) {
