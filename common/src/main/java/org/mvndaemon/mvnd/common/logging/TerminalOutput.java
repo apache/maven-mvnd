@@ -788,6 +788,8 @@ public class TerminalOutput implements ClientOutput {
                     .style(GREEN_FOREGROUND)
                     .append(execution.getPluginArtifactId())
                     .append(':')
+                    .append(execution.getPluginVersion())
+                    .append(':')
                     .append(execution.getMojo())
                     .append(' ')
                     .style(AttributedStyle.DEFAULT)

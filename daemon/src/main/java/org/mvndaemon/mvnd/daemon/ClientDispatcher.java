@@ -122,7 +122,7 @@ public class ClientDispatcher extends BuildEventListener {
         queue.add(Message.mojoStarted(
                 event.getProject().getArtifactId(),
                 execution.getGroupId(),
-                execution.getArtifactId(),
+                execution.getMojoDescriptor().getPluginDescriptor().getGoalPrefix(),
                 execution.getVersion(),
                 execution.getGoal(),
                 execution.getExecutionId()));
