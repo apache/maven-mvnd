@@ -96,8 +96,8 @@ public class DaemonParameters {
                 .filter(EnvValue::isSet);
     }
 
-    public void discriminatingCommandLineOptions(List<String> args) {
-        discriminatingValues().forEach(envValue -> envValue.envKey.addCommandLineOption(args, envValue.asString()));
+    public void discriminatingSystemProperties(List<String> args) {
+        discriminatingValues().forEach(envValue -> envValue.envKey.addSystemProperty(args, envValue.asString()));
     }
 
     public Path mvndHome() {
