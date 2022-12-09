@@ -235,8 +235,8 @@ public class DaemonMavenCli {
         } catch (ExitException e) {
             return e.exitCode;
         } finally {
-            System.setProperties(props);
             eventSpyDispatcher.close();
+            System.setProperties(props);
             Thread.currentThread().setContextClassLoader(tccl);
         }
     }
