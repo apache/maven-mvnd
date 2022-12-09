@@ -29,6 +29,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -378,33 +379,39 @@ public class DaemonConnector {
                 args.add("-Xss" + threadStackSize);
             }
 
-            Environment.MVND_HOME.addCommandLineOption(args, mvndHome.toString());
+            Environment.MVND_HOME.addSystemProperty(args, mvndHome.toString());
             args.add("-Dmaven.home=" + mvndHome.resolve("mvn"));
             args.add("-Dmaven.conf=" + mvndHome.resolve("mvn/conf"));
 
-            Environment.MVND_JAVA_HOME.addCommandLineOption(
+            Environment.MVND_JAVA_HOME.addSystemProperty(
                     args, parameters.javaHome().toString());
-            Environment.LOGBACK_CONFIGURATION_FILE.addCommandLineOption(
+            Environment.LOGBACK_CONFIGURATION_FILE.addSystemProperty(
                     args, parameters.logbackConfigurationPath().toString());
-            Environment.MVND_ID.addCommandLineOption(args, daemonId);
-            Environment.MVND_DAEMON_STORAGE.addCommandLineOption(
+            Environment.MVND_ID.addSystemProperty(args, daemonId);
+            Environment.MVND_DAEMON_STORAGE.addSystemProperty(
                     args, parameters.daemonStorage().toString());
-            Environment.MVND_REGISTRY.addCommandLineOption(
+            Environment.MVND_REGISTRY.addSystemProperty(
                     args, parameters.registry().toString());
-            Environment.MVND_SOCKET_FAMILY.addCommandLineOption(
+            Environment.MVND_SOCKET_FAMILY.addSystemProperty(
                     args,
                     parameters
                             .socketFamily()
                             .orElseGet(() -> getJavaVersion() >= 16.0f ? SocketFamily.unix : SocketFamily.inet)
                             .toString());
-            parameters.discriminatingCommandLineOptions(args);
+            parameters.discriminatingSystemProperties(args);
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 
             LOGGER.debug(
                     "Starting daemon process: id = {}, workingDir = {}, daemonArgs: {}", daemonId, workingDir, command);
-            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(
-                    parameters.daemonOutLog(daemonId).toFile());
+            Path daemonOutLog = parameters.daemonOutLog(daemonId);
+            Files.writeString(
+                    daemonOutLog,
+                    "Starting daemon process: id = " + daemonId + ", workingDir = " + workingDir + ", daemonArgs: "
+                            + command,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.APPEND);
+            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(daemonOutLog.toFile());
             ProcessBuilder processBuilder = new ProcessBuilder();
             processBuilder
                     .environment()

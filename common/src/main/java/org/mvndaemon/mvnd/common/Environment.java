@@ -420,6 +420,10 @@ public enum Environment {
         return property + "=" + type.normalize(value);
     }
 
+    public void addSystemProperty(Collection<String> args, String value) {
+        args.add("-D" + property + "=" + type.normalize(value));
+    }
+
     public void addCommandLineOption(Collection<String> args, String value) {
         if (!options.isEmpty()) {
             args.add(options.keySet().iterator().next());
