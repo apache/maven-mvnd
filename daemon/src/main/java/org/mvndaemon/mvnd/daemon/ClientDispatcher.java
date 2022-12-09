@@ -53,7 +53,6 @@ public class ClientDispatcher extends BuildEventListener {
         final MavenSession session = event.getSession();
         final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
         final DependencyGraph<MavenProject> dependencyGraph = DependencyGraph.fromMaven(session);
-        session.getRequest().getData().put(DependencyGraph.class.getName(), dependencyGraph);
 
         final int maxThreads =
                 degreeOfConcurrency == 1 ? 1 : dependencyGraph.computeMaxWidth(degreeOfConcurrency, 1000);

@@ -49,10 +49,15 @@ public class DependencyGraph<K> {
     private final Map<K, Set<K>> transitiveUpstreams;
     private final Map<K, List<K>> downstreams;
 
+    @SuppressWarnings("unchecked")
     public static DependencyGraph<MavenProject> fromMaven(MavenSession session) {
-
-        final ProjectDependencyGraph graph = session.getProjectDependencyGraph();
-        return fromMaven(graph);
+        Map<String, Object> data = session.getRequest().getData();
+        DependencyGraph<MavenProject> graph = (DependencyGraph<MavenProject>) data.get(DependencyGraph.class.getName());
+        if (graph == null) {
+            graph = fromMaven(session.getProjectDependencyGraph());
+            data.put(DependencyGraph.class.getName(), graph);
+        }
+        return graph;
     }
 
     static DependencyGraph<MavenProject> fromMaven(ProjectDependencyGraph graph) {

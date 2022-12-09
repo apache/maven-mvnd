@@ -61,6 +61,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public String prompt(String message, List possibleValues, String defaultReply) throws PrompterException {
         return doPrompt(message, possibleValues, defaultReply, false);
     }
