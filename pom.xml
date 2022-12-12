@@ -83,7 +83,7 @@
     <jline.version>3.21.0</jline.version>
     <junit.jupiter.version>5.9.1</junit.jupiter.version>
     <logback.version>1.2.11</logback.version>
-    <maven.version>4.0.0-alpha-3-SNAPSHOT</maven.version>
+    <maven.version>4.0.0-alpha-3</maven.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.2</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
@@ -318,6 +318,13 @@
 
     </dependencies>
   </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <id>staging-alpha-3</id>
+      <url>https://repository.apache.org/content/repositories/maven-1835/</url>
+    </repository>
+  </repositories>
 
   <build>
     <pluginManagement>
