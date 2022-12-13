@@ -1,17 +1,20 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.cache.invalidating;
 
@@ -47,8 +50,7 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 @Priority(10)
 public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCache {
 
-    protected static class CacheKey
-            implements Key {
+    protected static class CacheKey implements Key {
 
         private final String groupId;
 
@@ -72,8 +74,12 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
 
         private final int hashCode;
 
-        public CacheKey(MavenProject project, List<RemoteRepository> repositories,
-                Collection<String> scopesToCollect, Collection<String> scopesToResolve, boolean aggregating,
+        public CacheKey(
+                MavenProject project,
+                List<RemoteRepository> repositories,
+                Collection<String> scopesToCollect,
+                Collection<String> scopesToResolve,
+                boolean aggregating,
                 RepositorySystemSession session) {
 
             groupId = project.getGroupId();
@@ -99,10 +105,10 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
                 }
             }
             collect = scopesToCollect == null
-                    ? Collections.<String> emptySet()
+                    ? Collections.<String>emptySet()
                     : Collections.unmodifiableSet(new HashSet<>(scopesToCollect));
             resolve = scopesToResolve == null
-                    ? Collections.<String> emptySet()
+                    ? Collections.<String>emptySet()
                     : Collections.unmodifiableSet(new HashSet<>(scopesToResolve));
             this.aggregating = aggregating;
 
@@ -148,7 +154,8 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
 
             CacheKey that = (CacheKey) o;
 
-            return Objects.equals(groupId, that.groupId) && Objects.equals(artifactId, that.artifactId)
+            return Objects.equals(groupId, that.groupId)
+                    && Objects.equals(artifactId, that.artifactId)
                     && Objects.equals(version, that.version)
                     && Objects.equals(dependencyArtifacts, that.dependencyArtifacts)
                     && Objects.equals(workspace, that.workspace)
@@ -179,8 +186,7 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
         }
 
         @Override
-        public void invalidate() {
-        }
+        public void invalidate() {}
     }
 
     final Cache<Key, Record> cache;
@@ -191,10 +197,19 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
     }
 
     @Override
-    public Key createKey(MavenProject project, Collection<String> scopesToCollect, Collection<String> scopesToResolve,
-            boolean aggregating, RepositorySystemSession session) {
-        return new CacheKey(project, project.getRemoteProjectRepositories(), scopesToCollect, scopesToResolve,
-                aggregating, session);
+    public Key createKey(
+            MavenProject project,
+            Collection<String> scopesToCollect,
+            Collection<String> scopesToResolve,
+            boolean aggregating,
+            RepositorySystemSession session) {
+        return new CacheKey(
+                project,
+                project.getRemoteProjectRepositories(),
+                scopesToCollect,
+                scopesToResolve,
+                aggregating,
+                session);
     }
 
     @Override
@@ -231,6 +246,5 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
     }
 
     @Override
-    public void register(MavenProject project, Key cacheKey, CacheRecord record) {
-    }
+    public void register(MavenProject project, Key cacheKey, CacheRecord record) {}
 }

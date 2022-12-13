@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
@@ -35,9 +38,7 @@ public class OsUtils {
     private static final long KB = 1024;
     private static final String UNITS = "Bkmgt";
 
-    private OsUtils() {
-
-    }
+    private OsUtils() {}
 
     public static String bytesTohumanReadable(long bytes) {
         int unit = 0;
@@ -46,7 +47,10 @@ public class OsUtils {
             unit++;
         }
         String kbString = String.valueOf(bytes);
-        return new StringBuilder(kbString.length() + 1).append(kbString).append(UNITS.charAt(unit)).toString();
+        return new StringBuilder(kbString.length() + 1)
+                .append(kbString)
+                .append(UNITS.charAt(unit))
+                .toString();
     }
 
     public static String kbTohumanReadable(long kb) {
@@ -56,22 +60,26 @@ public class OsUtils {
             unit++;
         }
         String kbString = String.valueOf(kb);
-        return new StringBuilder(kbString.length() + 1).append(kbString).append(UNITS.charAt(unit)).toString();
+        return new StringBuilder(kbString.length() + 1)
+                .append(kbString)
+                .append(UNITS.charAt(unit))
+                .toString();
     }
 
     public static long findProcessRssInKb(long pid) {
         final Os os = Os.current();
         if (os.isUnixLike()) {
-            String[] cmd = { "ps", "-o", "rss=", "-p", String.valueOf(pid) };
+            String[] cmd = {"ps", "-o", "rss=", "-p", String.valueOf(pid)};
             final List<String> output = new ArrayList<String>(1);
             exec(cmd, output);
             if (output.size() == 1) {
                 try {
                     return Long.parseLong(output.get(0).trim());
                 } catch (NumberFormatException e) {
-                    LOGGER.warn("Could not parse the output of " + Stream.of(cmd).collect(Collectors.joining(" "))
-                            + " as a long:\n"
-                            + output.stream().collect(Collectors.joining("\n")));
+                    LOGGER.warn(
+                            "Could not parse the output of " + Stream.of(cmd).collect(Collectors.joining(" "))
+                                    + " as a long:\n"
+                                    + output.stream().collect(Collectors.joining("\n")));
                 }
             } else {
                 LOGGER.warn("Unexpected output of " + Stream.of(cmd).collect(Collectors.joining(" ")) + ":\n"
@@ -79,15 +87,17 @@ public class OsUtils {
             }
             return -1;
         } else if (os == Os.WINDOWS) {
-            String[] cmd = { "wmic", "process", "where", "processid=" + pid, "get", "WorkingSetSize" };
+            String[] cmd = {"wmic", "process", "where", "processid=" + pid, "get", "WorkingSetSize"};
             final List<String> output = new ArrayList<String>(1);
             exec(cmd, output);
-            final List<String> nonEmptyLines = output.stream().filter(l -> !l.isEmpty()).collect(Collectors.toList());
+            final List<String> nonEmptyLines =
+                    output.stream().filter(l -> !l.isEmpty()).collect(Collectors.toList());
             if (nonEmptyLines.size() >= 2) {
                 try {
                     return Long.parseLong(nonEmptyLines.get(1).trim()) / KB;
                 } catch (NumberFormatException e) {
-                    LOGGER.warn("Could not parse the second line of " + Stream.of(cmd).collect(Collectors.joining(" "))
+                    LOGGER.warn("Could not parse the second line of "
+                            + Stream.of(cmd).collect(Collectors.joining(" "))
                             + " output as a long:\n"
                             + nonEmptyLines.stream().collect(Collectors.joining("\n")));
                 }
@@ -110,7 +120,7 @@ public class OsUtils {
      * @return                a {@code java.home} value or null
      */
     public static String findJavaHomeFromJavaExecutable(String javaExecutable) {
-        String[] cmd = { javaExecutable, "-XshowSettings:properties", "-version" };
+        String[] cmd = {javaExecutable, "-XshowSettings:properties", "-version"};
         final List<String> output = new ArrayList<String>();
         exec(cmd, output);
         return output.stream()
@@ -217,6 +227,5 @@ public class OsUtils {
             final int exitCode = timeouted ? TIMEOUT_EXIT_CODE : process.exitValue();
             return exitCode;
         }
-
     }
 }

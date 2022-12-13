@@ -1,19 +1,24 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.client;
+
+import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -56,8 +61,6 @@ import org.mvndaemon.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
-
 public class DefaultClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
@@ -88,7 +91,8 @@ public class DefaultClient implements Client {
                 || Environment.COMPLETION.hasCommandLineOption(args);
 
         // Color
-        Color styleColor = Color.of(Environment.MAVEN_COLOR.removeCommandLineOption(args)).orElse(Color.auto);
+        Color styleColor =
+                Color.of(Environment.MAVEN_COLOR.removeCommandLineOption(args)).orElse(Color.auto);
         if (styleColor == Color.auto) {
             /* Translate from auto to either always or never */
             /* stdout is not a terminal e.g. when stdout is redirected to a file */
@@ -114,7 +118,8 @@ public class DefaultClient implements Client {
             System.setProperty(Environment.MVND_NO_BUFERING.getProperty(), Boolean.toString(true));
         }
 
-        System.setProperty(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
+        System.setProperty(
+                Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
 
         Path dir;
         if (Environment.MAVEN_FILE.hasCommandLineOption(args)) {
@@ -126,7 +131,8 @@ public class DefaultClient implements Client {
         } else {
             dir = parameters.userDir();
         }
-        System.setProperty(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.getProperty(),
+        System.setProperty(
+                Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.getProperty(),
                 parameters.multiModuleProjectDirectory(dir).toString());
 
         // .mvn/jvm.config
@@ -158,7 +164,8 @@ public class DefaultClient implements Client {
         boolean defineIsEmpty = false;
         while (iterator.hasNext()) {
             final String arg = iterator.next();
-            String val = Environment.MAVEN_DEFINE.removeCommandLineOption(new ArrayList<>(Collections.singletonList(arg)));
+            String val =
+                    Environment.MAVEN_DEFINE.removeCommandLineOption(new ArrayList<>(Collections.singletonList(arg)));
             /* not -D or --define and pre define is empty */
             if (val == null && defineIsEmpty) {
                 defineIsEmpty = false;
@@ -187,8 +194,7 @@ public class DefaultClient implements Client {
 
     private static boolean maybeDefineCommandLineOption(String arg) {
         // if arg maybe MAVEN_DEFINE value
-        return EnumSet.allOf(Environment.class)
-                .stream()
+        return EnumSet.allOf(Environment.class).stream()
                 .filter(e -> e != Environment.MAVEN_DEFINE)
                 .noneMatch(e -> e.hasCommandLineOption(Collections.singletonList(arg)));
     }
@@ -245,15 +251,19 @@ public class DefaultClient implements Client {
         try (DaemonRegistry registry = new DaemonRegistry(parameters.registry())) {
             if (Environment.STATUS.removeCommandLineOption(args) != null) {
                 final String template = "%8s  %7s  %24s  %7s  %5s  %23s  %s";
-                output.accept(Message.out(String.format(template,
-                        "ID", "PID", "Address", "Status", "RSS", "Last activity", "Java home")));
+                output.accept(Message.out(String.format(
+                        template, "ID", "PID", "Address", "Status", "RSS", "Last activity", "Java home")));
                 for (DaemonInfo d : registry.getAll()) {
                     if (ProcessHandle.of(d.getPid()).isEmpty()) {
                         /* The process does not exist anymore - remove it from the registry */
                         registry.remove(d.getId());
                     } else {
-                        output.accept(Message.out(String.format(template,
-                                d.getId(), d.getPid(), d.getAddress(), d.getState(),
+                        output.accept(Message.out(String.format(
+                                template,
+                                d.getId(),
+                                d.getPid(),
+                                d.getAddress(),
+                                d.getState(),
                                 OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
                                 LocalDateTime.ofInstant(
                                         Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
@@ -318,14 +328,16 @@ public class DefaultClient implements Client {
                         parameters.multiModuleProjectDirectory().toString(),
                         System.getenv()));
 
-                output.accept(Message
-                        .buildStatus("Connected to daemon " + daemon.getDaemon().getId() + ", scanning for projects..."));
+                output.accept(Message.buildStatus(
+                        "Connected to daemon " + daemon.getDaemon().getId() + ", scanning for projects..."));
 
                 // We've sent the request, so it gives us a bit of time to purge the logs
                 AtomicReference<String> purgeMessage = new AtomicReference<>();
-                Thread purgeLog = new Thread(() -> {
-                    purgeMessage.set(purgeLogs());
-                }, "Log purge");
+                Thread purgeLog = new Thread(
+                        () -> {
+                            purgeMessage.set(purgeLogs());
+                        },
+                        "Log purge");
                 purgeLog.setDaemon(true);
                 purgeLog.start();
 
@@ -335,16 +347,18 @@ public class DefaultClient implements Client {
                         output.accept(messages);
                         for (Message m : messages) {
                             switch (m.getType()) {
-                            case Message.CANCEL_BUILD:
-                                return new DefaultResult(argv,
-                                        new InterruptedException("The build was canceled"), 130);
-                            case Message.BUILD_EXCEPTION:
-                                final BuildException e = (BuildException) m;
-                                return new DefaultResult(argv,
-                                        new Exception(e.getClassName() + ": " + e.getMessage() + "\n" + e.getStackTrace()),
-                                        1);
-                            case Message.BUILD_FINISHED:
-                                return new DefaultResult(argv, null, ((BuildFinished) m).getExitCode());
+                                case Message.CANCEL_BUILD:
+                                    return new DefaultResult(
+                                            argv, new InterruptedException("The build was canceled"), 130);
+                                case Message.BUILD_EXCEPTION:
+                                    final BuildException e = (BuildException) m;
+                                    return new DefaultResult(
+                                            argv,
+                                            new Exception(e.getClassName() + ": " + e.getMessage() + "\n"
+                                                    + e.getStackTrace()),
+                                            1);
+                                case Message.BUILD_FINISHED:
+                                    return new DefaultResult(argv, null, ((BuildFinished) m).getExitCode());
                             }
                         }
                     }
@@ -364,13 +378,16 @@ public class DefaultClient implements Client {
         if (!Files.isDirectory(storage) || !TimeUtils.isPositive(purgeLogPeriod)) {
             return null;
         }
-        String date = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZoneId.systemDefault()).format(Instant.now());
+        String date = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                .withZone(ZoneId.systemDefault())
+                .format(Instant.now());
         Path log = storage.resolve("purge-" + date + ".log");
         List<Path> deleted = new ArrayList<>();
         List<Throwable> exceptions = new ArrayList<>();
         FileTime limit = FileTime.from(Instant.now().minus(purgeLogPeriod));
         try (Stream<Path> storagePath = Files.list(storage)) {
-            storagePath.filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
+            storagePath
+                    .filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
                     .filter(p -> !log.equals(p))
                     .filter(p -> {
                         try {
@@ -396,8 +413,8 @@ public class DefaultClient implements Client {
             return null;
         }
         String logMessage;
-        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(log,
-                StandardOpenOption.WRITE, StandardOpenOption.APPEND, StandardOpenOption.CREATE))) {
+        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(
+                log, StandardOpenOption.WRITE, StandardOpenOption.APPEND, StandardOpenOption.CREATE))) {
             w.printf("Purge executed at %s%n", Instant.now().toString());
             if (deleted.isEmpty()) {
                 w.printf("No files deleted.%n");
@@ -423,7 +440,8 @@ public class DefaultClient implements Client {
         if (exceptions.isEmpty()) {
             return String.format("Purged %d log files (%s)", deleted.size(), logMessage);
         } else {
-            return String.format("Purged %d log files with %d exceptions (%s)", deleted.size(), exceptions.size(), logMessage);
+            return String.format(
+                    "Purged %d log files with %d exceptions (%s)", deleted.size(), exceptions.size(), logMessage);
         }
     }
 
@@ -447,13 +465,17 @@ public class DefaultClient implements Client {
         @Override
         public ExecutionResult assertSuccess() {
             if (exception != null) {
-                throw new AssertionError(ExecutionResult.appendCommand(new StringBuilder("Build failed: "), args).toString(),
+                throw new AssertionError(
+                        ExecutionResult.appendCommand(new StringBuilder("Build failed: "), args)
+                                .toString(),
                         exception);
             }
             if (exitCode != 0) {
                 throw new AssertionError(
                         ExecutionResult.appendCommand(
-                                new StringBuilder("Build exited with non-zero exit code " + exitCode + ": "), args).toString(),
+                                        new StringBuilder("Build exited with non-zero exit code " + exitCode + ": "),
+                                        args)
+                                .toString(),
                         exception);
             }
             return this;
@@ -462,7 +484,8 @@ public class DefaultClient implements Client {
         @Override
         public ExecutionResult assertFailure() {
             if (exception == null && exitCode == 0) {
-                throw new AssertionError(ExecutionResult.appendCommand(new StringBuilder("Build did not fail: "), args));
+                throw new AssertionError(
+                        ExecutionResult.appendCommand(new StringBuilder("Build did not fail: "), args));
             }
             return this;
         }
@@ -476,7 +499,5 @@ public class DefaultClient implements Client {
         public boolean isSuccess() {
             return exception == null;
         }
-
     }
-
 }

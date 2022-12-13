@@ -1,17 +1,20 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.daemon;
 
@@ -57,9 +60,14 @@ public class DaemonMemoryStatus {
         final int nonHeapUsageThreshold;
         final double thrashingThreshold;
 
-        GcStrategy(String heapMemoryPool, String nonHeapMemoryPool, String garbageCollector,
-                double heapRateThreshold, int heapUsageThreshold,
-                int nonHeapUsageThreshold, double thrashingThreshold) {
+        GcStrategy(
+                String heapMemoryPool,
+                String nonHeapMemoryPool,
+                String garbageCollector,
+                double heapRateThreshold,
+                int heapUsageThreshold,
+                int nonHeapUsageThreshold,
+                double thrashingThreshold) {
             this.garbageCollector = garbageCollector;
             this.heapMemoryPool = heapMemoryPool;
             this.nonHeapMemoryPool = nonHeapMemoryPool;
@@ -102,13 +110,16 @@ public class DaemonMemoryStatus {
         for (GcStrategy testStrategy : GcStrategy.values()) {
             garbageCollector = garbageCollectors.stream()
                     .filter(gc -> gc.getName().equals(testStrategy.garbageCollector))
-                    .findFirst().orElse(null);
+                    .findFirst()
+                    .orElse(null);
             heapMemoryPoolMXBean = memoryPoolMXBeans.stream()
                     .filter(mp -> mp.getName().equals(testStrategy.heapMemoryPool))
-                    .findFirst().orElse(null);
+                    .findFirst()
+                    .orElse(null);
             nonHeapMemoryPoolMXBean = memoryPoolMXBeans.stream()
                     .filter(mp -> mp.getName().equals(testStrategy.nonHeapMemoryPool))
-                    .findFirst().orElse(null);
+                    .findFirst()
+                    .orElse(null);
             if (garbageCollector != null && heapMemoryPoolMXBean != null && nonHeapMemoryPoolMXBean != null) {
                 strategy = testStrategy;
                 break;
@@ -135,7 +146,8 @@ public class DaemonMemoryStatus {
         long currentCount = garbageCollectorMXBean.getCollectionCount();
         // There has been a GC event
         if (latest == null || latest.count != currentCount) {
-            slideAndInsert(heapEvents, new GcEvent(clock.instant(), heapMemoryPoolMXBean.getCollectionUsage(), currentCount));
+            slideAndInsert(
+                    heapEvents, new GcEvent(clock.instant(), heapMemoryPoolMXBean.getCollectionUsage(), currentCount));
         }
         slideAndInsert(nonHeapEvents, new GcEvent(clock.instant(), nonHeapMemoryPoolMXBean.getUsage(), -1));
     }
@@ -172,8 +184,7 @@ public class DaemonMemoryStatus {
     public boolean isNonHeapSpaceExhausted() {
         if (strategy.nonHeapUsageThreshold != 0) {
             GcStats stats = nonHeapStats();
-            return stats != null
-                    && stats.usedPercent >= strategy.nonHeapUsageThreshold;
+            return stats != null && stats.usedPercent >= strategy.nonHeapUsageThreshold;
         } else {
             return false;
         }
@@ -219,5 +230,4 @@ public class DaemonMemoryStatus {
     private double averageUsage(Collection<GcEvent> events) {
         return events.stream().mapToLong(e -> e.usage.getUsed()).average().getAsDouble();
     }
-
 }

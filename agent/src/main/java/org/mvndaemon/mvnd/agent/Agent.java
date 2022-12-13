@@ -1,17 +1,20 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.agent;
 
@@ -37,15 +40,21 @@ public class Agent {
     public static void premain(String args, Instrumentation instrumentation) throws Exception {
         instrumentation.addTransformer(new ClassFileTransformer() {
             @Override
-            public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                    ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+            public byte[] transform(
+                    ClassLoader loader,
+                    String className,
+                    Class<?> classBeingRedefined,
+                    ProtectionDomain protectionDomain,
+                    byte[] classfileBuffer)
+                    throws IllegalClassFormatException {
                 if ("java/lang/ProcessBuilder".equals(className)) {
                     try {
                         ClassPool pool = ClassPool.getDefault();
                         CtClass clazz = pool.get("java.lang.ProcessBuilder");
                         pool.importPackage("org.mvndaemon.mvnd.pump");
-                        clazz.getDeclaredMethod("start",
-                                new CtClass[] { clazz.getClassPool().get("java.lang.ProcessBuilder$Redirect[]") })
+                        clazz.getDeclaredMethod(
+                                        "start",
+                                        new CtClass[] {clazz.getClassPool().get("java.lang.ProcessBuilder$Redirect[]")})
                                 .insertBefore(START_WITH_PIPES);
                         byte[] data = clazz.toBytecode();
                         clazz.detach();
@@ -60,5 +69,4 @@ public class Agent {
             }
         });
     }
-
 }

@@ -1,19 +1,28 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.daemon;
+
+import static org.mvndaemon.mvnd.common.DaemonState.Broken;
+import static org.mvndaemon.mvnd.common.DaemonState.Busy;
+import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
+import static org.mvndaemon.mvnd.common.DaemonState.StopRequested;
+import static org.mvndaemon.mvnd.common.DaemonState.Stopped;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -64,12 +73,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
-
-import static org.mvndaemon.mvnd.common.DaemonState.Broken;
-import static org.mvndaemon.mvnd.common.DaemonState.Busy;
-import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
-import static org.mvndaemon.mvnd.common.DaemonState.StopRequested;
-import static org.mvndaemon.mvnd.common.DaemonState.Stopped;
 
 public class Server implements AutoCloseable, Runnable {
 
@@ -132,13 +135,15 @@ public class Server implements AutoCloseable, Runnable {
             List<String> opts = new ArrayList<>();
             Arrays.stream(Environment.values())
                     .filter(Environment::isDiscriminating)
-                    .forEach(envKey -> envKey.asOptional().ifPresent(val -> opts.add(envKey.getProperty() + "=" + val)));
+                    .forEach(
+                            envKey -> envKey.asOptional().ifPresent(val -> opts.add(envKey.getProperty() + "=" + val)));
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(opts.stream().collect(Collectors.joining(
-                        "\n     ", "Initializing daemon with properties:\n     ", "\n")));
+                LOGGER.debug(opts.stream()
+                        .collect(Collectors.joining("\n     ", "Initializing daemon with properties:\n     ", "\n")));
             }
             long cur = System.currentTimeMillis();
-            info = new DaemonInfo(daemonId,
+            info = new DaemonInfo(
+                    daemonId,
                     Environment.MVND_JAVA_HOME.asString(),
                     Environment.MVND_HOME.asString(),
                     DaemonRegistry.getProcessId(),
@@ -146,7 +151,9 @@ public class Server implements AutoCloseable, Runnable {
                     token,
                     Locale.getDefault().toLanguageTag(),
                     opts,
-                    Busy, cur, cur);
+                    Busy,
+                    cur,
+                    cur);
             registry.store(info);
         } catch (Exception e) {
             throw new RuntimeException("Could not initialize " + Server.class.getName(), e);
@@ -193,8 +200,11 @@ public class Server implements AutoCloseable, Runnable {
     public void run() {
         try {
             Duration expirationCheckDelay = Environment.MVND_EXPIRATION_CHECK_DELAY.asDuration();
-            executor.scheduleAtFixedRate(this::expirationCheck,
-                    expirationCheckDelay.toMillis(), expirationCheckDelay.toMillis(), TimeUnit.MILLISECONDS);
+            executor.scheduleAtFixedRate(
+                    this::expirationCheck,
+                    expirationCheckDelay.toMillis(),
+                    expirationCheckDelay.toMillis(),
+                    TimeUnit.MILLISECONDS);
             LOGGER.info("Daemon started");
             if (noDaemon) {
                 try (SocketChannel socket = this.socket.accept()) {
@@ -242,9 +252,10 @@ public class Server implements AutoCloseable, Runnable {
             LOGGER.info("Waiting for request");
             SynchronousQueue<Message> request = new SynchronousQueue<>();
             new DaemonThread(() -> {
-                Message message = connection.receive();
-                request.offer(message);
-            }).start();
+                        Message message = connection.receive();
+                        request.offer(message);
+                    })
+                    .start();
             Message message = request.poll(1, TimeUnit.MINUTES);
             if (message == null) {
                 LOGGER.info("Could not receive request after one minute, dropping connection");
@@ -288,19 +299,19 @@ public class Server implements AutoCloseable, Runnable {
                 LOGGER.debug("Expiration check running");
                 final DaemonExpirationResult result = strategy.checkExpiration(this);
                 switch (result.getStatus()) {
-                case DO_NOT_EXPIRE:
-                    break;
-                case QUIET_EXPIRE:
-                    requestStop(result.getReason());
-                    break;
-                case GRACEFUL_EXPIRE:
-                    onExpire(result.getReason(), result.getStatus());
-                    requestStop(result.getReason());
-                    break;
-                case IMMEDIATE_EXPIRE:
-                    onExpire(result.getReason(), result.getStatus());
-                    requestForcefulStop(result.getReason());
-                    break;
+                    case DO_NOT_EXPIRE:
+                        break;
+                    case QUIET_EXPIRE:
+                        requestStop(result.getReason());
+                        break;
+                    case GRACEFUL_EXPIRE:
+                        onExpire(result.getReason(), result.getStatus());
+                        requestStop(result.getReason());
+                        break;
+                    case IMMEDIATE_EXPIRE:
+                        onExpire(result.getReason(), result.getStatus());
+                        requestForcefulStop(result.getReason());
+                        break;
                 }
             } catch (Throwable t) {
                 LOGGER.error("Problem in daemon expiration check", t);
@@ -327,23 +338,23 @@ public class Server implements AutoCloseable, Runnable {
             while (true) {
                 try {
                     switch (getState()) {
-                    case Idle:
-                    case Busy:
-                        LOGGER.debug("daemon is running. Sleeping until state changes.");
-                        condition.await();
-                        break;
-                    case Canceled:
-                        cancelNow();
-                        break;
-                    case Broken:
-                        throw new IllegalStateException("This daemon is in a broken state.");
-                    case StopRequested:
-                        LOGGER.debug("daemon stop has been requested. Sleeping until state changes.");
-                        condition.await();
-                        break;
-                    case Stopped:
-                        LOGGER.debug("daemon has stopped.");
-                        return true;
+                        case Idle:
+                        case Busy:
+                            LOGGER.debug("daemon is running. Sleeping until state changes.");
+                            condition.await();
+                            break;
+                        case Canceled:
+                            cancelNow();
+                            break;
+                        case Broken:
+                            throw new IllegalStateException("This daemon is in a broken state.");
+                        case StopRequested:
+                            LOGGER.debug("daemon stop has been requested. Sleeping until state changes.");
+                            condition.await();
+                            break;
+                        case Stopped:
+                            LOGGER.debug("daemon has stopped.");
+                            return true;
                     }
                 } catch (InterruptedException e) {
                     throw new DaemonException.InterruptedException(e);
@@ -380,17 +391,17 @@ public class Server implements AutoCloseable, Runnable {
     private void beginStopping() {
         DaemonState state = getState();
         switch (state) {
-        case Idle:
-        case Busy:
-        case Canceled:
-        case Broken:
-            updateState(StopRequested);
-            break;
-        case StopRequested:
-        case Stopped:
-            break;
-        default:
-            throw new IllegalStateException("Daemon is in unexpected state: " + state);
+            case Idle:
+            case Busy:
+            case Canceled:
+            case Broken:
+                updateState(StopRequested);
+                break;
+            case StopRequested:
+            case Stopped:
+                break;
+            default:
+                throw new IllegalStateException("Daemon is in unexpected state: " + state);
         }
     }
 
@@ -399,18 +410,21 @@ public class Server implements AutoCloseable, Runnable {
         try {
             DaemonState state = getState();
             switch (state) {
-            case Idle:
-            case Busy:
-            case Canceled:
-            case Broken:
-            case StopRequested:
-                LOGGER.debug("Marking daemon stopped due to {}. The daemon is running a build: {}", reason, state == Busy);
-                updateState(Stopped);
-                break;
-            case Stopped:
-                break;
-            default:
-                throw new IllegalStateException("Daemon is in unexpected state: " + state);
+                case Idle:
+                case Busy:
+                case Canceled:
+                case Broken:
+                case StopRequested:
+                    LOGGER.debug(
+                            "Marking daemon stopped due to {}. The daemon is running a build: {}",
+                            reason,
+                            state == Busy);
+                    updateState(Stopped);
+                    break;
+                case Stopped:
+                    break;
+                default:
+                    throw new IllegalStateException("Daemon is in unexpected state: " + state);
             }
         } finally {
             stateLock.unlock();
@@ -434,20 +448,20 @@ public class Server implements AutoCloseable, Runnable {
             while ((rem = time - System.currentTimeMillis()) > 0) {
                 try {
                     switch (getState()) {
-                    case Idle:
-                        LOGGER.debug("Cancel: daemon is idle now.");
-                        return;
-                    case Busy:
-                    case Canceled:
-                    case StopRequested:
-                        LOGGER.debug("Cancel: daemon is busy, sleeping until state changes.");
-                        condition.await(rem, TimeUnit.MILLISECONDS);
-                        break;
-                    case Broken:
-                        throw new IllegalStateException("This daemon is in a broken state.");
-                    case Stopped:
-                        LOGGER.debug("Cancel: daemon has stopped.");
-                        return;
+                        case Idle:
+                            LOGGER.debug("Cancel: daemon is idle now.");
+                            return;
+                        case Busy:
+                        case Canceled:
+                        case StopRequested:
+                            LOGGER.debug("Cancel: daemon is busy, sleeping until state changes.");
+                            condition.await(rem, TimeUnit.MILLISECONDS);
+                            break;
+                        case Broken:
+                            throw new IllegalStateException("This daemon is in a broken state.");
+                        case Stopped:
+                            LOGGER.debug("Cancel: daemon has stopped.");
+                            return;
                     }
                 } catch (InterruptedException e) {
                     throw new DaemonException.InterruptedException(e);

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
@@ -30,8 +32,7 @@ import java.util.Properties;
  */
 public class InterpolationHelper {
 
-    private InterpolationHelper() {
-    }
+    private InterpolationHelper() {}
 
     private static final char ESCAPE_CHAR = '\\';
     private static final String DELIM_START = "${";
@@ -45,7 +46,6 @@ public class InterpolationHelper {
     public interface SubstitutionCallback {
 
         String getValue(String key);
-
     }
 
     /**
@@ -57,7 +57,8 @@ public class InterpolationHelper {
      * @param defaultsToEmptyString sets an empty string if a replacement value is not found, leaves intact
      *                              otherwise
      */
-    public static void performSubstitution(Properties properties,
+    public static void performSubstitution(
+            Properties properties,
             SubstitutionCallback callback,
             boolean substituteFromConfig,
             boolean defaultsToEmptyString) {
@@ -65,9 +66,8 @@ public class InterpolationHelper {
         properties.stringPropertyNames().forEach(n -> org.put(n, properties.getProperty(n)));
         for (String name : properties.stringPropertyNames()) {
             String value = properties.getProperty(name);
-            properties.setProperty(name,
-                    substVars(value, name, null, org, callback, substituteFromConfig,
-                            defaultsToEmptyString));
+            properties.setProperty(
+                    name, substVars(value, name, null, org, callback, substituteFromConfig, defaultsToEmptyString));
         }
     }
 
@@ -97,7 +97,8 @@ public class InterpolationHelper {
      * @throws IllegalArgumentException If there was a syntax error in the
      *                                  property placeholder syntax or a recursive variable reference.
      **/
-    public static String substVars(String val,
+    public static String substVars(
+            String val,
             String currentKey,
             Map<String, String> cycleMap,
             Map<String, String> configProps,
@@ -105,11 +106,12 @@ public class InterpolationHelper {
             boolean substituteFromConfig,
             boolean defaultsToEmptyString)
             throws IllegalArgumentException {
-        return unescape(doSubstVars(val, currentKey, cycleMap, configProps, callback, substituteFromConfig,
-                defaultsToEmptyString));
+        return unescape(doSubstVars(
+                val, currentKey, cycleMap, configProps, callback, substituteFromConfig, defaultsToEmptyString));
     }
 
-    private static String doSubstVars(String val,
+    private static String doSubstVars(
+            String val,
             String currentKey,
             Map<String, String> cycleMap,
             Map<String, String> configProps,
@@ -231,8 +233,8 @@ public class InterpolationHelper {
 
         // Now perform substitution again, since there could still
         // be substitutions to make.
-        val = doSubstVars(val, currentKey, cycleMap, configProps, callback, substituteFromConfig,
-                defaultsToEmptyString);
+        val = doSubstVars(
+                val, currentKey, cycleMap, configProps, callback, substituteFromConfig, defaultsToEmptyString);
 
         cycleMap.remove(currentKey);
 
@@ -252,5 +254,4 @@ public class InterpolationHelper {
         }
         return val;
     }
-
 }
