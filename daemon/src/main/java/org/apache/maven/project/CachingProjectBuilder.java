@@ -644,7 +644,7 @@ public class CachingProjectBuilder implements ProjectBuilder {
         return noErrors;
     }
 
-    @SuppressWarnings("checkstyle:methodlength")
+    @SuppressWarnings({"checkstyle:methodlength", "deprecation"})
     private void initProject(
             MavenProject project,
             Map<String, MavenProject> projects,

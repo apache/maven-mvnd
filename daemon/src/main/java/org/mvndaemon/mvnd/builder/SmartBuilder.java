@@ -99,8 +99,7 @@ public class SmartBuilder implements Builder {
 
         session.getRepositorySession().getData().set(ReactorBuildStatus.class, reactorBuildStatus);
 
-        DependencyGraph<MavenProject> graph =
-                (DependencyGraph<MavenProject>) session.getRequest().getData().get(DependencyGraph.class.getName());
+        DependencyGraph<MavenProject> graph = DependencyGraph.fromMaven(session);
 
         // log overall build info
         final int degreeOfConcurrency = session.getRequest().getDegreeOfConcurrency();
