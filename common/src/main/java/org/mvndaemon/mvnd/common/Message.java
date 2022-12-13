@@ -510,6 +510,7 @@ public abstract class Message {
         final String artifactId;
         final String pluginGroupId;
         final String pluginArtifactId;
+        final String pluginGoalPrefix;
         final String pluginVersion;
         final String mojo;
         final String executionId;
@@ -518,16 +519,19 @@ public abstract class Message {
             final String artifactId = readUTF(input);
             final String pluginGroupId = readUTF(input);
             final String pluginArtifactId = readUTF(input);
+            final String pluginGoalPrefix = readUTF(input);
             final String pluginVersion = readUTF(input);
             final String mojo = readUTF(input);
             final String executionId = readUTF(input);
-            return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+            return new MojoStartedEvent(
+                    artifactId, pluginGroupId, pluginArtifactId, pluginGoalPrefix, pluginVersion, mojo, executionId);
         }
 
         public MojoStartedEvent(
                 String artifactId,
                 String pluginGroupId,
                 String pluginArtifactId,
+                String pluginGoalPrefix,
                 String pluginVersion,
                 String mojo,
                 String executionId) {
@@ -535,6 +539,7 @@ public abstract class Message {
             this.artifactId = Objects.requireNonNull(artifactId, "artifactId cannot be null");
             this.pluginGroupId = Objects.requireNonNull(pluginGroupId, "pluginGroupId cannot be null");
             this.pluginArtifactId = Objects.requireNonNull(pluginArtifactId, "pluginArtifactId cannot be null");
+            this.pluginGoalPrefix = Objects.requireNonNull(pluginGoalPrefix, "pluginGoalPrefix cannot be null");
             this.pluginVersion = Objects.requireNonNull(pluginVersion, "pluginVersion cannot be null");
             this.mojo = Objects.requireNonNull(mojo, "mojo cannot be null");
             this.executionId = Objects.requireNonNull(executionId, "executionId cannot be null");
@@ -552,6 +557,10 @@ public abstract class Message {
             return pluginArtifactId;
         }
 
+        public String getPluginGoalPrefix() {
+            return pluginGoalPrefix;
+        }
+
         public String getPluginVersion() {
             return pluginVersion;
         }
@@ -566,13 +575,14 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "MojoStarted{" + "artifactId='"
-                    + artifactId + '\'' + ", pluginGroupId='"
-                    + pluginGroupId + '\'' + ", pluginArtifactId='"
-                    + pluginArtifactId + '\'' + ", pluginVersion='"
-                    + pluginVersion + '\'' + ", mojo='"
-                    + mojo + '\'' + ", executionId='"
-                    + executionId + '\'' + '}';
+            return "MojoStarted{"
+                    + "artifactId='" + artifactId + '\'' + ", "
+                    + "pluginGroupId='" + pluginGroupId + '\'' + ", "
+                    + "pluginArtifactId='" + pluginArtifactId + '\'' + ", "
+                    + "pluginGoalPrefix='" + pluginGoalPrefix + '\'' + ", "
+                    + "pluginVersion='" + pluginVersion + '\'' + ", "
+                    + "mojo='" + mojo + '\'' + ", "
+                    + "executionId='" + executionId + '\'' + '}';
         }
 
         @Override
@@ -581,6 +591,7 @@ public abstract class Message {
             writeUTF(output, artifactId);
             writeUTF(output, pluginGroupId);
             writeUTF(output, pluginArtifactId);
+            writeUTF(output, pluginGoalPrefix);
             writeUTF(output, pluginVersion);
             writeUTF(output, mojo);
             writeUTF(output, executionId);
@@ -1073,10 +1084,12 @@ public abstract class Message {
             String artifactId,
             String pluginGroupId,
             String pluginArtifactId,
+            String pluginGoalPrefix,
             String pluginVersion,
             String mojo,
             String executionId) {
-        return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+        return new MojoStartedEvent(
+                artifactId, pluginGroupId, pluginArtifactId, pluginGoalPrefix, pluginVersion, mojo, executionId);
     }
 
     public static ProjectEvent display(String projectId, String message) {

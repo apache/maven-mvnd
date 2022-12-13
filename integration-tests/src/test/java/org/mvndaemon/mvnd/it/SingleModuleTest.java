@@ -53,6 +53,7 @@ public class SingleModuleTest extends SingleModuleNativeIT {
                                 "single-module",
                                 "org.apache.maven.plugins",
                                 pluginArtifactId,
+                                "",
                                 props.getProperty(pluginArtifactId + ".version"),
                                 mojo,
                                 executionId)
