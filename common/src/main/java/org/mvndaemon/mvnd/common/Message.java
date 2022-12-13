@@ -62,6 +62,8 @@ public abstract class Message {
     public static final int EXECUTION_FAILURE = 24;
     public static final int PRINT_OUT = 25;
     public static final int PRINT_ERR = 26;
+    public static final int REQUEST_INPUT = 27;
+    public static final int INPUT_DATA = 28;
 
     final int type;
 
@@ -115,6 +117,10 @@ public abstract class Message {
             case PRINT_OUT:
             case PRINT_ERR:
                 return StringMessage.read(type, input);
+            case REQUEST_INPUT:
+                return RequestInput.read(input);
+            case INPUT_DATA:
+                return InputData.read(input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -137,6 +143,8 @@ public abstract class Message {
             case DISPLAY:
             case PRINT_OUT:
             case PRINT_ERR:
+            case REQUEST_INPUT:
+            case INPUT_DATA:
                 return 2;
             case PROJECT_STARTED:
                 return 3;
@@ -1036,6 +1044,66 @@ public abstract class Message {
         }
     }
 
+    public static class RequestInput extends Message {
+
+        private String projectId;
+
+        public static RequestInput read(DataInputStream input) throws IOException {
+            String projectId = readUTF(input);
+            return new RequestInput(projectId);
+        }
+
+        public RequestInput(String projectId) {
+            super(REQUEST_INPUT);
+            this.projectId = projectId;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        @Override
+        public String toString() {
+            return "RequestInput{" + "projectId='" + projectId + '\'' + '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, projectId);
+        }
+    }
+
+    public static class InputData extends Message {
+
+        final String data;
+
+        public static Message read(DataInputStream input) throws IOException {
+            String data = readUTF(input);
+            return new InputData(data);
+        }
+
+        private InputData(String data) {
+            super(INPUT_DATA);
+            this.data = data;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        @Override
+        public String toString() {
+            return "InputResponse{" + "data='" + data + "\'" + '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, data);
+        }
+    }
+
     public int getType() {
         return type;
     }
@@ -1046,6 +1114,14 @@ public abstract class Message {
 
     public static StringMessage display(String message) {
         return new StringMessage(DISPLAY, message);
+    }
+
+    public static RequestInput requestInput(String projectId) {
+        return new RequestInput(projectId);
+    }
+
+    public static InputData inputResponse(String data) {
+        return new InputData(data);
     }
 
     public static StringMessage out(String message) {

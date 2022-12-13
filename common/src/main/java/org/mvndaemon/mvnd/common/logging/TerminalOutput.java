@@ -53,6 +53,7 @@ import org.mvndaemon.mvnd.common.Message.BuildStarted;
 import org.mvndaemon.mvnd.common.Message.ExecutionFailureEvent;
 import org.mvndaemon.mvnd.common.Message.MojoStartedEvent;
 import org.mvndaemon.mvnd.common.Message.ProjectEvent;
+import org.mvndaemon.mvnd.common.Message.RequestInput;
 import org.mvndaemon.mvnd.common.Message.StringMessage;
 import org.mvndaemon.mvnd.common.Message.TransferEvent;
 import org.mvndaemon.mvnd.common.OsUtils;
@@ -112,6 +113,8 @@ public class TerminalOutput implements ClientOutput {
     private volatile Consumer<Message> daemonDispatch;
     /** A sink for queuing messages to the main queue */
     private volatile Consumer<Message> daemonReceive;
+    /** The project id which is trying to read the input stream */
+    private volatile String projectReadingInput;
 
     /*
      * The following non-final fields are read/written from the main thread only.
@@ -441,6 +444,15 @@ public class TerminalOutput implements ClientOutput {
                 failures.add(efe);
                 break;
             }
+            case Message.REQUEST_INPUT: {
+                RequestInput ri = (RequestInput) entry;
+                projectReadingInput = ri.getProjectId();
+                break;
+            }
+            case Message.INPUT_DATA: {
+                daemonDispatch.accept(entry);
+                break;
+            }
             default:
                 throw new IllegalStateException("Unexpected message " + entry);
         }
@@ -480,7 +492,21 @@ public class TerminalOutput implements ClientOutput {
         try {
             while (!closing) {
                 if (readInput.readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
-                    try {
+                    if (projectReadingInput != null) {
+                        char[] buf = new char[256];
+                        int idx = 0;
+                        while (idx < buf.length) {
+                            int c = terminal.reader().read(idx > 0 ? 1 : 10);
+                            if (c < 0) {
+                                break;
+                            }
+                            buf[idx++] = (char) c;
+                        }
+                        if (idx > 0) {
+                            String data = String.valueOf(buf, 0, idx);
+                            daemonReceive.accept(Message.inputResponse(data));
+                        }
+                    } else {
                         int c = terminal.reader().read(10);
                         if (c == -1) {
                             break;
@@ -488,9 +514,8 @@ public class TerminalOutput implements ClientOutput {
                         if (c == KEY_PLUS || c == KEY_MINUS || c == KEY_CTRL_L || c == KEY_CTRL_M || c == KEY_CTRL_B) {
                             daemonReceive.accept(Message.keyboardInput((char) c));
                         }
-                    } finally {
-                        readInput.readLock().unlock();
                     }
+                    readInput.readLock().unlock();
                 }
             }
         } catch (InterruptedException e) {
