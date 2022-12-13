@@ -31,4 +31,11 @@ public class OsUtilsTest {
         Assertions.assertEquals("1g", OsUtils.kbTohumanReadable(1024 * 1024));
         Assertions.assertEquals("1t", OsUtils.kbTohumanReadable(1024 * 1024 * 1024));
     }
+
+    @Test
+    void findJavaHomeFromPath() {
+        final String expectedJavaHome = System.getProperty("java.home");
+        Assertions.assertEquals(
+                expectedJavaHome, OsUtils.findJavaHomeFromJavaExecutable(expectedJavaHome + "/bin/java"));
+    }
 }
