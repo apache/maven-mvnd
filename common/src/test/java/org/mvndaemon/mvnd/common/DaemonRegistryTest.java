@@ -22,8 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,9 +36,26 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DaemonRegistryTest {
+
+    private PrintStream oldSysErr;
+    private PrintStream newSysErr;
+
+    @BeforeEach
+    void setup() {
+        oldSysErr = System.err;
+        newSysErr = new PrintStream(new ByteArrayOutputStream());
+        System.setErr(newSysErr);
+    }
+
+    @AfterEach
+    void tearDown() {
+        System.setErr(oldSysErr);
+    }
 
     @Test
     public void testReadWrite() throws IOException {
