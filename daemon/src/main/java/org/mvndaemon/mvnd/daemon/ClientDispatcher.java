@@ -118,10 +118,12 @@ public class ClientDispatcher extends BuildEventListener {
 
     public void mojoStarted(ExecutionEvent event) {
         final MojoExecution execution = event.getMojoExecution();
+        String goalPrefix = execution.getMojoDescriptor().getPluginDescriptor().getGoalPrefix();
         queue.add(Message.mojoStarted(
                 event.getProject().getArtifactId(),
                 execution.getGroupId(),
                 execution.getArtifactId(),
+                goalPrefix != null ? goalPrefix : "",
                 execution.getVersion(),
                 execution.getGoal(),
                 execution.getExecutionId()));
