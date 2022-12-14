@@ -100,6 +100,29 @@
     </resources>
     <plugins>
       <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>fallback</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <release>${maven-dist.required.jdk}</release>
+              <compileSourceRoots>
+                <root>${project.basedir}/src/main/java-fallback</root>
+              </compileSourceRoots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
