@@ -1,17 +1,20 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
@@ -91,9 +94,16 @@ public enum Environment {
     // Maven properties
     //
     /** The path to the Maven local repository */
-    MAVEN_REPO_LOCAL("maven.repo.local", null, null, OptionType.PATH, Flags.NONE),
+    MAVEN_REPO_LOCAL("maven.repo.local", null, null, OptionType.PATH, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /** The location of the maven settings file */
-    MAVEN_SETTINGS("maven.settings", null, null, OptionType.PATH, Flags.NONE, "mvn:-s", "mvn:--settings"),
+    MAVEN_SETTINGS(
+            "maven.settings",
+            null,
+            null,
+            OptionType.PATH,
+            Flags.DISCRIMINATING | Flags.OPTIONAL,
+            "mvn:-s",
+            "mvn:--settings"),
     /** The pom or directory to build */
     MAVEN_FILE(null, null, null, OptionType.PATH, Flags.NONE, "mvn:-f", "mvn:--file"),
     /** The root directory of the current multi module Maven project */
@@ -214,7 +224,8 @@ public enum Environment {
      * The <code>-Xss</code> value to pass to the daemon.
      * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
      */
-    MVND_THREAD_STACK_SIZE("mvnd.threadStackSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
+    MVND_THREAD_STACK_SIZE(
+            "mvnd.threadStackSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
      * Additional JVM args to pass to the daemon.
      * The content of the <code>.mvn/jvm.config</code> file will prepended (and thus with
@@ -230,13 +241,14 @@ public enum Environment {
     /**
      * The daemon will check this often whether it should exit.
      */
-    MVND_EXPIRATION_CHECK_DELAY("mvnd.expirationCheckDelay", null, "10 seconds", OptionType.DURATION, Flags.DISCRIMINATING),
+    MVND_EXPIRATION_CHECK_DELAY(
+            "mvnd.expirationCheckDelay", null, "10 seconds", OptionType.DURATION, Flags.DISCRIMINATING),
     /**
      * Period after which idle duplicate daemons will be shut down. Duplicate daemons are daemons with the same set of
      * discriminating start parameters.
      */
-    MVND_DUPLICATE_DAEMON_GRACE_PERIOD("mvnd.duplicateDaemonGracePeriod", null, "10 seconds", OptionType.DURATION,
-            Flags.DISCRIMINATING),
+    MVND_DUPLICATE_DAEMON_GRACE_PERIOD(
+            "mvnd.duplicateDaemonGracePeriod", null, "10 seconds", OptionType.DURATION, Flags.DISCRIMINATING),
     /**
      * Internal property to tell the daemon the width of the terminal
      */
@@ -294,7 +306,12 @@ public enum Environment {
     private final OptionType type;
     private final Map<String, OptionOrigin> options;
 
-    Environment(String property, String environmentVariable, Object default_, OptionType type, int flags,
+    Environment(
+            String property,
+            String environmentVariable,
+            Object default_,
+            OptionType type,
+            int flags,
             String... options) {
         if (property == null && options.length == 0) {
             throw new IllegalArgumentException(
@@ -310,7 +327,8 @@ public enum Environment {
         } else {
             final Map<String, OptionOrigin> optMap = new LinkedHashMap<>();
             for (String opt : options) {
-                OPTION_ORIGIN_SEARCH: {
+                OPTION_ORIGIN_SEARCH:
+                {
                     for (OptionOrigin oo : OptionOrigin.values()) {
                         if (opt.startsWith(oo.prefix)) {
                             optMap.put(opt.substring(oo.prefix.length()), oo);
@@ -319,7 +337,9 @@ public enum Environment {
                     }
                     throw new IllegalArgumentException(
                             "Unexpected option prefix: '" + opt + "'; Options should start with any of "
-                                    + Stream.of(OptionOrigin.values()).map(oo -> oo.prefix).collect(Collectors.joining(",")));
+                                    + Stream.of(OptionOrigin.values())
+                                            .map(oo -> oo.prefix)
+                                            .collect(Collectors.joining(",")));
                 }
             }
             this.options = Collections.unmodifiableMap(optMap);
@@ -405,6 +425,10 @@ public enum Environment {
         return property + "=" + type.normalize(value);
     }
 
+    public void addSystemProperty(Collection<String> args, String value) {
+        args.add("-D" + property + "=" + type.normalize(value));
+    }
+
     public void addCommandLineOption(Collection<String> args, String value) {
         if (!options.isEmpty()) {
             args.add(options.keySet().iterator().next());
@@ -430,7 +454,7 @@ public enum Environment {
     String getCommandLineOption(Collection<String> args, boolean remove) {
         final String[] prefixes = getPrefixes();
         String value = null;
-        for (Iterator<String> it = args.iterator(); it.hasNext();) {
+        for (Iterator<String> it = args.iterator(); it.hasNext(); ) {
             String arg = it.next();
             if (Stream.of(prefixes).anyMatch(arg::startsWith)) {
                 if (remove) {
@@ -439,8 +463,10 @@ public enum Environment {
                 if (type == OptionType.VOID) {
                     value = "";
                 } else {
-                    String opt = Stream.of(prefixes).filter(arg::startsWith)
-                            .max(Comparator.comparing(String::length)).get();
+                    String opt = Stream.of(prefixes)
+                            .filter(arg::startsWith)
+                            .max(Comparator.comparing(String::length))
+                            .get();
                     value = arg.substring(opt.length());
                     if (value.isEmpty()) {
                         if (it.hasNext()) {
@@ -463,7 +489,7 @@ public enum Environment {
     private String[] getPrefixes() {
         final String[] prefixes;
         if (options.isEmpty()) {
-            prefixes = new String[] { "-D" + property + "=" };
+            prefixes = new String[] {"-D" + property + "="};
         } else if (property != null) {
             prefixes = new String[options.size() + 1];
             options.keySet().toArray(prefixes);
@@ -498,13 +524,16 @@ public enum Environment {
         }
         return Stream.of(values)
                 .filter(env -> !env.isInternal())
-                .sorted(Comparator.<Environment, String> comparing(env -> env.property != null ? env.property : "")
-                        .thenComparing(env -> !env.options.isEmpty() ? env.options.keySet().iterator().next() : ""))
+                .sorted(Comparator.<Environment, String>comparing(env -> env.property != null ? env.property : "")
+                        .thenComparing(env -> !env.options.isEmpty()
+                                ? env.options.keySet().iterator().next()
+                                : ""))
                 .map(env -> new DocumentedEnumEntry<>(env, props.getProperty(env.name())));
     }
 
     public enum OptionOrigin {
-        mvn, mvnd;
+        mvn,
+        mvnd;
 
         private final String prefix;
 
@@ -517,7 +546,9 @@ public enum Environment {
      * The values of {@link Environment#MAVEN_COLOR} option.
      */
     public enum Color {
-        always, never, auto;
+        always,
+        never,
+        auto;
 
         public static Optional<Color> of(String color) {
             return color == null ? Optional.empty() : Optional.of(Color.valueOf(color));
@@ -549,5 +580,4 @@ public enum Environment {
         private static final int INTERNAL = 0b10;
         private static final int OPTIONAL = 0b100;
     }
-
 }

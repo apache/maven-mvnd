@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
@@ -37,6 +40,7 @@ public abstract class Message {
     public static final int PROJECT_STARTED = 4;
     /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just finished */
     public static final int PROJECT_STOPPED = 5;
+
     public static final int MOJO_STARTED = 6;
     public static final int PROJECT_LOG_MESSAGE = 7;
     public static final int BUILD_LOG_MESSAGE = 8;
@@ -58,6 +62,8 @@ public abstract class Message {
     public static final int EXECUTION_FAILURE = 24;
     public static final int PRINT_OUT = 25;
     public static final int PRINT_ERR = 26;
+    public static final int REQUEST_INPUT = 27;
+    public static final int INPUT_DATA = 28;
 
     final int type;
 
@@ -71,46 +77,50 @@ public abstract class Message {
             return null;
         }
         switch (type) {
-        case BUILD_REQUEST:
-            return BuildRequest.read(input);
-        case BUILD_STARTED:
-            return BuildStarted.read(input);
-        case BUILD_FINISHED:
-            return BuildFinished.read(input);
-        case MOJO_STARTED:
-            return MojoStartedEvent.read(input);
-        case PROJECT_LOG_MESSAGE:
-        case DISPLAY:
-            return ProjectEvent.read(type, input);
-        case BUILD_EXCEPTION:
-            return BuildException.read(input);
-        case KEEP_ALIVE:
-            return BareMessage.KEEP_ALIVE_SINGLETON;
-        case STOP:
-            return BareMessage.STOP_SINGLETON;
-        case PROMPT:
-            return Prompt.read(input);
-        case PROMPT_RESPONSE:
-            return PromptResponse.read(input);
-        case PROJECT_STARTED:
-        case PROJECT_STOPPED:
-        case BUILD_STATUS:
-        case BUILD_LOG_MESSAGE:
-            return StringMessage.read(type, input);
-        case CANCEL_BUILD:
-            return BareMessage.CANCEL_BUILD_SINGLETON;
-        case TRANSFER_INITIATED:
-        case TRANSFER_STARTED:
-        case TRANSFER_PROGRESSED:
-        case TRANSFER_CORRUPTED:
-        case TRANSFER_SUCCEEDED:
-        case TRANSFER_FAILED:
-            return TransferEvent.read(type, input);
-        case EXECUTION_FAILURE:
-            return ExecutionFailureEvent.read(input);
-        case PRINT_OUT:
-        case PRINT_ERR:
-            return StringMessage.read(type, input);
+            case BUILD_REQUEST:
+                return BuildRequest.read(input);
+            case BUILD_STARTED:
+                return BuildStarted.read(input);
+            case BUILD_FINISHED:
+                return BuildFinished.read(input);
+            case MOJO_STARTED:
+                return MojoStartedEvent.read(input);
+            case PROJECT_LOG_MESSAGE:
+            case DISPLAY:
+                return ProjectEvent.read(type, input);
+            case BUILD_EXCEPTION:
+                return BuildException.read(input);
+            case KEEP_ALIVE:
+                return BareMessage.KEEP_ALIVE_SINGLETON;
+            case STOP:
+                return BareMessage.STOP_SINGLETON;
+            case PROMPT:
+                return Prompt.read(input);
+            case PROMPT_RESPONSE:
+                return PromptResponse.read(input);
+            case PROJECT_STARTED:
+            case PROJECT_STOPPED:
+            case BUILD_STATUS:
+            case BUILD_LOG_MESSAGE:
+                return StringMessage.read(type, input);
+            case CANCEL_BUILD:
+                return BareMessage.CANCEL_BUILD_SINGLETON;
+            case TRANSFER_INITIATED:
+            case TRANSFER_STARTED:
+            case TRANSFER_PROGRESSED:
+            case TRANSFER_CORRUPTED:
+            case TRANSFER_SUCCEEDED:
+            case TRANSFER_FAILED:
+                return TransferEvent.read(type, input);
+            case EXECUTION_FAILURE:
+                return ExecutionFailureEvent.read(input);
+            case PRINT_OUT:
+            case PRINT_ERR:
+                return StringMessage.read(type, input);
+            case REQUEST_INPUT:
+                return RequestInput.read(input);
+            case INPUT_DATA:
+                return InputData.read(input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -123,46 +133,48 @@ public abstract class Message {
 
     public static int getClassOrder(Message m) {
         switch (m.getType()) {
-        case KEEP_ALIVE:
-        case BUILD_REQUEST:
-            return 0;
-        case BUILD_STARTED:
-            return 1;
-        case PROMPT:
-        case PROMPT_RESPONSE:
-        case DISPLAY:
-        case PRINT_OUT:
-        case PRINT_ERR:
-            return 2;
-        case PROJECT_STARTED:
-            return 3;
-        case MOJO_STARTED:
-            return 4;
-        case EXECUTION_FAILURE:
-            return 10;
-        case TRANSFER_INITIATED:
-        case TRANSFER_STARTED:
-            return 40;
-        case TRANSFER_PROGRESSED:
-            return 41;
-        case TRANSFER_CORRUPTED:
-        case TRANSFER_SUCCEEDED:
-        case TRANSFER_FAILED:
-            return 42;
-        case PROJECT_LOG_MESSAGE:
-            return 50;
-        case BUILD_LOG_MESSAGE:
-            return 51;
-        case PROJECT_STOPPED:
-            return 95;
-        case BUILD_FINISHED:
-            return 96;
-        case BUILD_EXCEPTION:
-            return 97;
-        case STOP:
-            return 99;
-        default:
-            throw new IllegalStateException("Unexpected message type " + m.getType() + ": " + m);
+            case KEEP_ALIVE:
+            case BUILD_REQUEST:
+                return 0;
+            case BUILD_STARTED:
+                return 1;
+            case PROMPT:
+            case PROMPT_RESPONSE:
+            case DISPLAY:
+            case PRINT_OUT:
+            case PRINT_ERR:
+            case REQUEST_INPUT:
+            case INPUT_DATA:
+                return 2;
+            case PROJECT_STARTED:
+                return 3;
+            case MOJO_STARTED:
+                return 4;
+            case EXECUTION_FAILURE:
+                return 10;
+            case TRANSFER_INITIATED:
+            case TRANSFER_STARTED:
+                return 40;
+            case TRANSFER_PROGRESSED:
+                return 41;
+            case TRANSFER_CORRUPTED:
+            case TRANSFER_SUCCEEDED:
+            case TRANSFER_FAILED:
+                return 42;
+            case PROJECT_LOG_MESSAGE:
+                return 50;
+            case BUILD_LOG_MESSAGE:
+                return 51;
+            case PROJECT_STOPPED:
+                return 95;
+            case BUILD_FINISHED:
+                return 96;
+            case BUILD_EXCEPTION:
+                return 97;
+            case STOP:
+                return 99;
+            default:
+                throw new IllegalStateException("Unexpected message type " + m.getType() + ": " + m);
         }
     }
 
@@ -352,12 +364,11 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "BuildRequest{" +
-                    "args=" + args +
-                    ", workingDir='" + workingDir + '\'' +
-                    ", projectDir='" + projectDir + '\'' +
-                    ", env='" + env + '\'' +
-                    '}';
+            return "BuildRequest{" + "args="
+                    + args + ", workingDir='"
+                    + workingDir + '\'' + ", projectDir='"
+                    + projectDir + '\'' + ", env='"
+                    + env + '\'' + '}';
         }
 
         @Override
@@ -442,11 +453,10 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "BuildException{" +
-                    "message='" + message + '\'' +
-                    ", className='" + className + '\'' +
-                    ", stackTrace='" + stackTrace + '\'' +
-                    '}';
+            return "BuildException{" + "message='"
+                    + message + '\'' + ", className='"
+                    + className + '\'' + ", stackTrace='"
+                    + stackTrace + '\'' + '}';
         }
 
         @Override
@@ -484,18 +494,15 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return mnemonic() + "{" +
-                    "projectId='" + projectId + '\'' +
-                    ", message='" + message + '\'' +
-                    '}';
+            return mnemonic() + "{" + "projectId='" + projectId + '\'' + ", message='" + message + '\'' + '}';
         }
 
         private String mnemonic() {
             switch (type) {
-            case PROJECT_LOG_MESSAGE:
-                return "ProjectLogMessage";
-            default:
-                throw new IllegalStateException("Unexpected type " + type);
+                case PROJECT_LOG_MESSAGE:
+                    return "ProjectLogMessage";
+                default:
+                    throw new IllegalStateException("Unexpected type " + type);
             }
         }
 
@@ -511,6 +518,7 @@ public abstract class Message {
         final String artifactId;
         final String pluginGroupId;
         final String pluginArtifactId;
+        final String pluginGoalPrefix;
         final String pluginVersion;
         final String mojo;
         final String executionId;
@@ -519,18 +527,27 @@ public abstract class Message {
             final String artifactId = readUTF(input);
             final String pluginGroupId = readUTF(input);
             final String pluginArtifactId = readUTF(input);
+            final String pluginGoalPrefix = readUTF(input);
             final String pluginVersion = readUTF(input);
             final String mojo = readUTF(input);
             final String executionId = readUTF(input);
-            return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+            return new MojoStartedEvent(
+                    artifactId, pluginGroupId, pluginArtifactId, pluginGoalPrefix, pluginVersion, mojo, executionId);
         }
 
-        public MojoStartedEvent(String artifactId, String pluginGroupId, String pluginArtifactId,
-                String pluginVersion, String mojo, String executionId) {
+        public MojoStartedEvent(
+                String artifactId,
+                String pluginGroupId,
+                String pluginArtifactId,
+                String pluginGoalPrefix,
+                String pluginVersion,
+                String mojo,
+                String executionId) {
             super(Message.MOJO_STARTED);
             this.artifactId = Objects.requireNonNull(artifactId, "artifactId cannot be null");
             this.pluginGroupId = Objects.requireNonNull(pluginGroupId, "pluginGroupId cannot be null");
             this.pluginArtifactId = Objects.requireNonNull(pluginArtifactId, "pluginArtifactId cannot be null");
+            this.pluginGoalPrefix = Objects.requireNonNull(pluginGoalPrefix, "pluginGoalPrefix cannot be null");
             this.pluginVersion = Objects.requireNonNull(pluginVersion, "pluginVersion cannot be null");
             this.mojo = Objects.requireNonNull(mojo, "mojo cannot be null");
             this.executionId = Objects.requireNonNull(executionId, "executionId cannot be null");
@@ -548,6 +565,10 @@ public abstract class Message {
             return pluginArtifactId;
         }
 
+        public String getPluginGoalPrefix() {
+            return pluginGoalPrefix;
+        }
+
         public String getPluginVersion() {
             return pluginVersion;
         }
@@ -562,14 +583,14 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "MojoStarted{" +
-                    "artifactId='" + artifactId + '\'' +
-                    ", pluginGroupId='" + pluginGroupId + '\'' +
-                    ", pluginArtifactId='" + pluginArtifactId + '\'' +
-                    ", pluginVersion='" + pluginVersion + '\'' +
-                    ", mojo='" + mojo + '\'' +
-                    ", executionId='" + executionId + '\'' +
-                    '}';
+            return "MojoStarted{"
+                    + "artifactId='" + artifactId + '\'' + ", "
+                    + "pluginGroupId='" + pluginGroupId + '\'' + ", "
+                    + "pluginArtifactId='" + pluginArtifactId + '\'' + ", "
+                    + "pluginGoalPrefix='" + pluginGoalPrefix + '\'' + ", "
+                    + "pluginVersion='" + pluginVersion + '\'' + ", "
+                    + "mojo='" + mojo + '\'' + ", "
+                    + "executionId='" + executionId + '\'' + '}';
         }
 
         @Override
@@ -578,6 +599,7 @@ public abstract class Message {
             writeUTF(output, artifactId);
             writeUTF(output, pluginGroupId);
             writeUTF(output, pluginArtifactId);
+            writeUTF(output, pluginGoalPrefix);
             writeUTF(output, pluginVersion);
             writeUTF(output, mojo);
             writeUTF(output, executionId);
@@ -625,9 +647,9 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "BuildStarted{" +
-                    "projectId='" + projectId + "', projectCount=" + projectCount +
-                    ", maxThreads=" + maxThreads + ", artifactIdDisplayLength=" + artifactIdDisplayLength + "}";
+            return "BuildStarted{" + "projectId='"
+                    + projectId + "', projectCount=" + projectCount + ", maxThreads="
+                    + maxThreads + ", artifactIdDisplayLength=" + artifactIdDisplayLength + "}";
         }
 
         @Override
@@ -638,7 +660,6 @@ public abstract class Message {
             output.writeInt(maxThreads);
             output.writeInt(artifactIdDisplayLength);
         }
-
     }
 
     public static class BareMessage extends Message {
@@ -654,19 +675,18 @@ public abstract class Message {
         @Override
         public String toString() {
             switch (type) {
-            case KEEP_ALIVE:
-                return "KeepAlive";
-            case BUILD_FINISHED:
-                return "BuildStopped";
-            case STOP:
-                return "Stop";
-            case CANCEL_BUILD:
-                return "BuildCanceled";
-            default:
-                throw new IllegalStateException("Unexpected type " + type);
+                case KEEP_ALIVE:
+                    return "KeepAlive";
+                case BUILD_FINISHED:
+                    return "BuildStopped";
+                case STOP:
+                    return "Stop";
+                case CANCEL_BUILD:
+                    return "BuildCanceled";
+                default:
+                    throw new IllegalStateException("Unexpected type " + type);
             }
         }
-
     }
 
     public static class StringMessage extends Message {
@@ -700,27 +720,26 @@ public abstract class Message {
 
         private String mnemonic() {
             switch (type) {
-            case PROJECT_STARTED:
-                return "ProjectStarted";
-            case PROJECT_STOPPED:
-                return "ProjectStopped";
-            case BUILD_STATUS:
-                return "BuildStatus";
-            case KEYBOARD_INPUT:
-                return "KeyboardInput";
-            case BUILD_LOG_MESSAGE:
-                return "BuildLogMessage";
-            case DISPLAY:
-                return "Display";
-            case PRINT_OUT:
-                return "PrintOut";
-            case PRINT_ERR:
-                return "PrintErr";
-            default:
-                throw new IllegalStateException("Unexpected type " + type);
+                case PROJECT_STARTED:
+                    return "ProjectStarted";
+                case PROJECT_STOPPED:
+                    return "ProjectStopped";
+                case BUILD_STATUS:
+                    return "BuildStatus";
+                case KEYBOARD_INPUT:
+                    return "KeyboardInput";
+                case BUILD_LOG_MESSAGE:
+                    return "BuildLogMessage";
+                case DISPLAY:
+                    return "Display";
+                case PRINT_OUT:
+                    return "PrintOut";
+                case PRINT_ERR:
+                    return "PrintErr";
+                default:
+                    throw new IllegalStateException("Unexpected type " + type);
             }
         }
-
     }
 
     public static class Prompt extends Message {
@@ -764,12 +783,11 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "Prompt{" +
-                    "projectId='" + projectId + '\'' +
-                    ", uid='" + uid + '\'' +
-                    ", message='" + message + '\'' +
-                    ", password=" + password +
-                    '}';
+            return "Prompt{" + "projectId='"
+                    + projectId + '\'' + ", uid='"
+                    + uid + '\'' + ", message='"
+                    + message + '\'' + ", password="
+                    + password + '}';
         }
 
         @Override
@@ -784,7 +802,6 @@ public abstract class Message {
         public PromptResponse response(String message) {
             return new PromptResponse(projectId, uid, message);
         }
-
     }
 
     public static class PromptResponse extends Message {
@@ -821,11 +838,10 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "PromptResponse{" +
-                    "projectId='" + projectId + '\'' +
-                    ", uid='" + uid + '\'' +
-                    ", message='" + message + '\'' +
-                    '}';
+            return "PromptResponse{" + "projectId='"
+                    + projectId + '\'' + ", uid='"
+                    + uid + '\'' + ", message='"
+                    + message + '\'' + '}';
         }
 
         @Override
@@ -864,11 +880,10 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "ExecutionFailure{" +
-                    "projectId='" + projectId + '\'' +
-                    ", halted=" + halted +
-                    ", exception='" + exception + '\'' +
-                    '}';
+            return "ExecutionFailure{" + "projectId='"
+                    + projectId + '\'' + ", halted="
+                    + halted + ", exception='"
+                    + exception + '\'' + '}';
         }
 
         @Override
@@ -909,9 +924,15 @@ public abstract class Message {
         final long transferredBytes;
         final String exception;
 
-        private TransferEvent(int type, String projectId, int requestType,
-                String repositoryId, String repositoryUrl,
-                String resourceName, long contentLength, long transferredBytes,
+        private TransferEvent(
+                int type,
+                String projectId,
+                int requestType,
+                String repositoryId,
+                String repositoryUrl,
+                String resourceName,
+                long contentLength,
+                long transferredBytes,
                 String exception) {
             super(type);
             this.projectId = projectId;
@@ -958,34 +979,33 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return mnemonic() + "{" +
-                    "projectId=" + projectId +
-                    ", requestType=" + requestType +
-                    ", repositoryId='" + repositoryId + '\'' +
-                    ", repositoryUrl='" + repositoryUrl + '\'' +
-                    ", resourceName='" + resourceName + '\'' +
-                    ", contentLength=" + contentLength +
-                    ", transferredBytes=" + transferredBytes +
-                    ", exception='" + exception + '\'' +
-                    '}';
+            return mnemonic() + "{" + "projectId="
+                    + projectId + ", requestType="
+                    + requestType + ", repositoryId='"
+                    + repositoryId + '\'' + ", repositoryUrl='"
+                    + repositoryUrl + '\'' + ", resourceName='"
+                    + resourceName + '\'' + ", contentLength="
+                    + contentLength + ", transferredBytes="
+                    + transferredBytes + ", exception='"
+                    + exception + '\'' + '}';
         }
 
         private String mnemonic() {
             switch (type) {
-            case TRANSFER_INITIATED:
-                return "TransferInitiated";
-            case TRANSFER_STARTED:
-                return "TransferStarted";
-            case TRANSFER_PROGRESSED:
-                return "TransferProgressed";
-            case TRANSFER_CORRUPTED:
-                return "TransferCorrupted";
-            case TRANSFER_SUCCEEDED:
-                return "TransferSucceeded";
-            case TRANSFER_FAILED:
-                return "TransferFailed";
-            default:
-                throw new IllegalStateException("Unexpected type " + type);
+                case TRANSFER_INITIATED:
+                    return "TransferInitiated";
+                case TRANSFER_STARTED:
+                    return "TransferStarted";
+                case TRANSFER_PROGRESSED:
+                    return "TransferProgressed";
+                case TRANSFER_CORRUPTED:
+                    return "TransferCorrupted";
+                case TRANSFER_SUCCEEDED:
+                    return "TransferSucceeded";
+                case TRANSFER_FAILED:
+                    return "TransferFailed";
+                default:
+                    throw new IllegalStateException("Unexpected type " + type);
             }
         }
 
@@ -1011,8 +1031,76 @@ public abstract class Message {
             long contentLength = input.readLong();
             long transferredBytes = input.readLong();
             String exception = readUTF(input);
-            return new TransferEvent(type, projectId, request, repositoryId, repositoryUrl, resourceName,
-                    contentLength, transferredBytes, exception);
+            return new TransferEvent(
+                    type,
+                    projectId,
+                    request,
+                    repositoryId,
+                    repositoryUrl,
+                    resourceName,
+                    contentLength,
+                    transferredBytes,
+                    exception);
+        }
+    }
+
+    public static class RequestInput extends Message {
+
+        private String projectId;
+
+        public static RequestInput read(DataInputStream input) throws IOException {
+            String projectId = readUTF(input);
+            return new RequestInput(projectId);
+        }
+
+        public RequestInput(String projectId) {
+            super(REQUEST_INPUT);
+            this.projectId = projectId;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        @Override
+        public String toString() {
+            return "RequestInput{" + "projectId='" + projectId + '\'' + '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, projectId);
+        }
+    }
+
+    public static class InputData extends Message {
+
+        final String data;
+
+        public static Message read(DataInputStream input) throws IOException {
+            String data = readUTF(input);
+            return new InputData(data);
+        }
+
+        private InputData(String data) {
+            super(INPUT_DATA);
+            this.data = data;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        @Override
+        public String toString() {
+            return "InputResponse{" + "data='" + data + "\'" + '}';
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, data);
         }
     }
 
@@ -1026,6 +1114,14 @@ public abstract class Message {
 
     public static StringMessage display(String message) {
         return new StringMessage(DISPLAY, message);
+    }
+
+    public static RequestInput requestInput(String projectId) {
+        return new RequestInput(projectId);
+    }
+
+    public static InputData inputResponse(String data) {
+        return new InputData(data);
     }
 
     public static StringMessage out(String message) {
@@ -1060,21 +1156,41 @@ public abstract class Message {
         return new ExecutionFailureEvent(projectId, halted, exception);
     }
 
-    public static Message mojoStarted(String artifactId, String pluginGroupId, String pluginArtifactId,
-            String pluginVersion, String mojo, String executionId) {
-        return new MojoStartedEvent(artifactId, pluginGroupId, pluginArtifactId, pluginVersion, mojo, executionId);
+    public static Message mojoStarted(
+            String artifactId,
+            String pluginGroupId,
+            String pluginArtifactId,
+            String pluginGoalPrefix,
+            String pluginVersion,
+            String mojo,
+            String executionId) {
+        return new MojoStartedEvent(
+                artifactId, pluginGroupId, pluginArtifactId, pluginGoalPrefix, pluginVersion, mojo, executionId);
     }
 
     public static ProjectEvent display(String projectId, String message) {
         return new ProjectEvent(Message.DISPLAY, projectId, message);
     }
 
-    public static TransferEvent transfer(String projectId, int transferEventType, int requestType,
-            String repositoryId, String repositoryUrl,
-            String resourceName, long contentLength, long transferredBytes,
+    public static TransferEvent transfer(
+            String projectId,
+            int transferEventType,
+            int requestType,
+            String repositoryId,
+            String repositoryUrl,
+            String resourceName,
+            long contentLength,
+            long transferredBytes,
             String exception) {
-        return new TransferEvent(transferEventType, projectId, requestType,
-                repositoryId, repositoryUrl, resourceName, contentLength, transferredBytes, exception);
+        return new TransferEvent(
+                transferEventType,
+                projectId,
+                requestType,
+                repositoryId,
+                repositoryUrl,
+                resourceName,
+                contentLength,
+                transferredBytes,
+                exception);
     }
-
 }

@@ -21,5 +21,10 @@ under the License.
 <extension>
     <exportedPackages>
         <exportedPackage>org.apache.commons.logging.*</exportedPackage>
+        <exportedPackage>org.codehaus.plexus.components.interactivity.*</exportedPackage>
     </exportedPackages>
+
+    <exportedArtifacts>
+        <exportedArtifact>org.codehaus.plexus:plexus-interactivity-api</exportedArtifact>
+    </exportedArtifacts>
 </extension>

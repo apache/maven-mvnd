@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.plugin.doc;
 
@@ -46,7 +49,12 @@ import org.jboss.forge.roaster.model.source.JavaEnumSource;
 /**
  * Extracts JavaDoc blocks from enum entries and stores them into a properties file.
  */
-@Mojo(name = "doc", defaultPhase = LifecyclePhase.NONE, threadSafe = true, requiresProject = true, requiresDependencyResolution = ResolutionScope.NONE)
+@Mojo(
+        name = "doc",
+        defaultPhase = LifecyclePhase.NONE,
+        threadSafe = true,
+        requiresProject = true,
+        requiresDependencyResolution = ResolutionScope.NONE)
 public class DocMojo extends AbstractMojo {
 
     /**
@@ -80,8 +88,7 @@ public class DocMojo extends AbstractMojo {
 
     static void extractEnumJavaDoc(Path basePath, String enumClassName) throws MojoFailureException {
         final String classRelPath = enumClassName.replace('.', '/');
-        final Path enumClassLocation = basePath.resolve("src/main/java")
-                .resolve(classRelPath + ".java");
+        final Path enumClassLocation = basePath.resolve("src/main/java").resolve(classRelPath + ".java");
         final Path propsPath = basePath.resolve("target/classes/" + classRelPath + ".javadoc.properties");
         try {
             Files.createDirectories(propsPath.getParent());
@@ -99,8 +106,7 @@ public class DocMojo extends AbstractMojo {
             final Properties optionsProperties = new SortedProperties();
             for (EnumConstantSource enumConst : source.getEnumConstants()) {
                 final JavaDocSource<EnumConstantSource> javaDoc = enumConst.getJavaDoc();
-                final String javadocText = javaDoc.getText()
-                        .replaceAll("&#47;", "/");
+                final String javadocText = javaDoc.getText().replaceAll("&#47;", "/");
                 optionsProperties.setProperty(enumConst.getName(), javadocText);
             }
             optionsProperties.store(Files.newOutputStream(propsPath), null);
@@ -137,14 +143,12 @@ public class DocMojo extends AbstractMojo {
         }
 
         @Override
-        public void store(Writer writer, String comments)
-                throws IOException {
+        public void store(Writer writer, String comments) throws IOException {
             super.store(new SkipFirstLineBufferedWriter(writer), null);
         }
 
         @Override
-        public void store(OutputStream out, String comments)
-                throws IOException {
+        public void store(OutputStream out, String comments) throws IOException {
             this.store(new OutputStreamWriter(out, "8859_1"), comments);
         }
 
@@ -177,8 +181,6 @@ public class DocMojo extends AbstractMojo {
                     super.write(cbuf, off, len);
                 }
             }
-
         }
-
     }
 }

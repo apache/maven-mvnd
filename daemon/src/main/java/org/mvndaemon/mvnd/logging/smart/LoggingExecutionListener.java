@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.logging.smart;
 
@@ -28,7 +31,7 @@ import org.eclipse.sisu.Typed;
 
 @Singleton
 @Named
-@Typed({ LoggingExecutionListener.class, ExecutionListener.class, ProjectExecutionListener.class })
+@Typed({LoggingExecutionListener.class, ExecutionListener.class, ProjectExecutionListener.class})
 public class LoggingExecutionListener implements ExecutionListener, ProjectExecutionListener {
 
     private ExecutionListener delegate;
@@ -40,25 +43,27 @@ public class LoggingExecutionListener implements ExecutionListener, ProjectExecu
     }
 
     @Override
-    public void beforeProjectExecution(ProjectExecutionEvent projectExecutionEvent) throws LifecycleExecutionException {
-    }
+    public void beforeProjectExecution(ProjectExecutionEvent projectExecutionEvent)
+            throws LifecycleExecutionException {}
 
     @Override
     public void beforeProjectLifecycleExecution(ProjectExecutionEvent projectExecutionEvent)
-            throws LifecycleExecutionException {
-    }
+            throws LifecycleExecutionException {}
 
     @Override
-    public void afterProjectExecutionSuccess(ProjectExecutionEvent projectExecutionEvent) throws LifecycleExecutionException {
-    }
+    public void afterProjectExecutionSuccess(ProjectExecutionEvent projectExecutionEvent)
+            throws LifecycleExecutionException {}
 
     @Override
     public void afterProjectExecutionFailure(ProjectExecutionEvent projectExecutionEvent) {
         MavenSession session = projectExecutionEvent.getSession();
-        ReactorBuildStatus status = (ReactorBuildStatus) session.getRepositorySession().getData().get(ReactorBuildStatus.class);
+        ReactorBuildStatus status =
+                (ReactorBuildStatus) session.getRepositorySession().getData().get(ReactorBuildStatus.class);
         Throwable cause = projectExecutionEvent.getCause();
-        buildEventListener.executionFailure(projectExecutionEvent.getProject().getArtifactId(),
-                status.isHalted(), cause != null ? cause.toString() : null);
+        buildEventListener.executionFailure(
+                projectExecutionEvent.getProject().getArtifactId(),
+                status.isHalted(),
+                cause != null ? cause.toString() : null);
     }
 
     @Override

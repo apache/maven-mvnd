@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.timing;
 
@@ -49,8 +52,7 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
 
     private Session session;
 
-    public BuildTimeEventSpy() {
-    }
+    public BuildTimeEventSpy() {}
 
     private static String getExecutionProperty(final ExecutionEvent event, final String property, final String def) {
         MavenSession mavenSession = event.getSession();
@@ -75,29 +77,29 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
 
     private void onEvent(ExecutionEvent event) throws Exception {
         switch (event.getType()) {
-        case SessionStarted:
-            logger.info("BuildTimeEventSpy is registered.");
-            session = new Session();
-            break;
+            case SessionStarted:
+                logger.info("BuildTimeEventSpy is registered.");
+                session = new Session();
+                break;
 
-        case MojoStarted:
-            session.mojoTimer(event).start();
-            break;
+            case MojoStarted:
+                session.mojoTimer(event).start();
+                break;
 
-        case MojoFailed:
-        case MojoSucceeded:
-            session.mojoTimer(event).end();
-            break;
+            case MojoFailed:
+            case MojoSucceeded:
+                session.mojoTimer(event).end();
+                break;
 
-        case SessionEnded:
-            String prop = getExecutionProperty(event, Environment.MVND_BUILD_TIME.getProperty(),
-                    Environment.MVND_BUILD_TIME.getDefault());
-            boolean output = Boolean.parseBoolean(prop);
-            doReport(output);
-            break;
+            case SessionEnded:
+                String prop = getExecutionProperty(
+                        event, Environment.MVND_BUILD_TIME.getProperty(), Environment.MVND_BUILD_TIME.getDefault());
+                boolean output = Boolean.parseBoolean(prop);
+                doReport(output);
+                break;
 
-        default:
-            //Ignore other events
+            default:
+                // Ignore other events
         }
     }
 
@@ -127,18 +129,17 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
         private final Map<String, Map<String, Timer>> session = new ConcurrentHashMap<>();
 
         public Stream<Project> projects() {
-            return session.entrySet().stream().map(Project::new)
-                    .sorted(Comparator.comparing(Project::startTime));
+            return session.entrySet().stream().map(Project::new).sorted(Comparator.comparing(Project::startTime));
         }
 
         public Timer mojoTimer(ExecutionEvent event) {
-            return session
-                    .computeIfAbsent(event.getProject().getArtifactId(), id -> new ConcurrentHashMap<>())
+            return session.computeIfAbsent(event.getProject().getArtifactId(), id -> new ConcurrentHashMap<>())
                     .computeIfAbsent(name(event.getMojoExecution()), mn -> new Timer());
         }
 
         private String name(MojoExecution mojoExecution) {
-            return String.format(Locale.ENGLISH,
+            return String.format(
+                    Locale.ENGLISH,
                     "%s:%s (%s)",
                     mojoExecution.getArtifactId(),
                     mojoExecution.getGoal(),
@@ -162,16 +163,21 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
         }
 
         public long startTime() {
-            return project.getValue().values().stream().mapToLong(Timer::startTime).min().orElse(0);
+            return project.getValue().values().stream()
+                    .mapToLong(Timer::startTime)
+                    .min()
+                    .orElse(0);
         }
 
         public long endTime() {
-            return project.getValue().values().stream().mapToLong(Timer::endTime).max().orElse(0);
+            return project.getValue().values().stream()
+                    .mapToLong(Timer::endTime)
+                    .max()
+                    .orElse(0);
         }
 
         public Stream<Mojo> mojos() {
-            return project.getValue().entrySet().stream().map(Mojo::new)
-                    .sorted(Comparator.comparing(Mojo::startTime));
+            return project.getValue().entrySet().stream().map(Mojo::new).sorted(Comparator.comparing(Mojo::startTime));
         }
     }
 
@@ -184,8 +190,8 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
 
         public String name() {
             String name = mojo.getKey();
-            String truncatedName = name.length() >= MAX_NAME_LENGTH ? StringUtils.substring(name, 0, MAX_NAME_LENGTH)
-                    : name + " ";
+            String truncatedName =
+                    name.length() >= MAX_NAME_LENGTH ? StringUtils.substring(name, 0, MAX_NAME_LENGTH) : name + " ";
             return StringUtils.rightPad(truncatedName, MAX_NAME_LENGTH, ".");
         }
 
@@ -222,5 +228,4 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
             endTime = System.currentTimeMillis();
         }
     }
-
 }

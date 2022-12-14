@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.it;
 
@@ -41,7 +44,8 @@ public class InvokerNativeIT {
     @Test
     void cleanInstall() throws IOException, InterruptedException {
 
-        final Path helloPath = parameters.multiModuleProjectDirectory().resolve("target/it/invoke-hello/target/hello.txt");
+        final Path helloPath =
+                parameters.multiModuleProjectDirectory().resolve("target/it/invoke-hello/target/hello.txt");
         try {
             Files.deleteIfExists(helloPath);
         } catch (IOException e) {
@@ -55,7 +59,8 @@ public class InvokerNativeIT {
         }
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "verify", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
+        client.execute(output, "clean", "verify", "-e", "-Dmvnd.log.level=DEBUG")
+                .assertSuccess();
 
         Assertions.assertThat(helloPath).exists();
         Assertions.assertThat(helloPath).usingCharset(StandardCharsets.UTF_8).hasContent("Hello");
@@ -66,6 +71,5 @@ public class InvokerNativeIT {
 
         final String lastLine = logLines.get(logLines.size() - 1);
         Assertions.assertThat(lastLine).matches(Pattern.compile("\\QFinished post-build script: \\E.*verify.groovy$"));
-
     }
 }

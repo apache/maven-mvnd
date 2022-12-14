@@ -1,17 +1,20 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.builder;
 
@@ -46,18 +49,23 @@ public class DependencyGraph<K> {
     private final Map<K, Set<K>> transitiveUpstreams;
     private final Map<K, List<K>> downstreams;
 
+    @SuppressWarnings("unchecked")
     public static DependencyGraph<MavenProject> fromMaven(MavenSession session) {
-
-        final ProjectDependencyGraph graph = session.getProjectDependencyGraph();
-        return fromMaven(graph);
+        Map<String, Object> data = session.getRequest().getData();
+        DependencyGraph<MavenProject> graph = (DependencyGraph<MavenProject>) data.get(DependencyGraph.class.getName());
+        if (graph == null) {
+            graph = fromMaven(session.getProjectDependencyGraph());
+            data.put(DependencyGraph.class.getName(), graph);
+        }
+        return graph;
     }
 
     static DependencyGraph<MavenProject> fromMaven(ProjectDependencyGraph graph) {
         final List<MavenProject> projects = graph.getSortedProjects();
-        Map<MavenProject, List<MavenProject>> upstreams = projects.stream()
-                .collect(Collectors.toMap(p -> p, p -> graph.getUpstreamProjects(p, false)));
-        Map<MavenProject, List<MavenProject>> downstreams = projects.stream()
-                .collect(Collectors.toMap(p -> p, p -> graph.getDownstreamProjects(p, false)));
+        Map<MavenProject, List<MavenProject>> upstreams =
+                projects.stream().collect(Collectors.toMap(p -> p, p -> graph.getUpstreamProjects(p, false)));
+        Map<MavenProject, List<MavenProject>> downstreams =
+                projects.stream().collect(Collectors.toMap(p -> p, p -> graph.getDownstreamProjects(p, false)));
         return new DependencyGraph<>(Collections.unmodifiableList(projects), upstreams, downstreams);
     }
 
@@ -70,7 +78,10 @@ public class DependencyGraph<K> {
         projects.forEach(this::transitiveUpstreams); // topological ordering of projects matters
     }
 
-    DependencyGraph(List<K> projects, Map<K, List<K>> upstreams, Map<K, List<K>> downstreams,
+    DependencyGraph(
+            List<K> projects,
+            Map<K, List<K>> upstreams,
+            Map<K, List<K>> downstreams,
             Map<K, Set<K>> transitiveUpstreams) {
         this.projects = projects;
         this.upstreams = upstreams;
@@ -138,29 +149,20 @@ public class DependencyGraph<K> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         @SuppressWarnings("unchecked")
         DependencyGraph<K> other = (DependencyGraph<K>) obj;
         if (downstreams == null) {
-            if (other.downstreams != null)
-                return false;
-        } else if (!downstreams.equals(other.downstreams))
-            return false;
+            if (other.downstreams != null) return false;
+        } else if (!downstreams.equals(other.downstreams)) return false;
         if (projects == null) {
-            if (other.projects != null)
-                return false;
-        } else if (!projects.equals(other.projects))
-            return false;
+            if (other.projects != null) return false;
+        } else if (!projects.equals(other.projects)) return false;
         if (upstreams == null) {
-            if (other.upstreams != null)
-                return false;
-        } else if (!upstreams.equals(other.upstreams))
-            return false;
+            if (other.upstreams != null) return false;
+        } else if (!upstreams.equals(other.upstreams)) return false;
         return true;
     }
 
@@ -207,16 +209,21 @@ public class DependencyGraph<K> {
                 newNodeUpstreams = new ArrayList<>(oldNodeUpstreams);
             } else if (oldNodeUpstreams.size() == 1) {
                 newNodeUpstreams = new ArrayList<>(oldNodeUpstreams);
-                newDownstreams.computeIfAbsent(newNodeUpstreams.get(0), k -> new ArrayList<>()).add(node);
+                newDownstreams
+                        .computeIfAbsent(newNodeUpstreams.get(0), k -> new ArrayList<>())
+                        .add(node);
             } else {
                 newNodeUpstreams = new ArrayList<>(oldNodeUpstreams.size());
                 for (K leftNode : oldNodeUpstreams) {
                     if (oldNodeUpstreams.stream()
                             .filter(rightNode -> leftNode != rightNode)
-                            .noneMatch(rightNode -> transitiveUpstreams.get(rightNode).contains(leftNode))) {
+                            .noneMatch(rightNode ->
+                                    transitiveUpstreams.get(rightNode).contains(leftNode))) {
 
                         newNodeUpstreams.add(leftNode);
-                        newDownstreams.computeIfAbsent(leftNode, k -> new ArrayList<>()).add(node);
+                        newDownstreams
+                                .computeIfAbsent(leftNode, k -> new ArrayList<>())
+                                .add(node);
                     }
                 }
             }
@@ -237,9 +244,7 @@ public class DependencyGraph<K> {
         if (result == null) {
             final List<K> firstOrderUpstreams = this.upstreams.get(node);
             result = new HashSet<>(firstOrderUpstreams);
-            firstOrderUpstreams.stream()
-                    .map(this::transitiveUpstreams)
-                    .forEach(result::addAll);
+            firstOrderUpstreams.stream().map(this::transitiveUpstreams).forEach(result::addAll);
             transitiveUpstreams.put(node, result);
         }
         return result;
@@ -269,10 +274,7 @@ public class DependencyGraph<K> {
                 graph.transitiveUpstreams.forEach((k, ups) -> {
                     mapByUpstreams.computeIfAbsent(ups, n -> new HashSet<>()).add(k);
                 });
-                max = mapByUpstreams.values().stream()
-                        .mapToInt(Set::size)
-                        .max()
-                        .orElse(0);
+                max = mapByUpstreams.values().stream().mapToInt(Set::size).max().orElse(0);
                 if (max >= maxmax) {
                     return maxmax;
                 }
@@ -316,22 +318,17 @@ public class DependencyGraph<K> {
         }
 
         private List<K> getRoots() {
-            return graph.getProjects()
-                    .filter(graph::isRoot)
-                    .collect(Collectors.toList());
+            return graph.getProjects().filter(graph::isRoot).collect(Collectors.toList());
         }
 
         List<K> ensembleWithChildrenOf(List<K> list, K node) {
             final List<K> result = Stream.concat(
-                    list.stream().filter(k -> !Objects.equals(k, node)),
-                    graph.getDownstreamProjects(node)
-                            .filter(k -> graph.transitiveUpstreams.get(k)
-                                    .stream()
+                            list.stream().filter(k -> !Objects.equals(k, node)),
+                            graph.getDownstreamProjects(node).filter(k -> graph.transitiveUpstreams.get(k).stream()
                                     .noneMatch(k2 -> !Objects.equals(k2, node) && list.contains(k2))))
-                    .distinct().collect(Collectors.toList());
+                    .distinct()
+                    .collect(Collectors.toList());
             return result;
         }
-
     }
-
 }

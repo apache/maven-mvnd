@@ -1,17 +1,20 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.builder;
 
@@ -55,7 +58,8 @@ class ProjectComparator {
         return create0(graph, Collections.emptyMap(), ProjectComparator::id);
     }
 
-    static <K> Comparator<K> create0(DependencyGraph<K> dependencyGraph,
+    static <K> Comparator<K> create0(
+            DependencyGraph<K> dependencyGraph,
             Map<String, AtomicLong> historicalServiceTimes,
             Function<K, String> toKey) {
         final long defaultServiceTime = average(historicalServiceTimes.values());
@@ -79,18 +83,18 @@ class ProjectComparator {
     }
 
     private static long average(Collection<AtomicLong> values) {
-        return (long) (values.stream().mapToLong(AtomicLong::longValue)
-                .average().orElse(1.0d));
+        return (long)
+                (values.stream().mapToLong(AtomicLong::longValue).average().orElse(1.0d));
     }
 
-    private static <K> long getServiceTime(Map<String, AtomicLong> serviceTimes, K project,
-            long defaultServiceTime, Function<K, String> toKey) {
+    private static <K> long getServiceTime(
+            Map<String, AtomicLong> serviceTimes, K project, long defaultServiceTime, Function<K, String> toKey) {
         AtomicLong serviceTime = serviceTimes.get(toKey.apply(project));
         return serviceTime != null ? serviceTime.longValue() : defaultServiceTime;
     }
 
-    private static <K> Map<K, Long> calculateWeights(DependencyGraph<K> dependencyGraph,
-            Map<K, Long> serviceTimes, Collection<K> rootProjects) {
+    private static <K> Map<K, Long> calculateWeights(
+            DependencyGraph<K> dependencyGraph, Map<K, Long> serviceTimes, Collection<K> rootProjects) {
         Map<K, Long> weights = new HashMap<>();
         for (K rootProject : rootProjects) {
             calculateWeights(dependencyGraph, serviceTimes, rootProject, weights);
@@ -102,10 +106,11 @@ class ProjectComparator {
      * Returns the maximum sum of build time along a path from the project to an exit project. An
      * "exit project" is a project without downstream dependencies.
      */
-    private static <K> long calculateWeights(DependencyGraph<K> dependencyGraph,
-            Map<K, Long> serviceTimes, K project, Map<K, Long> weights) {
+    private static <K> long calculateWeights(
+            DependencyGraph<K> dependencyGraph, Map<K, Long> serviceTimes, K project, Map<K, Long> weights) {
         long weight = serviceTimes.get(project)
-                + dependencyGraph.getDownstreamProjects(project)
+                + dependencyGraph
+                        .getDownstreamProjects(project)
                         .mapToLong(successor -> {
                             long successorWeight;
                             if (weights.containsKey(successor)) {
@@ -115,15 +120,13 @@ class ProjectComparator {
                             }
                             return successorWeight;
                         })
-                        .max().orElse(0);
+                        .max()
+                        .orElse(0);
         weights.put(project, weight);
         return weight;
     }
 
     static String id(MavenProject project) {
-        return project.getGroupId() +
-                ':' + project.getArtifactId() +
-                ':' + project.getVersion();
+        return project.getGroupId() + ':' + project.getArtifactId() + ':' + project.getVersion();
     }
-
 }

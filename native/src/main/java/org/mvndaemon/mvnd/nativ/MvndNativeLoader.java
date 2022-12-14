@@ -1,18 +1,21 @@
-/*--------------------------------------------------------------------------
- *  Copyright 2007 Taro L. Saito
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- *--------------------------------------------------------------------------*/
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.mvndaemon.mvnd.nativ;
 
 import java.io.File;
@@ -110,8 +113,7 @@ public class MvndNativeLoader {
         int len = b.length;
         while (n < len) {
             int count = in.read(b, n, len - n);
-            if (count <= 0)
-                break;
+            if (count <= 0) break;
             n += count;
         }
         return n;
@@ -156,8 +158,8 @@ public class MvndNativeLoader {
      * @param  targetFolder          Target folder.
      * @return
      */
-    private static boolean extractAndLoadLibraryFile(String libFolderForCurrentOS, String libraryFileName,
-            String targetFolder) {
+    private static boolean extractAndLoadLibraryFile(
+            String libFolderForCurrentOS, String libraryFileName, String targetFolder) {
         String nativeLibraryFilePath = libFolderForCurrentOS + "/" + libraryFileName;
         // Include architecture name in temporary filename in order to avoid conflicts
         // when multiple JVMs with different architectures running at the same time
@@ -193,15 +195,17 @@ public class MvndNativeLoader {
                 try (InputStream extractedLibIn = new FileInputStream(extractedLibFile)) {
                     String eq = contentsEquals(nativeIn, extractedLibIn);
                     if (eq != null) {
-                        throw new RuntimeException(
-                                String.format("Failed to write a native library file at %s because %s", extractedLibFile, eq));
+                        throw new RuntimeException(String.format(
+                                "Failed to write a native library file at %s because %s", extractedLibFile, eq));
                     }
                 }
             }
 
             // Load library
             if (loadNativeLibrary(extractedLibFile)) {
-                nativeLibrarySourceUrl = MvndNativeLoader.class.getResource(nativeLibraryFilePath).toExternalForm();
+                nativeLibrarySourceUrl = MvndNativeLoader.class
+                        .getResource(nativeLibraryFilePath)
+                        .toExternalForm();
                 return true;
             }
         } catch (IOException e) {
@@ -319,7 +323,8 @@ public class MvndNativeLoader {
             }
         }
 
-        throw new Exception(String.format("No native library found for os.name=%s, os.arch=%s, paths=[%s]",
+        throw new Exception(String.format(
+                "No native library found for os.name=%s, os.arch=%s, paths=[%s]",
                 OSInfo.getOSName(), OSInfo.getArchName(), join(triedPaths, File.pathSeparator)));
     }
 
@@ -348,7 +353,8 @@ public class MvndNativeLoader {
      */
     public static String getVersion() {
 
-        URL versionFile = MvndNativeLoader.class.getResource("/META-INF/maven/org.mvndaemon.mvnd/mvnd-native/pom.properties");
+        URL versionFile =
+                MvndNativeLoader.class.getResource("/META-INF/maven/org.mvndaemon.mvnd/mvnd-native/pom.properties");
 
         String version = "unknown";
         try {
@@ -368,14 +374,11 @@ public class MvndNativeLoader {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (String item : list) {
-            if (first)
-                first = false;
-            else
-                sb.append(separator);
+            if (first) first = false;
+            else sb.append(separator);
 
             sb.append(item);
         }
         return sb.toString();
     }
-
 }

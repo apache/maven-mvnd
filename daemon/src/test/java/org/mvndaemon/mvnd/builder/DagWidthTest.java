@@ -1,19 +1,24 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.builder;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,8 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.builder.DependencyGraph.DagWidth;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DagWidthTest {
 
@@ -195,8 +198,7 @@ public class DagWidthTest {
      * </pre>
      */
     private DependencyGraph<String> newSingleGraph() {
-        return newGraph(
-                "A", Collections.emptyList());
+        return newGraph("A", Collections.emptyList());
     }
 
     @Test
@@ -238,14 +240,15 @@ public class DagWidthTest {
 
     private DependencyGraph<String> newHugeGraph() {
         Map<String, List<String>> upstreams = new HashMap<>();
-        try (BufferedReader r = new BufferedReader(
-                new InputStreamReader(getClass().getResourceAsStream("huge-graph.properties")))) {
+        try (BufferedReader r =
+                new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("huge-graph.properties")))) {
             r.lines().forEach(l -> {
                 int idxEq = l.indexOf(" = ");
                 if (!l.startsWith("#") && idxEq > 0) {
                     String k = l.substring(0, idxEq).trim();
                     String[] ups = l.substring(idxEq + 3).trim().split(",");
-                    List<String> list = Stream.of(ups).map(String::trim)
+                    List<String> list = Stream.of(ups)
+                            .map(String::trim)
                             .filter(s -> !s.isEmpty())
                             .collect(Collectors.toList());
                     upstreams.put(k, list);
@@ -263,21 +266,34 @@ public class DagWidthTest {
 
         assertReduced(
                 newTripleLinearGraph(),
-                "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B"));
+                "A",
+                Collections.emptyList(),
+                "B",
+                Collections.singletonList("A"),
+                "C",
+                Arrays.asList("B"));
 
-        assertReduced(newQuadrupleLinearGraph(),
-                "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B"),
-                "D", Arrays.asList("C"));
+        assertReduced(
+                newQuadrupleLinearGraph(),
+                "A",
+                Collections.emptyList(),
+                "B",
+                Collections.singletonList("A"),
+                "C",
+                Arrays.asList("B"),
+                "D",
+                Arrays.asList("C"));
 
-        assertReduced(newQuadrupleLinearGraph2(),
-                "A", Collections.emptyList(),
-                "B", Collections.singletonList("A"),
-                "C", Arrays.asList("B"),
-                "D", Arrays.asList("C"));
+        assertReduced(
+                newQuadrupleLinearGraph2(),
+                "A",
+                Collections.emptyList(),
+                "B",
+                Collections.singletonList("A"),
+                "C",
+                Arrays.asList("B"),
+                "D",
+                Arrays.asList("C"));
 
         assertSameReduced(newMultilevelSumGraph());
 
@@ -286,7 +302,6 @@ public class DagWidthTest {
         assertSameReduced(newSingleGraph());
 
         assertSameReduced(newLinearGraph());
-
     }
 
     @Test
@@ -305,7 +320,8 @@ public class DagWidthTest {
     }
 
     static <K> DependencyGraph<K> newGraph(Map<K, List<K>> upstreams) {
-        List<K> nodes = Stream.concat(upstreams.keySet().stream(), upstreams.values().stream().flatMap(List::stream))
+        List<K> nodes = Stream.concat(
+                        upstreams.keySet().stream(), upstreams.values().stream().flatMap(List::stream))
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());

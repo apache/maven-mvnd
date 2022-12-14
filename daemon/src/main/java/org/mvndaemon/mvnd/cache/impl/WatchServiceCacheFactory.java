@@ -1,17 +1,20 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.cache.impl;
 
@@ -93,14 +96,15 @@ public class WatchServiceCacheFactory implements CacheFactory {
             try {
                 WatchEvent.Modifier[] mods;
                 try {
-                    mods = new WatchEvent.Modifier[] {
-                            com.sun.nio.file.SensitivityWatchEventModifier.HIGH
-                    };
+                    mods = new WatchEvent.Modifier[] {com.sun.nio.file.SensitivityWatchEventModifier.HIGH};
                 } catch (Throwable t) {
                     mods = null;
                 }
-                final WatchKey watchKey = key.register(watchService,
-                        new WatchEvent.Kind[] { StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY },
+                final WatchKey watchKey = key.register(
+                        watchService,
+                        new WatchEvent.Kind[] {
+                            StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY
+                        },
                         mods);
                 return new Registration(watchKey);
             } catch (NoSuchFileException e) {
@@ -138,7 +142,8 @@ public class WatchServiceCacheFactory implements CacheFactory {
                 } else if (kind == StandardWatchEventKinds.OVERFLOW) {
                     /* Invalidate all records under the given dir */
                     LOG.debug("Got overflow event for path {}", dir);
-                    Iterator<Map.Entry<Path, List<CacheRecord>>> it = recordsByPath.entrySet().iterator();
+                    Iterator<Map.Entry<Path, List<CacheRecord>>> it =
+                            recordsByPath.entrySet().iterator();
                     while (it.hasNext()) {
                         Map.Entry<Path, List<CacheRecord>> en = it.next();
                         final Path path = en.getKey();
@@ -230,7 +235,7 @@ public class WatchServiceCacheFactory implements CacheFactory {
 
         @Override
         public void removeIf(BiPredicate<K, V> predicate) {
-            for (Iterator<Map.Entry<K, V>> iterator = map.entrySet().iterator(); iterator.hasNext();) {
+            for (Iterator<Map.Entry<K, V>> iterator = map.entrySet().iterator(); iterator.hasNext(); ) {
                 Map.Entry<K, V> entry = iterator.next();
                 if (predicate.test(entry.getKey(), entry.getValue())) {
                     entry.getValue().invalidate();
@@ -271,6 +276,5 @@ public class WatchServiceCacheFactory implements CacheFactory {
             delegate.invalidate();
             map.remove(key);
         }
-
     }
 }
