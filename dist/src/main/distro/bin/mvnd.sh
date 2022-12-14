@@ -101,9 +101,8 @@ if [ ! -x "$JAVACMD" ] ; then
   exit 1
 fi
 
-DAEMON_JAR=`echo "${MVND_HOME}"/mvn/boot/*.jar "${MVND_HOME}"/mvn/lib/ext/*.jar "${MVND_HOME}"/mvn/lib/*.jar`
-DAEMON_JAR=$(echo $DAEMON_JAR | sed -e 's/ /:/g')
-DAEMON_LAUNCHER=org.mvndaemon.mvnd.client.DefaultClient
+CLASSWORLDS_JAR=`echo "${MVND_HOME}"/mvn/boot/plexus-classworlds-*.jar`
+CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin ; then
@@ -113,9 +112,26 @@ if $cygwin ; then
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
   [ -n "$CLASSPATH" ] &&
     CLASSPATH=`cygpath --path --windows "$CLASSPATH"`
-  [ -n "$DAEMON_JAR" ] &&
-    DAEMON_JAR=`cygpath --path --windows "$DAEMON_JAR"`
+  [ -n "$CLASSWORLDS_JAR" ] &&
+    CLASSWORLDS_JAR=`cygpath --path --windows "$CLASSWORLDS_JAR"`
 fi
+
+# traverses directory structure from process work directory to filesystem root
+# first directory with .mvn subdirectory is considered project base directory
+find_maven_basedir() {
+(
+  basedir=`find_file_argument_basedir "$@"`
+  wdir="${basedir}"
+  while [ "$wdir" != '/' ] ; do
+    if [ -d "$wdir"/.mvn ] ; then
+      basedir=$wdir
+      break
+    fi
+    wdir=`cd "$wdir/.."; pwd`
+  done
+  echo "${basedir}"
+)
+}
 
 find_file_argument_basedir() {
 (
@@ -154,17 +170,21 @@ concat_lines() {
   fi
 }
 
-# Provide a "standardized" way to retrieve the CLI args that will
-# work with both Windows and non-Windows executions.
-MAVEN_CMD_LINE_ARGS="$MAVEN_CONFIG $@"
-export MAVEN_CMD_LINE_ARGS
+MAVEN_PROJECTBASEDIR=`find_maven_basedir "$@"`
+MAVEN_OPTS="`concat_lines "$MAVEN_PROJECTBASEDIR/.mvn/jvm.config"` $MAVEN_OPTS"
+
+# For Cygwin, switch project base directory path to Windows format before
+# executing Maven otherwise this will cause Maven not to consider it.
+if $cygwin ; then
+  [ -n "$MAVEN_PROJECTBASEDIR" ] &&
+  MAVEN_PROJECTBASEDIR=`cygpath --path --windows "$MAVEN_PROJECTBASEDIR"`
+fi
 
 exec "$JAVACMD" \
   $MAVEN_OPTS \
   $MAVEN_DEBUG_OPTS \
-  -classpath "${DAEMON_JAR}" \
-  "-Dlogback.configurationFile=${MVND_HOME}/conf/logback-client.xml" \
+  -classpath "${CLASSWORLDS_JAR}" \
+  "-Dclassworlds.conf=${MVND_HOME}/bin/m2.conf" \
   "-Dmvnd.home=${MVND_HOME}" \
-  "-Dmaven.home=${MVND_HOME}/mvn" \
-  "-Dlibrary.jansi.path=${MVND_HOME}/mvn/lib/jansi-native" \
-  ${DAEMON_LAUNCHER} "$@"
+  "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
+  ${CLASSWORLDS_LAUNCHER} "$@"
