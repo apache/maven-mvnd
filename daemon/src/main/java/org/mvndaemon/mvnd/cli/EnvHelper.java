@@ -1,17 +1,20 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.cli;
 
@@ -40,8 +43,7 @@ public class EnvHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EnvHelper.class);
 
-    private EnvHelper() {
-    }
+    private EnvHelper() {}
 
     public static void environment(String workingDir, Map<String, String> clientEnv) {
         environment(workingDir, clientEnv, LOGGER::warn);
@@ -82,8 +84,9 @@ public class EnvHelper {
             diffs.forEach(key -> {
                 String vr = requested.get(key);
                 String va = nactual.get(key);
-                log.accept(String.format("   %s -> %s instead of %s", key,
-                        va != null ? "'" + va + "'" : "<null>", vr != null ? "'" + vr + "'" : "<null>"));
+                log.accept(String.format(
+                        "   %s -> %s instead of %s",
+                        key, va != null ? "'" + va + "'" : "<null>", vr != null ? "'" + vr + "'" : "<null>"));
             });
             log.accept("If the difference matters to you, stop the running daemons using mvnd --stop and");
             log.accept("start a new daemon from the current environment by issuing any mvnd build command.");
@@ -157,8 +160,8 @@ public class EnvHelper {
         // OpenJDK 8-17 on Windows
         if (Os.current() == Os.WINDOWS) {
             Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
-            Field theCaseInsensitiveEnvironmentField = processEnvironmentClass
-                    .getDeclaredField("theCaseInsensitiveEnvironment");
+            Field theCaseInsensitiveEnvironmentField =
+                    processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
             theCaseInsensitiveEnvironmentField.setAccessible(true);
             Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
             cienv.clear();

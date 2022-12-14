@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.maven.cli;
 
@@ -54,8 +57,16 @@ public class MvndHelpFormatter {
             out.println();
             PrintWriter pw = new PrintWriter(out);
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp(pw, terminalWidth, "mvnd [options] [<goal(s)>] [<phase(s)>]", "\nOptions:", cliManager.options,
-                    1, 3, "\n", false);
+            formatter.printHelp(
+                    pw,
+                    terminalWidth,
+                    "mvnd [options] [<goal(s)>] [<phase(s)>]",
+                    "\nOptions:",
+                    cliManager.options,
+                    1,
+                    3,
+                    "\n",
+                    false);
             pw.flush();
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
@@ -65,78 +76,66 @@ public class MvndHelpFormatter {
         final String indent = m.find() ? m.group() : "                                        ";
 
         final String lineSeparator = System.lineSeparator();
-        final StringBuilder help = new StringBuilder(mvnHelp)
-                .append(lineSeparator)
-                .append("mvnd specific options:");
+        final StringBuilder help =
+                new StringBuilder(mvnHelp).append(lineSeparator).append("mvnd specific options:");
 
-        Environment.documentedEntries()
-                .forEach(entry -> {
-                    final Environment env = entry.getEntry();
-                    help.append(lineSeparator);
-                    int indentPos = help.length() + indent.length();
-                    int lineEnd = help.length() + terminalWidth;
-                    spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
-                    final String property = env.getProperty();
-                    if (property != null) {
-                        help
-                                .append("-D")
-                                .append(property);
-                        if (env.getType() != OptionType.VOID) {
-                            help
-                                    .append("=<")
-                                    .append(env.getType().name().toLowerCase(Locale.ROOT))
-                                    .append('>');
+        Environment.documentedEntries().forEach(entry -> {
+            final Environment env = entry.getEntry();
+            help.append(lineSeparator);
+            int indentPos = help.length() + indent.length();
+            int lineEnd = help.length() + terminalWidth;
+            spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
+            final String property = env.getProperty();
+            if (property != null) {
+                help.append("-D").append(property);
+                if (env.getType() != OptionType.VOID) {
+                    help.append("=<")
+                            .append(env.getType().name().toLowerCase(Locale.ROOT))
+                            .append('>');
+                }
+            }
 
-                        }
+            final Set<String> opts = env.getOptions();
+            if (!opts.isEmpty()) {
+                if (property != null) {
+                    help.append(';');
+                }
+                boolean first = true;
+                for (String opt : opts) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        help.append(',');
                     }
+                    help.append(opt);
+                }
+                if (env.getType() != OptionType.VOID) {
+                    help.append(" <")
+                            .append(env.getType().name().toLowerCase(Locale.ROOT))
+                            .append('>');
+                }
+            }
+            help.append(' ');
 
-                    final Set<String> opts = env.getOptions();
-                    if (!opts.isEmpty()) {
-                        if (property != null) {
-                            help.append(';');
-                        }
-                        boolean first = true;
-                        for (String opt : opts) {
-                            if (first) {
-                                first = false;
-                            } else {
-                                help.append(',');
-                            }
-                            help.append(opt);
-                        }
-                        if (env.getType() != OptionType.VOID) {
-                            help
-                                    .append(" <")
-                                    .append(env.getType().name().toLowerCase(Locale.ROOT))
-                                    .append('>');
-                        }
-                    }
-                    help.append(' ');
+            spaces(help, indentPos - help.length());
+            wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
 
-                    spaces(help, indentPos - help.length());
-                    wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
+            indentedLine(help, terminalWidth, "Default", env.getDefault(), indent);
+            indentedLine(help, terminalWidth, "Env. variable", env.getEnvironmentVariable(), indent);
+        });
 
-                    indentedLine(help, terminalWidth, "Default", env.getDefault(), indent);
-                    indentedLine(help, terminalWidth, "Env. variable", env.getEnvironmentVariable(), indent);
+        help.append(lineSeparator).append(lineSeparator).append("mvnd value types:");
 
-                });
-
-        help
-                .append(lineSeparator)
-                .append(lineSeparator)
-                .append("mvnd value types:");
-
-        OptionType.documentedEntries()
-                .forEach(entry -> {
-                    final OptionType type = entry.getEntry();
-                    help.append(lineSeparator);
-                    int indentPos = help.length() + indent.length();
-                    int lineEnd = help.length() + terminalWidth;
-                    spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
-                    help.append(type.name().toLowerCase(Locale.ROOT));
-                    spaces(help, indentPos - help.length());
-                    wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
-                });
+        OptionType.documentedEntries().forEach(entry -> {
+            final OptionType type = entry.getEntry();
+            help.append(lineSeparator);
+            int indentPos = help.length() + indent.length();
+            int lineEnd = help.length() + terminalWidth;
+            spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
+            help.append(type.name().toLowerCase(Locale.ROOT));
+            spaces(help, indentPos - help.length());
+            wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
+        });
 
         return help.toString();
     }
@@ -151,13 +150,12 @@ public class MvndHelpFormatter {
         return terminalWidth;
     }
 
-    private static void indentedLine(StringBuilder stringBuilder, int terminalWidth, String key, String value, String indent) {
+    private static void indentedLine(
+            StringBuilder stringBuilder, int terminalWidth, String key, String value, String indent) {
         int lineEnd;
         if (value != null) {
             lineEnd = stringBuilder.length() + terminalWidth;
-            stringBuilder
-                    .append(System.lineSeparator())
-                    .append(indent);
+            stringBuilder.append(System.lineSeparator()).append(indent);
             wrap(stringBuilder, key + ": " + value, terminalWidth, lineEnd, indent);
         }
     }
@@ -187,10 +185,7 @@ public class MvndHelpFormatter {
 
                 } else {
                     nextLineEnd = stringBuilder.length() + lineLength;
-                    stringBuilder
-                            .append(System.lineSeparator())
-                            .append(indent)
-                            .append(token);
+                    stringBuilder.append(System.lineSeparator()).append(indent).append(token);
                 }
                 lastWs = null;
             }
@@ -210,5 +205,4 @@ public class MvndHelpFormatter {
         }
         return stringBuilder;
     }
-
 }

@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.maven.classrealm;
 
@@ -55,8 +58,7 @@ import org.eclipse.sisu.Priority;
 @Named
 @Singleton
 @Priority(10)
-public class MvndClassRealmManager
-        implements ClassRealmManager {
+public class MvndClassRealmManager implements ClassRealmManager {
     public static final String API_REALMID = "maven.api";
 
     /**
@@ -87,8 +89,11 @@ public class MvndClassRealmManager
     private final Set<String> providedArtifacts;
 
     @Inject
-    public MvndClassRealmManager(Logger logger, PlexusContainer container,
-            List<ClassRealmManagerDelegate> delegates, CoreExportsProvider exports) {
+    public MvndClassRealmManager(
+            Logger logger,
+            PlexusContainer container,
+            List<ClassRealmManagerDelegate> delegates,
+            CoreExportsProvider exports) {
         this.logger = logger;
         this.world = ((MutablePlexusContainer) container).getClassWorld();
         this.containerRealm = container.getContainerRealm();
@@ -96,9 +101,13 @@ public class MvndClassRealmManager
 
         Map<String, ClassLoader> foreignImports = exports.get().getExportedPackages();
 
-        this.mavenApiRealm = createRealm(API_REALMID, ClassRealmRequest.RealmType.Core, null /* parent */,
+        this.mavenApiRealm = createRealm(
+                API_REALMID,
+                ClassRealmRequest.RealmType.Core,
+                null /* parent */,
                 null /* parentImports */,
-                foreignImports, null /* artifacts */ );
+                foreignImports,
+                null /* artifacts */);
 
         this.providedArtifacts = exports.get().getExportedArtifacts();
     }
@@ -141,9 +150,13 @@ public class MvndClassRealmManager
      *                        missing file) will automatically be excluded from the realm.
      * @return                The created class realm, never {@code null}.
      */
-    private ClassRealm createRealm(String baseRealmId, ClassRealmRequest.RealmType type, ClassLoader parent,
+    private ClassRealm createRealm(
+            String baseRealmId,
+            ClassRealmRequest.RealmType type,
+            ClassLoader parent,
             List<String> parentImports,
-            Map<String, ClassLoader> foreignImports, List<Artifact> artifacts) {
+            Map<String, ClassLoader> foreignImports,
+            List<Artifact> artifacts) {
         Set<String> artifactIds = new LinkedHashSet<>();
 
         List<ClassRealmConstituent> constituents = new ArrayList<>();
@@ -215,25 +228,34 @@ public class MvndClassRealmManager
 
         ClassLoader parent = PARENT_CLASSLOADER;
 
-        Map<String, ClassLoader> foreignImports = Collections.<String, ClassLoader> singletonMap("", getMavenApiRealm());
+        Map<String, ClassLoader> foreignImports = Collections.<String, ClassLoader>singletonMap("", getMavenApiRealm());
 
-        return createRealm(getKey(plugin, true), ClassRealmRequest.RealmType.Extension, parent, null, foreignImports,
-                artifacts);
+        return createRealm(
+                getKey(plugin, true), ClassRealmRequest.RealmType.Extension, parent, null, foreignImports, artifacts);
     }
 
     private boolean isProvidedArtifact(Artifact artifact) {
         return providedArtifacts.contains(artifact.getGroupId() + ":" + artifact.getArtifactId());
     }
 
-    public ClassRealm createPluginRealm(Plugin plugin, ClassLoader parent, List<String> parentImports,
-            Map<String, ClassLoader> foreignImports, List<Artifact> artifacts) {
+    public ClassRealm createPluginRealm(
+            Plugin plugin,
+            ClassLoader parent,
+            List<String> parentImports,
+            Map<String, ClassLoader> foreignImports,
+            List<Artifact> artifacts) {
         Objects.requireNonNull(plugin, "plugin cannot be null");
 
         if (parent == null) {
             parent = PARENT_CLASSLOADER;
         }
 
-        return createRealm(getKey(plugin, false), ClassRealmRequest.RealmType.Plugin, parent, parentImports, foreignImports,
+        return createRealm(
+                getKey(plugin, false),
+                ClassRealmRequest.RealmType.Plugin,
+                parent,
+                parentImports,
+                foreignImports,
                 artifacts);
     }
 
@@ -244,33 +266,48 @@ public class MvndClassRealmManager
     }
 
     private static String getId(Artifact artifact) {
-        return getId(artifact.getGroupId(), artifact.getArtifactId(), artifact.getExtension(),
-                artifact.getClassifier(), artifact.getBaseVersion());
+        return getId(
+                artifact.getGroupId(),
+                artifact.getArtifactId(),
+                artifact.getExtension(),
+                artifact.getClassifier(),
+                artifact.getBaseVersion());
     }
 
     private static String getId(ClassRealmConstituent constituent) {
-        return getId(constituent.getGroupId(), constituent.getArtifactId(), constituent.getType(),
-                constituent.getClassifier(), constituent.getVersion());
+        return getId(
+                constituent.getGroupId(),
+                constituent.getArtifactId(),
+                constituent.getType(),
+                constituent.getClassifier(),
+                constituent.getVersion());
     }
 
     private static String getId(String gid, String aid, String type, String cls, String ver) {
         return gid + ':' + aid + ':' + type + (StringUtils.isNotEmpty(cls) ? ':' + cls : "") + ':' + ver;
     }
 
-    private void callDelegates(ClassRealm classRealm, ClassRealmRequest.RealmType type, ClassLoader parent,
+    private void callDelegates(
+            ClassRealm classRealm,
+            ClassRealmRequest.RealmType type,
+            ClassLoader parent,
             List<String> parentImports,
-            Map<String, ClassLoader> foreignImports, List<ClassRealmConstituent> constituents) {
+            Map<String, ClassLoader> foreignImports,
+            List<ClassRealmConstituent> constituents) {
         List<ClassRealmManagerDelegate> delegates = new ArrayList<>(this.delegates);
 
         if (!delegates.isEmpty()) {
-            ClassRealmRequest request = new DefaultClassRealmRequest(type, parent, parentImports, foreignImports, constituents);
+            ClassRealmRequest request =
+                    new DefaultClassRealmRequest(type, parent, parentImports, foreignImports, constituents);
 
             for (ClassRealmManagerDelegate delegate : delegates) {
                 try {
                     delegate.setupRealm(classRealm, request);
                 } catch (Exception e) {
-                    logger.error(delegate.getClass().getName() + " failed to setup class realm " + classRealm + ": "
-                            + e.getMessage(), e);
+                    logger.error(
+                            delegate.getClass().getName() + " failed to setup class realm " + classRealm + ": "
+                                    + e.getMessage(),
+                            e);
                 }
             }
         }
@@ -343,5 +380,4 @@ public class MvndClassRealmManager
         }
         return String.valueOf(classLoader);
     }
-
 }

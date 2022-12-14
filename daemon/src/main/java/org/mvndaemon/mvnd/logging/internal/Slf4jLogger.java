@@ -33,8 +33,7 @@ import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
  *
  * @author Jason van Zyl
  */
-public class Slf4jLogger
-        implements Logger {
+public class Slf4jLogger implements Logger {
 
     private org.slf4j.Logger logger;
     private String projectId;
@@ -124,8 +123,7 @@ public class Slf4jLogger
     /**
      * <b>Warning</b>: ignored.
      */
-    public void setThreshold(int threshold) {
-    }
+    public void setThreshold(int threshold) {}
 
     /**
      * <b>Warning</b>: ignored (always return <code>null</code>).
@@ -143,5 +141,4 @@ public class Slf4jLogger
             ProjectBuildLogAppender.setProjectId(projectId);
         }
     }
-
 }

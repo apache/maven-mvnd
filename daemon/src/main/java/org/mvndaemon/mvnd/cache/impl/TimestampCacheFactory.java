@@ -1,17 +1,20 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.cache.impl;
 
@@ -39,8 +42,7 @@ import org.mvndaemon.mvnd.cache.CacheRecord;
  */
 public class TimestampCacheFactory implements CacheFactory {
 
-    public TimestampCacheFactory() {
-    }
+    public TimestampCacheFactory() {}
 
     @Override
     public <K, V extends CacheRecord> Cache<K, V> newCache() {
@@ -73,14 +75,12 @@ public class TimestampCacheFactory implements CacheFactory {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
             FileState that = (FileState) o;
-            return path.equals(that.path) &&
-                    Objects.equals(lastModifiedTime, that.lastModifiedTime) &&
-                    Objects.equals(fileKey, that.fileKey);
+            return path.equals(that.path)
+                    && Objects.equals(lastModifiedTime, that.lastModifiedTime)
+                    && Objects.equals(fileKey, that.fileKey);
         }
 
         @Override
@@ -92,7 +92,6 @@ public class TimestampCacheFactory implements CacheFactory {
         public String toString() {
             return "FileState [path=" + path + ", lastModifiedTime=" + lastModifiedTime + ", fileKey=" + fileKey + "]";
         }
-
     }
 
     static class Record<V extends CacheRecord> {
@@ -110,9 +109,7 @@ public class TimestampCacheFactory implements CacheFactory {
          * @return {@link Set} of {@link FileState}s at current time
          */
         private Set<FileState> currentFileStates() {
-            return record.getDependencyPaths()
-                    .map(FileState::new)
-                    .collect(Collectors.toSet());
+            return record.getDependencyPaths().map(FileState::new).collect(Collectors.toSet());
         }
     }
 
@@ -157,7 +154,7 @@ public class TimestampCacheFactory implements CacheFactory {
 
         @Override
         public void removeIf(BiPredicate<K, V> predicate) {
-            for (Iterator<Map.Entry<K, Record<V>>> iterator = map.entrySet().iterator(); iterator.hasNext();) {
+            for (Iterator<Map.Entry<K, Record<V>>> iterator = map.entrySet().iterator(); iterator.hasNext(); ) {
                 Map.Entry<K, Record<V>> entry = iterator.next();
                 if (predicate.test(entry.getKey(), entry.getValue().record)) {
                     entry.getValue().record.invalidate();
@@ -169,19 +166,20 @@ public class TimestampCacheFactory implements CacheFactory {
         @Override
         public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
             return map.compute(key, (k, v) -> {
-                if (v != null) {
-                    try {
-                        if (Objects.equals(v.fileStates, v.currentFileStates())) {
-                            return v;
+                        if (v != null) {
+                            try {
+                                if (Objects.equals(v.fileStates, v.currentFileStates())) {
+                                    return v;
+                                }
+                            } catch (RuntimeException e) {
+                                // ignore and invalidate the record
+                            }
+                            v.record.invalidate();
+                            v = null;
                         }
-                    } catch (RuntimeException e) {
-                        // ignore and invalidate the record
-                    }
-                    v.record.invalidate();
-                    v = null;
-                }
-                return new Record<>(mappingFunction.apply(k));
-            }).record;
+                        return new Record<>(mappingFunction.apply(k));
+                    })
+                    .record;
         }
     }
 }

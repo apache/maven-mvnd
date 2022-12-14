@@ -1,17 +1,20 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.builder;
 
@@ -44,36 +47,35 @@ class ProjectExecutorService {
     private final BlockingQueue<Future<MavenProject>> completion = new LinkedBlockingQueue<>();
     private final Comparator<Runnable> taskComparator;
 
-    public ProjectExecutorService(final int degreeOfConcurrency,
-            final Comparator<MavenProject> projectComparator) {
+    public ProjectExecutorService(final int degreeOfConcurrency, final Comparator<MavenProject> projectComparator) {
 
-        this.taskComparator = Comparator.comparing(
-                r -> ((ProjectRunnable) r).getProject(), projectComparator);
+        this.taskComparator = Comparator.comparing(r -> ((ProjectRunnable) r).getProject(), projectComparator);
 
-        final BlockingQueue<Runnable> executorWorkQueue = new PriorityBlockingQueue<>(degreeOfConcurrency, taskComparator);
+        final BlockingQueue<Runnable> executorWorkQueue =
+                new PriorityBlockingQueue<>(degreeOfConcurrency, taskComparator);
 
-        executor = new ThreadPoolExecutor(degreeOfConcurrency, // corePoolSize
-                degreeOfConcurrency, // maximumPoolSize
-                0L, TimeUnit.MILLISECONDS, // keepAliveTime, unit
-                executorWorkQueue, // workQueue
-                new BuildThreadFactory() // threadFactory
-        ) {
+        executor =
+                new ThreadPoolExecutor(
+                        degreeOfConcurrency, // corePoolSize
+                        degreeOfConcurrency, // maximumPoolSize
+                        0L,
+                        TimeUnit.MILLISECONDS, // keepAliveTime, unit
+                        executorWorkQueue, // workQueue
+                        new BuildThreadFactory() // threadFactory
+                        ) {
 
-            @Override
-            protected void beforeExecute(Thread t, Runnable r) {
-                ProjectExecutorService.this.beforeExecute(t, r);
-            }
-        };
+                    @Override
+                    protected void beforeExecute(Thread t, Runnable r) {
+                        ProjectExecutorService.this.beforeExecute(t, r);
+                    }
+                };
     }
 
     public void submitAll(final Collection<? extends ProjectRunnable> tasks) {
         // when there are available worker threads, tasks are immediately executed, i.e. bypassed the
         // ordered queued. need to sort tasks, such that submission order matches desired execution
         // order
-        tasks.stream()
-                .sorted(taskComparator)
-                .map(ProjectFutureTask::new)
-                .forEach(executor::execute);
+        tasks.stream().sorted(taskComparator).map(ProjectFutureTask::new).forEach(executor::execute);
     }
 
     /**
@@ -93,8 +95,7 @@ class ProjectExecutorService {
     }
 
     // hook to allow pausing executor during unit tests
-    protected void beforeExecute(Thread t, Runnable r) {
-    }
+    protected void beforeExecute(Thread t, Runnable r) {}
 
     // for testing purposes only
     public void awaitShutdown() throws InterruptedException {

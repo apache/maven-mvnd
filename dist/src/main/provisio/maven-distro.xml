@@ -20,12 +20,13 @@
     <artifactSet to="/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
-                    excludes="lib/*slf4j*,conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*,lib/maven-resolver-api-*,lib/maven-resolver-impl-*,lib/maven-resolver-spi-*,lib/maven-resolver-util-*,lib/maven-resolver-connector-*,lib/maven-resolver-transport-*"/>
+                    excludes="conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*,lib/plexus-utils-3.*"/>
         </artifact>
     </artifactSet>
 
     <artifactSet to="/mvn/lib">
         <exclusion id="javax.annotation:javax.annotation-api"/>
+        <exclusion id="org.codehaus.plexus:plexus-utils"/>
         <artifact id="org.apache.maven.resolver:maven-resolver-api"/>
         <artifact id="org.apache.maven.resolver:maven-resolver-impl"/>
         <artifact id="org.apache.maven.resolver:maven-resolver-spi"/>
@@ -38,6 +39,7 @@
         <exclusion id="org.slf4j:slf4j-api"/>
         <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
             <exclusion id="org.codehaus.plexus:plexus-classworlds"/>
+            <exclusion id="org.codehaus.plexus:plexus-utils"/>
             <exclusion id="*:cdi-api"/>
             <exclusion id="*:commons-cli"/>
             <exclusion id="*:commons-io"/>
@@ -45,7 +47,10 @@
             <exclusion id="*:guava"/>
             <exclusion id="*:guice"/>
             <exclusion id="*:javax.inject"/>
+            <exclusion id="*:jcl-over-slf4j"/>
+            <exclusion id="*:jul-to-slf4j"/>
             <exclusion id="*:jsr250-api"/>
+            <exclusion id="*:log4j-over-slf4j"/>
             <exclusion id="*:maven-artifact"/>
             <exclusion id="*:maven-builder-support"/>
             <exclusion id="*:maven-core"/>
@@ -70,6 +75,7 @@
             <exclusion id="*:plexus-sec-dispatcher"/>
             <exclusion id="*:plexus-utils"/>
             <exclusion id="*:plexus-container-default"/>
+            <exclusion id="*:slf4j-api"/>
         </artifact>
         <artifact id="org.apache.maven.daemon:mvnd-client:${project.version}">
             <exclusion id="*:*"/>

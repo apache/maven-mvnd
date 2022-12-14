@@ -1,24 +1,27 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TimeUtilsTest {
 
@@ -33,8 +36,8 @@ public class TimeUtilsTest {
         assertEquals("5m10s300ms", TimeUtils.printDuration(310300));
         assertEquals("5s500ms", TimeUtils.printDuration(5500));
         assertEquals("1h50m", TimeUtils.printDuration(6600000));
-        assertEquals("2d3h4m", TimeUtils.printDuration(Duration.parse("P2DT3H4M").toMillis()));
+        assertEquals(
+                "2d3h4m", TimeUtils.printDuration(Duration.parse("P2DT3H4M").toMillis()));
         assertEquals("2d4m", TimeUtils.printDuration(Duration.parse("P2DT4M").toMillis()));
     }
-
 }
