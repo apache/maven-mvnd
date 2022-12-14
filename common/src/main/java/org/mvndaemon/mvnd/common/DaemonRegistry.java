@@ -1,20 +1,25 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
-
 package org.mvndaemon.mvnd.common;
+
+import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
+import static org.mvndaemon.mvnd.common.DaemonState.Idle;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -39,9 +44,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
-import static org.mvndaemon.mvnd.common.DaemonState.Idle;
 
 /**
  * Access to daemon registry files. Useful also for testing.
@@ -76,8 +78,8 @@ public class DaemonRegistry implements AutoCloseable {
                     Files.createDirectories(absPath.getParent());
                 }
             }
-            channel = FileChannel.open(absPath,
-                    StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
+            channel = FileChannel.open(
+                    absPath, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
             size = nextPowerOf2(channel.size(), MAX_LENGTH);
             buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
         } catch (IOException e) {
@@ -117,15 +119,11 @@ public class DaemonRegistry implements AutoCloseable {
 
     public List<DaemonInfo> getIdle() {
         read();
-        return infosMap.values().stream()
-                .filter(di -> di.getState() == Idle)
-                .collect(Collectors.toList());
+        return infosMap.values().stream().filter(di -> di.getState() == Idle).collect(Collectors.toList());
     }
 
     public List<DaemonInfo> getNotIdle() {
-        return infosMap.values().stream()
-                .filter(di -> di.getState() != Idle)
-                .collect(Collectors.toList());
+        return infosMap.values().stream().filter(di -> di.getState() != Idle).collect(Collectors.toList());
     }
 
     public List<DaemonInfo> getCanceled() {
@@ -211,8 +209,9 @@ public class DaemonRegistry implements AutoCloseable {
                         DaemonState state = DaemonState.values()[buffer.get()];
                         long lastIdle = buffer.getLong();
                         long lastBusy = buffer.getLong();
-                        DaemonInfo di = new DaemonInfo(daemonId, javaHome, mavenHome, pid, address, token, locale,
-                                opts, state, lastIdle, lastBusy);
+                        DaemonInfo di = new DaemonInfo(
+                                daemonId, javaHome, mavenHome, pid, address, token, locale, opts, state, lastIdle,
+                                lastBusy);
                         infosMap.putIfAbsent(di.getId(), di);
                     }
                     stopEvents.clear();
@@ -251,7 +250,10 @@ public class DaemonRegistry implements AutoCloseable {
                         for (DaemonStopEvent dse : stopEvents) {
                             writeString(dse.getDaemonId());
                             buffer.putLong(dse.getTimestamp());
-                            buffer.put((byte) (dse.getStatus() == null ? -1 : dse.getStatus().ordinal()));
+                            buffer.put((byte)
+                                    (dse.getStatus() == null
+                                            ? -1
+                                            : dse.getStatus().ordinal()));
                             writeString(dse.getReason());
                         }
                     }
@@ -285,14 +287,16 @@ public class DaemonRegistry implements AutoCloseable {
                         throw new DaemonException("Could not resize registry " + registryFile, ex);
                     }
                 } catch (IOException e) {
-                    throw new DaemonException("Exception while "
-                            + (updater != null ? "updating " : "reading ") + registryFile, e);
+                    throw new DaemonException(
+                            "Exception while " + (updater != null ? "updating " : "reading ") + registryFile, e);
                 } catch (IllegalStateException | ArrayIndexOutOfBoundsException | BufferUnderflowException e) {
                     String absPath = registryFile.toAbsolutePath().normalize().toString();
-                    LOGGER.warn("Invalid daemon registry info, " +
-                            "trying to recover from this issue. " +
-                            "If you keep getting this warning, " +
-                            "try deleting the `registry.bin` file at [" + absPath + "]", e);
+                    LOGGER.warn(
+                            "Invalid daemon registry info, " + "trying to recover from this issue. "
+                                    + "If you keep getting this warning, "
+                                    + "try deleting the `registry.bin` file at ["
+                                    + absPath + "]",
+                            e);
                     this.reset();
                     return;
                 }
@@ -347,7 +351,8 @@ public class DaemonRegistry implements AutoCloseable {
             return Integer.parseInt(pid);
         } catch (NumberFormatException x) {
             int rpid = new Random().nextInt(1 << 16);
-            LOGGER.warn("Unable to determine PID from malformed VM name `" + vmname + "`, picked a random number=" + rpid);
+            LOGGER.warn(
+                    "Unable to determine PID from malformed VM name `" + vmname + "`, picked a random number=" + rpid);
             return rpid;
         }
     }

@@ -1,17 +1,20 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
@@ -28,7 +31,8 @@ import java.util.function.Consumer;
  */
 public class BufferHelper {
 
-    private static boolean PRE_JAVA_9 = System.getProperty("java.specification.version", "9").startsWith("1.");
+    private static boolean PRE_JAVA_9 =
+            System.getProperty("java.specification.version", "9").startsWith("1.");
 
     /** The DirectByteBuffer.cleaner() method. */
     private static Method directByteBufferCleanerMethod;
@@ -74,7 +78,7 @@ public class BufferHelper {
                 // Ignore
             }
         } else {
-            //boolean jdkSuccess = false;
+            // boolean jdkSuccess = false;
             //    // TODO: This feature is in incubation now -- enable after it leaves incubation.
             //    // To enable this feature, need to:
             //    // -- add whatever the "jdk.incubator.foreign" module name is replaced with to <Import-Package>
@@ -94,7 +98,7 @@ public class BufferHelper {
             //    } catch (ClassNotFoundException | NoSuchMethodException | SecurityException e1) {
             //        // Fall through
             //    }
-            //if (!jdk14Success) { // In JDK9+, calling sun.misc.Cleaner.clean() gives a reflection warning on stderr,
+            // if (!jdk14Success) { // In JDK9+, calling sun.misc.Cleaner.clean() gives a reflection warning on stderr,
             // so we need to call Unsafe.theUnsafe.invokeCleaner(byteBuffer) instead, which makes
             // the same call, but does not print the reflection warning.
             try {
@@ -117,7 +121,7 @@ public class BufferHelper {
             } catch (final ReflectiveOperationException | LinkageError ex) {
                 // Ignore
             }
-            //}
+            // }
         }
     }
 
@@ -261,5 +265,4 @@ public class BufferHelper {
             return false;
         }
     }
-
 }

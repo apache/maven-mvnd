@@ -1,17 +1,20 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.cache.invalidating;
 
@@ -65,8 +68,11 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
         try {
             if (event instanceof MavenExecutionRequest) {
                 /*  Store the multiModuleProjectDirectory path */
-                multiModuleProjectDirectory = ((MavenExecutionRequest) event).getMultiModuleProjectDirectory().toPath();
-                pattern = Environment.MVND_PLUGIN_REALM_EVICT_PATTERN.asOptional()
+                multiModuleProjectDirectory = ((MavenExecutionRequest) event)
+                        .getMultiModuleProjectDirectory()
+                        .toPath();
+                pattern = Environment.MVND_PLUGIN_REALM_EVICT_PATTERN
+                        .asOptional()
                         .orElse(Environment.MVND_PLUGIN_REALM_EVICT_PATTERN.getDefault());
                 if (!pattern.isEmpty()) {
                     String[] patterns = pattern.split(",");
@@ -104,15 +110,17 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
                 extensionCache.cache.removeIf(this::shouldEvict);
                 MavenExecutionResult mer = (MavenExecutionResult) event;
                 List<MavenProject> projects = mer.getTopologicallySortedProjects();
-                projectArtifactsCache.cache
-                        .removeIf((k, r) -> shouldEvict(projects, (InvalidatingProjectArtifactsCache.CacheKey) k, r));
+                projectArtifactsCache.cache.removeIf(
+                        (k, r) -> shouldEvict(projects, (InvalidatingProjectArtifactsCache.CacheKey) k, r));
             }
         } catch (Exception e) {
             LOG.warn("Could not notify CliPluginRealmCache", e);
         }
     }
 
-    private boolean shouldEvict(List<MavenProject> projects, InvalidatingProjectArtifactsCache.CacheKey k,
+    private boolean shouldEvict(
+            List<MavenProject> projects,
+            InvalidatingProjectArtifactsCache.CacheKey k,
             InvalidatingProjectArtifactsCache.Record v) {
         return projects.stream().anyMatch(p -> k.matches(p.getGroupId(), p.getArtifactId(), p.getVersion()));
     }
@@ -125,12 +133,15 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
                     if (path.startsWith(multiModuleProjectDirectory)) {
                         LOG.debug(
                                 "Removing PluginRealmCache entry {} because it refers to an artifact in the build tree {}",
-                                k, path);
+                                k,
+                                path);
                         return true;
                     } else if (matcher != null && matcher.matches(path)) {
                         LOG.debug(
                                 "Removing PluginRealmCache entry {} because its components {} matches the eviction pattern '{}'",
-                                k, path, pattern);
+                                k,
+                                path,
+                                pattern);
                         return true;
                     }
                 }
@@ -149,12 +160,15 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
                     if (path.startsWith(multiModuleProjectDirectory)) {
                         LOG.debug(
                                 "Removing ExtensionRealmCache entry {} because it refers to an artifact in the build tree {}",
-                                k, path);
+                                k,
+                                path);
                         return true;
                     } else if (matcher != null && matcher.matches(path)) {
                         LOG.debug(
                                 "Removing ExtensionRealmCache entry {} because its components {} matches the eviction pattern '{}'",
-                                k, path, pattern);
+                                k,
+                                path,
+                                pattern);
                         return true;
                     }
                 }
@@ -171,5 +185,4 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
         }
         return FileSystems.getDefault().getPathMatcher(pattern);
     }
-
 }

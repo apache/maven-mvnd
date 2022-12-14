@@ -1,17 +1,20 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.interactivity;
 
@@ -37,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 @Named
 @Priority(10)
-@Typed({ Prompter.class, InputHandler.class, OutputHandler.class })
+@Typed({Prompter.class, InputHandler.class, OutputHandler.class})
 public class DaemonPrompter extends AbstractInputHandler implements Prompter, InputHandler, OutputHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonPrompter.class);
@@ -58,6 +61,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public String prompt(String message, List possibleValues, String defaultReply) throws PrompterException {
         return doPrompt(message, possibleValues, defaultReply, false);
     }
@@ -128,7 +132,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
         formatted.append(message);
         if (possibleValues != null && !possibleValues.isEmpty()) {
             formatted.append(" (");
-            for (Iterator<?> it = possibleValues.iterator(); it.hasNext();) {
+            for (Iterator<?> it = possibleValues.iterator(); it.hasNext(); ) {
                 String possibleValue = String.valueOf(it.next());
                 formatted.append(possibleValue);
                 if (it.hasNext()) {
@@ -162,8 +166,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
             String uid = UUID.randomUUID().toString();
             Message.Prompt msg = new Message.Prompt(projectId, uid, message, password);
             LOGGER.info("Requesting prompt: " + msg);
-            Message.PromptResponse res = con.request(msg, Message.PromptResponse.class,
-                    r -> uid.equals(r.getUid()));
+            Message.PromptResponse res = con.request(msg, Message.PromptResponse.class, r -> uid.equals(r.getUid()));
             LOGGER.info("Received response: " + res.getMessage());
             return res.getMessage();
         } catch (Exception e) {

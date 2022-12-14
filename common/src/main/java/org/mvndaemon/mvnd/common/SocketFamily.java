@@ -1,17 +1,20 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common;
 
@@ -32,23 +35,23 @@ public enum SocketFamily {
 
     public SocketChannel openSocket() throws IOException {
         switch (this) {
-        case inet:
-            return SocketChannel.open();
-        case unix:
-            return SocketHelper.openUnixSocket();
-        default:
-            throw new IllegalStateException();
+            case inet:
+                return SocketChannel.open();
+            case unix:
+                return SocketHelper.openUnixSocket();
+            default:
+                throw new IllegalStateException();
         }
     }
 
     public ServerSocketChannel openServerSocket() throws IOException {
         switch (this) {
-        case inet:
-            return ServerSocketChannel.open().bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
-        case unix:
-            return SocketHelper.openUnixServerSocket();
-        default:
-            throw new IllegalStateException();
+            case inet:
+                return ServerSocketChannel.open().bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+            case unix:
+                return SocketHelper.openUnixServerSocket();
+            default:
+                throw new IllegalStateException();
         }
     }
 
@@ -105,26 +108,26 @@ public enum SocketFamily {
 
     public static String toString(SocketAddress address) {
         switch (familyOf(address)) {
-        case inet:
-            InetSocketAddress isa = (InetSocketAddress) address;
-            String host = isa.getHostString();
-            InetAddress addr = isa.getAddress();
-            int port = isa.getPort();
-            String formatted;
-            if (addr == null) {
-                formatted = host + "/<unresolved>";
-            } else {
-                formatted = addr.toString();
-                if (addr instanceof Inet6Address) {
-                    int i = formatted.lastIndexOf("/");
-                    formatted = formatted.substring(0, i + 1) + "[" + formatted.substring(i + 1) + "]";
+            case inet:
+                InetSocketAddress isa = (InetSocketAddress) address;
+                String host = isa.getHostString();
+                InetAddress addr = isa.getAddress();
+                int port = isa.getPort();
+                String formatted;
+                if (addr == null) {
+                    formatted = host + "/<unresolved>";
+                } else {
+                    formatted = addr.toString();
+                    if (addr instanceof Inet6Address) {
+                        int i = formatted.lastIndexOf("/");
+                        formatted = formatted.substring(0, i + 1) + "[" + formatted.substring(i + 1) + "]";
+                    }
                 }
-            }
-            return "inet:" + formatted + ":" + port;
-        case unix:
-            return "unix:" + address;
-        default:
-            throw new IllegalArgumentException("Unsupported socket address: '" + address + "'");
+                return "inet:" + formatted + ":" + port;
+            case unix:
+                return "unix:" + address;
+            default:
+                throw new IllegalArgumentException("Unsupported socket address: '" + address + "'");
         }
     }
 
@@ -137,5 +140,4 @@ public enum SocketFamily {
             throw new IllegalArgumentException("Unsupported socket address '" + address + "'");
         }
     }
-
 }
