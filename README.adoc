@@ -152,7 +152,7 @@ $ xattr -r -d com.apple.quarantine mvnd-x.y.z-darwin-amd64
 
 [source,shell]
 ----
-mvnd clean install
+mvnd verify
 ----
 
 == `mvnd` specific options
