@@ -32,7 +32,6 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -288,18 +287,12 @@ public class TerminalOutput implements ClientOutput {
             case Message.PROJECT_STOPPED: {
                 StringMessage be = (StringMessage) entry;
                 final String artifactId = be.getMessage();
-                // Display project log if it has not failed and if it's not the main project
-                if (!Objects.equals(name, artifactId)) {
-                    Project prj = projects.get(artifactId);
-                    if (prj != null) {
-                        if (failures.stream().noneMatch(e -> Objects.equals(artifactId, e.getProjectId()))) {
-                            projects.remove(artifactId);
-                            prj.log.forEach(log);
-                        }
-                    }
-                    doneProjects++;
-                    displayDone();
+                Project prj = projects.remove(artifactId);
+                if (prj != null) {
+                    prj.log.forEach(log);
                 }
+                doneProjects++;
+                displayDone();
                 break;
             }
             case Message.BUILD_STATUS: {
@@ -307,11 +300,7 @@ public class TerminalOutput implements ClientOutput {
                 break;
             }
             case Message.BUILD_FINISHED: {
-                Project main = projects.remove(name);
                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                if (main != null) {
-                    main.log.forEach(log);
-                }
                 clearDisplay();
                 try {
                     log.close();
