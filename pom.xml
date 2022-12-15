@@ -319,13 +319,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <repositories>
-    <repository>
-      <id>staging-alpha-3</id>
-      <url>https://repository.apache.org/content/repositories/maven-1835/</url>
-    </repository>
-  </repositories>
-
   <build>
     <pluginManagement>
       <plugins>
