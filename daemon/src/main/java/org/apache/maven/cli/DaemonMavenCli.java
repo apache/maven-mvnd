@@ -318,7 +318,7 @@ public class DaemonMavenCli {
                 .build());
         cliManager.options.addOption(Option.builder()
                 .longOpt(RAW_STREAMS)
-                .desc("Do not decorate output and " + "error streams")
+                .desc("Do not decorate output and error streams")
                 .build());
         return cliManager;
     }
@@ -406,7 +406,10 @@ public class DaemonMavenCli {
                 // Ignore
                 //
             }
-        } else if (!cliRequest.commandLine.hasOption(RAW_STREAMS)) {
+        } else if (!Environment.MVND_RAW_STREAMS
+                .asOptional()
+                .map(Boolean::parseBoolean)
+                .orElse(Boolean.FALSE)) {
             ch.qos.logback.classic.Logger stdout =
                     (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stdout");
             ch.qos.logback.classic.Logger stderr =
