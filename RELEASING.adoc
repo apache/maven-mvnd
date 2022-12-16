@@ -6,6 +6,7 @@
 ./build/release-build.sh <released-version> <next-SNAPSHOT>
 ----
 
+* While the `darwin-aarch64` is not supported by github, you need to perform a clean build on the tagged branch on a Apple M1 computer and upload the two binary distributions as additional assets to the draft release that has been generated at github.
 
 * Once the workflow completes, run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release-candidate.sh[release-candidate script] which will download the built assemblies, compute the checksums and signatures and commit them to the https://dist.apache.org/repos/dist/dev/maven/mvnd/[dev distribution repository]
 https://github.com/apache/maven-mvnd/releases[releases].
