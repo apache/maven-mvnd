@@ -302,11 +302,7 @@ public class DaemonMavenCli {
 
     private CLIManager newCLIManager() {
         CLIManager cliManager = new CLIManager();
-        cliManager.options.addOption(Option.builder(RESUME)
-                .longOpt("resume")
-                .desc("Resume reactor from "
-                        + "the last failed project, using the resume.properties file in the build directory")
-                .build());
+        cliManager.options.addOption(Option.builder().longOpt("raw-streams").build());
         return cliManager;
     }
 
