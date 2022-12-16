@@ -89,6 +89,7 @@
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
                     <postBuildHookScript>verify</postBuildHookScript>
+                    <settingsFile>${settingsFile}</settingsFile>
                 </configuration>
                 <executions>
                     <execution>
@@ -103,4 +104,18 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>settings</id>
+            <activation>
+                <file>
+                    <exists>${project.basedir}/../settings.xml</exists>
+                </file>
+            </activation>
+            <properties>
+                <settingsFile>${project.basedir}/../settings.xml</settingsFile>
+            </properties>
+        </profile>
+    </profiles>
 </project>

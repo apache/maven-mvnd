@@ -66,6 +66,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
+    <maven-dist.required.jdk>8</maven-dist.required.jdk>
     <project.build.outputTimestamp>2022-11-19T15:16:03Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
@@ -83,9 +84,10 @@
     <jline.version>3.21.0</jline.version>
     <junit.jupiter.version>5.9.1</junit.jupiter.version>
     <logback.version>1.2.11</logback.version>
-    <maven.version>4.0.0-alpha-2</maven.version>
-    <maven.resolver.version>1.8.2</maven.resolver.version>
-    <slf4j.version>1.7.35</slf4j.version>
+    <maven.version>4.0.0-alpha-3</maven.version>
+    <!-- Keep in sync with Maven -->
+    <maven.resolver.version>1.9.2</maven.resolver.version>
+    <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.3.5</sisu.version>
 
     <!-- plugin versions a..z -->
@@ -476,6 +478,27 @@
       <id>source-distribution</id>
       <build>
         <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>build-with-jdk11+</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <phase>validate</phase>
+                <configuration>
+                  <rules>
+                    <requireJavaVersion>
+                      <version>[11,)</version>
+                    </requireJavaVersion>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>

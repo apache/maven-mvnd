@@ -40,11 +40,6 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 @Priority(10)
 public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
 
-    @FunctionalInterface
-    public interface PluginRealmSupplier {
-        CacheRecord load() throws PluginResolutionException, PluginContainerException;
-    }
-
     protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
 
         final CacheRecord record;
@@ -83,6 +78,7 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
         return r != null ? r.record : null;
     }
 
+    @Override
     public CacheRecord get(Key key, PluginRealmSupplier supplier)
             throws PluginResolutionException, PluginContainerException {
         try {

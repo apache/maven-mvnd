@@ -31,8 +31,7 @@
   <name>Maven Daemon - Client</name>
 
   <properties>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.release>11</maven.compiler.release>
     <graalvm-native-static-opt/>
     <graalvm-native-glibc-opt/>
   </properties>
@@ -88,6 +87,7 @@
             <configuration>
               <rules>
                 <enforceBytecodeVersion>
+                  <maxJdkVersion>${maven.compiler.release}</maxJdkVersion>
                   <excludes>
                     <exclude>org.graalvm.nativeimage:svm</exclude>
                   </excludes>
@@ -115,11 +115,48 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>fallback-main</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <release>${maven-dist.required.jdk}</release>
+              <compileSourceRoots>
+                <root>${project.basedir}/src/main/java-fallback</root>
+              </compileSourceRoots>
+            </configuration>
+          </execution>
+          <execution>
+            <id>mvnd-main</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <multiReleaseOutput>true</multiReleaseOutput>
+              <compileSourceRoots>
+                <root>${project.basedir}/src/main/java-mvnd</root>
+              </compileSourceRoots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <compilerArgs>
-            <arg>--add-exports=java.base/sun.nio.ch=ALL-UNNAMED</arg>
-            <arg>--add-exports=java.base/jdk.internal.module=ALL-UNNAMED</arg>
-          </compilerArgs>
+          <archive>
+            <manifestEntries>
+              <Multi-Release>true</Multi-Release>
+            </manifestEntries>
+          </archive>
         </configuration>
       </plugin>
       <plugin>
