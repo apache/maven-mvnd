@@ -20,6 +20,7 @@ package org.mvndaemon.mvnd.client;
 
 import java.util.Arrays;
 import java.util.List;
+
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
 public interface Client {

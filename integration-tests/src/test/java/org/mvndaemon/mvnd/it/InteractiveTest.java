@@ -18,8 +18,10 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import java.io.IOException;
 import javax.inject.Inject;
+
+import java.io.IOException;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;

@@ -18,10 +18,10 @@
  */
 package org.mvndaemon.mvnd.common;
 
+import java.util.List;
+
 import static org.mvndaemon.mvnd.common.DaemonState.Busy;
 import static org.mvndaemon.mvnd.common.DaemonState.Idle;
-
-import java.util.List;
 
 /**
  * File origin:

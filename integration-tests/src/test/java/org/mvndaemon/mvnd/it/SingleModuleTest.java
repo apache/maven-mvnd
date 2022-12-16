@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.it;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
+
 import org.assertj.core.api.Assertions;
 import org.mvndaemon.mvnd.assertj.MatchInOrderAmongOthers;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;

@@ -18,11 +18,8 @@
  */
 package org.mvndaemon.mvnd.daemon;
 
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.IMMEDIATE_EXPIRE;
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.QUIET_EXPIRE;
-import static org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
+import javax.management.Attribute;
+import javax.management.ObjectName;
 
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
@@ -37,8 +34,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import javax.management.Attribute;
-import javax.management.ObjectName;
+
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonExpirationStatus;
@@ -48,6 +44,12 @@ import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.mvndaemon.mvnd.nativ.CLibrary;
+
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.IMMEDIATE_EXPIRE;
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.QUIET_EXPIRE;
+import static org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
 
 /**
  * File origin:

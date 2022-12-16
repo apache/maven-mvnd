@@ -18,9 +18,6 @@
  */
 package org.mvndaemon.mvnd.cli;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -30,9 +27,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Os;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class EnvHelperTest {
 

@@ -18,13 +18,15 @@
  */
 package org.mvndaemon.mvnd.plugin;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+
 import org.apache.maven.artifact.repository.metadata.io.MetadataReader;
 import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.version.PluginVersionRequest;

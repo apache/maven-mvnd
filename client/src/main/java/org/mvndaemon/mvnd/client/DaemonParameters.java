@@ -40,6 +40,7 @@ import java.util.function.IntUnaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3Reader;
 import org.codehaus.plexus.util.StringUtils;

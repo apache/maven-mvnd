@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.builder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Assertions;
 

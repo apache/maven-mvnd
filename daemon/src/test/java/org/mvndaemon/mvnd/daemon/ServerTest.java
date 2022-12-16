@@ -18,13 +18,14 @@
  */
 package org.mvndaemon.mvnd.daemon;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
+
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Message;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ServerTest {
 

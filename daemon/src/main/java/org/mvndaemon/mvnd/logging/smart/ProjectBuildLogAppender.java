@@ -18,6 +18,8 @@
  */
 package org.mvndaemon.mvnd.logging.smart;
 
+import java.util.Map;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.PatternLayout;
@@ -25,7 +27,6 @@ import ch.qos.logback.classic.pattern.ClassicConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.Context;
-import java.util.Map;
 import org.apache.maven.shared.utils.logging.LoggerLevelRenderer;
 import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.slf4j.LoggerFactory;

@@ -38,6 +38,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
 import org.fusesource.jansi.internal.CLibrary;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;

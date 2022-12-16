@@ -32,8 +32,8 @@
 
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
-    <graalvm-native-static-opt/>
-    <graalvm-native-glibc-opt/>
+    <graalvm-native-static-opt />
+    <graalvm-native-glibc-opt />
   </properties>
 
   <dependencies>

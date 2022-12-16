@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.Comparator;
 import java.util.Properties;
 import java.util.stream.Stream;
+
 import org.mvndaemon.mvnd.common.Environment.DocumentedEnumEntry;
 
 public enum OptionType {

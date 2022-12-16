@@ -18,12 +18,6 @@
  */
 package org.mvndaemon.mvnd.daemon;
 
-import static org.mvndaemon.mvnd.common.DaemonState.Broken;
-import static org.mvndaemon.mvnd.common.DaemonState.Busy;
-import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
-import static org.mvndaemon.mvnd.common.DaemonState.StopRequested;
-import static org.mvndaemon.mvnd.common.DaemonState.Stopped;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -55,6 +49,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
 import org.apache.maven.cli.DaemonMavenCli;
 import org.mvndaemon.mvnd.builder.SmartBuilder;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -77,6 +72,12 @@ import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.mvndaemon.mvnd.common.DaemonState.Broken;
+import static org.mvndaemon.mvnd.common.DaemonState.Busy;
+import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
+import static org.mvndaemon.mvnd.common.DaemonState.StopRequested;
+import static org.mvndaemon.mvnd.common.DaemonState.Stopped;
 
 public class Server implements AutoCloseable, Runnable {
 

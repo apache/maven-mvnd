@@ -18,12 +18,14 @@
  */
 package org.mvndaemon.mvnd.interactivity;
 
+import javax.inject.Named;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import javax.inject.Named;
+
 import org.codehaus.plexus.components.interactivity.AbstractInputHandler;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.components.interactivity.OutputHandler;

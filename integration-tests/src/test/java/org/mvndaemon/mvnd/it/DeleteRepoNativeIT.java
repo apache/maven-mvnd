@@ -18,9 +18,11 @@
  */
 package org.mvndaemon.mvnd.it;
 
+import javax.inject.Inject;
+
 import java.io.IOException;
 import java.nio.file.Path;
-import javax.inject.Inject;
+
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;

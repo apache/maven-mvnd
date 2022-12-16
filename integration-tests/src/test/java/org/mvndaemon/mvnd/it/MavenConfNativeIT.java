@@ -18,15 +18,17 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import javax.inject.Inject;
 
 import java.io.IOException;
-import javax.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndNativeTest(projectDir = "src/test/projects/maven-conf")
 public class MavenConfNativeIT {
