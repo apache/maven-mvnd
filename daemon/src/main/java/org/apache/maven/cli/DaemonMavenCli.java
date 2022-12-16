@@ -139,7 +139,7 @@ public class DaemonMavenCli {
 
     public static final String STYLE_COLOR_PROPERTY = "style.color";
 
-    public static final String RESUME = "r";
+    public static final String RAW_STREAMS = "raw-streams";
 
     private final Slf4jLoggerManager plexusLoggerManager;
 
@@ -302,7 +302,10 @@ public class DaemonMavenCli {
 
     private CLIManager newCLIManager() {
         CLIManager cliManager = new CLIManager();
-        cliManager.options.addOption(Option.builder().longOpt("raw-streams").build());
+        cliManager.options.addOption(Option.builder()
+                .longOpt(RAW_STREAMS)
+                .desc("Do not decorate output and error streams")
+                .build());
         return cliManager;
     }
 
