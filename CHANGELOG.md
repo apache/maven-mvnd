@@ -1,5 +1,53 @@
 # Changelog
 
+## [1.0.0-m1](https://github.com/apache/maven-mvnd/tree/1.0.0-m1) (2022-12-16)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/0.8.2...1.0.0-m1)
+
+**Implemented enhancements:**
+
+- After turning on debug, I hope there will be a hint [\#737](https://github.com/apache/maven-mvnd/issues/737)
+- build static native image for linux amd64 system [\#727](https://github.com/apache/maven-mvnd/issues/727)
+
+**Closed issues:**
+
+- Is it possible to print the version of the plugin [\#745](https://github.com/apache/maven-mvnd/issues/745)
+- Timeout in client [\#733](https://github.com/apache/maven-mvnd/issues/733)
+- The errors should be printed at the end [\#723](https://github.com/apache/maven-mvnd/issues/723)
+- Calculate java home for native mvnd from java executable in $PATH [\#715](https://github.com/apache/maven-mvnd/issues/715)
+- Non-resolvable parent POM for...maven-default-http-blocker \(http://0.0.0.0/\): Blocked mirror for repositories: [\#713](https://github.com/apache/maven-mvnd/issues/713)
+- mvnDebug mode for mvnd [\#706](https://github.com/apache/maven-mvnd/issues/706)
+
+**Merged pull requests:**
+
+- Move signal handling into its own class [\#754](https://github.com/apache/maven-mvnd/pull/754) ([gnodet](https://github.com/gnodet))
+- Add an option to specify the debug address and display info when starting \(fixes \#737\) [\#753](https://github.com/apache/maven-mvnd/pull/753) ([gnodet](https://github.com/gnodet))
+- Fix daemon JVM start options \(follow-up to \#749\) [\#751](https://github.com/apache/maven-mvnd/pull/751) ([gnodet](https://github.com/gnodet))
+- Clean up some warnings during the build [\#750](https://github.com/apache/maven-mvnd/pull/750) ([gnodet](https://github.com/gnodet))
+- Add more discriminating properties to the daemon [\#749](https://github.com/apache/maven-mvnd/pull/749) ([oehme](https://github.com/oehme))
+- Display plugin's goal prefix and version instead of artifactId [\#748](https://github.com/apache/maven-mvnd/pull/748) ([gnodet](https://github.com/gnodet))
+- Update ITs to recent maven plugins [\#744](https://github.com/apache/maven-mvnd/pull/744) ([gnodet](https://github.com/gnodet))
+- Fix usage of the wrong groovy plugin [\#743](https://github.com/apache/maven-mvnd/pull/743) ([gnodet](https://github.com/gnodet))
+- Update Maven to 4.0.0-alpha-3 and Maven Resolver to 1.9.2 [\#742](https://github.com/apache/maven-mvnd/pull/742) ([cstamas](https://github.com/cstamas))
+- Clean up and upgrade dependencies/plugins versions [\#741](https://github.com/apache/maven-mvnd/pull/741) ([gnodet](https://github.com/gnodet))
+- Switch graalvm to 22.3.0 [\#740](https://github.com/apache/maven-mvnd/pull/740) ([gnodet](https://github.com/gnodet))
+- Fix possible NullPointerException [\#739](https://github.com/apache/maven-mvnd/pull/739) ([gnodet](https://github.com/gnodet))
+- Upgrade parent pom to 38 [\#738](https://github.com/apache/maven-mvnd/pull/738) ([gnodet](https://github.com/gnodet))
+- Upgrade to groovy 4 [\#735](https://github.com/apache/maven-mvnd/pull/735) ([gnodet](https://github.com/gnodet))
+- Use `mvnd verify` as example instead of `mvnd clean install` [\#734](https://github.com/apache/maven-mvnd/pull/734) ([plamentotev](https://github.com/plamentotev))
+- Build mostly static native image, loose linux glibc requirement to 2.12 [\#730](https://github.com/apache/maven-mvnd/pull/730) ([gzm55](https://github.com/gzm55))
+- Reset system properties after calling event syps [\#729](https://github.com/apache/maven-mvnd/pull/729) ([oehme](https://github.com/oehme))
+- Always display failed and main project at the end \(fixes \#723\) [\#724](https://github.com/apache/maven-mvnd/pull/724) ([gnodet](https://github.com/gnodet))
+- Use muti-release jar to fallback mvnd-client to original maven [\#722](https://github.com/apache/maven-mvnd/pull/722) ([gzm55](https://github.com/gzm55))
+- Fixup \#716 Calculate java home from java command [\#721](https://github.com/apache/maven-mvnd/pull/721) ([ppalaga](https://github.com/ppalaga))
+- Add a mvnd.rawStreams property [\#719](https://github.com/apache/maven-mvnd/pull/719) ([gnodet](https://github.com/gnodet))
+- Switch to maven 4.0.0-alpha-2 [\#718](https://github.com/apache/maven-mvnd/pull/718) ([gnodet](https://github.com/gnodet))
+- Calculate java home from java command [\#716](https://github.com/apache/maven-mvnd/pull/716) ([gzm55](https://github.com/gzm55))
+- Sync entry scripts with maven 3.8.6 [\#711](https://github.com/apache/maven-mvnd/pull/711) ([gzm55](https://github.com/gzm55))
+- Fixed a typo of build mvnd in README [\#709](https://github.com/apache/maven-mvnd/pull/709) ([WillemJiang](https://github.com/WillemJiang))
+- Release the read lock in a finally block [\#703](https://github.com/apache/maven-mvnd/pull/703) ([essobedo](https://github.com/essobedo))
+- Support redirecting input from client to daemon, \#541 [\#581](https://github.com/apache/maven-mvnd/pull/581) ([gnodet](https://github.com/gnodet))
+
 ## [0.8.2](https://github.com/apache/maven-mvnd/tree/0.8.2) (2022-10-04)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/0.8.1...0.8.2)
@@ -15,10 +63,10 @@
 - Maven extensions have a wrong parent classloader [\#690](https://github.com/apache/maven-mvnd/issues/690)
 - Fail to install mvnd from SDKMAN! on Apple M1 machine [\#688](https://github.com/apache/maven-mvnd/issues/688)
 - M2E integration [\#687](https://github.com/apache/maven-mvnd/issues/687)
-- Console coloring is off when artifact download is under way [\#685](https://github.com/apache/maven-mvnd/issues/685)
 - mvnd not extends parent properties？ [\#674](https://github.com/apache/maven-mvnd/issues/674)
-- release .tar.gz format precompiled binary archives  [\#668](https://github.com/apache/maven-mvnd/issues/668)
 - Error occurred during initialization of VM , Could not reserve enough space for 2097152KB object heap [\#644](https://github.com/apache/maven-mvnd/issues/644)
+- Console coloring is off when artifact download is under way [\#685](https://github.com/apache/maven-mvnd/issues/685)
+- release .tar.gz format precompiled binary archives  [\#668](https://github.com/apache/maven-mvnd/issues/668)
 
 **Merged pull requests:**
 
