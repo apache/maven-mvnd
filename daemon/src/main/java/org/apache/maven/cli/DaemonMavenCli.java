@@ -392,7 +392,7 @@ public class DaemonMavenCli {
                 // Ignore
                 //
             }
-        } else if (Environment.MVND_RAW_STREAMS
+        } else if (!Environment.MVND_RAW_STREAMS
                 .asOptional()
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.FALSE)) {
