@@ -67,8 +67,8 @@ import org.mvndaemon.mvnd.common.DaemonStopEvent;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildRequest;
-import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.ProcessHelper;
+import org.mvndaemon.mvnd.common.SignalHelper;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
@@ -77,8 +77,6 @@ import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 public class Server implements AutoCloseable, Runnable {
 
@@ -110,10 +108,7 @@ public class Server implements AutoCloseable, Runnable {
         // without ignoring those signals, a client being interrupted will
         // also interrupt and kill the daemon.
         try {
-            Signal.handle(new Signal("INT"), SignalHandler.SIG_IGN);
-            if (Os.current() != Os.WINDOWS) {
-                Signal.handle(new Signal("TSTP"), SignalHandler.SIG_IGN);
-            }
+            SignalHelper.ignoreStopSignals();
         } catch (Throwable t) {
             LOGGER.warn("Unable to ignore INT and TSTP signals", t);
         }
