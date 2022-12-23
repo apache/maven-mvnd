@@ -18,6 +18,7 @@
  */
 package org.apache.maven.project;
 
+import org.apache.maven.building.Source;
 import org.apache.maven.model.building.ModelCache;
 
 public class SnapshotModelCache implements ModelCache {
@@ -28,6 +29,14 @@ public class SnapshotModelCache implements ModelCache {
     public SnapshotModelCache(ModelCache globalCache, ModelCache reactorCache) {
         this.globalCache = globalCache;
         this.reactorCache = reactorCache;
+    }
+
+    public Object get(Source path, String tag) {
+        return reactorCache.get(path, tag);
+    }
+
+    public void put(Source path, String tag, Object data) {
+        reactorCache.put(path, tag, data);
     }
 
     @Override
