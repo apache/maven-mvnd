@@ -64,6 +64,7 @@ import org.apache.maven.exception.ExceptionSummary;
 import org.apache.maven.execution.*;
 import org.apache.maven.execution.scope.internal.MojoExecutionScopeModule;
 import org.apache.maven.extension.internal.CoreExports;
+import org.apache.maven.extension.internal.CoreExportsProvider;
 import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
@@ -518,6 +519,7 @@ public class DaemonMavenCli {
             protected void configure() {
                 bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
                 bind(CoreExports.class).toInstance(exports);
+                bind(CoreExportsProvider.class).toInstance(new CoreExportsProvider(exports));
                 bind(ExtensionRealmCache.class).to(InvalidatingExtensionRealmCache.class);
                 bind(PluginArtifactsCache.class).to(InvalidatingPluginArtifactsCache.class);
                 bind(PluginRealmCache.class).to(InvalidatingPluginRealmCache.class);
