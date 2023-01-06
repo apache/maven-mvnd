@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright 2019-2021 the original author or authors.
@@ -15,64 +16,63 @@
     limitations under the License.
 
 -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.maven.daemon</groupId>
+    <artifactId>mvnd</artifactId>
+    <version>0.9.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>mvnd-dist</artifactId>
+  <artifactId>mvnd-dist</artifactId>
 
-    <packaging>pom</packaging>
-    <name>Maven Daemon - Distribution</name>
+  <packaging>pom</packaging>
+  <name>Maven Daemon - Distribution</name>
 
-    <properties>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.source>11</maven.compiler.source>
-    </properties>
+  <properties>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+  </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.maven.daemon</groupId>
-            <artifactId>mvnd-agent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.daemon</groupId>
-            <artifactId>mvnd-helper-agent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.daemon</groupId>
-            <artifactId>mvnd-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.daemon</groupId>
-            <artifactId>mvnd-daemon</artifactId>
-        </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-agent</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-helper-agent</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-daemon</artifactId>
+    </dependency>
+  </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
-                <artifactId>provisio-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>maven-distro</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>provision</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
+        <artifactId>provisio-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>maven-distro</id>
+            <goals>
+              <goal>provision</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <outputDirectory>${project.build.directory}/maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

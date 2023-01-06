@@ -1,16 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
- * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.builder;
 
@@ -61,9 +65,13 @@ class SmartBuilderImpl {
     //
     private final ReactorBuildStats stats;
 
-    SmartBuilderImpl(LifecycleModuleBuilder lifecycleModuleBuilder, MavenSession session,
-            ReactorContext reactorContext, TaskSegment taskSegment,
-            Set<MavenProject> projects, DependencyGraph<MavenProject> graph) {
+    SmartBuilderImpl(
+            LifecycleModuleBuilder lifecycleModuleBuilder,
+            MavenSession session,
+            ReactorContext reactorContext,
+            TaskSegment taskSegment,
+            Set<MavenProject> projects,
+            DependencyGraph<MavenProject> graph) {
         this.lifecycleModuleBuilder = lifecycleModuleBuilder;
         this.rootSession = session;
         this.reactorContext = reactorContext;
@@ -101,8 +109,7 @@ class SmartBuilderImpl {
             try {
                 MavenProject completedProject = executor.take();
                 if (bottlenecks != null) {
-                    stats.recordBottlenecks(bottlenecks, degreeOfConcurrency,
-                            System.nanoTime() - timstampSubmit);
+                    stats.recordBottlenecks(bottlenecks, degreeOfConcurrency, System.nanoTime() - timstampSubmit);
                 }
                 logCompleted(completedProject);
                 Set<MavenProject> readyProjects = reactorBuildQueue.onProjectFinish(completedProject);
@@ -135,8 +142,12 @@ class SmartBuilderImpl {
                     .map(SmartBuilderImpl::projectGA)
                     .collect(Collectors.joining(" ", "[", "]"));
         }
-        logger.debug("Builder state: blocked={} finished={} ready-or-running={} {}", blockedCount,
-                finishedCount, readyCount, runningProjects);
+        logger.debug(
+                "Builder state: blocked={} finished={} ready-or-running={} {}",
+                blockedCount,
+                finishedCount,
+                readyCount,
+                runningProjects);
     }
 
     private void logCompleted(MavenProject project) {
@@ -170,17 +181,15 @@ class SmartBuilderImpl {
         executor.submitAll(tasks);
     }
 
-    /* package */void buildProject(MavenProject project) {
+    /* package */ void buildProject(MavenProject project) {
         logger.debug("STARTED build of project {}:{}", project.getGroupId(), project.getArtifactId());
 
         try {
             MavenSession copiedSession = rootSession.clone();
-            lifecycleModuleBuilder.buildProject(copiedSession, rootSession, reactorContext, project,
-                    taskSegment);
+            lifecycleModuleBuilder.buildProject(copiedSession, rootSession, reactorContext, project, taskSegment);
         } catch (RuntimeException ex) {
             // preserve the xml stack trace, and the java cause chain
-            rootSession.getResult()
-                    .addException(new RuntimeException(project.getName() + ": " + ex.getMessage(), ex));
+            rootSession.getResult().addException(new RuntimeException(project.getName() + ": " + ex.getMessage(), ex));
         }
     }
 
@@ -206,5 +215,4 @@ class SmartBuilderImpl {
             return project;
         }
     }
-
 }

@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -88,8 +88,7 @@ import org.eclipse.sisu.Typed;
 @Singleton
 @Typed(ProjectBuilder.class)
 @Priority(10)
-public class CachingProjectBuilder
-        implements ProjectBuilder {
+public class CachingProjectBuilder implements ProjectBuilder {
 
     @Inject
     private Logger logger;
@@ -117,25 +116,24 @@ public class CachingProjectBuilder
 
     private final ModelCache modelCache = new ReactorModelCache();
 
-    public CachingProjectBuilder() {
-    }
+    public CachingProjectBuilder() {}
 
     // ----------------------------------------------------------------------
     // MavenProjectBuilder Implementation
     // ----------------------------------------------------------------------
 
     @Override
-    public ProjectBuildingResult build(File pomFile, ProjectBuildingRequest request)
-            throws ProjectBuildingException {
-        return build(pomFile, new FileModelSource(pomFile),
+    public ProjectBuildingResult build(File pomFile, ProjectBuildingRequest request) throws ProjectBuildingException {
+        return build(
+                pomFile,
+                new FileModelSource(pomFile),
                 new InternalConfig(request, null, new SnapshotModelCache(getModelCache())));
     }
 
     @Override
     public ProjectBuildingResult build(ModelSource modelSource, ProjectBuildingRequest request)
             throws ProjectBuildingException {
-        return build(null, modelSource,
-                new InternalConfig(request, null, new SnapshotModelCache(getModelCache())));
+        return build(null, modelSource, new InternalConfig(request, null, new SnapshotModelCache(getModelCache())));
     }
 
     private ProjectBuildingResult build(File pomFile, ModelSource modelSource, InternalConfig config)
@@ -156,8 +154,8 @@ public class CachingProjectBuilder
                 project = new MavenProject();
                 project.setFile(pomFile);
 
-                DefaultModelBuildingListener listener = new DefaultModelBuildingListener(project, projectBuildingHelper,
-                        projectBuildingRequest);
+                DefaultModelBuildingListener listener =
+                        new DefaultModelBuildingListener(project, projectBuildingHelper, projectBuildingRequest);
                 request.setModelBuildingListener(listener);
 
                 request.setPomFile(pomFile);
@@ -170,8 +168,8 @@ public class CachingProjectBuilder
                 } catch (ModelBuildingException e) {
                     result = e.getResult();
                     if (result == null || result.getEffectiveModel() == null) {
-                        throw (ProjectBuildingException) new ProjectBuildingException(e.getModelId(), e.getMessage(), pomFile)
-                                .initCause(e);
+                        throw (ProjectBuildingException)
+                                new ProjectBuildingException(e.getModelId(), e.getMessage(), pomFile).initCause(e);
                     }
                     // validation error, continue project building and delay failing to help IDEs
                     error = e;
@@ -179,8 +177,13 @@ public class CachingProjectBuilder
 
                 modelProblems = result.getProblems();
 
-                initProject(project, Collections.<String, MavenProject> emptyMap(), true,
-                        result, new HashMap<File, Boolean>(), projectBuildingRequest);
+                initProject(
+                        project,
+                        Collections.<String, MavenProject>emptyMap(),
+                        true,
+                        result,
+                        new HashMap<File, Boolean>(),
+                        projectBuildingRequest);
             } else if (projectBuildingRequest.isResolveDependencies()) {
                 projectBuildingHelper.selectProjectRealm(project);
             }
@@ -217,8 +220,11 @@ public class CachingProjectBuilder
 
         Set<Artifact> artifacts = new LinkedHashSet<>();
         if (resolutionResult.getDependencyGraph() != null) {
-            RepositoryUtils.toArtifacts(artifacts, resolutionResult.getDependencyGraph().getChildren(),
-                    Collections.singletonList(project.getArtifact().getId()), null);
+            RepositoryUtils.toArtifacts(
+                    artifacts,
+                    resolutionResult.getDependencyGraph().getChildren(),
+                    Collections.singletonList(project.getArtifact().getId()),
+                    null);
 
             // Maven 2.x quirk: an artifact always points at the local repo, regardless whether resolved or not
             LocalRepositoryManager lrm = session.getLocalRepositoryManager();
@@ -251,9 +257,14 @@ public class CachingProjectBuilder
 
         RequestTrace trace = RequestTrace.newChild(null, configuration).newChild(request);
 
-        ModelResolver resolver = new ProjectModelResolver(config.session, trace, repoSystem, repositoryManager,
+        ModelResolver resolver = new ProjectModelResolver(
+                config.session,
+                trace,
+                repoSystem,
+                repositoryManager,
                 config.repositories,
-                configuration.getRepositoryMerging(), config.modelPool);
+                configuration.getRepositoryMerging(),
+                config.modelPool);
 
         request.setValidationLevel(configuration.getValidationLevel());
         request.setProcessPlugins(configuration.isProcessPlugins());
@@ -297,8 +308,8 @@ public class CachingProjectBuilder
             if (e.getResults().get(0).isMissing() && allowStubModel) {
                 return build(null, createStubModelSource(artifact), config);
             }
-            throw new ProjectBuildingException(artifact.getId(),
-                    "Error resolving project artifact: " + e.getMessage(), e);
+            throw new ProjectBuildingException(
+                    artifact.getId(), "Error resolving project artifact: " + e.getMessage(), e);
         }
 
         File pomFile = pomArtifact.getFile();
@@ -340,16 +351,23 @@ public class CachingProjectBuilder
 
         Map<String, MavenProject> projectIndex = new HashMap<>(256);
 
-        boolean noErrors = build(results, interimResults, projectIndex, pomFiles, new LinkedHashSet<File>(), true, recursive,
-                config);
+        boolean noErrors = build(
+                results, interimResults, projectIndex, pomFiles, new LinkedHashSet<File>(), true, recursive, config);
 
         populateReactorModelPool(modelPool, interimResults);
 
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
 
         try {
-            noErrors = build(results, new ArrayList<MavenProject>(), projectIndex, interimResults, request,
-                    new HashMap<File, Boolean>(), config.session) && noErrors;
+            noErrors = build(
+                            results,
+                            new ArrayList<MavenProject>(),
+                            projectIndex,
+                            interimResults,
+                            request,
+                            new HashMap<File, Boolean>(),
+                            config.session)
+                    && noErrors;
         } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
@@ -362,9 +380,15 @@ public class CachingProjectBuilder
     }
 
     @SuppressWarnings("checkstyle:parameternumber")
-    private boolean build(List<ProjectBuildingResult> results, List<InterimResult> interimResults,
-            Map<String, MavenProject> projectIndex, List<File> pomFiles, Set<File> aggregatorFiles,
-            boolean isRoot, boolean recursive, InternalConfig config) {
+    private boolean build(
+            List<ProjectBuildingResult> results,
+            List<InterimResult> interimResults,
+            Map<String, MavenProject> projectIndex,
+            List<File> pomFiles,
+            Set<File> aggregatorFiles,
+            boolean isRoot,
+            boolean recursive,
+            InternalConfig config) {
         boolean noErrors = true;
 
         for (File pomFile : pomFiles) {
@@ -381,9 +405,15 @@ public class CachingProjectBuilder
     }
 
     @SuppressWarnings("checkstyle:parameternumber")
-    private boolean build(List<ProjectBuildingResult> results, List<InterimResult> interimResults,
-            Map<String, MavenProject> projectIndex, File pomFile, Set<File> aggregatorFiles,
-            boolean isRoot, boolean recursive, InternalConfig config) {
+    private boolean build(
+            List<ProjectBuildingResult> results,
+            List<InterimResult> interimResults,
+            Map<String, MavenProject> projectIndex,
+            File pomFile,
+            Set<File> aggregatorFiles,
+            boolean isRoot,
+            boolean recursive,
+            InternalConfig config) {
         boolean noErrors = true;
 
         ModelBuildingRequest request = getModelBuildingRequest(config);
@@ -395,8 +425,8 @@ public class CachingProjectBuilder
         request.setTwoPhaseBuilding(true);
         request.setLocationTracking(true);
 
-        DefaultModelBuildingListener listener = new DefaultModelBuildingListener(project, projectBuildingHelper,
-                config.request);
+        DefaultModelBuildingListener listener =
+                new DefaultModelBuildingListener(project, projectBuildingHelper, config.request);
         request.setModelBuildingListener(listener);
 
         ModelBuildingResult result;
@@ -419,8 +449,8 @@ public class CachingProjectBuilder
             // first pass: build without building parent.
             initProject(project, projectIndex, false, result, new HashMap<File, Boolean>(0), config.request);
         } catch (InvalidArtifactRTException iarte) {
-            result.getProblems().add(new DefaultModelProblem(null, ModelProblem.Severity.ERROR, null, model, -1, -1,
-                    iarte));
+            result.getProblems()
+                    .add(new DefaultModelProblem(null, ModelProblem.Severity.ERROR, null, model, -1, -1, iarte));
         }
 
         projectIndex.put(result.getModelIds().get(0), project);
@@ -447,9 +477,14 @@ public class CachingProjectBuilder
                 }
 
                 if (!moduleFile.isFile()) {
-                    ModelProblem problem = new DefaultModelProblem("Child module " + moduleFile + " of " + pomFile
-                            + " does not exist", ModelProblem.Severity.ERROR, ModelProblem.Version.BASE, model, -1,
-                            -1, null);
+                    ModelProblem problem = new DefaultModelProblem(
+                            "Child module " + moduleFile + " of " + pomFile + " does not exist",
+                            ModelProblem.Severity.ERROR,
+                            ModelProblem.Version.BASE,
+                            model,
+                            -1,
+                            -1,
+                            null);
                     result.getProblems().add(problem);
 
                     noErrors = false;
@@ -475,9 +510,14 @@ public class CachingProjectBuilder
                     }
                     buffer.append(moduleFile);
 
-                    ModelProblem problem = new DefaultModelProblem("Child module " + moduleFile + " of " + pomFile
-                            + " forms aggregation cycle " + buffer, ModelProblem.Severity.ERROR,
-                            ModelProblem.Version.BASE, model, -1, -1, null);
+                    ModelProblem problem = new DefaultModelProblem(
+                            "Child module " + moduleFile + " of " + pomFile + " forms aggregation cycle " + buffer,
+                            ModelProblem.Severity.ERROR,
+                            ModelProblem.Version.BASE,
+                            model,
+                            -1,
+                            -1,
+                            null);
                     result.getProblems().add(problem);
 
                     noErrors = false;
@@ -490,8 +530,15 @@ public class CachingProjectBuilder
 
             interimResult.modules = new ArrayList<>();
 
-            if (!build(results, interimResult.modules, projectIndex, moduleFiles, aggregatorFiles, false,
-                    recursive, config)) {
+            if (!build(
+                    results,
+                    interimResult.modules,
+                    projectIndex,
+                    moduleFiles,
+                    aggregatorFiles,
+                    false,
+                    recursive,
+                    config)) {
                 noErrors = false;
             }
         }
@@ -513,15 +560,18 @@ public class CachingProjectBuilder
 
         List<InterimResult> modules = Collections.emptyList();
 
-        InterimResult(File pomFile, ModelBuildingRequest request, ModelBuildingResult result,
-                DefaultModelBuildingListener listener, boolean root) {
+        InterimResult(
+                File pomFile,
+                ModelBuildingRequest request,
+                ModelBuildingResult result,
+                DefaultModelBuildingListener listener,
+                boolean root) {
             this.pomFile = pomFile;
             this.request = request;
             this.result = result;
             this.listener = listener;
             this.root = root;
         }
-
     }
 
     private void populateReactorModelPool(ReactorModelPool reactorModelPool, List<InterimResult> interimResults) {
@@ -533,9 +583,13 @@ public class CachingProjectBuilder
         }
     }
 
-    private boolean build(List<ProjectBuildingResult> results, List<MavenProject> projects,
-            Map<String, MavenProject> projectIndex, List<InterimResult> interimResults,
-            ProjectBuildingRequest request, Map<File, Boolean> profilesXmls,
+    private boolean build(
+            List<ProjectBuildingResult> results,
+            List<MavenProject> projects,
+            Map<String, MavenProject> projectIndex,
+            List<InterimResult> interimResults,
+            ProjectBuildingRequest request,
+            Map<File, Boolean> profilesXmls,
             RepositorySystemSession session) {
         boolean noErrors = true;
 
@@ -548,8 +602,15 @@ public class CachingProjectBuilder
                 try {
                     initProject(project, projectIndex, true, result, profilesXmls, request);
                 } catch (InvalidArtifactRTException iarte) {
-                    result.getProblems().add(new DefaultModelProblem(null, ModelProblem.Severity.ERROR, null,
-                            result.getEffectiveModel(), -1, -1, iarte));
+                    result.getProblems()
+                            .add(new DefaultModelProblem(
+                                    null,
+                                    ModelProblem.Severity.ERROR,
+                                    null,
+                                    result.getEffectiveModel(),
+                                    -1,
+                                    -1,
+                                    iarte));
                 }
 
                 List<MavenProject> modules = new ArrayList<>();
@@ -584,9 +645,13 @@ public class CachingProjectBuilder
     }
 
     @SuppressWarnings("checkstyle:methodlength")
-    private void initProject(MavenProject project, Map<String, MavenProject> projects,
-            boolean buildParentIfNotExisting, ModelBuildingResult result,
-            Map<File, Boolean> profilesXmls, ProjectBuildingRequest projectBuildingRequest) {
+    private void initProject(
+            MavenProject project,
+            Map<String, MavenProject> projects,
+            boolean buildParentIfNotExisting,
+            ModelBuildingResult result,
+            Map<File, Boolean> profilesXmls,
+            ProjectBuildingRequest projectBuildingRequest) {
         Model model = result.getEffectiveModel();
 
         project.setModel(model);
@@ -595,9 +660,8 @@ public class CachingProjectBuilder
 
         initParent(project, projects, buildParentIfNotExisting, result, projectBuildingRequest);
 
-        Artifact projectArtifact = repositorySystem.createArtifact(project.getGroupId(), project.getArtifactId(),
-                project.getVersion(), null,
-                project.getPackaging());
+        Artifact projectArtifact = repositorySystem.createArtifact(
+                project.getGroupId(), project.getArtifactId(), project.getVersion(), null, project.getPackaging());
         project.setArtifact(projectArtifact);
 
         if (project.getFile() != null && buildParentIfNotExisting) // only set those on 2nd phase, ignore on 1st pass
@@ -620,9 +684,15 @@ public class CachingProjectBuilder
 
         String modelId = findProfilesXml(result, profilesXmls);
         if (modelId != null) {
-            ModelProblem problem = new DefaultModelProblem("Detected profiles.xml alongside " + modelId
-                    + ", this file is no longer supported and was ignored" + ", please use the settings.xml instead",
-                    ModelProblem.Severity.WARNING, ModelProblem.Version.V30, model, -1, -1, null);
+            ModelProblem problem = new DefaultModelProblem(
+                    "Detected profiles.xml alongside " + modelId + ", this file is no longer supported and was ignored"
+                            + ", please use the settings.xml instead",
+                    ModelProblem.Severity.WARNING,
+                    ModelProblem.Version.V30,
+                    model,
+                    -1,
+                    -1,
+                    null);
             result.getProblems().add(problem);
         }
 
@@ -671,8 +741,8 @@ public class CachingProjectBuilder
                     version = ext.getVersion();
                 }
 
-                Artifact artifact = repositorySystem.createArtifact(ext.getGroupId(), ext.getArtifactId(), version, null,
-                        "jar");
+                Artifact artifact =
+                        repositorySystem.createArtifact(ext.getGroupId(), ext.getArtifactId(), version, null, "jar");
 
                 if (artifact != null) {
                     extensionArtifacts.add(artifact);
@@ -685,7 +755,8 @@ public class CachingProjectBuilder
         Map<String, Artifact> map = null;
         if (repositorySystem != null) {
             final DependencyManagement dependencyManagement = project.getDependencyManagement();
-            if ((dependencyManagement != null) && ((dependencyManagement.getDependencies()) != null)
+            if ((dependencyManagement != null)
+                    && ((dependencyManagement.getDependencies()) != null)
                     && (dependencyManagement.getDependencies().size() > 0)) {
                 map = new AbstractMap<String, Artifact>() {
                     HashMap<String, Artifact> delegate;
@@ -748,15 +819,14 @@ public class CachingProjectBuilder
                 DeploymentRepository r = project.getDistributionManagement().getRepository();
                 if (!StringUtils.isEmpty(r.getId()) && !StringUtils.isEmpty(r.getUrl())) {
                     ArtifactRepository repo = repositorySystem.buildArtifactRepository(r);
-                    repositorySystem.injectProxy(projectBuildingRequest.getRepositorySession(),
-                            Arrays.asList(repo));
-                    repositorySystem.injectAuthentication(projectBuildingRequest.getRepositorySession(),
-                            Arrays.asList(repo));
+                    repositorySystem.injectProxy(projectBuildingRequest.getRepositorySession(), Arrays.asList(repo));
+                    repositorySystem.injectAuthentication(
+                            projectBuildingRequest.getRepositorySession(), Arrays.asList(repo));
                     project.setReleaseArtifactRepository(repo);
                 }
             } catch (InvalidRepositoryException e) {
-                throw new IllegalStateException("Failed to create release distribution repository for "
-                        + project.getId(), e);
+                throw new IllegalStateException(
+                        "Failed to create release distribution repository for " + project.getId(), e);
             }
         }
 
@@ -767,32 +837,35 @@ public class CachingProjectBuilder
                 DeploymentRepository r = project.getDistributionManagement().getSnapshotRepository();
                 if (!StringUtils.isEmpty(r.getId()) && !StringUtils.isEmpty(r.getUrl())) {
                     ArtifactRepository repo = repositorySystem.buildArtifactRepository(r);
-                    repositorySystem.injectProxy(projectBuildingRequest.getRepositorySession(),
-                            Arrays.asList(repo));
-                    repositorySystem.injectAuthentication(projectBuildingRequest.getRepositorySession(),
-                            Arrays.asList(repo));
+                    repositorySystem.injectProxy(projectBuildingRequest.getRepositorySession(), Arrays.asList(repo));
+                    repositorySystem.injectAuthentication(
+                            projectBuildingRequest.getRepositorySession(), Arrays.asList(repo));
                     project.setSnapshotArtifactRepository(repo);
                 }
             } catch (InvalidRepositoryException e) {
-                throw new IllegalStateException("Failed to create snapshot distribution repository for "
-                        + project.getId(), e);
+                throw new IllegalStateException(
+                        "Failed to create snapshot distribution repository for " + project.getId(), e);
             }
         }
     }
 
-    private void initParent(MavenProject project, Map<String, MavenProject> projects, boolean buildParentIfNotExisting,
-            ModelBuildingResult result, ProjectBuildingRequest projectBuildingRequest) {
-        Model parentModel = result.getModelIds().size() > 1 && !result.getModelIds().get(1).isEmpty()
-                ? result.getRawModel(result.getModelIds().get(1))
-                : null;
+    private void initParent(
+            MavenProject project,
+            Map<String, MavenProject> projects,
+            boolean buildParentIfNotExisting,
+            ModelBuildingResult result,
+            ProjectBuildingRequest projectBuildingRequest) {
+        Model parentModel =
+                result.getModelIds().size() > 1 && !result.getModelIds().get(1).isEmpty()
+                        ? result.getRawModel(result.getModelIds().get(1))
+                        : null;
 
         if (parentModel != null) {
             final String parentGroupId = inheritedGroupId(result, 1);
             final String parentVersion = inheritedVersion(result, 1);
 
-            project.setParentArtifact(repositorySystem.createProjectArtifact(parentGroupId,
-                    parentModel.getArtifactId(),
-                    parentVersion));
+            project.setParentArtifact(
+                    repositorySystem.createProjectArtifact(parentGroupId, parentModel.getArtifactId(), parentVersion));
 
             // org.apache.maven.its.mng4834:parent:0.1
             String parentModelId = result.getModelIds().get(1);
@@ -848,10 +921,7 @@ public class CachingProjectBuilder
 
         if (!modelId.isEmpty()) {
             final Model model = result.getRawModel(modelId);
-            groupId = model.getGroupId() != null
-                    ? model.getGroupId()
-                    : inheritedGroupId(result, modelIndex + 1);
-
+            groupId = model.getGroupId() != null ? model.getGroupId() : inheritedGroupId(result, modelIndex + 1);
         }
 
         return groupId;
@@ -863,10 +933,7 @@ public class CachingProjectBuilder
 
         if (!modelId.isEmpty()) {
             final Model model = result.getRawModel(modelId);
-            version = model.getVersion() != null
-                    ? model.getVersion()
-                    : inheritedVersion(result, modelIndex + 1);
-
+            version = model.getVersion() != null ? model.getVersion() : inheritedVersion(result, modelIndex + 1);
         }
 
         return version;
@@ -913,15 +980,13 @@ public class CachingProjectBuilder
             this.request = request;
             this.modelPool = modelPool;
             this.modelCache = modelCache;
-            session = LegacyLocalRepositoryManager.overlay(request.getLocalRepository(), request.getRepositorySession(),
-                    repoSystem);
+            session = LegacyLocalRepositoryManager.overlay(
+                    request.getLocalRepository(), request.getRepositorySession(), repoSystem);
             repositories = RepositoryUtils.toRepos(request.getRemoteRepositories());
         }
-
     }
 
     private ModelCache getModelCache() {
         return this.modelCache;
     }
-
 }

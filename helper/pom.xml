@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright 2021 the original author or authors.
@@ -15,19 +16,18 @@
     limitations under the License.
 
 -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.maven.daemon</groupId>
+    <artifactId>mvnd</artifactId>
+    <version>0.9.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>mvnd-helper-agent</artifactId>
+  <artifactId>mvnd-helper-agent</artifactId>
 
-    <packaging>jar</packaging>
-    <name>Maven Daemon - Helper Agent</name>
+  <packaging>jar</packaging>
+  <name>Maven Daemon - Helper Agent</name>
 
 </project>

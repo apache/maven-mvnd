@@ -1,19 +1,25 @@
 /*
- * Copyright 2011-2021 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.client;
+
+import static java.lang.Thread.sleep;
+import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,9 +59,6 @@ import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.lang.Thread.sleep;
-import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
-
 /**
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DefaultDaemonConnector.java
@@ -94,11 +97,11 @@ public class DaemonConnector {
             return connectNoDaemon();
         }
 
-        final DaemonCompatibilitySpec constraint = new DaemonCompatibilitySpec(
-                parameters.javaHome(), parameters.getDaemonOpts());
+        final DaemonCompatibilitySpec constraint =
+                new DaemonCompatibilitySpec(parameters.javaHome(), parameters.getDaemonOpts());
         output.accept(Message.buildStatus("Looking up daemon..."));
-        Map<Boolean, List<DaemonInfo>> idleBusy = registry.getAll().stream()
-                .collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
+        Map<Boolean, List<DaemonInfo>> idleBusy =
+                registry.getAll().stream().collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
         final Collection<DaemonInfo> idleDaemons = idleBusy.getOrDefault(true, Collections.emptyList());
         final Collection<DaemonInfo> busyDaemons = idleBusy.getOrDefault(false, Collections.emptyList());
 
@@ -128,20 +131,27 @@ public class DaemonConnector {
         }
         String daemon = ProcessHandle.current().pid() + "-" + System.currentTimeMillis();
         Properties properties = new Properties();
-        properties.put(Environment.JAVA_HOME.getProperty(), parameters.javaHome().toString());
+        properties.put(
+                Environment.JAVA_HOME.getProperty(), parameters.javaHome().toString());
         properties.put(Environment.USER_DIR.getProperty(), parameters.userDir().toString());
-        properties.put(Environment.USER_HOME.getProperty(), parameters.userHome().toString());
-        properties.put(Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
+        properties.put(
+                Environment.USER_HOME.getProperty(), parameters.userHome().toString());
+        properties.put(
+                Environment.MVND_HOME.getProperty(), parameters.mvndHome().toString());
         properties.put(Environment.MVND_ID.getProperty(), daemon);
-        properties.put(Environment.MVND_DAEMON_STORAGE.getProperty(), parameters.daemonStorage().toString());
-        properties.put(Environment.MVND_REGISTRY.getProperty(), parameters.registry().toString());
+        properties.put(
+                Environment.MVND_DAEMON_STORAGE.getProperty(),
+                parameters.daemonStorage().toString());
+        properties.put(
+                Environment.MVND_REGISTRY.getProperty(), parameters.registry().toString());
         properties.putAll(parameters.getDaemonOptsMap());
         Environment.setProperties(properties);
         AtomicReference<Throwable> throwable = new AtomicReference<>();
         Thread serverThread = new Thread(() -> {
             try {
                 Class<?> clazz = getClass().getClassLoader().loadClass("org.mvndaemon.mvnd.daemon.Server");
-                try (AutoCloseable server = (AutoCloseable) clazz.getConstructor().newInstance()) {
+                try (AutoCloseable server =
+                        (AutoCloseable) clazz.getConstructor().newInstance()) {
                     ((Runnable) server).run();
                 }
             } catch (Throwable t) {
@@ -164,34 +174,37 @@ public class DaemonConnector {
         throw new RuntimeException("Unable to connect to internal daemon", throwable.get());
     }
 
-    private String handleStopEvents(String daemonId, Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {
+    private String handleStopEvents(
+            String daemonId, Collection<DaemonInfo> idleDaemons, Collection<DaemonInfo> busyDaemons) {
         final List<DaemonStopEvent> stopEvents = registry.getStopEvents();
 
         // Clean up old stop events
         long time = System.currentTimeMillis() - TimeUnit.HOURS.toMillis(1);
 
-        List<DaemonStopEvent> oldStopEvents = stopEvents.stream()
-                .filter(e -> e.getTimestamp() < time)
-                .collect(Collectors.toList());
+        List<DaemonStopEvent> oldStopEvents =
+                stopEvents.stream().filter(e -> e.getTimestamp() < time).collect(Collectors.toList());
         registry.removeStopEvents(oldStopEvents);
 
         final List<DaemonStopEvent> recentStopEvents = stopEvents.stream()
                 .filter(e -> e.getTimestamp() >= time)
-                .collect(Collectors.groupingBy(DaemonStopEvent::getDaemonId,
-                        Collectors.minBy(this::compare)))
+                .collect(Collectors.groupingBy(DaemonStopEvent::getDaemonId, Collectors.minBy(this::compare)))
                 .values()
                 .stream()
                 .map(Optional::get)
                 .collect(Collectors.toList());
         for (DaemonStopEvent stopEvent : recentStopEvents) {
-            LOGGER.debug("Previous Daemon ({}) stopped at {} {}",
-                    stopEvent.getDaemonId(), stopEvent.getTimestamp(), stopEvent.getReason());
+            LOGGER.debug(
+                    "Previous Daemon ({}) stopped at {} {}",
+                    stopEvent.getDaemonId(),
+                    stopEvent.getTimestamp(),
+                    stopEvent.getReason());
         }
 
         return generate(daemonId, busyDaemons.size(), idleDaemons.size(), recentStopEvents.size());
     }
 
-    public static String generate(final String daemonId, final int numBusy, final int numIncompatible, final int numStopped) {
+    public static String generate(
+            final String daemonId, final int numBusy, final int numIncompatible, final int numStopped) {
         final int totalUnavailableDaemons = numBusy + numIncompatible + numStopped;
         if (totalUnavailableDaemons > 0) {
             final List<String> reasons = new ArrayList<>();
@@ -223,21 +236,23 @@ public class DaemonConnector {
         return 0;
     }
 
-    private DaemonClientConnection connectToIdleDaemon(Collection<DaemonInfo> idleDaemons, DaemonCompatibilitySpec constraint) {
+    private DaemonClientConnection connectToIdleDaemon(
+            Collection<DaemonInfo> idleDaemons, DaemonCompatibilitySpec constraint) {
         final List<DaemonInfo> compatibleIdleDaemons = getCompatibleDaemons(idleDaemons, constraint);
         LOGGER.debug("Found {} idle daemons, {} compatibles", idleDaemons.size(), compatibleIdleDaemons.size());
         return findConnection(compatibleIdleDaemons);
     }
 
-    private DaemonClientConnection connectToCanceledDaemon(Collection<DaemonInfo> busyDaemons,
-            DaemonCompatibilitySpec constraint) {
+    private DaemonClientConnection connectToCanceledDaemon(
+            Collection<DaemonInfo> busyDaemons, DaemonCompatibilitySpec constraint) {
         DaemonClientConnection connection = null;
-        List<DaemonInfo> canceledBusy = busyDaemons.stream()
-                .filter(di -> di.getState() == Canceled)
-                .collect(Collectors.toList());
-        final List<DaemonInfo> compatibleCanceledDaemons = getCompatibleDaemons(
-                canceledBusy, constraint);
-        LOGGER.debug("Found {} busy daemons, {} cancelled, {} compatibles", busyDaemons.size(), canceledBusy.size(),
+        List<DaemonInfo> canceledBusy =
+                busyDaemons.stream().filter(di -> di.getState() == Canceled).collect(Collectors.toList());
+        final List<DaemonInfo> compatibleCanceledDaemons = getCompatibleDaemons(canceledBusy, constraint);
+        LOGGER.debug(
+                "Found {} busy daemons, {} cancelled, {} compatibles",
+                busyDaemons.size(),
+                canceledBusy.size(),
                 compatibleCanceledDaemons.size());
         if (!compatibleCanceledDaemons.isEmpty()) {
             LOGGER.debug("Waiting for daemons with canceled builds to become available");
@@ -261,8 +276,10 @@ public class DaemonConnector {
             if (result.isCompatible()) {
                 compatibleDaemons.add(daemon);
             } else {
-                LOGGER.debug("{} daemon {} does not match the desired criteria: "
-                        + result.getWhy(), daemon.getState(), daemon.getId());
+                LOGGER.debug(
+                        "{} daemon {} does not match the desired criteria: " + result.getWhy(),
+                        daemon.getState(),
+                        daemon.getId());
             }
         }
         return compatibleDaemons;
@@ -295,7 +312,8 @@ public class DaemonConnector {
             }
         } while (process.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
         DaemonDiagnostics diag = new DaemonDiagnostics(daemonId, parameters);
-        throw new DaemonException.ConnectException("Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
+        throw new DaemonException.ConnectException(
+                "Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
     static String newId() {
@@ -364,24 +382,33 @@ public class DaemonConnector {
             args.add("-Dmaven.home=" + mvndHome.resolve("mvn"));
             args.add("-Dmaven.conf=" + mvndHome.resolve("mvn/conf"));
 
-            Environment.MVND_JAVA_HOME.addCommandLineOption(args, parameters.javaHome().toString());
-            Environment.LOGBACK_CONFIGURATION_FILE
-                    .addCommandLineOption(args, parameters.logbackConfigurationPath().toString());
+            Environment.MVND_JAVA_HOME.addCommandLineOption(
+                    args, parameters.javaHome().toString());
+            Environment.LOGBACK_CONFIGURATION_FILE.addCommandLineOption(
+                    args, parameters.logbackConfigurationPath().toString());
             Environment.MVND_ID.addCommandLineOption(args, daemonId);
-            Environment.MVND_DAEMON_STORAGE.addCommandLineOption(args, parameters.daemonStorage().toString());
-            Environment.MVND_REGISTRY.addCommandLineOption(args, parameters.registry().toString());
-            Environment.MVND_SOCKET_FAMILY.addCommandLineOption(args,
-                    parameters.socketFamily().orElseGet(
-                            () -> getJavaVersion() >= 16.0f ? SocketFamily.unix : SocketFamily.inet)
+            Environment.MVND_DAEMON_STORAGE.addCommandLineOption(
+                    args, parameters.daemonStorage().toString());
+            Environment.MVND_REGISTRY.addCommandLineOption(
+                    args, parameters.registry().toString());
+            Environment.MVND_SOCKET_FAMILY.addCommandLineOption(
+                    args,
+                    parameters
+                            .socketFamily()
+                            .orElseGet(() -> getJavaVersion() >= 16.0f ? SocketFamily.unix : SocketFamily.inet)
                             .toString());
             parameters.discriminatingCommandLineOptions(args);
             args.add(MavenDaemon.class.getName());
             command = String.join(" ", args);
 
-            LOGGER.debug("Starting daemon process: id = {}, workingDir = {}, daemonArgs: {}", daemonId, workingDir, command);
-            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(parameters.daemonOutLog(daemonId).toFile());
+            LOGGER.debug(
+                    "Starting daemon process: id = {}, workingDir = {}, daemonArgs: {}", daemonId, workingDir, command);
+            ProcessBuilder.Redirect redirect = ProcessBuilder.Redirect.appendTo(
+                    parameters.daemonOutLog(daemonId).toFile());
             ProcessBuilder processBuilder = new ProcessBuilder();
-            processBuilder.environment().put(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable(), parameters.jdkJavaOpts());
+            processBuilder
+                    .environment()
+                    .put(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable(), parameters.jdkJavaOpts());
             Process process = processBuilder
                     .directory(workingDir.toFile())
                     .command(args)
@@ -391,7 +418,8 @@ public class DaemonConnector {
             return process;
         } catch (Exception e) {
             throw new DaemonException.StartException(
-                    String.format("Error starting daemon: id = %s, workingDir = %s, daemonArgs: %s",
+                    String.format(
+                            "Error starting daemon: id = %s, workingDir = %s, daemonArgs: %s",
                             daemonId, workingDir, command),
                     e);
         }
@@ -432,14 +460,15 @@ public class DaemonConnector {
                 return connectToDaemon(daemonInfo, new CleanupOnStaleAddress(daemonInfo), newDaemon);
             } catch (DaemonException.ConnectException e) {
                 DaemonDiagnostics diag = new DaemonDiagnostics(daemon, parameters);
-                throw new DaemonException.ConnectException("Could not connect to the Maven daemon.\n" + diag.describe(), e);
+                throw new DaemonException.ConnectException(
+                        "Could not connect to the Maven daemon.\n" + diag.describe(), e);
             }
         }
         return null;
     }
 
-    private DaemonClientConnection connectToDaemon(DaemonInfo daemon,
-            DaemonClientConnection.StaleAddressDetector staleAddressDetector, boolean newDaemon)
+    private DaemonClientConnection connectToDaemon(
+            DaemonInfo daemon, DaemonClientConnection.StaleAddressDetector staleAddressDetector, boolean newDaemon)
             throws DaemonException.ConnectException {
         LOGGER.debug("Connecting to Daemon");
         try {
@@ -462,10 +491,11 @@ public class DaemonConnector {
 
         @Override
         public boolean maybeStaleAddress(Exception failure) {
-            LOGGER.debug("Removing daemon from the registry due to communication failure. Daemon information: {}", daemon);
+            LOGGER.debug(
+                    "Removing daemon from the registry due to communication failure. Daemon information: {}", daemon);
             final long timestamp = System.currentTimeMillis();
-            final DaemonStopEvent stopEvent = new DaemonStopEvent(daemon.getId(), timestamp, null,
-                    "by user or operating system");
+            final DaemonStopEvent stopEvent =
+                    new DaemonStopEvent(daemon.getId(), timestamp, null, "by user or operating system");
             registry.storeStopEvent(stopEvent);
             registry.remove(daemon.getId());
             return true;
@@ -500,7 +530,8 @@ public class DaemonConnector {
             //            socket.connect(address, CONNECT_TIMEOUT);
             //            if (socket.getLocalSocketAddress().equals(socket.getRemoteSocketAddress())) {
             //                socketChannel.close();
-            //                throw new DaemonException.ConnectException(String.format("Socket connected to itself on %s.", address));
+            //                throw new DaemonException.ConnectException(String.format("Socket connected to itself on
+            // %s.", address));
             //            }
             LOGGER.debug("Connected to address {}.", socketChannel.getRemoteAddress());
 
@@ -517,5 +548,4 @@ public class DaemonConnector {
             throw new DaemonException.ConnectException(String.format("Could not connect to server %s.", address), e);
         }
     }
-
 }

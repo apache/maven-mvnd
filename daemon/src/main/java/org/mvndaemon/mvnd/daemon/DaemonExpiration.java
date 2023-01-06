@@ -1,19 +1,28 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.daemon;
+
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.IMMEDIATE_EXPIRE;
+import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.QUIET_EXPIRE;
+import static org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
 
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
@@ -40,12 +49,6 @@ import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.mvndaemon.mvnd.nativ.CLibrary;
 
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.DO_NOT_EXPIRE;
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.GRACEFUL_EXPIRE;
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.IMMEDIATE_EXPIRE;
-import static org.mvndaemon.mvnd.common.DaemonExpirationStatus.QUIET_EXPIRE;
-import static org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.NOT_TRIGGERED;
-
 /**
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/server/MasterExpirationStrategy.java
@@ -55,7 +58,6 @@ public class DaemonExpiration {
     public interface DaemonExpirationStrategy {
 
         DaemonExpirationResult checkExpiration(Server daemon);
-
     }
 
     public static DaemonExpirationStrategy master() {
@@ -112,11 +114,11 @@ public class DaemonExpiration {
 
     static DaemonExpirationStrategy notMostRecentlyUsed() {
         return daemon -> daemon.getRegistry().getIdle().stream()
-                .max(Comparator.comparingLong(DaemonInfo::getLastBusy))
-                .map(d -> Objects.equals(d.getId(), daemon.getDaemonId()))
-                .orElse(false)
-                        ? new DaemonExpirationResult(GRACEFUL_EXPIRE, "not recently used")
-                        : NOT_TRIGGERED;
+                        .max(Comparator.comparingLong(DaemonInfo::getLastBusy))
+                        .map(d -> Objects.equals(d.getId(), daemon.getDaemonId()))
+                        .orElse(false)
+                ? new DaemonExpirationResult(GRACEFUL_EXPIRE, "not recently used")
+                : NOT_TRIGGERED;
     }
 
     static DaemonExpirationStrategy registryUnavailable() {
@@ -125,8 +127,8 @@ public class DaemonExpiration {
                 if (!Files.isReadable(daemon.getRegistry().getRegistryFile())) {
                     return new DaemonExpirationResult(GRACEFUL_EXPIRE, "after the daemon registry became unreadable");
                 } else if (daemon.getRegistry().get(daemon.getDaemonId()) == null) {
-                    return new DaemonExpirationResult(GRACEFUL_EXPIRE,
-                            "after the daemon was no longer found in the daemon registry");
+                    return new DaemonExpirationResult(
+                            GRACEFUL_EXPIRE, "after the daemon was no longer found in the daemon registry");
                 } else {
                     return NOT_TRIGGERED;
                 }
@@ -239,10 +241,9 @@ public class DaemonExpiration {
         public String getReason() {
             return reason;
         }
-
     }
 
-    private static abstract class MemoryExpirationStrategy implements DaemonExpirationStrategy {
+    private abstract static class MemoryExpirationStrategy implements DaemonExpirationStrategy {
         static final long MIN_THRESHOLD_BYTES = 384 * 1024 * 1024;
         static final long MAX_THRESHOLD_BYTES = 1024 * 1024 * 1024;
 
@@ -260,8 +261,8 @@ public class DaemonExpiration {
                     long total = mem[0];
                     long free = mem[1];
                     if (total > free && free > 0) {
-                        double norm = Math.min(Math.max(total * minFreeMemoryPercentage, MIN_THRESHOLD_BYTES),
-                                MAX_THRESHOLD_BYTES);
+                        double norm = Math.min(
+                                Math.max(total * minFreeMemoryPercentage, MIN_THRESHOLD_BYTES), MAX_THRESHOLD_BYTES);
                         if (free < norm) {
                             return new DaemonExpirationResult(GRACEFUL_EXPIRE, "to reclaim system memory");
                         }
@@ -309,27 +310,27 @@ public class DaemonExpiration {
                     String key = m.group(1);
                     long val = Long.parseLong(m.group(2)) * 1024;
                     switch (key) {
-                    case "MemTotal":
-                        total = val;
-                        break;
-                    case "MemAvailable":
-                        available = val;
-                        break;
-                    case "MemFree":
-                        free = val;
-                        break;
-                    case "Buffers":
-                        buffers = val;
-                        break;
-                    case "Cached":
-                        cached = val;
-                        break;
-                    case "SReclaimable":
-                        reclaimable = val;
-                        break;
-                    case "Mapped":
-                        mapped = val;
-                        break;
+                        case "MemTotal":
+                            total = val;
+                            break;
+                        case "MemAvailable":
+                            available = val;
+                            break;
+                        case "MemFree":
+                            free = val;
+                            break;
+                        case "Buffers":
+                            buffers = val;
+                            break;
+                        case "Cached":
+                            cached = val;
+                            break;
+                        case "SReclaimable":
+                            reclaimable = val;
+                            break;
+                        case "Mapped":
+                            mapped = val;
+                            break;
                     }
                 }
             }
@@ -338,7 +339,7 @@ public class DaemonExpiration {
                     available = free + buffers + cached + reclaimable - mapped;
                 }
             }
-            return new long[] { total, available };
+            return new long[] {total, available};
         }
     }
 
@@ -354,14 +355,14 @@ public class DaemonExpiration {
         @Override
         protected long[] getTotalAndFreeMemory() throws Exception {
             ObjectName objectName = new ObjectName("java.lang:type=OperatingSystem");
-            List<Attribute> list = ManagementFactory.getPlatformMBeanServer().getAttributes(
-                    objectName,
-                    new String[] { isIbmJvm ? "TotalPhysicalMemory" : "TotalPhysicalMemorySize", "FreePhysicalMemorySize" })
+            List<Attribute> list = ManagementFactory.getPlatformMBeanServer()
+                    .getAttributes(objectName, new String[] {
+                        isIbmJvm ? "TotalPhysicalMemory" : "TotalPhysicalMemorySize", "FreePhysicalMemorySize"
+                    })
                     .asList();
             long total = ((Number) list.get(0).getValue()).longValue();
             long free = ((Number) list.get(1).getValue()).longValue();
-            return new long[] { total, free };
+            return new long[] {total, free};
         }
-
     }
 }

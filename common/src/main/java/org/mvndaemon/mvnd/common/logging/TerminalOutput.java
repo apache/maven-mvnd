@@ -1,17 +1,20 @@
 /*
- * Copyright 2020 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.common.logging;
 
@@ -122,10 +125,12 @@ public class TerminalOutput implements ClientOutput {
     private int totalProjects;
     /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
     private String projectsDoneFomat;
+
     private int maxThreads;
     private String artifactIdFormat;
     /** String format for formatting the actual/hidden/max thread counts */
     private String threadsFormat;
+
     private int linesPerProject = 0;
     private int doneProjects = 0;
     private String buildStatus;
@@ -164,8 +169,8 @@ public class TerminalOutput implements ClientOutput {
                 mainThread.interrupt();
             }
         };
-        this.previousIntHandler = terminal.handle(Terminal.Signal.INT,
-                sig -> daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON));
+        this.previousIntHandler = terminal.handle(
+                Terminal.Signal.INT, sig -> daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON));
         this.display = new Display(terminal, false);
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
         if (!dumb) {
@@ -214,228 +219,230 @@ public class TerminalOutput implements ClientOutput {
 
     private boolean doAccept(Message entry) {
         switch (entry.getType()) {
-        case Message.BUILD_STARTED: {
-            BuildStarted bs = (BuildStarted) entry;
-            this.name = bs.getProjectId();
-            this.totalProjects = bs.getProjectCount();
-            final int totalProjectsDigits = (int) (Math.log10(totalProjects) + 1);
-            this.projectsDoneFomat = "%" + totalProjectsDigits + "d";
-            this.maxThreads = bs.getMaxThreads();
-            this.artifactIdFormat = "%-" + bs.getArtifactIdDisplayLength() + "s ";
-            final int maxThreadsDigits = (int) (Math.log10(maxThreads) + 1);
-            this.threadsFormat = "%" + (maxThreadsDigits * 3 + 2) + "s";
-            if (maxThreads <= 1 || totalProjects <= 1) {
-                this.noBuffering = true;
-                display.update(Collections.emptyList(), 0);
-                applyNoBuffering();
-            }
-            break;
-        }
-        case Message.CANCEL_BUILD: {
-            projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-            clearDisplay();
-            try {
-                log.close();
-            } catch (IOException e1) {
-                throw new RuntimeException(e1);
-            }
-            final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
-            new AttributedString("The build was canceled", s).println(terminal);
-            terminal.flush();
-            return false;
-        }
-        case Message.BUILD_EXCEPTION: {
-            final BuildException e = (BuildException) entry;
-            final String msg;
-            if ("org.apache.commons.cli.UnrecognizedOptionException".equals(e.getClassName())) {
-                msg = "Unable to parse command line options: " + e.getMessage();
-            } else {
-                msg = e.getClassName() + ": " + e.getMessage();
-            }
-            projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-            clearDisplay();
-            try {
-                log.close();
-            } catch (IOException e1) {
-                throw new RuntimeException(e1);
-            }
-            final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
-            new AttributedString(msg, s).println(terminal);
-            terminal.flush();
-            return false;
-        }
-        case Message.PROJECT_STARTED: {
-            StringMessage be = (StringMessage) entry;
-            final String artifactId = be.getMessage();
-            projects.put(artifactId, new Project(artifactId));
-            break;
-        }
-        case Message.MOJO_STARTED: {
-            final MojoStartedEvent execution = (MojoStartedEvent) entry;
-            final Project prj = projects.computeIfAbsent(execution.getArtifactId(), Project::new);
-            prj.runningExecution = execution;
-            break;
-        }
-        case Message.PROJECT_STOPPED: {
-            StringMessage be = (StringMessage) entry;
-            final String artifactId = be.getMessage();
-            Project prj = projects.remove(artifactId);
-            if (prj != null) {
-                prj.log.forEach(log);
-            }
-            doneProjects++;
-            displayDone();
-            break;
-        }
-        case Message.BUILD_STATUS: {
-            this.buildStatus = ((StringMessage) entry).getMessage();
-            break;
-        }
-        case Message.BUILD_FINISHED: {
-            projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-            clearDisplay();
-            try {
-                log.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                terminal.flush();
-            }
-            return false;
-        }
-        case Message.KEEP_ALIVE: {
-            break;
-        }
-        case Message.DISPLAY: {
-            Message.StringMessage d = (Message.StringMessage) entry;
-            clearDisplay();
-            terminal.writer().printf("%s%n", d.getMessage());
-            break;
-        }
-        case Message.PRINT_OUT: {
-            Message.StringMessage d = (Message.StringMessage) entry;
-            clearDisplay();
-            System.out.printf("%s%n", d.getMessage());
-            break;
-        }
-        case Message.PRINT_ERR: {
-            Message.StringMessage d = (Message.StringMessage) entry;
-            clearDisplay();
-            System.err.printf("%s%n", d.getMessage());
-            break;
-        }
-        case Message.PROMPT: {
-            Message.Prompt prompt = (Message.Prompt) entry;
-            if (dumb) {
-                terminal.writer().println("");
-                break;
-            }
-            readInput.writeLock().lock();
-            try {
-                clearDisplay();
-                terminal.writer().printf("[%s] %s", prompt.getProjectId(), prompt.getMessage());
-                terminal.flush();
-                StringBuilder sb = new StringBuilder();
-                while (true) {
-                    int c = terminal.reader().read();
-                    if (c < 0) {
-                        break;
-                    } else if (c == '\n' || c == '\r') {
-                        terminal.writer().println();
-                        daemonDispatch.accept(prompt.response(sb.toString()));
-                        break;
-                    } else if (c == 127) {
-                        if (sb.length() > 0) {
-                            sb.setLength(sb.length() - 1);
-                            terminal.writer().write("\b \b");
-                            terminal.writer().flush();
-                        }
-                    } else {
-                        terminal.writer().print((char) c);
-                        terminal.writer().flush();
-                        sb.append((char) c);
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                readInput.writeLock().unlock();
-            }
-            break;
-        }
-        case Message.BUILD_LOG_MESSAGE: {
-            StringMessage sm = (StringMessage) entry;
-            log.accept(sm.getMessage());
-            break;
-        }
-        case Message.PROJECT_LOG_MESSAGE: {
-            final ProjectEvent bm = (ProjectEvent) entry;
-            final Project prj = projects.get(bm.getProjectId());
-            if (prj == null) {
-                log.accept(bm.getMessage());
-            } else if (noBuffering || dumb) {
-                String msg;
-                if (maxThreads > 1) {
-                    msg = String.format("[%s] %s", bm.getProjectId(), bm.getMessage());
-                } else {
-                    msg = bm.getMessage();
-                }
-                log.accept(msg);
-            } else {
-                prj.log.add(bm.getMessage());
-            }
-            break;
-        }
-        case Message.KEYBOARD_INPUT: {
-            char keyStroke = ((StringMessage) entry).getMessage().charAt(0);
-            switch (keyStroke) {
-            case KEY_PLUS:
-                linesPerProject = Math.min(10, linesPerProject + 1);
-                break;
-            case KEY_MINUS:
-                linesPerProject = Math.max(0, linesPerProject - 1);
-                break;
-            case KEY_CTRL_B:
-                noBuffering = !noBuffering;
-                if (noBuffering) {
+            case Message.BUILD_STARTED: {
+                BuildStarted bs = (BuildStarted) entry;
+                this.name = bs.getProjectId();
+                this.totalProjects = bs.getProjectCount();
+                final int totalProjectsDigits = (int) (Math.log10(totalProjects) + 1);
+                this.projectsDoneFomat = "%" + totalProjectsDigits + "d";
+                this.maxThreads = bs.getMaxThreads();
+                this.artifactIdFormat = "%-" + bs.getArtifactIdDisplayLength() + "s ";
+                final int maxThreadsDigits = (int) (Math.log10(maxThreads) + 1);
+                this.threadsFormat = "%" + (maxThreadsDigits * 3 + 2) + "s";
+                if (maxThreads <= 1 || totalProjects <= 1) {
+                    this.noBuffering = true;
+                    display.update(Collections.emptyList(), 0);
                     applyNoBuffering();
-                } else {
-                    clearDisplay();
                 }
                 break;
-            case KEY_CTRL_L:
+            }
+            case Message.CANCEL_BUILD: {
+                projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                 clearDisplay();
+                try {
+                    log.close();
+                } catch (IOException e1) {
+                    throw new RuntimeException(e1);
+                }
+                final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
+                new AttributedString("The build was canceled", s).println(terminal);
+                terminal.flush();
+                return false;
+            }
+            case Message.BUILD_EXCEPTION: {
+                final BuildException e = (BuildException) entry;
+                final String msg;
+                if ("org.apache.commons.cli.UnrecognizedOptionException".equals(e.getClassName())) {
+                    msg = "Unable to parse command line options: " + e.getMessage();
+                } else {
+                    msg = e.getClassName() + ": " + e.getMessage();
+                }
+                projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
+                clearDisplay();
+                try {
+                    log.close();
+                } catch (IOException e1) {
+                    throw new RuntimeException(e1);
+                }
+                final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
+                new AttributedString(msg, s).println(terminal);
+                terminal.flush();
+                return false;
+            }
+            case Message.PROJECT_STARTED: {
+                StringMessage be = (StringMessage) entry;
+                final String artifactId = be.getMessage();
+                projects.put(artifactId, new Project(artifactId));
                 break;
-            case KEY_CTRL_M:
-                displayDone = !displayDone;
+            }
+            case Message.MOJO_STARTED: {
+                final MojoStartedEvent execution = (MojoStartedEvent) entry;
+                final Project prj = projects.computeIfAbsent(execution.getArtifactId(), Project::new);
+                prj.runningExecution = execution;
+                break;
+            }
+            case Message.PROJECT_STOPPED: {
+                StringMessage be = (StringMessage) entry;
+                final String artifactId = be.getMessage();
+                Project prj = projects.remove(artifactId);
+                if (prj != null) {
+                    prj.log.forEach(log);
+                }
+                doneProjects++;
                 displayDone();
                 break;
             }
-            break;
-        }
-        case Message.TRANSFER_INITIATED:
-        case Message.TRANSFER_STARTED:
-        case Message.TRANSFER_PROGRESSED: {
-            final TransferEvent te = (TransferEvent) entry;
-            transfers.computeIfAbsent(orEmpty(te.getProjectId()), p -> new LinkedHashMap<>())
-                    .put(te.getResourceName(), te);
-            break;
-        }
-        case Message.TRANSFER_CORRUPTED:
-        case Message.TRANSFER_SUCCEEDED:
-        case Message.TRANSFER_FAILED: {
-            final TransferEvent te = (TransferEvent) entry;
-            transfers.computeIfAbsent(orEmpty(te.getProjectId()), p -> new LinkedHashMap<>())
-                    .remove(te.getResourceName());
-            break;
-        }
-        case Message.EXECUTION_FAILURE: {
-            final ExecutionFailureEvent efe = (ExecutionFailureEvent) entry;
-            failures.add(efe);
-            break;
-        }
-        default:
-            throw new IllegalStateException("Unexpected message " + entry);
+            case Message.BUILD_STATUS: {
+                this.buildStatus = ((StringMessage) entry).getMessage();
+                break;
+            }
+            case Message.BUILD_FINISHED: {
+                projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
+                clearDisplay();
+                try {
+                    log.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    terminal.flush();
+                }
+                return false;
+            }
+            case Message.KEEP_ALIVE: {
+                break;
+            }
+            case Message.DISPLAY: {
+                Message.StringMessage d = (Message.StringMessage) entry;
+                clearDisplay();
+                terminal.writer().printf("%s%n", d.getMessage());
+                break;
+            }
+            case Message.PRINT_OUT: {
+                Message.StringMessage d = (Message.StringMessage) entry;
+                clearDisplay();
+                System.out.printf("%s%n", d.getMessage());
+                break;
+            }
+            case Message.PRINT_ERR: {
+                Message.StringMessage d = (Message.StringMessage) entry;
+                clearDisplay();
+                System.err.printf("%s%n", d.getMessage());
+                break;
+            }
+            case Message.PROMPT: {
+                Message.Prompt prompt = (Message.Prompt) entry;
+                if (dumb) {
+                    terminal.writer().println("");
+                    break;
+                }
+                readInput.writeLock().lock();
+                try {
+                    clearDisplay();
+                    terminal.writer().printf("[%s] %s", prompt.getProjectId(), prompt.getMessage());
+                    terminal.flush();
+                    StringBuilder sb = new StringBuilder();
+                    while (true) {
+                        int c = terminal.reader().read();
+                        if (c < 0) {
+                            break;
+                        } else if (c == '\n' || c == '\r') {
+                            terminal.writer().println();
+                            daemonDispatch.accept(prompt.response(sb.toString()));
+                            break;
+                        } else if (c == 127) {
+                            if (sb.length() > 0) {
+                                sb.setLength(sb.length() - 1);
+                                terminal.writer().write("\b \b");
+                                terminal.writer().flush();
+                            }
+                        } else {
+                            terminal.writer().print((char) c);
+                            terminal.writer().flush();
+                            sb.append((char) c);
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    readInput.writeLock().unlock();
+                }
+                break;
+            }
+            case Message.BUILD_LOG_MESSAGE: {
+                StringMessage sm = (StringMessage) entry;
+                log.accept(sm.getMessage());
+                break;
+            }
+            case Message.PROJECT_LOG_MESSAGE: {
+                final ProjectEvent bm = (ProjectEvent) entry;
+                final Project prj = projects.get(bm.getProjectId());
+                if (prj == null) {
+                    log.accept(bm.getMessage());
+                } else if (noBuffering || dumb) {
+                    String msg;
+                    if (maxThreads > 1) {
+                        msg = String.format("[%s] %s", bm.getProjectId(), bm.getMessage());
+                    } else {
+                        msg = bm.getMessage();
+                    }
+                    log.accept(msg);
+                } else {
+                    prj.log.add(bm.getMessage());
+                }
+                break;
+            }
+            case Message.KEYBOARD_INPUT: {
+                char keyStroke = ((StringMessage) entry).getMessage().charAt(0);
+                switch (keyStroke) {
+                    case KEY_PLUS:
+                        linesPerProject = Math.min(10, linesPerProject + 1);
+                        break;
+                    case KEY_MINUS:
+                        linesPerProject = Math.max(0, linesPerProject - 1);
+                        break;
+                    case KEY_CTRL_B:
+                        noBuffering = !noBuffering;
+                        if (noBuffering) {
+                            applyNoBuffering();
+                        } else {
+                            clearDisplay();
+                        }
+                        break;
+                    case KEY_CTRL_L:
+                        clearDisplay();
+                        break;
+                    case KEY_CTRL_M:
+                        displayDone = !displayDone;
+                        displayDone();
+                        break;
+                }
+                break;
+            }
+            case Message.TRANSFER_INITIATED:
+            case Message.TRANSFER_STARTED:
+            case Message.TRANSFER_PROGRESSED: {
+                final TransferEvent te = (TransferEvent) entry;
+                transfers
+                        .computeIfAbsent(orEmpty(te.getProjectId()), p -> new LinkedHashMap<>())
+                        .put(te.getResourceName(), te);
+                break;
+            }
+            case Message.TRANSFER_CORRUPTED:
+            case Message.TRANSFER_SUCCEEDED:
+            case Message.TRANSFER_FAILED: {
+                final TransferEvent te = (TransferEvent) entry;
+                transfers
+                        .computeIfAbsent(orEmpty(te.getProjectId()), p -> new LinkedHashMap<>())
+                        .remove(te.getResourceName());
+                break;
+            }
+            case Message.EXECUTION_FAILURE: {
+                final ExecutionFailureEvent efe = (ExecutionFailureEvent) entry;
+                failures.add(efe);
+                break;
+            }
+            default:
+                throw new IllegalStateException("Unexpected message " + entry);
         }
 
         return true;
@@ -455,7 +462,11 @@ public class TerminalOutput implements ClientOutput {
         StringBuilder sb = new StringBuilder();
         sb.append("Terminal: ").append(terminal != null ? terminal.getClass().getName() : null);
         if (terminal instanceof AbstractPosixTerminal) {
-            sb.append(" with pty ").append(((AbstractPosixTerminal) terminal).getPty().getClass().getName());
+            sb.append(" with pty ")
+                    .append(((AbstractPosixTerminal) terminal)
+                            .getPty()
+                            .getClass()
+                            .getName());
         }
         this.accept(Message.log(sb.toString()));
     }
@@ -589,9 +600,8 @@ public class TerminalOutput implements ClientOutput {
                 }
             }
         }
-        List<AttributedString> trimmed = lines.stream()
-                .map(s -> s.columnSubSequence(0, cols))
-                .collect(Collectors.toList());
+        List<AttributedString> trimmed =
+                lines.stream().map(s -> s.columnSubSequence(0, cols)).collect(Collectors.toList());
         display.update(trimmed, -1);
     }
 
@@ -612,14 +622,15 @@ public class TerminalOutput implements ClientOutput {
             String exception = efe.getException();
             if (exception != null) {
                 if (exception.startsWith("org.apache.maven.lifecycle.LifecycleExecutionException: ")) {
-                    exception = exception
-                            .substring("org.apache.maven.lifecycle.LifecycleExecutionException: ".length());
+                    exception =
+                            exception.substring("org.apache.maven.lifecycle.LifecycleExecutionException: ".length());
                 }
                 asb.append(": ").append(exception);
             }
         } else {
             asb.append(String.valueOf(failures.size())).append(" projects failed: ");
-            asb.append(failures.stream().map(ExecutionFailureEvent::getProjectId).collect(Collectors.joining(", ")));
+            asb.append(
+                    failures.stream().map(ExecutionFailureEvent::getProjectId).collect(Collectors.joining(", ")));
         }
         AttributedString as = asb.toAttributedString();
         if (as.columnLength() >= getTerminalWidth() - 1) {
@@ -633,7 +644,8 @@ public class TerminalOutput implements ClientOutput {
     }
 
     private AttributedString formatTransfers(String projectId) {
-        Collection<TransferEvent> transfers = this.transfers.getOrDefault(projectId, Collections.emptyMap()).values();
+        Collection<TransferEvent> transfers =
+                this.transfers.getOrDefault(projectId, Collections.emptyMap()).values();
         if (transfers.isEmpty()) {
             return null;
         }
@@ -675,7 +687,8 @@ public class TerminalOutput implements ClientOutput {
             String artifactIdVersion = artifactId + "-" + version;
             StringBuilder sb = new StringBuilder();
             if (p[p.length - 1].charAt(artifactIdVersion.length()) == '-') {
-                classifier = p[p.length - 1].substring(artifactIdVersion.length() + 1, p[p.length - 1].lastIndexOf('.'));
+                classifier =
+                        p[p.length - 1].substring(artifactIdVersion.length() + 1, p[p.length - 1].lastIndexOf('.'));
             } else {
                 classifier = null;
             }
@@ -711,30 +724,27 @@ public class TerminalOutput implements ClientOutput {
                 asb.style(AttributedStyle.DEFAULT);
 
                 /* Daemon ID */
-                asb
-                        .append("  daemon: ")
+                asb.append("  daemon: ")
                         .style(AttributedStyle.BOLD)
                         .append(daemonId)
                         .style(AttributedStyle.DEFAULT);
 
                 /* Threads */
-                asb
-                        .append("  threads used/hidden/max: ")
+                asb.append("  threads used/hidden/max: ")
                         .style(AttributedStyle.BOLD)
-                        .append(
-                                String.format(
-                                        threadsFormat,
-                                        new StringBuilder(threadsFormat.length())
-                                                .append(projectsCount)
-                                                .append('/')
-                                                .append(Math.max(0, projectsCount - dispLines))
-                                                .append('/')
-                                                .append(maxThreads).toString()))
+                        .append(String.format(
+                                threadsFormat,
+                                new StringBuilder(threadsFormat.length())
+                                        .append(projectsCount)
+                                        .append('/')
+                                        .append(Math.max(0, projectsCount - dispLines))
+                                        .append('/')
+                                        .append(maxThreads)
+                                        .toString()))
                         .style(AttributedStyle.DEFAULT);
 
                 /* Progress */
-                asb
-                        .append("  progress: ")
+                asb.append("  progress: ")
                         .style(AttributedStyle.BOLD)
                         .append(String.format(projectsDoneFomat, doneProjects))
                         .append('/')
@@ -745,16 +755,12 @@ public class TerminalOutput implements ClientOutput {
                         .style(AttributedStyle.DEFAULT);
 
             } else if (buildStatus != null) {
-                asb
-                        .style(AttributedStyle.BOLD)
-                        .append(buildStatus)
-                        .style(AttributedStyle.DEFAULT);
+                asb.style(AttributedStyle.BOLD).append(buildStatus).style(AttributedStyle.DEFAULT);
             }
 
             /* Time */
             long sec = (System.currentTimeMillis() - this.start) / 1000;
-            asb
-                    .append("  time: ")
+            asb.append("  time: ")
                     .style(AttributedStyle.BOLD)
                     .append(String.format("%02d:%02d", sec / 60, sec % 60))
                     .style(AttributedStyle.DEFAULT);
@@ -768,20 +774,15 @@ public class TerminalOutput implements ClientOutput {
         final AttributedStringBuilder asb = new AttributedStringBuilder();
         AttributedString transfer = formatTransfers(prj.id);
         if (transfer != null) {
-            asb
-                    .append(':')
+            asb.append(':')
                     .style(CYAN_FOREGROUND)
                     .append(String.format(artifactIdFormat, prj.id))
                     .style(AttributedStyle.DEFAULT)
                     .append(transfer);
         } else if (execution == null) {
-            asb
-                    .append(':')
-                    .style(CYAN_FOREGROUND)
-                    .append(prj.id);
+            asb.append(':').style(CYAN_FOREGROUND).append(prj.id);
         } else {
-            asb
-                    .append(':')
+            asb.append(':')
                     .style(CYAN_FOREGROUND)
                     .append(String.format(artifactIdFormat, prj.id))
                     .style(GREEN_FOREGROUND)
@@ -802,18 +803,21 @@ public class TerminalOutput implements ClientOutput {
     }
 
     private static <T> Collector<T, ?, List<T>> lastN(int n) {
-        return Collector.<T, Deque<T>, List<T>> of(ArrayDeque::new, (acc, t) -> {
-            if (n > 0) {
-                if (acc.size() == n)
-                    acc.pollFirst();
-                acc.add(t);
-            }
-        }, (acc1, acc2) -> {
-            while (acc2.size() < n && !acc1.isEmpty()) {
-                acc2.addFirst(acc1.pollLast());
-            }
-            return acc2;
-        }, ArrayList::new);
+        return Collector.<T, Deque<T>, List<T>>of(
+                ArrayDeque::new,
+                (acc, t) -> {
+                    if (n > 0) {
+                        if (acc.size() == n) acc.pollFirst();
+                        acc.add(t);
+                    }
+                },
+                (acc1, acc2) -> {
+                    while (acc2.size() < n && !acc1.isEmpty()) {
+                        acc2.addFirst(acc1.pollLast());
+                    }
+                    return acc2;
+                },
+                ArrayList::new);
     }
 
     private static AttributedString concat(String s1, AttributedString s2) {
@@ -868,7 +872,6 @@ public class TerminalOutput implements ClientOutput {
         public void close() throws IOException {
             out.close();
         }
-
     }
 
     /**
@@ -896,6 +899,5 @@ public class TerminalOutput implements ClientOutput {
         public void close() {
             flush();
         }
-
     }
 }

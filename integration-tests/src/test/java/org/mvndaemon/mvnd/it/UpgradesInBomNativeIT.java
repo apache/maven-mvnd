@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.it;
 
@@ -47,7 +50,8 @@ public class UpgradesInBomNativeIT {
         assertDaemonRegistrySize(0);
         /* Install the dependencies */
         for (String artifactDir : Arrays.asList("project/hello-0.0.1", "project/hello-0.0.2-SNAPSHOT")) {
-            final Client cl = clientFactory.newClient(parameters.cd(parameters.getTestDir().resolve(artifactDir)));
+            final Client cl = clientFactory.newClient(
+                    parameters.cd(parameters.getTestDir().resolve(artifactDir)));
             final TestClientOutput output = new TestClientOutput();
             cl.execute(output, "clean", "install", "-e").assertSuccess();
 
@@ -74,19 +78,17 @@ public class UpgradesInBomNativeIT {
 
         /* Upgrade the dependency  */
         final Path parentPomPath = parentDir.resolve("pom.xml");
-        TestUtils.replace(parentPomPath, "<hello.version>0.0.1</hello.version>",
-                "<hello.version>0.0.2-SNAPSHOT</hello.version>");
+        TestUtils.replace(
+                parentPomPath, "<hello.version>0.0.1</hello.version>", "<hello.version>0.0.2-SNAPSHOT</hello.version>");
         /* Adapt the caller  */
-        final Path useHelloPath = parentDir
-                .resolve("module/src/main/java/org/mvndaemon/mvnd/test/upgrades/bom/module/UseHello.java");
+        final Path useHelloPath =
+                parentDir.resolve("module/src/main/java/org/mvndaemon/mvnd/test/upgrades/bom/module/UseHello.java");
         TestUtils.replace(useHelloPath, "new Hello().sayHello()", "new Hello().sayWisdom()");
         {
             final TestClientOutput output = new TestClientOutput();
-            cl.execute(output, "clean", "install", "-e")
-                    .assertSuccess();
+            cl.execute(output, "clean", "install", "-e").assertSuccess();
         }
         assertDaemonRegistrySize(1);
-
     }
 
     private void assertDaemonRegistrySize(int size) {

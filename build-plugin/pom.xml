@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright 2019 the original author or authors.
@@ -15,89 +16,88 @@
     limitations under the License.
 
 -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
-    </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.apache.maven.daemon</groupId>
+    <artifactId>mvnd</artifactId>
+    <version>0.9.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>mvnd-build-maven-plugin</artifactId>
+  <artifactId>mvnd-build-maven-plugin</artifactId>
 
-    <packaging>maven-plugin</packaging>
-    <name>Maven Daemon - Documentation Maven Plugin</name>
+  <packaging>maven-plugin</packaging>
+  <name>Maven Daemon - Documentation Maven Plugin</name>
 
-    <properties>
-        <maven.compiler.target>11</maven.compiler.target>
-        <maven.compiler.source>11</maven.compiler.source>
+  <properties>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
 
-        <roaster.version>2.23.2.Final</roaster.version>
-        <maven.plugin-tools.version>3.6.0</maven.plugin-tools.version>
-        <maven-plugin-plugin.version>${maven.plugin-tools.version}</maven-plugin-plugin.version>
-    </properties>
+    <roaster.version>2.23.2.Final</roaster.version>
+    <maven.plugin-tools.version>3.6.0</maven.plugin-tools.version>
+    <maven-plugin-plugin.version>${maven.plugin-tools.version}</maven-plugin-plugin.version>
+  </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-plugin-api</artifactId>
-                <version>${maven.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven.plugin-tools</groupId>
-                <artifactId>maven-plugin-annotations</artifactId>
-                <version>${maven.plugin-tools.version}</version>
-            </dependency>
-
-        </dependencies>
-    </dependencyManagement>
-
+  <dependencyManagement>
     <dependencies>
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-plugin-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugin-tools</groupId>
-            <artifactId>maven-plugin-annotations</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jboss.forge.roaster</groupId>
-            <artifactId>roaster-jdt</artifactId>
-            <version>${roaster.version}</version>
-        </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>${maven.plugin-tools.version}</version>
+      </dependency>
 
     </dependencies>
+  </dependencyManagement>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-plugin-plugin</artifactId>
-                    <version>${maven-plugin-plugin.version}</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-plugin-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-                <configuration>
-                    <goalPrefix>mvnd-build</goalPrefix>
-                    <mojoDependencies>
-                        <dep>org.apache.maven:maven-plugin-api</dep>
-                    </mojoDependencies>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <dependency>
+      <groupId>org.jboss.forge.roaster</groupId>
+      <artifactId>roaster-jdt</artifactId>
+      <version>${roaster.version}</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>${maven-plugin-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-plugin-plugin</artifactId>
+        <configuration>
+          <goalPrefix>mvnd-build</goalPrefix>
+          <mojoDependencies>
+            <dep>org.apache.maven:maven-plugin-api</dep>
+          </mojoDependencies>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

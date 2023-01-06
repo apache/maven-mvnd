@@ -1,17 +1,20 @@
 /*
- * Copyright 2019 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.client;
 
@@ -63,8 +66,8 @@ public class DaemonParameters {
     private static final String ENV_PREFIX = "env.";
 
     protected final Map<Path, Properties> mvndProperties = new ConcurrentHashMap<>();
-    protected final Function<Path, Properties> provider = path -> mvndProperties.computeIfAbsent(path,
-            p -> loadProperties(path));
+    protected final Function<Path, Properties> provider =
+            path -> mvndProperties.computeIfAbsent(path, p -> loadProperties(path));
     private final Map<String, String> properties;
 
     public DaemonParameters() {
@@ -83,9 +86,7 @@ public class DaemonParameters {
 
     public Map<String, String> getDaemonOptsMap() {
         return discriminatingValues()
-                .collect(Collectors.toMap(
-                        envValue -> envValue.envKey.getProperty(),
-                        EnvValue::asString));
+                .collect(Collectors.toMap(envValue -> envValue.envKey.getProperty(), EnvValue::asString));
     }
 
     Stream<EnvValue> discriminatingValues() {
@@ -96,8 +97,7 @@ public class DaemonParameters {
     }
 
     public void discriminatingCommandLineOptions(List<String> args) {
-        discriminatingValues()
-                .forEach(envValue -> envValue.envKey.addCommandLineOption(args, envValue.asString()));
+        discriminatingValues().forEach(envValue -> envValue.envKey.addCommandLineOption(args, envValue.asString()));
     }
 
     public Path mvndHome() {
@@ -112,7 +112,8 @@ public class DaemonParameters {
                 .orEnvironmentVariable()
                 .orFail()
                 .asPath()
-                .toAbsolutePath().normalize();
+                .toAbsolutePath()
+                .normalize();
     }
 
     private String mvndHomeFromExecutable() {
@@ -120,8 +121,8 @@ public class DaemonParameters {
         if (Environment.isNative() && cmd.isPresent()) {
             final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
             if (mvndH != null) {
-                final Path mvndDaemonLib = mvndH
-                        .resolve("mvn/lib/ext/mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
+                final Path mvndDaemonLib = mvndH.resolve("mvn/lib/ext/mvnd-daemon-"
+                        + BuildProperties.getInstance().getVersion() + ".jar");
                 if (Files.exists(mvndDaemonLib)) {
                     return mvndH.toString();
                 }
@@ -138,9 +139,7 @@ public class DaemonParameters {
                 .orLocalProperty(provider, globalPropertiesPath())
                 .orSystemProperty()
                 .orEnvironmentVariable()
-                .or(new ValueSource(
-                        description -> description.append("java command"),
-                        this::javaHomeFromPath))
+                .or(new ValueSource(description -> description.append("java command"), this::javaHomeFromPath))
                 .orFail()
                 .asPath();
         try {
@@ -159,19 +158,11 @@ public class DaemonParameters {
     }
 
     public Path userDir() {
-        return value(Environment.USER_DIR)
-                .orSystemProperty()
-                .orFail()
-                .asPath()
-                .toAbsolutePath();
+        return value(Environment.USER_DIR).orSystemProperty().orFail().asPath().toAbsolutePath();
     }
 
     public Path userHome() {
-        return value(Environment.USER_HOME)
-                .orSystemProperty()
-                .orFail()
-                .asPath()
-                .toAbsolutePath();
+        return value(Environment.USER_HOME).orSystemProperty().orFail().asPath().toAbsolutePath();
     }
 
     public Path suppliedPropertiesPath() {
@@ -207,8 +198,10 @@ public class DaemonParameters {
                 .orSystemProperty()
                 .orLocalProperty(provider, globalPropertiesPath())
                 .orEnvironmentVariable()
-                .orDefault(
-                        () -> userHome().resolve(".m2/mvnd/registry/" + BuildProperties.getInstance().getVersion()).toString())
+                .orDefault(() -> userHome()
+                        .resolve(".m2/mvnd/registry/"
+                                + BuildProperties.getInstance().getVersion())
+                        .toString())
                 .asPath();
     }
 
@@ -233,7 +226,8 @@ public class DaemonParameters {
                 .orSystemProperty()
                 .orDefault(() -> findDefaultMultimoduleProjectDirectory(projectDir))
                 .asPath()
-                .toAbsolutePath().normalize();
+                .toAbsolutePath()
+                .normalize();
     }
 
     public Path logbackConfigurationPath() {
@@ -317,10 +311,7 @@ public class DaemonParameters {
      * @return if mvnd should behave as maven
      */
     public boolean serial() {
-        return value(Environment.SERIAL)
-                .orSystemProperty()
-                .orDefault()
-                .asBoolean();
+        return value(Environment.SERIAL).orSystemProperty().orDefault().asBoolean();
     }
 
     /**
@@ -333,14 +324,14 @@ public class DaemonParameters {
 
     public DaemonParameters withJdkJavaOpts(String opts, boolean before) {
         String org = this.properties.getOrDefault(Environment.JDK_JAVA_OPTIONS.getProperty(), "");
-        return derive(b -> b.put(Environment.JDK_JAVA_OPTIONS,
-                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
+        return derive(b -> b.put(
+                Environment.JDK_JAVA_OPTIONS, org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
     }
 
     public DaemonParameters withJvmArgs(String opts, boolean before) {
         String org = this.properties.getOrDefault(Environment.MVND_JVM_ARGS.getProperty(), "");
-        return derive(b -> b.put(Environment.MVND_JVM_ARGS,
-                org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
+        return derive(b ->
+                b.put(Environment.MVND_JVM_ARGS, org.isEmpty() ? opts : before ? opts + " " + org : org + " " + opts));
     }
 
     protected DaemonParameters derive(Consumer<PropertiesBuilder> customizer) {
@@ -400,9 +391,11 @@ public class DaemonParameters {
     }
 
     protected EnvValue value(Environment env) {
-        return new EnvValue(env, new ValueSource(
-                description -> description.append("value: ").append(env.getProperty()),
-                () -> properties.get(env.getProperty())));
+        return new EnvValue(
+                env,
+                new ValueSource(
+                        description -> description.append("value: ").append(env.getProperty()),
+                        () -> properties.get(env.getProperty())));
     }
 
     public static EnvValue systemProperty(Environment env) {
@@ -519,7 +512,6 @@ public class DaemonParameters {
         public String toString() {
             return descriptionFunction.apply(new StringBuilder()).toString();
         }
-
     }
 
     /**
@@ -548,7 +540,8 @@ public class DaemonParameters {
         private static ValueSource systemPropertySource(Environment env) {
             String property = env.getProperty();
             if (property == null) {
-                throw new IllegalStateException("Cannot use " + Environment.class.getName() + " for getting a system property");
+                throw new IllegalStateException(
+                        "Cannot use " + Environment.class.getName() + " for getting a system property");
             }
             return new ValueSource(
                     description -> description.append("system property ").append(property),
@@ -558,9 +551,8 @@ public class DaemonParameters {
         private static ValueSource environmentVariableSource(Environment env) {
             String envVar = env.getEnvironmentVariable();
             if (envVar == null) {
-                throw new IllegalStateException(
-                        "Cannot use " + Environment.class.getName() + "." + env.name()
-                                + " for getting an environment variable");
+                throw new IllegalStateException("Cannot use " + Environment.class.getName() + "." + env.name()
+                        + " for getting an environment variable");
             }
             return new ValueSource(
                     description -> description.append("environment variable ").append(envVar),
@@ -573,10 +565,16 @@ public class DaemonParameters {
 
         public EnvValue orLocalProperty(Function<Path, Properties> provider, Path localPropertiesPath) {
             if (localPropertiesPath != null) {
-                return new EnvValue(this, envKey, new ValueSource(
-                        description -> description.append("property ").append(envKey.getProperty()).append(" in ")
-                                .append(localPropertiesPath),
-                        () -> provider.apply(localPropertiesPath).getProperty(envKey.getProperty())));
+                return new EnvValue(
+                        this,
+                        envKey,
+                        new ValueSource(
+                                description -> description
+                                        .append("property ")
+                                        .append(envKey.getProperty())
+                                        .append(" in ")
+                                        .append(localPropertiesPath),
+                                () -> provider.apply(localPropertiesPath).getProperty(envKey.getProperty())));
             } else {
                 return this;
             }
@@ -595,7 +593,9 @@ public class DaemonParameters {
         }
 
         public EnvValue orDefault(Supplier<String> defaultSupplier) {
-            return new EnvValue(this, envKey,
+            return new EnvValue(
+                    this,
+                    envKey,
                     new ValueSource(sb -> sb.append("default: ").append(defaultSupplier.get()), defaultSupplier));
         }
 
@@ -609,7 +609,9 @@ public class DaemonParameters {
             EnvValue val = this;
             final StringBuilder sb = new StringBuilder("Could not get value for ")
                     .append(Environment.class.getSimpleName())
-                    .append(".").append(envKey.name()).append(" from any of the following sources: ");
+                    .append(".")
+                    .append(envKey.name())
+                    .append(" from any of the following sources: ");
 
             /*
              * Compose the description functions to invert the order thus getting the resolution order in the
@@ -640,9 +642,7 @@ public class DaemonParameters {
                         .append(envKey.name())
                         .append("] from ");
                 valueSource.descriptionFunction.apply(sb);
-                sb.append(": [")
-                        .append(result)
-                        .append(']');
+                sb.append(": [").append(result).append(']');
                 LOG.trace(sb.toString());
             }
             return result;
@@ -690,6 +690,5 @@ public class DaemonParameters {
                 throw couldNotgetValue();
             }
         }
-
     }
 }

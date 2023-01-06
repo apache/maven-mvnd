@@ -1,17 +1,20 @@
 /*
- * Copyright 2017 the original author or authors.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.mvndaemon.mvnd.builder;
 
@@ -47,11 +50,11 @@ class ReactorBuildStats {
      * structure prevented higher degree of parallelism.
      */
     private final Map<String, AtomicLong> bottleneckTimes;
+
     private long startTime;
     private long stopTime;
 
-    private ReactorBuildStats(Map<String, AtomicLong> serviceTimes,
-            Map<String, AtomicLong> bottleneckTimes) {
+    private ReactorBuildStats(Map<String, AtomicLong> serviceTimes, Map<String, AtomicLong> bottleneckTimes) {
         this.serviceTimes = ImmutableMap.copyOf(serviceTimes);
         this.bottleneckTimes = ImmutableMap.copyOf(bottleneckTimes);
     }
@@ -81,13 +84,13 @@ class ReactorBuildStats {
     public void recordServiceTime(MavenProject project, long durationNanos) {
         AtomicLong serviceTime = serviceTimes.get(projectGAV(project));
         if (serviceTime == null) {
-            throw new IllegalStateException("Unknown project " + projectGAV(project) + ", found " + serviceTimes.keySet());
+            throw new IllegalStateException(
+                    "Unknown project " + projectGAV(project) + ", found " + serviceTimes.keySet());
         }
         serviceTime.addAndGet(durationNanos);
     }
 
-    public void recordBottlenecks(Set<MavenProject> projects, int degreeOfConcurrency,
-            long durationNanos) {
+    public void recordBottlenecks(Set<MavenProject> projects, int degreeOfConcurrency, long durationNanos) {
         // only projects that result in single-threaded builds
         if (projects.size() == 1) {
             projects.forEach(p -> bottleneckTimes.get(projectGAV(p)).addAndGet(durationNanos));
@@ -99,7 +102,8 @@ class ReactorBuildStats {
     //
 
     public long totalServiceTime(TimeUnit unit) {
-        long nanos = serviceTimes.values().stream().mapToLong(AtomicLong::longValue).sum();
+        long nanos =
+                serviceTimes.values().stream().mapToLong(AtomicLong::longValue).sum();
         return unit.convert(nanos, TimeUnit.NANOSECONDS);
     }
 
@@ -124,8 +128,8 @@ class ReactorBuildStats {
             criticalPathServiceTime += serviceTimes.get(key).get();
             appendProjectTimes(result, key);
         }
-        result.append(String.format("\nBuild critical path total service time %s",
-                formatDuration(criticalPathServiceTime)));
+        result.append(
+                String.format("\nBuild critical path total service time %s", formatDuration(criticalPathServiceTime)));
 
         // render bottleneck projects
 
@@ -138,8 +142,7 @@ class ReactorBuildStats {
                 bottleneckTotalTime += bottleneckTimes.get(bottleneck).get();
                 appendProjectTimes(result, bottleneck);
             }
-            result.append(
-                    String.format("\nBuild bottlenecks total time %s", formatDuration(bottleneckTotalTime)));
+            result.append(String.format("\nBuild bottlenecks total time %s", formatDuration(bottleneckTotalTime)));
         }
 
         result.append("\n** Bottlenecks are projects that limit build concurrency");
@@ -192,5 +195,4 @@ class ReactorBuildStats {
     private <K> K getCriticalProject(Stream<K> projects, Comparator<K> comparator) {
         return projects.min(comparator).orElse(null);
     }
-
 }
