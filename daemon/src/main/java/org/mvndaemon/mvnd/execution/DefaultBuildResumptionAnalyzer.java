@@ -36,11 +36,13 @@ package org.mvndaemon.mvnd.execution;
  * specific language governing permissions and limitations
  * under the License.
  */
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.inject.Named;
-import javax.inject.Singleton;
+
 import org.apache.maven.execution.BuildFailure;
 import org.apache.maven.execution.BuildSuccess;
 import org.apache.maven.execution.MavenExecutionResult;

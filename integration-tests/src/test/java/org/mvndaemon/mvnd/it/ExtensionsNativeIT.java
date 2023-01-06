@@ -18,10 +18,10 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import javax.inject.Inject;
 
 import java.io.IOException;
-import javax.inject.Inject;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
@@ -30,6 +30,8 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.TestRegistry;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndNativeTest(projectDir = "src/test/projects/extensions")
 public class ExtensionsNativeIT {

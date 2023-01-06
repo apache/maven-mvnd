@@ -19,6 +19,7 @@
 package org.mvndaemon.mvnd.daemon;
 
 import java.util.function.Predicate;
+
 import org.mvndaemon.mvnd.common.Message;
 
 public interface Connection {

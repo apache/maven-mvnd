@@ -18,16 +18,17 @@
  */
 package org.mvndaemon.mvnd.builder;
 
-import static org.mvndaemon.mvnd.builder.ProjectComparator.id;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.mvndaemon.mvnd.builder.ProjectComparator.id;
 
 public class ProjectComparatorTest extends AbstractSmartBuilderTest {
 

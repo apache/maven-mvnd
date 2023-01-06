@@ -18,10 +18,10 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import javax.inject.Inject;
 
 import java.io.IOException;
-import javax.inject.Inject;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
@@ -32,6 +32,8 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.DaemonInfo;
 import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestRegistry;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 @MvndTest(projectDir = "src/test/projects/bootstrap-plugin")
 @DisabledOnOs(OS.WINDOWS)

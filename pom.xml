@@ -23,8 +23,8 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>38</version>
-    <relativePath/>
+    <version>39</version>
+    <relativePath />
   </parent>
 
   <groupId>org.apache.maven.daemon</groupId>

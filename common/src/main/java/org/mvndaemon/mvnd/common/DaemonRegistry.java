@@ -18,9 +18,6 @@
  */
 package org.mvndaemon.mvnd.common;
 
-import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
-import static org.mvndaemon.mvnd.common.DaemonState.Idle;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.nio.BufferOverflowException;
@@ -42,8 +39,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
+import static org.mvndaemon.mvnd.common.DaemonState.Idle;
 
 /**
  * Access to daemon registry files. Useful also for testing.

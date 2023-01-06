@@ -18,9 +18,6 @@
  */
 package org.mvndaemon.mvnd.builder;
 
-import static org.mvndaemon.mvnd.builder.ProjectComparator.id;
-
-import com.google.common.util.concurrent.Monitor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,10 +25,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+
+import com.google.common.util.concurrent.Monitor;
 import org.apache.maven.project.MavenProject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.builder.ProjectExecutorService.ProjectRunnable;
+
+import static org.mvndaemon.mvnd.builder.ProjectComparator.id;
 
 public class ProjectExecutorServiceTest extends AbstractSmartBuilderTest {
 

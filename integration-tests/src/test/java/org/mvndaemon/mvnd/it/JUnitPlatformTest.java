@@ -18,15 +18,16 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import javax.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.junit.MvndTest;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndTest(projectDir = "src/test/projects/junit-platform")
 public class JUnitPlatformTest {

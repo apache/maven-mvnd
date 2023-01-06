@@ -18,9 +18,6 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import static java.lang.Thread.sleep;
-import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -45,6 +42,7 @@ import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -61,6 +59,9 @@ import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.lang.Thread.sleep;
+import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
 
 /**
  * File origin:

@@ -19,6 +19,7 @@
 package org.mvndaemon.mvnd.it;
 
 import javax.inject.Inject;
+
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;

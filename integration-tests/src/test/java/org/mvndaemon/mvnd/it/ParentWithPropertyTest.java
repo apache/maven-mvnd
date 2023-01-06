@@ -18,8 +18,10 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import java.nio.file.Path;
 import javax.inject.Inject;
+
+import java.nio.file.Path;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;

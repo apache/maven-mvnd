@@ -18,6 +18,9 @@
  */
 package org.mvndaemon.mvnd.timing;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
@@ -27,8 +30,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import javax.inject.Named;
-import javax.inject.Singleton;
+
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.ExecutionEvent;

@@ -18,10 +18,6 @@
  */
 package org.apache.maven.cli;
 
-import static java.util.Comparator.comparing;
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
-
-import com.google.inject.AbstractModule;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -45,6 +41,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.inject.AbstractModule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
@@ -119,6 +117,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
+
+import static java.util.Comparator.comparing;
+import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
 
 /**
  * File origin:

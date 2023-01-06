@@ -18,16 +18,17 @@
  */
 package org.mvndaemon.mvnd.common;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SocketFamilyTest {
 

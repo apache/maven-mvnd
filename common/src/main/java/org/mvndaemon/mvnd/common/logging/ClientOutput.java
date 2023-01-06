@@ -20,6 +20,7 @@ package org.mvndaemon.mvnd.common.logging;
 
 import java.util.List;
 import java.util.function.Consumer;
+
 import org.mvndaemon.mvnd.common.Message;
 
 /**

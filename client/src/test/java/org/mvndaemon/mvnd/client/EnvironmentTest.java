@@ -18,8 +18,6 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,11 +25,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.client.DaemonParameters.EnvValue;
 import org.mvndaemon.mvnd.client.DaemonParameters.ValueSource;
 import org.mvndaemon.mvnd.common.Environment;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class EnvironmentTest {
 
