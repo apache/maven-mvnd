@@ -41,18 +41,17 @@ public class DistroIT {
     @Test
     void noDuplicateJars() {
         final Path mavenHome = Paths.get(System.getProperty("mvnd.home"));
-        Set<Avc> mavenLibs =
-                streamJars(mavenHome, "mvn/lib", "mvn/boot").collect(Collectors.toCollection(TreeSet::new));
+        Set<Avc> mavenLibs = streamJars(mavenHome, "lib", "boot").collect(Collectors.toCollection(TreeSet::new));
         Assertions.assertFalse(mavenLibs.isEmpty());
-        final List<Avc> mvndJars = streamJars(mavenHome, "mvn/lib/ext").collect(Collectors.toList());
+        final List<Avc> mvndJars = streamJars(mavenHome, "lib/ext", "lib/mvnd").collect(Collectors.toList());
         Assertions.assertFalse(mvndJars.isEmpty());
 
         final List<Avc> dups = mvndJars.stream()
                 .filter(avc -> mavenLibs.stream().anyMatch(mvnAvc -> mvnAvc.sameArtifactId(avc)))
                 .collect(Collectors.toList());
 
-        final String msg = mavenHome.resolve("mvn/lib/ext") + " contains duplicates available in "
-                + mavenHome.resolve("mvn/lib") + " or " + mavenHome.resolve("mvn/boot");
+        final String msg = mavenHome.resolve("lib/ext") + " contains duplicates available in "
+                + mavenHome.resolve("lib") + " or " + mavenHome.resolve("boot");
         Assertions.assertEquals(new ArrayList<Avc>(), dups, msg);
     }
 

@@ -328,7 +328,7 @@ public class DaemonConnector {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
-        try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("mvn/lib/ext"))) {
+        try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("lib/mvnd"))) {
             List<String> args = new ArrayList<>();
             // executable
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
@@ -347,10 +347,10 @@ public class DaemonConnector {
                 }
             }
             if (mvndCommonPath == null) {
-                throw new IllegalStateException("Could not find mvnd-common jar in mvn/lib/ext/");
+                throw new IllegalStateException("Could not find mvnd-common jar in lib/mvnd/");
             }
             if (mvndAgentPath == null) {
-                throw new IllegalStateException("Could not find mvnd-agent jar in mvn/lib/ext/");
+                throw new IllegalStateException("Could not find mvnd-agent jar in lib/mvnd/");
             }
             args.add("-classpath");
             args.add(mvndCommonPath + File.pathSeparator + mvndAgentPath);
@@ -408,8 +408,8 @@ public class DaemonConnector {
             }
 
             Environment.MVND_HOME.addSystemProperty(args, mvndHome.toString());
-            args.add("-Dmaven.home=" + mvndHome.resolve("mvn"));
-            args.add("-Dmaven.conf=" + mvndHome.resolve("mvn/conf"));
+            args.add("-Dmaven.home=" + mvndHome);
+            args.add("-Dmaven.conf=" + mvndHome.resolve("conf"));
 
             Environment.MVND_JAVA_HOME.addSystemProperty(
                     args, parameters.javaHome().toString());

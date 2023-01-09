@@ -169,7 +169,7 @@ set CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
   %MAVEN_OPTS% ^
   %MAVEN_DEBUG_OPTS% ^
   -classpath %CLASSWORLDS_JAR% ^
-  "-Dclassworlds.conf=%MVND_HOME%\bin\m2.conf"
+  "-Dclassworlds.conf=%MVND_HOME%\bin\mvnd.conf"
   "-Dmvnd.home=%MVND_HOME%" ^
   "-Dmaven.multiModuleProjectDirectory=%MAVEN_PROJECTBASEDIR%" ^
   %CLASSWORLDS_LAUNCHER% %MAVEN_CMD_LINE_ARGS%

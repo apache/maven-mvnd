@@ -122,8 +122,8 @@ public class DaemonParameters {
         if (Environment.isNative() && cmd.isPresent()) {
             final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
             if (mvndH != null) {
-                final Path mvndDaemonLib = mvndH.resolve("mvn/lib/ext/mvnd-daemon-"
-                        + BuildProperties.getInstance().getVersion() + ".jar");
+                final Path mvndDaemonLib = mvndH.resolve(
+                        "lib/mvnd/mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
                 if (Files.exists(mvndDaemonLib)) {
                     return mvndH.toString();
                 }
@@ -238,7 +238,7 @@ public class DaemonParameters {
 
     public Path logbackConfigurationPath() {
         return property(Environment.MVND_LOGBACK)
-                .orDefault(() -> mvndHome().resolve("conf/logback.xml").toString())
+                .orDefault(() -> mvndHome().resolve("conf/logback-mvnd.xml").toString())
                 .orFail()
                 .asPath();
     }

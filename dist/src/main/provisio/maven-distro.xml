@@ -17,71 +17,29 @@
 -->
 <assembly>
 
-    <artifactSet to="/mvn">
+    <artifactSet to="/">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
             <unpack useRoot="false"
-                    excludes="conf/logging/*,lib/maven-slf4j-provider*,bin/mvn*,lib/jansi-*.jar,lib/jansi-native/*,lib/plexus-utils-3.*"/>
+                    excludes="conf/logging/*,lib/maven-slf4j-provider*,lib/plexus-utils-3.*" />
         </artifact>
     </artifactSet>
 
-    <artifactSet to="/mvn/lib">
-        <exclusion id="javax.annotation:javax.annotation-api"/>
-        <exclusion id="org.codehaus.plexus:plexus-utils"/>
-        <artifact id="org.apache.maven.resolver:maven-resolver-api"/>
-        <artifact id="org.apache.maven.resolver:maven-resolver-impl"/>
-        <artifact id="org.apache.maven.resolver:maven-resolver-spi"/>
-        <artifact id="org.apache.maven.resolver:maven-resolver-util"/>
-        <artifact id="org.apache.maven.resolver:maven-resolver-connector-basic"/>
-        <artifact id="org.apache.maven.resolver:maven-resolver-transport-wagon"/>
-    </artifactSet>
-
-    <artifactSet to="/mvn/lib/ext">
-        <exclusion id="org.slf4j:slf4j-api"/>
+    <artifactSet to="/lib/mvnd">
         <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
-            <exclusion id="org.codehaus.plexus:plexus-classworlds"/>
-            <exclusion id="org.codehaus.plexus:plexus-utils"/>
-            <exclusion id="*:cdi-api"/>
-            <exclusion id="*:commons-cli"/>
-            <exclusion id="*:commons-io"/>
-            <exclusion id="*:commons-lang3"/>
-            <exclusion id="*:guava"/>
-            <exclusion id="*:guice"/>
-            <exclusion id="*:javax.inject"/>
-            <exclusion id="*:jcl-over-slf4j"/>
-            <exclusion id="*:jul-to-slf4j"/>
-            <exclusion id="*:jsr250-api"/>
-            <exclusion id="*:log4j-over-slf4j"/>
-            <exclusion id="*:maven-artifact"/>
-            <exclusion id="*:maven-builder-support"/>
-            <exclusion id="*:maven-core"/>
-            <exclusion id="*:maven-embedder"/>
-            <exclusion id="*:maven-model"/>
-            <exclusion id="*:maven-model-builder"/>
-            <exclusion id="*:maven-plugin-api"/>
-            <exclusion id="*:maven-repository-metadata"/>
-            <exclusion id="*:maven-resolver-api"/>
-            <exclusion id="*:maven-resolver-impl"/>
-            <exclusion id="*:maven-resolver-provider"/>
-            <exclusion id="*:maven-resolver-spi"/>
-            <exclusion id="*:maven-resolver-util"/>
-            <exclusion id="*:maven-settings"/>
-            <exclusion id="*:maven-settings-builder"/>
-            <exclusion id="*:maven-shared-utils"/>
-            <exclusion id="*:org.eclipse.sisu.inject"/>
-            <exclusion id="*:org.eclipse.sisu.plexus"/>
-            <exclusion id="*:plexus-cipher"/>
-            <exclusion id="*:plexus-component-annotations"/>
-            <exclusion id="*:plexus-interpolation"/>
-            <exclusion id="*:plexus-sec-dispatcher"/>
-            <exclusion id="*:plexus-utils"/>
-            <exclusion id="*:plexus-container-default"/>
-            <exclusion id="*:slf4j-api"/>
+            <exclusion id="*:*"/>
         </artifact>
         <artifact id="org.apache.maven.daemon:mvnd-client:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-common:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
         <artifact id="org.apache.maven.daemon:mvnd-agent:${project.version}"/>
         <artifact id="org.apache.maven.daemon:mvnd-helper-agent:${project.version}"/>
+        <artifact id="org.apache.maven.daemon:mvnd-native:${project.version}"/>
+        <artifact id="ch.qos.logback:logback-classic">
+            <exclusion id="org.slf4j:slf4j-api"/>
+        </artifact>
     </artifactSet>
 
     <fileSet to="/">
