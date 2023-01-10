@@ -18,8 +18,6 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -42,6 +40,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.internal.CLibrary;
 import org.jline.utils.AttributedString;
@@ -60,6 +59,8 @@ import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.mvndaemon.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
 public class DefaultClient implements Client {
 
