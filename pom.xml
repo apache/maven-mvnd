@@ -323,6 +323,22 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>com.diffplug.spotless</groupId>
+          <artifactId>spotless-maven-plugin</artifactId>
+          <configuration>
+            <java>
+              <includes>
+                <include>src/main/java/**/*.java</include>
+                <include>src/main/java-fallback/**/*.java</include>
+                <include>src/main/java-mvnd/**/*.java</include>
+                <include>src/main/java11/**/*.java</include>
+                <include>src/main/java16/**/*.java</include>
+                <include>src/test/java/**/*.java</include>
+              </includes>
+            </java>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>

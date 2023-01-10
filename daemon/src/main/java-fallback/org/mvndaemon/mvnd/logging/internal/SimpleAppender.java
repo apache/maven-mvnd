@@ -18,14 +18,14 @@
  */
 package org.mvndaemon.mvnd.logging.internal;
 
-import static org.apache.maven.shared.utils.logging.MessageUtils.level;
-
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.CoreConstants;
+
+import static org.apache.maven.shared.utils.logging.MessageUtils.level;
 
 /**
  * This appender acts like the slf4j simple logger.
