@@ -94,7 +94,7 @@ fi
 
 # force execute native image
 if [ "${MVND_ENTRY_FALLBACK:-true}" = false ]; then
-  exec -- "$(echo "$MVND_HOME"/bin/mvnd-native-*)" "$@"
+  exec "$(echo "$MVND_HOME"/bin/mvnd-native-*)" "$@"
 fi
 
 case "$(uname -a)" in
@@ -118,7 +118,7 @@ if [ -x "$MVND_CMD" ]; then
     (''|*"not found"*) is_native=false ;;
     esac
   fi
-  ! $is_native || exec -- "$MVND_CMD" "$@"
+  ! $is_native || exec "$MVND_CMD" "$@"
 fi
 
 # fallback to pure java version
