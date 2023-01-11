@@ -25,9 +25,11 @@
 #   JAVA_HOME       Must point at your Java Development Kit installation.
 #   MAVEN_OPTS      (Optional) Java runtime options used when Maven is executed.
 #   MAVEN_SKIP_RC   (Optional) Flag to disable loading of mavenrc files.
-#   MVND_ENTRY_FALLBACK (Optional) Flag to disable fallback to pure java mvnd,
-#                       default 'true' enable the fallback,
-#                       set to 'false' to force execute the native mvnd.
+#   MVND_CLIENT     (Optional) Control how to select mvnd client to communicate with the daemon:
+#                      'auto' (default) - prefer the native client mvnd if it works; otherwise use
+#                                         the pure Java client.
+#                      'native' - use the native client mvnd.exe
+#                      'jvm' - use the pure Java client
 # -----------------------------------------------------------------------------
 
 if [ -z "$MAVEN_SKIP_RC" ] ; then
@@ -92,32 +94,32 @@ if $mingw ; then
   # TODO classpath?
 fi
 
-# force execute native image
-if [ "${MVND_ENTRY_FALLBACK:-true}" = false ]; then
+if [ "${MVND_CLIENT:=auto}" = native ]; then
+  # force execute native image
   exec "$MVND_HOME/bin/mvnd${native_ext:-}" "$@"
-fi
+elif [ "$MVND_CLIENT" = auto ]; then
+  # try native image
+  case "$(uname -a)" in
+  (CYGWIN*|MINGW*) os=windows arch="${PROCESSOR_ARCHITEW6432:-"${PROCESSOR_ARCHITECTURE:-"$(uname -m)"}"}" ;;
+  (Darwin*x86_64) os=darwin arch=amd64 ;;
+  (Darwin*arm64) os=darwin arch=aarch64 ;;
+  (Linux*) os=linux arch=$(uname -m) ;;
+  (*) os=$(uname) arch=$(uname -m) ;;
+  esac
+  [ "${arch-}" != x86_64 ] || arch=amd64
+  [ "${arch-}" != AMD64 ] || arch=amd64
+  [ "${arch-}" != arm64 ] || arch=aarch64
 
-case "$(uname -a)" in
-(CYGWIN*|MINGW*) os=windows arch="${PROCESSOR_ARCHITEW6432:-"${PROCESSOR_ARCHITECTURE:-"$(uname -m)"}"}" ;;
-(Darwin*x86_64) os=darwin arch=amd64 ;;
-(Darwin*arm64) os=darwin arch=aarch64 ;;
-(Linux*) os=linux arch=$(uname -m) ;;
-(*) os=$(uname) arch=$(uname -m) ;;
-esac
-[ "${arch-}" != x86_64 ] || arch=amd64
-[ "${arch-}" != AMD64 ] || arch=amd64
-[ "${arch-}" != arm64 ] || arch=aarch64
-
-# try native image
-MVND_CMD="$MVND_HOME/bin/mvnd${native_ext:-}"
-if [ -e "$MVND_HOME/bin/platform-$os-$arch" ] && [ -x "$MVND_CMD" ]; then
-  is_native=true
-  if [ "$os" = linux ]; then
-    case "$(ldd "$MVND_CMD" 2>&1)" in
-    (''|*"not found"*) is_native=false ;;
-    esac
+  MVND_CMD="$MVND_HOME/bin/mvnd${native_ext:-}"
+  if [ -e "$MVND_HOME/bin/platform-$os-$arch" ] && [ -x "$MVND_CMD" ]; then
+    is_native=true
+    if [ "$os" = linux ]; then
+      case "$(ldd "$MVND_CMD" 2>&1)" in
+      (''|*"not found"*) is_native=false ;;
+      esac
+    fi
+    ! $is_native || exec "$MVND_CMD" "$@"
   fi
-  ! $is_native || exec "$MVND_CMD" "$@"
 fi
 
 # fallback to pure java version
