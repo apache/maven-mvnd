@@ -94,9 +94,10 @@
     </fileSet>
     <fileSet to="/bin">
         <directory path="${basedir}/../client/target">
-            <include>mvnd-native-${os.detected.name}-${os.detected.arch}</include>
-            <include>mvnd-native-${os.detected.name}-${os.detected.arch}.exe</include>
+            <include>mvnd</include>
+            <include>mvnd.exe</include>
         </directory>
+        <file touch="platform-${os.detected.name}-${os.detected.arch}"/>
     </fileSet>
 
     <archive name="maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}.zip"

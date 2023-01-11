@@ -130,7 +130,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                             System.getProperty("os.name")
                                             .toLowerCase(Locale.ROOT)
                                             .startsWith("windows")
-                                    ? "bin/mvnd.cmd"
+                                    ? "bin/mvnd.exe"
                                     : "bin/mvnd")
                     .toAbsolutePath()
                     .normalize();

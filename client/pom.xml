@@ -209,7 +209,7 @@
             <configuration>
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
-              <imageName>mvnd-native-${os.detected.name}-${os.detected.arch}</imageName>
+              <imageName>mvnd</imageName>
               <buildArgs>--no-server
                          --no-fallback
                          --allow-incomplete-classpath
@@ -225,7 +225,7 @@
             <executions>
               <execution>
                 <goals>
-                  <goal>build</goal>
+                  <goal>compile-no-fork</goal>
                 </goals>
                 <phase>package</phase>
               </execution>

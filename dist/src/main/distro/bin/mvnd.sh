@@ -46,8 +46,8 @@ fi
 cygwin=false;
 mingw=false;
 case "`uname`" in
-  CYGWIN*) cygwin=true;;
-  MINGW*) mingw=true;;
+  CYGWIN*) cygwin=true native_ext=.exe ;;
+  MINGW*) mingw=true native_ext=.exe ;;
 esac
 
 ## resolve links - $0 may be a link to Maven's home
@@ -94,7 +94,7 @@ fi
 
 # force execute native image
 if [ "${MVND_ENTRY_FALLBACK:-true}" = false ]; then
-  exec "$(echo "$MVND_HOME"/bin/mvnd-native-*)" "$@"
+  exec "$MVND_HOME/bin/mvnd${native_ext:-}" "$@"
 fi
 
 case "$(uname -a)" in
@@ -109,9 +109,8 @@ esac
 [ "${arch-}" != arm64 ] || arch=aarch64
 
 # try native image
-MVND_CMD="$MVND_HOME/bin/mvnd-native-$os-$arch"
-[ "${os-}" != windows ] || MVND_CMD="$MVND_CMD.exe"
-if [ -x "$MVND_CMD" ]; then
+MVND_CMD="$MVND_HOME/bin/mvnd${native_ext:-}"
+if [ -e "$MVND_HOME/bin/platform-$os-$arch" ] && [ -x "$MVND_CMD" ]; then
   is_native=true
   if [ "$os" = linux ]; then
     case "$(ldd "$MVND_CMD" 2>&1)" in

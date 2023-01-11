@@ -47,11 +47,12 @@ if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd" %*
 set ERROR_CODE=0
 
 @REM try execute native image
-if not "%PROCESSOR_ARCHITEW6432%"=="" (
-  set "MVND_CMD=%~dp0\mvnd-native-windows-%PROCESSOR_ARCHITEW6432:x64=amd64%.exe"
+if "%PROCESSOR_ARCHITEW6432%"=="" (
+  if not exist "%~dp0\platform-windows-%PROCESSOR_ARCHITECTURE%" goto noNativeImage
 ) else (
-  set "MVND_CMD=%~dp0\mvnd-native-windows-%PROCESSOR_ARCHITECTURE:x64=amd64%.exe"
+  if not exist "%~dp0\platform-windows-%PROCESSOR_ARCHITEW6432%" goto noNativeImage
 )
+set "MVND_CMD=%~dp0\mvnd.exe"
 if not exist "%MVND_CMD%" goto noNativeImage
 "%MVND_CMD%" %*
 if ERRORLEVEL 1 goto error
