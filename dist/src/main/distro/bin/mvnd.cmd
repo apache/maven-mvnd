@@ -26,8 +26,9 @@
 @REM   MAVEN_OPTS        (Optional) Java runtime options used when Maven is executed.
 @REM   MAVEN_SKIP_RC     (Optional) Flag to disable loading of mavenrc files.
 @REM   MVND_CLIENT       (Optional) Control how to select mvnd client to communicate with the daemon:
-@REM                        'auto' (default) - prefer the native client mvnd if it works; otherwise use
-@REM                                           the pure Java client.
+@REM                        'auto' (default) - prefer the native client mvnd.exe if it suits the current
+@REM                                           OS and processor architecture; otherwise use the pure
+@REM                                           Java client.
 @REM                        'native' - use the native client mvnd.exe
 @REM                        'jvm' - use the pure Java client
 @REM -----------------------------------------------------------------------------
