@@ -346,9 +346,14 @@
               <exclude>**/*.png</exclude>
               <exclude>**/*.json</exclude>
               <exclude>**/.mvn/*</exclude>
+              <exclude>.cache/**</exclude>
               <exclude>.mvn/**/*</exclude>
               <exclude>*.adoc</exclude>
               <exclude>*.md</exclude>
+              <exclude>src/test/projects/**/.classpath</exclude>
+              <exclude>src/test/projects/**/.project</exclude>
+              <exclude>src/test/projects/**/.settings/**</exclude>
+              <exclude>src/test/projects/**/target/**</exclude>
             </excludes>
           </configuration>
         </plugin>
