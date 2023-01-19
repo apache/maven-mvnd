@@ -26,8 +26,8 @@ import java.util.Map;
 
 import org.eclipse.aether.impl.RepositorySystemLifecycle;
 import org.eclipse.aether.internal.impl.synccontext.named.NameMapper;
+import org.eclipse.aether.internal.impl.synccontext.named.NameMappers;
 import org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactoryAdapterFactoryImpl;
-import org.eclipse.aether.internal.impl.synccontext.named.providers.FileGAVNameMapperProvider;
 import org.eclipse.aether.named.NamedLockFactory;
 import org.eclipse.aether.named.providers.FileLockNamedLockFactory;
 import org.eclipse.sisu.Priority;
@@ -45,6 +45,6 @@ public final class DaemonNamedLockFactoryAdapterFactoryImpl extends NamedLockFac
             final Map<String, NamedLockFactory> factories,
             final Map<String, NameMapper> nameMappers,
             final RepositorySystemLifecycle lifecycle) {
-        super(factories, FileLockNamedLockFactory.NAME, nameMappers, FileGAVNameMapperProvider.NAME, lifecycle);
+        super(factories, FileLockNamedLockFactory.NAME, nameMappers, NameMappers.FILE_GAV_NAME, lifecycle);
     }
 }

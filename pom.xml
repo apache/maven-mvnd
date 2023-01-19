@@ -84,9 +84,9 @@
     <jline.version>3.22.0</jline.version>
     <junit.jupiter.version>5.9.2</junit.jupiter.version>
     <logback.version>1.2.11</logback.version>
-    <maven.version>4.0.0-alpha-3</maven.version>
+    <maven.version>4.0.0-alpha-4</maven.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.2</maven.resolver.version>
+    <maven.resolver.version>1.9.4</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.9.0.M1</sisu.version>
 
