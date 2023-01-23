@@ -31,7 +31,7 @@ public class MavenDaemon {
         final Path mvndHome = Environment.MVND_HOME.asPath();
         URL[] classpath = Stream.concat(
                         /* jars */
-                        Stream.of("lib/mvnd", "lib/ext", "lib", "boot")
+                        Stream.of("lib/ext", "lib", "boot")
                                 .map(mvndHome::resolve)
                                 .flatMap((Path p) -> {
                                     try {

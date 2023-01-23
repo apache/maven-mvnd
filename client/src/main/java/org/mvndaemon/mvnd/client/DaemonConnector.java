@@ -328,7 +328,7 @@ public class DaemonConnector {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
-        try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("lib/mvnd"))) {
+        try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("lib"))) {
             List<String> args = new ArrayList<>();
             // executable
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
@@ -347,10 +347,10 @@ public class DaemonConnector {
                 }
             }
             if (mvndCommonPath == null) {
-                throw new IllegalStateException("Could not find mvnd-common jar in lib/mvnd/");
+                throw new IllegalStateException("Could not find mvnd-common jar in lib/");
             }
             if (mvndAgentPath == null) {
-                throw new IllegalStateException("Could not find mvnd-agent jar in lib/mvnd/");
+                throw new IllegalStateException("Could not find mvnd-agent jar in lib/");
             }
             args.add("-classpath");
             args.add(mvndCommonPath + File.pathSeparator + mvndAgentPath);

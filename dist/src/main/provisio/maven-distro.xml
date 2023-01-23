@@ -24,7 +24,16 @@
         </artifact>
     </artifactSet>
 
-    <artifactSet to="/lib/mvnd">
+    <artifactSet to="/lib">
+        <artifact id="ch.qos.logback:logback-classic">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="ch.qos.logback:logback-core">
+            <exclusion id="*:*"/>
+        </artifact>
+    </artifactSet>
+
+    <artifactSet to="/lib">
         <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
@@ -34,11 +43,26 @@
         <artifact id="org.apache.maven.daemon:mvnd-common:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
-        <artifact id="org.apache.maven.daemon:mvnd-agent:${project.version}"/>
-        <artifact id="org.apache.maven.daemon:mvnd-helper-agent:${project.version}"/>
-        <artifact id="org.apache.maven.daemon:mvnd-native:${project.version}"/>
+        <artifact id="org.apache.maven.daemon:mvnd-agent:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-helper-agent:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-native:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
         <artifact id="ch.qos.logback:logback-classic">
-            <exclusion id="org.slf4j:slf4j-api"/>
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.codehaus.plexus:plexus-interactivity-api">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.jline:jline-terminal">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.jline:jline-terminal-jansi">
+            <exclusion id="*:*"/>
         </artifact>
     </artifactSet>
 
