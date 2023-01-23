@@ -69,10 +69,6 @@ import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
  */
 public class DaemonConnector {
 
-    public static final int DEFAULT_CONNECT_TIMEOUT = 30000;
-    public static final int CANCELED_WAIT_TIMEOUT = 3000;
-    private static final int CONNECT_TIMEOUT = 10000;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnector.class);
 
     private final DaemonRegistry registry;
@@ -164,6 +160,7 @@ public class DaemonConnector {
         });
         serverThread.start();
         long start = System.currentTimeMillis();
+        long stop = start + parameters.property(Environment.MVND_CONNECT_TIMEOUT).asDuration().toMillis();
         do {
             DaemonClientConnection daemonConnection = connectToDaemonWithId(daemon, true);
             if (daemonConnection != null) {
@@ -174,7 +171,7 @@ public class DaemonConnector {
             } catch (InterruptedException e) {
                 throw new DaemonException.InterruptedException(e);
             }
-        } while (serverThread.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
+        } while (serverThread.isAlive() && System.currentTimeMillis() < stop);
         throw new RuntimeException("Unable to connect to internal daemon", throwable.get());
     }
 
@@ -261,7 +258,8 @@ public class DaemonConnector {
         if (!compatibleCanceledDaemons.isEmpty()) {
             LOGGER.debug("Waiting for daemons with canceled builds to become available");
             long start = System.currentTimeMillis();
-            while (connection == null && System.currentTimeMillis() - start < CANCELED_WAIT_TIMEOUT) {
+            long stop = start + parameters.property(Environment.MVND_CANCEL_CONNECT_TIMEOUT).asDuration().toMillis();
+            while (connection == null && System.currentTimeMillis() < stop) {
                 try {
                     sleep(200);
                     connection = connectToIdleDaemon(registry.getIdle(), constraint);
@@ -304,6 +302,7 @@ public class DaemonConnector {
         final Process process = startDaemonProcess(daemonId, output);
         LOGGER.debug("Started Maven daemon {}", daemonId);
         long start = System.currentTimeMillis();
+        long stop = start + parameters.property(Environment.MVND_CONNECT_TIMEOUT).asDuration().toMillis();
         do {
             DaemonClientConnection daemonConnection = connectToDaemonWithId(daemonId, true);
             if (daemonConnection != null) {
@@ -314,7 +313,7 @@ public class DaemonConnector {
             } catch (InterruptedException e) {
                 throw new DaemonException.InterruptedException(e);
             }
-        } while (process.isAlive() && System.currentTimeMillis() - start < DEFAULT_CONNECT_TIMEOUT);
+        } while (process.isAlive() && System.currentTimeMillis() < stop);
         DaemonDiagnostics diag = new DaemonDiagnostics(daemonId, parameters);
         throw new DaemonException.ConnectException(
                 "Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
@@ -547,7 +546,7 @@ public class DaemonConnector {
             boolean connected = socketChannel.connect(address);
             if (!connected) {
                 long t0 = System.nanoTime();
-                long t1 = t0 + TimeUnit.MICROSECONDS.toNanos(CONNECT_TIMEOUT);
+                long t1 = t0 + parameters.property(Environment.MVND_SOCKET_CONNECT_TIMEOUT).asDuration().toMillis();
                 while (!connected && t0 < t1) {
                     Thread.sleep(10);
                     connected = socketChannel.finishConnect();
