@@ -545,13 +545,13 @@ public class DaemonConnector {
             socketChannel.configureBlocking(false);
             boolean connected = socketChannel.connect(address);
             if (!connected) {
-                long t0 = System.nanoTime();
+                long t0 = System.currentTimeMillis();
                 long t1 = t0 + parameters.property(Environment.MVND_SOCKET_CONNECT_TIMEOUT).asDuration().toMillis();
                 while (!connected && t0 < t1) {
                     Thread.sleep(10);
                     connected = socketChannel.finishConnect();
                     if (!connected) {
-                        t0 = System.nanoTime();
+                        t0 = System.currentTimeMillis();
                     }
                 }
                 if (!connected) {
