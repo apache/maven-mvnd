@@ -160,7 +160,11 @@ public class DaemonConnector {
         });
         serverThread.start();
         long start = System.currentTimeMillis();
-        long stop = start + parameters.property(Environment.MVND_CONNECT_TIMEOUT).asDuration().toMillis();
+        long stop = start
+                + parameters
+                        .property(Environment.MVND_CONNECT_TIMEOUT)
+                        .asDuration()
+                        .toMillis();
         do {
             DaemonClientConnection daemonConnection = connectToDaemonWithId(daemon, true);
             if (daemonConnection != null) {
@@ -258,7 +262,11 @@ public class DaemonConnector {
         if (!compatibleCanceledDaemons.isEmpty()) {
             LOGGER.debug("Waiting for daemons with canceled builds to become available");
             long start = System.currentTimeMillis();
-            long stop = start + parameters.property(Environment.MVND_CANCEL_CONNECT_TIMEOUT).asDuration().toMillis();
+            long stop = start
+                    + parameters
+                            .property(Environment.MVND_CANCEL_CONNECT_TIMEOUT)
+                            .asDuration()
+                            .toMillis();
             while (connection == null && System.currentTimeMillis() < stop) {
                 try {
                     sleep(200);
@@ -302,7 +310,11 @@ public class DaemonConnector {
         final Process process = startDaemonProcess(daemonId, output);
         LOGGER.debug("Started Maven daemon {}", daemonId);
         long start = System.currentTimeMillis();
-        long stop = start + parameters.property(Environment.MVND_CONNECT_TIMEOUT).asDuration().toMillis();
+        long stop = start
+                + parameters
+                        .property(Environment.MVND_CONNECT_TIMEOUT)
+                        .asDuration()
+                        .toMillis();
         do {
             DaemonClientConnection daemonConnection = connectToDaemonWithId(daemonId, true);
             if (daemonConnection != null) {
@@ -546,7 +558,11 @@ public class DaemonConnector {
             boolean connected = socketChannel.connect(address);
             if (!connected) {
                 long t0 = System.currentTimeMillis();
-                long t1 = t0 + parameters.property(Environment.MVND_SOCKET_CONNECT_TIMEOUT).asDuration().toMillis();
+                long t1 = t0
+                        + parameters
+                                .property(Environment.MVND_SOCKET_CONNECT_TIMEOUT)
+                                .asDuration()
+                                .toMillis();
                 while (!connected && t0 < t1) {
                     Thread.sleep(10);
                     connected = socketChannel.finishConnect();
