@@ -232,16 +232,15 @@ public class DefaultClient implements Client {
         if (version || showVersion || debug) {
             // Print mvnd version
             BuildProperties buildProperties = BuildProperties.getInstance();
-            final String mvndVersionString = "mvnd " + buildProperties.getVersion() + " "
+            final String mvndVersionString = "Apache Maven Daemon (mvnd) " + buildProperties.getVersion() + " "
                     + (Environment.isNative()
                             ? buildProperties.getOsName() + "-" + buildProperties.getOsArch() + " native client"
                             : "JVM client")
                     + " (" + buildProperties.getRevision() + ")";
 
             boolean isColored = !"never".equals(Environment.MAVEN_COLOR.getCommandLineOption(args));
-            final String v = isColored
-                    ? mvndVersionString
-                    : Ansi.ansi().bold().a(mvndVersionString).reset().toString();
+            final String v =
+                    isColored ? Ansi.ansi().bold().a(mvndVersionString).reset().toString() : mvndVersionString;
             output.accept(Message.log(v));
             // Print terminal information
             output.describeTerminal();
