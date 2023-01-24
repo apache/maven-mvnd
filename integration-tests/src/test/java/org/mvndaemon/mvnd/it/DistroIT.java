@@ -21,10 +21,8 @@ package org.mvndaemon.mvnd.it;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,11 +43,9 @@ public class DistroIT {
         String property = System.getProperty("mvnd.home");
         assertNotNull(property, "mvnd.home must be defined");
         final Path mavenHome = Paths.get(property);
-        List<List<Avc>> duplicateJars = streamJars(mavenHome)
-                .stream()
-                .collect(Collectors.groupingBy(Avc::getArtifactId))
-                .values()
-                .stream()
+        List<Avc> avcs = listJars(mavenHome);
+        Map<String, List<Avc>> avcsByArtifactId = avcs.stream().collect(Collectors.groupingBy(Avc::getArtifactId));
+        List<List<Avc>> duplicateJars = avcsByArtifactId.values().stream()
                 .filter(list -> list.size() > 1)
                 .collect(Collectors.toList());
 
@@ -69,10 +65,9 @@ public class DistroIT {
         Assertions.assertEquals(classifier, avc.classifier, "classifier in " + jarName);
     }
 
-    private static List<Avc> streamJars(Path mavenHome) {
+    private static List<Avc> listJars(Path mavenHome) {
         try (Stream<Path> stream = Files.walk(mavenHome)) {
-            return stream
-                    .filter(p -> p.getFileName().toString().endsWith(".jar"))
+            return stream.filter(p -> p.getFileName().toString().endsWith(".jar"))
                     .filter(Files::isRegularFile)
                     .map(Path::getFileName)
                     .map(Path::toString)
