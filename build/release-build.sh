@@ -19,6 +19,7 @@
 set -e
 export VERSION=$1
 export NEXT_VERSION=$2
+export BRANCH=0.9.x
 
 if [ "${VERSION}x" = "x" ] || [ "${NEXT_VERSION}x" = "x" ]
 then
@@ -42,9 +43,9 @@ startup_check()
       local branch
       branch=${branch_ref##refs/heads/}
 
-      if [ "$branch" != "master" ]
+      if [ "$branch" != "$BRANCH" ]
       then
-        echo "Not working on the master - cannot proceed"
+        echo "Not working on the $BRANCH - cannot proceed"
         exit 1
       fi
 
@@ -68,7 +69,7 @@ startup_check()
       fi
 
       if [[ $unpull -gt 0 ]]; then
-        echo "There are changes which have not been pulled - cannot proceed. The following commits have been added to master since your last pull:"
+        echo "There are changes which have not been pulled - cannot proceed. The following commits have been added to $BRANCH since your last pull:"
         local unpulled
         unpulled=$(git rev-list $branch..$branch_origin)
         for commit in $unpulled; do
@@ -138,4 +139,4 @@ mvn versions:set -DnewVersion=$NEXT_VERSION
 # commit
 git add -A
 git commit -m "Next is $NEXT_VERSION"
-git push origin master
+git push origin $BRANCH
