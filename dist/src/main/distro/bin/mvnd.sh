@@ -101,7 +101,7 @@ if [ ! -x "$JAVACMD" ] ; then
   exit 1
 fi
 
-CLASSWORLDS_JAR=`echo "${MVND_HOME}"/mvn/boot/plexus-classworlds-*.jar`
+CLASSWORLDS_JAR=`echo "${MVND_HOME}"/boot/plexus-classworlds-*.jar`
 CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
 
 # For Cygwin, switch paths to Windows format before running java
@@ -184,7 +184,7 @@ exec "$JAVACMD" \
   $MAVEN_OPTS \
   $MAVEN_DEBUG_OPTS \
   -classpath "${CLASSWORLDS_JAR}" \
-  "-Dclassworlds.conf=${MVND_HOME}/bin/m2.conf" \
+  "-Dclassworlds.conf=${MVND_HOME}/bin/mvnd.conf" \
   "-Dmvnd.home=${MVND_HOME}" \
   "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
   ${CLASSWORLDS_LAUNCHER} "$@"

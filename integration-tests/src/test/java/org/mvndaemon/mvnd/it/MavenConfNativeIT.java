@@ -52,7 +52,7 @@ public class MavenConfNativeIT {
                         "-DforceStdout",
                         "--raw-streams")
                 .assertSuccess();
-        String conf = parameters.mvndHome().resolve("mvn/conf").toString();
+        String conf = parameters.mvndHome().resolve("conf").toString();
         assertTrue(
                 o.getMessages().stream().anyMatch(m -> m.toString().contains(conf)), "Output should contain " + conf);
     }

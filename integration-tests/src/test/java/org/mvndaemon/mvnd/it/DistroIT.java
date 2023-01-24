@@ -21,10 +21,8 @@ package org.mvndaemon.mvnd.it;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -33,6 +31,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class DistroIT {
 
     /**
@@ -40,20 +40,16 @@ public class DistroIT {
      */
     @Test
     void noDuplicateJars() {
-        final Path mavenHome = Paths.get(System.getProperty("mvnd.home"));
-        Set<Avc> mavenLibs =
-                streamJars(mavenHome, "mvn/lib", "mvn/boot").collect(Collectors.toCollection(TreeSet::new));
-        Assertions.assertFalse(mavenLibs.isEmpty());
-        final List<Avc> mvndJars = streamJars(mavenHome, "mvn/lib/ext").collect(Collectors.toList());
-        Assertions.assertFalse(mvndJars.isEmpty());
-
-        final List<Avc> dups = mvndJars.stream()
-                .filter(avc -> mavenLibs.stream().anyMatch(mvnAvc -> mvnAvc.sameArtifactId(avc)))
+        String property = System.getProperty("mvnd.home");
+        assertNotNull(property, "mvnd.home must be defined");
+        final Path mavenHome = Paths.get(property);
+        List<Avc> avcs = listJars(mavenHome);
+        Map<String, List<Avc>> avcsByArtifactId = avcs.stream().collect(Collectors.groupingBy(Avc::getArtifactId));
+        List<List<Avc>> duplicateJars = avcsByArtifactId.values().stream()
+                .filter(list -> list.size() > 1)
                 .collect(Collectors.toList());
 
-        final String msg = mavenHome.resolve("mvn/lib/ext") + " contains duplicates available in "
-                + mavenHome.resolve("mvn/lib") + " or " + mavenHome.resolve("mvn/boot");
-        Assertions.assertEquals(new ArrayList<Avc>(), dups, msg);
+        Assertions.assertTrue(duplicateJars.isEmpty(), mavenHome + " contains duplicates jars" + duplicateJars);
     }
 
     @Test
@@ -69,21 +65,17 @@ public class DistroIT {
         Assertions.assertEquals(classifier, avc.classifier, "classifier in " + jarName);
     }
 
-    private static Stream<Avc> streamJars(Path mavenHome, String... dirs) {
-        return Stream.of(dirs)
-                .map(mavenHome::resolve)
-                .flatMap((Path p) -> {
-                    try {
-                        return Files.list(p);
-                    } catch (java.io.IOException e) {
-                        throw new RuntimeException("Could not list " + p, e);
-                    }
-                })
-                .filter(p -> p.getFileName().toString().endsWith(".jar"))
-                .filter(Files::isRegularFile)
-                .map(Path::getFileName)
-                .map(Path::toString)
-                .map(Avc::of);
+    private static List<Avc> listJars(Path mavenHome) {
+        try (Stream<Path> stream = Files.walk(mavenHome)) {
+            return stream.filter(p -> p.getFileName().toString().endsWith(".jar"))
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .map(Avc::of)
+                    .collect(Collectors.toList());
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Could not list " + mavenHome, e);
+        }
     }
 
     static class Avc implements Comparable<Avc> {
@@ -111,6 +103,10 @@ public class DistroIT {
             this.version = version;
             this.classifier = classifier;
             this.jarName = jarName;
+        }
+
+        public String getArtifactId() {
+            return artifactId;
         }
 
         @Override

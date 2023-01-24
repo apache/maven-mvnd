@@ -31,7 +31,7 @@ public class MavenDaemon {
         final Path mvndHome = Environment.MVND_HOME.asPath();
         URL[] classpath = Stream.concat(
                         /* jars */
-                        Stream.of("mvn/lib/ext", "mvn/lib", "mvn/boot")
+                        Stream.of("lib/ext", "lib", "boot")
                                 .map(mvndHome::resolve)
                                 .flatMap((Path p) -> {
                                     try {
@@ -46,7 +46,7 @@ public class MavenDaemon {
                                 })
                                 .filter(Files::isRegularFile),
                         /* resources */
-                        Stream.of(mvndHome.resolve("mvn/conf"), mvndHome.resolve("mvn/conf/logging")))
+                        Stream.of(mvndHome.resolve("conf"), mvndHome.resolve("conf/logging")))
                 .map(Path::normalize)
                 .map(Path::toUri)
                 .map(uri -> {
