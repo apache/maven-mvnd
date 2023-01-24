@@ -19,7 +19,7 @@
 set -e
 export VERSION=$1
 export NEXT_VERSION=$2
-export BRANCH=0.9.x
+export BRANCH=mvnd-0.9.x
 
 if [ "${VERSION}x" = "x" ] || [ "${NEXT_VERSION}x" = "x" ]
 then
