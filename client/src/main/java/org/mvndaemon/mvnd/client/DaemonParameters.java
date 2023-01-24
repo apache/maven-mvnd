@@ -120,7 +120,7 @@ public class DaemonParameters {
     private String mvndHomeFromExecutable() {
         Optional<String> cmd = ProcessHandle.current().info().command();
         if (Environment.isNative() && cmd.isPresent()) {
-            final Path mvndH = Paths.get(cmd.get()).getParent();
+            final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
             if (mvndH != null) {
                 final Path mvndDaemonLib = mvndH.resolve(
                         "lib/mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
