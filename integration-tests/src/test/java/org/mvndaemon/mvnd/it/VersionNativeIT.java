@@ -45,7 +45,7 @@ public class VersionNativeIT {
         client.execute(output, "-v").assertSuccess();
 
         output.assertContainsMatchingSubsequence(
-                "\\Qmvnd "
+                "\\QApache Maven Daemon (mvnd) "
                         + System.getProperty("project.version")
                         + " "
                         + (isNative()
