@@ -323,14 +323,22 @@ public class TerminalOutput implements ClientOutput {
             }
             case Message.PRINT_OUT: {
                 Message.StringMessage d = (Message.StringMessage) entry;
-                clearDisplay();
-                System.out.printf("%s%n", d.getMessage());
+                if (log instanceof FileLog) {
+                    log.accept(d.getMessage());
+                } else {
+                    clearDisplay();
+                    System.out.printf("%s%n", d.getMessage());
+                }
                 break;
             }
             case Message.PRINT_ERR: {
                 Message.StringMessage d = (Message.StringMessage) entry;
-                clearDisplay();
-                System.err.printf("%s%n", d.getMessage());
+                if (log instanceof FileLog) {
+                    log.accept(d.getMessage());
+                } else {
+                    clearDisplay();
+                    System.err.printf("%s%n", d.getMessage());
+                }
                 break;
             }
             case Message.PROMPT: {
