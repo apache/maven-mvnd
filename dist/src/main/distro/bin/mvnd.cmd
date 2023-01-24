@@ -25,6 +25,12 @@
 @REM   MAVEN_BATCH_PAUSE (Optional) set to 'on' to wait for a key stroke before ending.
 @REM   MAVEN_OPTS        (Optional) Java runtime options used when Maven is executed.
 @REM   MAVEN_SKIP_RC     (Optional) Flag to disable loading of mavenrc files.
+@REM   MVND_CLIENT       (Optional) Control how to select mvnd client to communicate with the daemon:
+@REM                        'auto' (default) - prefer the native client mvnd.exe if it suits the current
+@REM                                           OS and processor architecture; otherwise use the pure
+@REM                                           Java client.
+@REM                        'native' - use the native client mvnd.exe
+@REM                        'jvm' - use the pure Java client
 @REM -----------------------------------------------------------------------------
 
 @REM Begin all REM lines with '@' in case MAVEN_BATCH_ECHO is 'on'
@@ -42,6 +48,28 @@ if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd" %*
 @setlocal
 
 set ERROR_CODE=0
+
+set "MVND_CMD=%~dp0\mvnd.exe"
+if "%MVND_CLIENT%"=="native" goto runNative
+if "%MVND_CLIENT%"=="" goto checkNative
+if not "%MVND_CLIENT%"=="auto" goto runJvm
+
+:checkNative
+@REM try execute native image
+if "%PROCESSOR_ARCHITEW6432%"=="" (
+  if not exist "%~dp0\platform-windows-%PROCESSOR_ARCHITECTURE%" goto runJvm
+) else (
+  if not exist "%~dp0\platform-windows-%PROCESSOR_ARCHITEW6432%" goto runJvm
+)
+if not exist "%MVND_CMD%" goto runJvm
+
+:runNative
+"%MVND_CMD%" %*
+if ERRORLEVEL 1 goto error
+goto end
+
+:runJvm
+@REM fallback to pure java version
 
 @REM ==== START VALIDATION ====
 if not "%JAVA_HOME%"=="" goto OkJHome

@@ -25,6 +25,11 @@
 #   JAVA_HOME       Must point at your Java Development Kit installation.
 #   MAVEN_OPTS      (Optional) Java runtime options used when Maven is executed.
 #   MAVEN_SKIP_RC   (Optional) Flag to disable loading of mavenrc files.
+#   MVND_CLIENT     (Optional) Control how to select mvnd client to communicate with the daemon:
+#                      'auto' (default) - prefer the native client mvnd if it suits the current OS and
+#                                         processor architecture; otherwise use the pure Java client.
+#                      'native' - use the native client mvnd
+#                      'jvm' - use the pure Java client
 # -----------------------------------------------------------------------------
 
 if [ -z "$MAVEN_SKIP_RC" ] ; then
@@ -43,8 +48,8 @@ fi
 cygwin=false;
 mingw=false;
 case "`uname`" in
-  CYGWIN*) cygwin=true;;
-  MINGW*) mingw=true;;
+  CYGWIN*) cygwin=true native_ext=.exe ;;
+  MINGW*) mingw=true native_ext=.exe ;;
 esac
 
 ## resolve links - $0 may be a link to Maven's home
@@ -88,6 +93,36 @@ if $mingw ; then
     JAVA_HOME=`(cd "$JAVA_HOME"; pwd)`
   # TODO classpath?
 fi
+
+if [ "${MVND_CLIENT:=auto}" = native ]; then
+  # force execute native image
+  exec "$MVND_HOME/bin/mvnd${native_ext:-}" "$@"
+elif [ "$MVND_CLIENT" = auto ]; then
+  # try native image
+  case "$(uname -a)" in
+  (CYGWIN*|MINGW*) os=windows arch="${PROCESSOR_ARCHITEW6432:-"${PROCESSOR_ARCHITECTURE:-"$(uname -m)"}"}" ;;
+  (Darwin*x86_64) os=darwin arch=amd64 ;;
+  (Darwin*arm64) os=darwin arch=aarch64 ;;
+  (Linux*) os=linux arch=$(uname -m) ;;
+  (*) os=$(uname) arch=$(uname -m) ;;
+  esac
+  [ "${arch-}" != x86_64 ] || arch=amd64
+  [ "${arch-}" != AMD64 ] || arch=amd64
+  [ "${arch-}" != arm64 ] || arch=aarch64
+
+  MVND_CMD="$MVND_HOME/bin/mvnd${native_ext:-}"
+  if [ -e "$MVND_HOME/bin/platform-$os-$arch" ] && [ -x "$MVND_CMD" ]; then
+    is_native=true
+    if [ "$os" = linux ]; then
+      case "$(ldd "$MVND_CMD" 2>&1)" in
+      (''|*"not found"*) is_native=false ;;
+      esac
+    fi
+    ! $is_native || exec "$MVND_CMD" "$@"
+  fi
+fi
+
+# fallback to pure java version
 
 if [ -z "$JAVA_HOME" ] ; then
   JAVACMD="`\\unset -f command; \\command -v java`"
