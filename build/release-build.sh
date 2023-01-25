@@ -116,7 +116,7 @@ mvn versions:set -DnewVersion=$VERSION
 
 # udpate changelog
 docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator \
-    --user apache --project maven-mvnd --token $GITHUB_TOKEN --future-release $VERSION --exclude-tags early-access
+    --user apache --project maven-mvnd --token $GITHUB_TOKEN --future-release $VERSION --exclude-tags early-access,1.0.0-m1
 
 # rebuild native libraries
 pushd native
