@@ -61,7 +61,13 @@ public class InvokerNativeIT {
         }
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "verify", "-e", "-Dmvnd.log.level=DEBUG")
+        client.execute(
+                        output,
+                        "clean",
+                        "verify",
+                        "-e",
+                        "-Dmvnd.log.level=DEBUG",
+                        "-Dmaven.experimental.buildconsumer=false")
                 .assertSuccess();
 
         Assertions.assertThat(helloPath).exists();
