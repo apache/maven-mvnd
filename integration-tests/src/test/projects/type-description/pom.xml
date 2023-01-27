@@ -49,7 +49,7 @@
 
         <!-- Plugin Versions -->
         <version.compiler.plugin>3.10.1</version.compiler.plugin>
-        <version.surefire.plugin>3.0.0-M7</version.surefire.plugin>
+        <version.surefire.plugin>3.0.0-M8</version.surefire.plugin>
         <version.dependency.plugin>3.3.0</version.dependency.plugin>
         <version.assembly.plugin>3.4.2</version.assembly.plugin>
         <version.resources.plugin>3.3.0</version.resources.plugin>
