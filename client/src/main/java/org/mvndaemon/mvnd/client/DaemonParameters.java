@@ -122,9 +122,9 @@ public class DaemonParameters {
         if (Environment.isNative() && cmd.isPresent()) {
             final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
             if (mvndH != null) {
-                final Path mvndDaemonLib = mvndH.resolve(
-                        "lib/mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
-                if (Files.exists(mvndDaemonLib)) {
+                Path mvndDaemon = Paths.get("mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
+                if (Files.exists(mvndH.resolve("lib").resolve(mvndDaemon))
+                        || Files.exists(mvndH.resolve("lib").resolve("ext").resolve(mvndDaemon))) {
                     return mvndH.toString();
                 }
             }
