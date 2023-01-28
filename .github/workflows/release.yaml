@@ -26,7 +26,7 @@ on:
       - '*'
 
 env:
-  GRAALVM_VERSION: '22.3.0'
+  GRAALVM_VERSION: '22.3.1'
   JAVA_VERSION: '17'
 
 jobs:
@@ -76,7 +76,7 @@ jobs:
           fi
 
       - name: 'Build native distribution'
-        run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e -DskipTests
+        run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e -DskipTests -s .mvn/release-settings.xml
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
