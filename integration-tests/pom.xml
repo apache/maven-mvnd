@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.apache.maven.daemon</groupId>
     <artifactId>mvnd</artifactId>
-    <version>1.0.0-m4-SNAPSHOT</version>
+    <version>1.0.0-m4</version>
   </parent>
 
   <artifactId>mvnd-integration-tests</artifactId>

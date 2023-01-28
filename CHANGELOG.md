@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.0.0-m3](https://github.com/apache/maven-mvnd/tree/1.0.0-m3) (2023-01-28)
+## [1.0.0-m4](https://github.com/apache/maven-mvnd/tree/1.0.0-m4) (2023-01-28)
 
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m1...1.0.0-m3)
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m1...1.0.0-m4)
 
 **Closed issues:**
 
