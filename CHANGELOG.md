@@ -1,8 +1,19 @@
 # Changelog
 
-## [1.0.0-m2](https://github.com/apache/maven-mvnd/tree/1.0.0-m2) (2023-01-28)
+## [1.0.0-m3](https://github.com/apache/maven-mvnd/tree/1.0.0-m3) (2023-01-28)
 
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/0.9.0...1.0.0-m2)
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m1...1.0.0-m3)
+
+**Closed issues:**
+
+- Timeout when connecting maven daemon [\#772](https://github.com/apache/maven-mvnd/issues/772)
+- Support for Maven 3.8.7 [\#762](https://github.com/apache/maven-mvnd/issues/762)
+- 1.0.0-m1 slower than 0.8.2 [\#758](https://github.com/apache/maven-mvnd/issues/758)
+- Bash Completions Kills Shell \(Mac/Homebrew\) [\#756](https://github.com/apache/maven-mvnd/issues/756)
+- Too many open files on Mac OS with JDK 11 and mvnd 0.8.2 [\#710](https://github.com/apache/maven-mvnd/issues/710)
+- exec-maven-plugin \(exec:exec\) output unexpected prefix for each line of stdout/stderr [\#708](https://github.com/apache/maven-mvnd/issues/708)
+- runtime jdk requirement of java client \(via mvnd.sh\)  should be aligned to JDK8 [\#669](https://github.com/apache/maven-mvnd/issues/669)
+- Timeout waiting to connect to the Maven daemon [\#637](https://github.com/apache/maven-mvnd/issues/637)
 
 **Merged pull requests:**
 
@@ -17,21 +28,6 @@
 - Fix core export provider [\#764](https://github.com/apache/maven-mvnd/pull/764) ([oehme](https://github.com/oehme))
 - Fix performance problem with mvnd \(\#758\) [\#760](https://github.com/apache/maven-mvnd/pull/760) ([gnodet](https://github.com/gnodet))
 - Try native image then fallback to pure java version [\#717](https://github.com/apache/maven-mvnd/pull/717) ([gzm55](https://github.com/gzm55))
-
-## [0.9.0](https://github.com/apache/maven-mvnd/tree/0.9.0) (2023-01-25)
-
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m1...0.9.0)
-
-**Closed issues:**
-
-- Timeout when connecting maven daemon [\#772](https://github.com/apache/maven-mvnd/issues/772)
-- Support for Maven 3.8.7 [\#762](https://github.com/apache/maven-mvnd/issues/762)
-- 1.0.0-m1 slower than 0.8.2 [\#758](https://github.com/apache/maven-mvnd/issues/758)
-- Bash Completions Kills Shell \(Mac/Homebrew\) [\#756](https://github.com/apache/maven-mvnd/issues/756)
-- Too many open files on Mac OS with JDK 11 and mvnd 0.8.2 [\#710](https://github.com/apache/maven-mvnd/issues/710)
-- exec-maven-plugin \(exec:exec\) output unexpected prefix for each line of stdout/stderr [\#708](https://github.com/apache/maven-mvnd/issues/708)
-- runtime jdk requirement of java client \(via mvnd.sh\)  should be aligned to JDK8 [\#669](https://github.com/apache/maven-mvnd/issues/669)
-- Timeout waiting to connect to the Maven daemon [\#637](https://github.com/apache/maven-mvnd/issues/637)
 
 ## [1.0.0-m1](https://github.com/apache/maven-mvnd/tree/1.0.0-m1) (2022-12-16)
 
@@ -938,7 +934,19 @@
 
 ## [0.0.0.0](https://github.com/apache/maven-mvnd/tree/0.0.0.0) (2020-06-21)
 
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-54e2c6ef...0.0.0.0)
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-bdf5f8af...0.0.0.0)
+
+## [200611-client-logging-bdf5f8af](https://github.com/apache/maven-mvnd/tree/200611-client-logging-bdf5f8af) (2019-09-27)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-bc063301...200611-client-logging-bdf5f8af)
+
+## [200611-client-logging-bc063301](https://github.com/apache/maven-mvnd/tree/200611-client-logging-bc063301) (2019-09-27)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-f2a61e8c...200611-client-logging-bc063301)
+
+## [200611-client-logging-f2a61e8c](https://github.com/apache/maven-mvnd/tree/200611-client-logging-f2a61e8c) (2019-09-27)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-54e2c6ef...200611-client-logging-f2a61e8c)
 
 ## [200611-client-logging-54e2c6ef](https://github.com/apache/maven-mvnd/tree/200611-client-logging-54e2c6ef) (2019-09-27)
 
@@ -946,23 +954,11 @@
 
 ## [200611-client-logging-15f559eb](https://github.com/apache/maven-mvnd/tree/200611-client-logging-15f559eb) (2019-09-27)
 
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-bdf5f8af...200611-client-logging-15f559eb)
-
-## [200611-client-logging-bdf5f8af](https://github.com/apache/maven-mvnd/tree/200611-client-logging-bdf5f8af) (2019-09-27)
-
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-f2a61e8c...200611-client-logging-bdf5f8af)
-
-## [200611-client-logging-f2a61e8c](https://github.com/apache/maven-mvnd/tree/200611-client-logging-f2a61e8c) (2019-09-27)
-
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-5b542cab...200611-client-logging-f2a61e8c)
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-5b542cab...200611-client-logging-15f559eb)
 
 ## [200611-client-logging-5b542cab](https://github.com/apache/maven-mvnd/tree/200611-client-logging-5b542cab) (2019-09-27)
 
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/200611-client-logging-bc063301...200611-client-logging-5b542cab)
-
-## [200611-client-logging-bc063301](https://github.com/apache/maven-mvnd/tree/200611-client-logging-bc063301) (2019-09-27)
-
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/844f3ddd7f4278b2ba097d817def4c3b46d574e7...200611-client-logging-bc063301)
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/844f3ddd7f4278b2ba097d817def4c3b46d574e7...200611-client-logging-5b542cab)
 
 
 
