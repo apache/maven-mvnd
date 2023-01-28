@@ -339,7 +339,8 @@ public class DaemonConnector {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
-        try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("lib"))) {
+        try (DirectoryStream<Path> jarPaths =
+                Files.newDirectoryStream(mvndHome.resolve("lib").resolve("ext"))) {
             List<String> args = new ArrayList<>();
             // executable
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";

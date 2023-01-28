@@ -33,7 +33,7 @@
         </artifact>
     </artifactSet>
 
-    <artifactSet to="/lib">
+    <artifactSet to="/lib/ext">
         <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
@@ -50,9 +50,6 @@
             <exclusion id="*:*"/>
         </artifact>
         <artifact id="org.apache.maven.daemon:mvnd-native:${project.version}">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="ch.qos.logback:logback-classic">
             <exclusion id="*:*"/>
         </artifact>
         <artifact id="org.codehaus.plexus:plexus-interactivity-api">
