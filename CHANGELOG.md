@@ -1,22 +1,56 @@
 # Changelog
 
+## [1.0.0-m2](https://github.com/apache/maven-mvnd/tree/1.0.0-m2) (2023-01-28)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/0.9.0...1.0.0-m2)
+
+**Merged pull requests:**
+
+- Upgrade to maven 4.0.0-m4 and resolver 1.9.4 [\#780](https://github.com/apache/maven-mvnd/pull/780) ([gnodet](https://github.com/gnodet))
+- Fix system out / err streams when redirecting to file [\#779](https://github.com/apache/maven-mvnd/pull/779) ([gnodet](https://github.com/gnodet))
+- Make connection timeouts configurable, fixes \#772 [\#778](https://github.com/apache/maven-mvnd/pull/778) ([gnodet](https://github.com/gnodet))
+- Upgrade dependencies to latest version [\#776](https://github.com/apache/maven-mvnd/pull/776) ([gnodet](https://github.com/gnodet))
+- Upgrade jline to 3.22.0 [\#775](https://github.com/apache/maven-mvnd/pull/775) ([gnodet](https://github.com/gnodet))
+- Publish the binaries produced by the Early Access job again [\#774](https://github.com/apache/maven-mvnd/pull/774) ([ppalaga](https://github.com/ppalaga))
+- Attempt at moving mvn as first class citizen in mvnd distribution, \#392 [\#769](https://github.com/apache/maven-mvnd/pull/769) ([gnodet](https://github.com/gnodet))
+- Fix spotless config to include all java files [\#768](https://github.com/apache/maven-mvnd/pull/768) ([gnodet](https://github.com/gnodet))
+- Fix core export provider [\#764](https://github.com/apache/maven-mvnd/pull/764) ([oehme](https://github.com/oehme))
+- Fix performance problem with mvnd \(\#758\) [\#760](https://github.com/apache/maven-mvnd/pull/760) ([gnodet](https://github.com/gnodet))
+- Try native image then fallback to pure java version [\#717](https://github.com/apache/maven-mvnd/pull/717) ([gzm55](https://github.com/gzm55))
+
+## [0.9.0](https://github.com/apache/maven-mvnd/tree/0.9.0) (2023-01-25)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m1...0.9.0)
+
+**Closed issues:**
+
+- Timeout when connecting maven daemon [\#772](https://github.com/apache/maven-mvnd/issues/772)
+- Support for Maven 3.8.7 [\#762](https://github.com/apache/maven-mvnd/issues/762)
+- 1.0.0-m1 slower than 0.8.2 [\#758](https://github.com/apache/maven-mvnd/issues/758)
+- Bash Completions Kills Shell \(Mac/Homebrew\) [\#756](https://github.com/apache/maven-mvnd/issues/756)
+- Too many open files on Mac OS with JDK 11 and mvnd 0.8.2 [\#710](https://github.com/apache/maven-mvnd/issues/710)
+- exec-maven-plugin \(exec:exec\) output unexpected prefix for each line of stdout/stderr [\#708](https://github.com/apache/maven-mvnd/issues/708)
+- runtime jdk requirement of java client \(via mvnd.sh\)  should be aligned to JDK8 [\#669](https://github.com/apache/maven-mvnd/issues/669)
+- Timeout waiting to connect to the Maven daemon [\#637](https://github.com/apache/maven-mvnd/issues/637)
+
 ## [1.0.0-m1](https://github.com/apache/maven-mvnd/tree/1.0.0-m1) (2022-12-16)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/0.8.2...1.0.0-m1)
 
 **Implemented enhancements:**
 
-- After turning on debug, I hope there will be a hint [\#737](https://github.com/apache/maven-mvnd/issues/737)
-- build static native image for linux amd64 system [\#727](https://github.com/apache/maven-mvnd/issues/727)
+- Display a message when starting a daemon in debug mode [\#737](https://github.com/apache/maven-mvnd/issues/737)
+- Build static native image for linux amd64 system [\#727](https://github.com/apache/maven-mvnd/issues/727)
 
 **Closed issues:**
 
-- Is it possible to print the version of the plugin [\#745](https://github.com/apache/maven-mvnd/issues/745)
 - Timeout in client [\#733](https://github.com/apache/maven-mvnd/issues/733)
 - The errors should be printed at the end [\#723](https://github.com/apache/maven-mvnd/issues/723)
 - Calculate java home for native mvnd from java executable in $PATH [\#715](https://github.com/apache/maven-mvnd/issues/715)
 - Non-resolvable parent POM for...maven-default-http-blocker \(http://0.0.0.0/\): Blocked mirror for repositories: [\#713](https://github.com/apache/maven-mvnd/issues/713)
 - mvnDebug mode for mvnd [\#706](https://github.com/apache/maven-mvnd/issues/706)
+- Switch display to pluginPrefix:version:goal [\#745](https://github.com/apache/maven-mvnd/issues/745)
+- Maven Project randomly fails with "Failed to open file channel '\[..\]\.m2\repository\.locks\\[..\].resolverlock" [\#728](https://github.com/apache/maven-mvnd/issues/728)
 
 **Merged pull requests:**
 
@@ -24,28 +58,28 @@
 - Add an option to specify the debug address and display info when starting \(fixes \#737\) [\#753](https://github.com/apache/maven-mvnd/pull/753) ([gnodet](https://github.com/gnodet))
 - Fix daemon JVM start options \(follow-up to \#749\) [\#751](https://github.com/apache/maven-mvnd/pull/751) ([gnodet](https://github.com/gnodet))
 - Clean up some warnings during the build [\#750](https://github.com/apache/maven-mvnd/pull/750) ([gnodet](https://github.com/gnodet))
-- Add more discriminating properties to the daemon [\#749](https://github.com/apache/maven-mvnd/pull/749) ([oehme](https://github.com/oehme))
-- Display plugin's goal prefix and version instead of artifactId [\#748](https://github.com/apache/maven-mvnd/pull/748) ([gnodet](https://github.com/gnodet))
 - Update ITs to recent maven plugins [\#744](https://github.com/apache/maven-mvnd/pull/744) ([gnodet](https://github.com/gnodet))
 - Fix usage of the wrong groovy plugin [\#743](https://github.com/apache/maven-mvnd/pull/743) ([gnodet](https://github.com/gnodet))
-- Update Maven to 4.0.0-alpha-3 and Maven Resolver to 1.9.2 [\#742](https://github.com/apache/maven-mvnd/pull/742) ([cstamas](https://github.com/cstamas))
 - Clean up and upgrade dependencies/plugins versions [\#741](https://github.com/apache/maven-mvnd/pull/741) ([gnodet](https://github.com/gnodet))
-- Switch graalvm to 22.3.0 [\#740](https://github.com/apache/maven-mvnd/pull/740) ([gnodet](https://github.com/gnodet))
-- Fix possible NullPointerException [\#739](https://github.com/apache/maven-mvnd/pull/739) ([gnodet](https://github.com/gnodet))
-- Upgrade parent pom to 38 [\#738](https://github.com/apache/maven-mvnd/pull/738) ([gnodet](https://github.com/gnodet))
-- Upgrade to groovy 4 [\#735](https://github.com/apache/maven-mvnd/pull/735) ([gnodet](https://github.com/gnodet))
 - Use `mvnd verify` as example instead of `mvnd clean install` [\#734](https://github.com/apache/maven-mvnd/pull/734) ([plamentotev](https://github.com/plamentotev))
-- Build mostly static native image, loose linux glibc requirement to 2.12 [\#730](https://github.com/apache/maven-mvnd/pull/730) ([gzm55](https://github.com/gzm55))
-- Reset system properties after calling event syps [\#729](https://github.com/apache/maven-mvnd/pull/729) ([oehme](https://github.com/oehme))
-- Always display failed and main project at the end \(fixes \#723\) [\#724](https://github.com/apache/maven-mvnd/pull/724) ([gnodet](https://github.com/gnodet))
-- Use muti-release jar to fallback mvnd-client to original maven [\#722](https://github.com/apache/maven-mvnd/pull/722) ([gzm55](https://github.com/gzm55))
 - Fixup \#716 Calculate java home from java command [\#721](https://github.com/apache/maven-mvnd/pull/721) ([ppalaga](https://github.com/ppalaga))
-- Add a mvnd.rawStreams property [\#719](https://github.com/apache/maven-mvnd/pull/719) ([gnodet](https://github.com/gnodet))
-- Switch to maven 4.0.0-alpha-2 [\#718](https://github.com/apache/maven-mvnd/pull/718) ([gnodet](https://github.com/gnodet))
 - Calculate java home from java command [\#716](https://github.com/apache/maven-mvnd/pull/716) ([gzm55](https://github.com/gzm55))
 - Sync entry scripts with maven 3.8.6 [\#711](https://github.com/apache/maven-mvnd/pull/711) ([gzm55](https://github.com/gzm55))
 - Fixed a typo of build mvnd in README [\#709](https://github.com/apache/maven-mvnd/pull/709) ([WillemJiang](https://github.com/WillemJiang))
 - Release the read lock in a finally block [\#703](https://github.com/apache/maven-mvnd/pull/703) ([essobedo](https://github.com/essobedo))
+- Add more discriminating properties to the daemon [\#749](https://github.com/apache/maven-mvnd/pull/749) ([oehme](https://github.com/oehme))
+- Display plugin's goal prefix and version instead of artifactId [\#748](https://github.com/apache/maven-mvnd/pull/748) ([gnodet](https://github.com/gnodet))
+- Update Maven to 4.0.0-alpha-3 and Maven Resolver to 1.9.2 [\#742](https://github.com/apache/maven-mvnd/pull/742) ([cstamas](https://github.com/cstamas))
+- Switch graalvm to 22.3.0 [\#740](https://github.com/apache/maven-mvnd/pull/740) ([gnodet](https://github.com/gnodet))
+- Fix possible NullPointerException [\#739](https://github.com/apache/maven-mvnd/pull/739) ([gnodet](https://github.com/gnodet))
+- Upgrade parent pom to 38 [\#738](https://github.com/apache/maven-mvnd/pull/738) ([gnodet](https://github.com/gnodet))
+- Upgrade to groovy 4 [\#735](https://github.com/apache/maven-mvnd/pull/735) ([gnodet](https://github.com/gnodet))
+- Build mostly static native image, loose linux glibc requirement to 2.12 [\#730](https://github.com/apache/maven-mvnd/pull/730) ([gzm55](https://github.com/gzm55))
+- Reset system properties after calling event syps [\#729](https://github.com/apache/maven-mvnd/pull/729) ([oehme](https://github.com/oehme))
+- Always display failed and main project at the end \(fixes \#723\) [\#724](https://github.com/apache/maven-mvnd/pull/724) ([gnodet](https://github.com/gnodet))
+- Use muti-release jar to fallback mvnd-client to original maven [\#722](https://github.com/apache/maven-mvnd/pull/722) ([gzm55](https://github.com/gzm55))
+- Add a mvnd.rawStreams property [\#719](https://github.com/apache/maven-mvnd/pull/719) ([gnodet](https://github.com/gnodet))
+- Switch to maven 4.0.0-alpha-2 [\#718](https://github.com/apache/maven-mvnd/pull/718) ([gnodet](https://github.com/gnodet))
 - Support redirecting input from client to daemon, \#541 [\#581](https://github.com/apache/maven-mvnd/pull/581) ([gnodet](https://github.com/gnodet))
 
 ## [0.8.2](https://github.com/apache/maven-mvnd/tree/0.8.2) (2022-10-04)
