@@ -99,7 +99,13 @@ public class Server implements AutoCloseable, Runnable {
     private final DaemonMemoryStatus memoryStatus;
     private final long keepAliveMs;
 
-    public Server() throws IOException {
+    public static void main(String[] args) {
+        try (Server server = new Server()) {
+            server.run();
+        }
+    }
+
+    public Server() {
         // When spawning a new process, the child process is create within
         // the same process group.  This means that a few signals are sent
         // to the whole group.  This is the case for SIGINT (Ctrl-C) and
