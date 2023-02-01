@@ -48,8 +48,8 @@ rm -Rf homebrew-mvnd
 git clone https://github.com/mvndaemon/homebrew-mvnd.git
 cd homebrew-mvnd
 
-perl -i -0pe 's|(on_macos do[\s\S\n]+on_intel\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinAmdZipUrl}'\"$3\"'${darwinAmdSha256}'\"|g' Formula/mvnd.rb
-perl -i -0pe 's|(on_macos do[\s\S\n]+on_arm\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinArmZipUrl}'\"$3\"'${darwinArmSha256}'\"|g' Formula/mvnd.rb
+perl -i -0pe 's|(on_macos do[\s\S\n]+on_intel do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinAmdZipUrl}'\"$3\"'${darwinAmdSha256}'\"|g' Formula/mvnd.rb
+perl -i -0pe 's|(on_macos do[\s\S\n]+on_arm do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinArmZipUrl}'\"$3\"'${darwinArmSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(on_linux do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${linuxZipUrl}'\"$3\"'${linuxSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(version )"([^\"]+)"|$1\"'${VERSION}'\"|g' Formula/mvnd.rb
 
