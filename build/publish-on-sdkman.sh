@@ -82,7 +82,7 @@ node -pe "
     }
 " "${RESPONSE}"
 
-RELEASE_URL=`curl -s -i https://git.io -F url=https://downloads.apache.org/maven/mvnd/${VERSION} | grep Location | sed -e 's/Location: //g' | tr -d '\n' | tr -d '\r'`
+RELEASE_URL="https://downloads.apache.org/maven/mvnd/${VERSION}"
 echo "RELEASE_URL = $RELEASE_URL"
 
 RESPONSE="$(curl -s -X POST \
