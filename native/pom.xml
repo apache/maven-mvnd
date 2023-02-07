@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.maven.daemon</groupId>
     <artifactId>mvnd</artifactId>
-    <version>0.9.0</version>
+    <version>0.10.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>mvnd-native</artifactId>
