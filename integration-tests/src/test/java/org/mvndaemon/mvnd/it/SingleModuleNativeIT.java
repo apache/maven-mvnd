@@ -92,7 +92,9 @@ public class SingleModuleNativeIT {
     }
 
     String mojoStartedLogMessage(Properties props, String pluginArtifactId, String mojo, String executionId) {
-        return "\\Q--- " + pluginArtifactId + ":" + props.getProperty(pluginArtifactId + ".version") + ":" + mojo + " ("
+        return "\\Q--- "
+                + pluginArtifactId.replace("maven-", "").replace("-plugin", "")
+                + ":" + props.getProperty(pluginArtifactId + ".version") + ":" + mojo + " ("
                 + executionId + ") @ single-module ---\\E";
     }
 }
