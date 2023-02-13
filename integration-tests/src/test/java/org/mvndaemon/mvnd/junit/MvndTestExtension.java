@@ -41,6 +41,7 @@ import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.TimeUtils;
 
+import static org.mvndaemon.mvnd.junit.TestParameters.TEST_MIN_THREADS;
 import static org.mvndaemon.mvnd.junit.TestUtils.deleteDir;
 
 public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
@@ -253,7 +254,9 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                                     .multipliedBy(10),
                     maxLostKeepAlive != null && !maxLostKeepAlive.isEmpty()
                             ? Integer.parseInt(maxLostKeepAlive)
-                            : Integer.parseInt(Environment.MVND_MAX_LOST_KEEP_ALIVE.getDefault()) * 10);
+                            : Integer.parseInt(Environment.MVND_MAX_LOST_KEEP_ALIVE.getDefault()) * 10,
+                    TEST_MIN_THREADS,
+                    true);
             final TestRegistry registry = new TestRegistry(parameters.registry());
 
             return new MvndResource(parameters, registry, isNative, timeoutMs);
