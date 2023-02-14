@@ -25,9 +25,10 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
-import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.Message;
+import org.mvndaemon.mvnd.junit.ClientFactory;
 import org.mvndaemon.mvnd.junit.MvndTest;
+import org.mvndaemon.mvnd.junit.TestParameters;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,15 +36,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ConcurrentDownloadsTest {
 
     @Inject
-    Client client;
+    ClientFactory clientFactory;
 
     @Inject
-    DaemonParameters parameters;
+    TestParameters parameters;
 
     @Test
     void build() throws IOException, InterruptedException {
 
         final TestClientOutput o = new TestClientOutput();
+        Client client = clientFactory.newClient(parameters.withTransferProgress());
         client.execute(o, "clean", "install", "-e", "-B").assertSuccess();
 
         int maxConcurrentDownloads = 0;

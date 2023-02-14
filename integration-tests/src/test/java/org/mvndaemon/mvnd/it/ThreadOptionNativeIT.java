@@ -81,8 +81,4 @@ public class ThreadOptionNativeIT {
 
         output.assertContainsMatchingSubsequence("Using the SmartBuilder implementation with a thread count of 2");
     }
-
-    protected boolean isNative() {
-        return true;
-    }
 }

@@ -28,6 +28,7 @@ import org.mvndaemon.mvnd.common.TimeUtils;
 public class TestParameters extends DaemonParameters {
     static final int TEST_MIN_THREADS = 2;
     private final Path testDir;
+    private final boolean noTransferProgress;
 
     public TestParameters(
             Path testDir,
@@ -42,7 +43,9 @@ public class TestParameters extends DaemonParameters {
             Path logbackConfigurationPath,
             Duration idleTimeout,
             Duration keepAlive,
-            int maxLostKeepAlive) {
+            int maxLostKeepAlive,
+            int minThreads,
+            boolean noTransferProgress) {
         super(new PropertiesBuilder()
                 .put(Environment.MVND_PROPERTIES_PATH, mvndPropertiesPath)
                 .put(Environment.MVND_HOME, mavenHome)
@@ -56,8 +59,9 @@ public class TestParameters extends DaemonParameters {
                 .put(Environment.MVND_IDLE_TIMEOUT, TimeUtils.printDuration(idleTimeout))
                 .put(Environment.MVND_KEEP_ALIVE, TimeUtils.printDuration(keepAlive))
                 .put(Environment.MVND_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
-                .put(Environment.MVND_MIN_THREADS, TEST_MIN_THREADS));
+                .put(Environment.MVND_MIN_THREADS, minThreads));
         this.testDir = testDir;
+        this.noTransferProgress = noTransferProgress;
     }
 
     public DaemonParameters clearMavenMultiModuleProjectDirectory() {
@@ -68,7 +72,30 @@ public class TestParameters extends DaemonParameters {
         return derive(b -> b.put(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY, dir.toString()));
     }
 
+    public TestParameters withTransferProgress() {
+        return new TestParameters(
+                testDir,
+                value(Environment.MVND_PROPERTIES_PATH).asPath(),
+                value(Environment.MVND_HOME).asPath(),
+                value(Environment.USER_HOME).asPath(),
+                value(Environment.USER_DIR).asPath(),
+                value(Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY).asPath(),
+                value(Environment.JAVA_HOME).asPath(),
+                value(Environment.MAVEN_REPO_LOCAL).asPath(),
+                value(Environment.MAVEN_SETTINGS).asPath(),
+                value(Environment.MVND_LOGBACK).asPath(),
+                value(Environment.MVND_IDLE_TIMEOUT).asDuration(),
+                value(Environment.MVND_KEEP_ALIVE).asDuration(),
+                value(Environment.MVND_MAX_LOST_KEEP_ALIVE).asInt(),
+                value(Environment.MVND_MIN_THREADS).asInt(),
+                false);
+    }
+
     public Path getTestDir() {
         return testDir;
+    }
+
+    public boolean isNoTransferProgress() {
+        return noTransferProgress;
     }
 }

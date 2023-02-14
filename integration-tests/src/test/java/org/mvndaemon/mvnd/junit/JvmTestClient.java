@@ -20,6 +20,7 @@ package org.mvndaemon.mvnd.junit;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
@@ -31,7 +32,7 @@ import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
 public class JvmTestClient extends DefaultClient {
 
-    private DaemonParameters parameters;
+    private final DaemonParameters parameters;
 
     public JvmTestClient(DaemonParameters parameters) {
         super(parameters);
@@ -42,6 +43,10 @@ public class JvmTestClient extends DefaultClient {
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
         setMultiModuleProjectDirectory(argv);
         setSystemPropertiesFromCommandLine(argv);
+        argv = new ArrayList<>(argv);
+        if (parameters instanceof TestParameters && ((TestParameters) parameters).isNoTransferProgress()) {
+            argv.add("-ntp");
+        }
         final ExecutionResult delegate = super.execute(output, argv);
         if (output instanceof TestClientOutput) {
             return new JvmTestResult(delegate, ((TestClientOutput) output).messagesToString());
