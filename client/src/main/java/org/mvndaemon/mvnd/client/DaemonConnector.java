@@ -18,7 +18,6 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -52,7 +51,6 @@ import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.DaemonState;
 import org.mvndaemon.mvnd.common.DaemonStopEvent;
 import org.mvndaemon.mvnd.common.Environment;
-import org.mvndaemon.mvnd.common.MavenDaemon;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.SocketFamily;
@@ -339,33 +337,43 @@ public class DaemonConnector {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
-        try (DirectoryStream<Path> jarPaths =
-                Files.newDirectoryStream(mvndHome.resolve("lib").resolve("ext"))) {
+        try {
             List<String> args = new ArrayList<>();
             // executable
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
             args.add(parameters.javaHome().resolve(java).toString());
             // classpath
-            String mvndCommonPath = null;
             String mvndAgentPath = null;
-            for (Path jar : jarPaths) {
-                String s = jar.getFileName().toString();
-                if (s.endsWith(".jar")) {
-                    if (s.startsWith("mvnd-common-")) {
-                        mvndCommonPath = jar.toString();
-                    } else if (s.startsWith("mvnd-agent-")) {
-                        mvndAgentPath = jar.toString();
+            String plexusClassworldsPath = null;
+            try (DirectoryStream<Path> jarPaths =
+                    Files.newDirectoryStream(mvndHome.resolve("lib").resolve("ext"))) {
+                for (Path jar : jarPaths) {
+                    String s = jar.getFileName().toString();
+                    if (s.endsWith(".jar")) {
+                        if (s.startsWith("mvnd-agent-")) {
+                            mvndAgentPath = jar.toString();
+                        }
                     }
                 }
             }
-            if (mvndCommonPath == null) {
-                throw new IllegalStateException("Could not find mvnd-common jar in lib/");
+            try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("boot"))) {
+                for (Path jar : jarPaths) {
+                    String s = jar.getFileName().toString();
+                    if (s.endsWith(".jar")) {
+                        if (s.startsWith("plexus-classworlds-")) {
+                            plexusClassworldsPath = jar.toString();
+                        }
+                    }
+                }
             }
             if (mvndAgentPath == null) {
-                throw new IllegalStateException("Could not find mvnd-agent jar in lib/");
+                throw new IllegalStateException("Could not find mvnd-agent jar in lib/ext/");
+            }
+            if (plexusClassworldsPath == null) {
+                throw new IllegalStateException("Could not find plexus-classworlds jar in boot/");
             }
             args.add("-classpath");
-            args.add(mvndCommonPath + File.pathSeparator + mvndAgentPath);
+            args.add(plexusClassworldsPath);
             args.add("-javaagent:" + mvndAgentPath);
             // debug options
             if (parameters.property(Environment.MVND_DEBUG).asBoolean()) {
@@ -422,6 +430,7 @@ public class DaemonConnector {
             Environment.MVND_HOME.addSystemProperty(args, mvndHome.toString());
             args.add("-Dmaven.home=" + mvndHome);
             args.add("-Dmaven.conf=" + mvndHome.resolve("conf"));
+            args.add("-Dclassworlds.conf=" + mvndHome.resolve("bin").resolve("mvnd-server.conf"));
 
             Environment.MVND_JAVA_HOME.addSystemProperty(
                     args, parameters.javaHome().toString());
@@ -439,7 +448,7 @@ public class DaemonConnector {
                             .orElseGet(() -> getJavaVersion() >= 16.0f ? SocketFamily.unix : SocketFamily.inet)
                             .toString());
             parameters.discriminatingSystemProperties(args);
-            args.add(MavenDaemon.class.getName());
+            args.add("org.codehaus.plexus.classworlds.launcher.Launcher");
             command = String.join(" ", args);
 
             LOGGER.debug(
