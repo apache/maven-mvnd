@@ -24,7 +24,7 @@ on:
   pull_request:
 
 env:
-  GRAALVM_VERSION: '22.2.0'
+  GRAALVM_VERSION: '22.3.1'
   JAVA_VERSION: '17'
 
 jobs:
