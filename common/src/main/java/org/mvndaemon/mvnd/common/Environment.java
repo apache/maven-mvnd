@@ -163,6 +163,13 @@ public enum Environment {
      * non-native clients and is useful mostly for debugging.
      */
     MVND_NO_DAEMON("mvnd.noDaemon", "MVND_NO_DAEMON", Boolean.FALSE, OptionType.BOOLEAN, Flags.DISCRIMINATING),
+
+    /**
+     * If <code>true</code>, the daemon will not use its in-memory metadata cache and instead re-read the
+     * metadata from the pom.xml files in the local repository. This is mostly useful for testing purposes.
+     */
+    MVND_NO_MODEL_CACHE("mvnd.noModelCache", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.OPTIONAL),
+
     /**
      * If <code>true</code>, the daemon will be launched in debug mode with the following JVM argument:
      * <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000</code>; otherwise the debug argument is
