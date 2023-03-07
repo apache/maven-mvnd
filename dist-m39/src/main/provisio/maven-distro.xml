@@ -1,0 +1,93 @@
+<!--
+
+    Copyright 2019-2021 the original author or authors.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<assembly>
+
+    <artifactSet to="/">
+        <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${maven3.version}">
+            <unpack useRoot="false"
+                    excludes="conf/logging/*,lib/maven-slf4j-provider*" />
+        </artifact>
+    </artifactSet>
+
+    <artifactSet to="/lib">
+        <artifact id="ch.qos.logback:logback-classic">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="ch.qos.logback:logback-core">
+            <exclusion id="*:*"/>
+        </artifact>
+    </artifactSet>
+
+    <artifactSet to="/lib/ext">
+        <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-daemon-m39:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-client:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-common:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-agent:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-helper-agent:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-native:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.codehaus.plexus:plexus-interactivity-api">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.jline:jline-terminal">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.jline:jline-terminal-jansi">
+            <exclusion id="*:*"/>
+        </artifact>
+    </artifactSet>
+
+    <fileSet to="/">
+        <directory path="${basedir}/../dist/src/main/distro"/>
+        <directory path="${basedir}/..">
+            <include>NOTICE.txt</include>
+            <include>LICENSE.txt</include>
+            <include>README.adoc</include>
+        </directory>
+    </fileSet>
+    <fileSet to="/bin">
+        <directory path="${basedir}/../client/target">
+            <include>mvnd</include>
+            <include>mvnd.exe</include>
+        </directory>
+        <directory path="${basedir}/../dist/src/main/resources">
+            <include>platform-${os.detected.name}-${os.detected.arch}</include>
+        </directory>
+    </fileSet>
+
+    <archive name="maven-${project.version}-mvnd-mvn39-${os.detected.name}-${os.detected.arch}.zip"
+             executable="**/bin/mvnd"/>
+
+    <archive name="maven-${project.version}-mvnd-mvn39-${os.detected.name}-${os.detected.arch}.tar.gz"
+             executable="**/bin/mvnd"/>
+
+</assembly>

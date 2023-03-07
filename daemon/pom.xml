@@ -28,7 +28,7 @@
   <artifactId>mvnd-daemon</artifactId>
 
   <packaging>jar</packaging>
-  <name>Maven Daemon</name>
+  <name>Maven Daemon - Daemon</name>
 
   <dependencies>
     <dependency>

@@ -51,7 +51,10 @@
     <module>common</module>
     <module>client</module>
     <module>daemon</module>
-    <module>dist</module>
+    <module>daemon-m39</module>
+    <module>daemon-m40</module>
+    <module>dist-m39</module>
+    <module>dist-m40</module>
     <module>integration-tests</module>
   </modules>
 
@@ -85,6 +88,8 @@
     <junit.jupiter.version>5.9.2</junit.jupiter.version>
     <logback.version>1.2.11</logback.version>
     <maven.version>4.0.0-alpha-4</maven.version>
+    <maven3.version>3.9.0</maven3.version>
+    <maven4.version>${maven.version}</maven4.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.4</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
@@ -251,13 +256,29 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist</artifactId>
+        <artifactId>mvnd-dist-m39</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.daemon</groupId>
+        <artifactId>mvnd-dist-m40</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-daemon</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.daemon</groupId>
+        <artifactId>mvnd-daemon-m39</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.daemon</groupId>
+        <artifactId>mvnd-daemon-m40</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

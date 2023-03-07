@@ -18,6 +18,8 @@
  */
 package org.apache.maven.project;
 
+import java.util.Objects;
+
 import org.apache.maven.building.Source;
 import org.apache.maven.model.building.ModelCache;
 
@@ -27,8 +29,8 @@ public class SnapshotModelCache implements ModelCache {
     private final ModelCache reactorCache;
 
     public SnapshotModelCache(ModelCache globalCache, ModelCache reactorCache) {
-        this.globalCache = globalCache;
-        this.reactorCache = reactorCache;
+        this.globalCache = Objects.requireNonNull(globalCache);
+        this.reactorCache = Objects.requireNonNull(reactorCache);
     }
 
     public Object get(Source path, String tag) {

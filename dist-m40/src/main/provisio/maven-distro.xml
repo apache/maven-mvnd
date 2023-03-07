@@ -18,7 +18,7 @@
 <assembly>
 
     <artifactSet to="/">
-        <artifact id="org.apache.maven:apache-maven:tar.gz:bin">
+        <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${maven4.version}">
             <unpack useRoot="false"
                     excludes="conf/logging/*,lib/maven-slf4j-provider*,lib/plexus-utils-3.*" />
         </artifact>
@@ -35,6 +35,9 @@
 
     <artifactSet to="/lib/ext">
         <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-daemon-m40:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
         <artifact id="org.apache.maven.daemon:mvnd-client:${project.version}">
@@ -64,7 +67,7 @@
     </artifactSet>
 
     <fileSet to="/">
-        <directory path="${basedir}/src/main/distro"/>
+        <directory path="${basedir}/../dist/src/main/distro"/>
         <directory path="${basedir}/..">
             <include>NOTICE.txt</include>
             <include>LICENSE.txt</include>
@@ -76,13 +79,15 @@
             <include>mvnd</include>
             <include>mvnd.exe</include>
         </directory>
-        <file touch="platform-${os.detected.name}-${os.detected.arch}"/>
+        <directory path="${basedir}/../dist/src/main/resources">
+            <include>platform-${os.detected.name}-${os.detected.arch}</include>
+        </directory>
     </fileSet>
 
-    <archive name="maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}.zip"
+    <archive name="maven-${project.version}-mvnd-40-${os.detected.name}-${os.detected.arch}.zip"
              executable="**/bin/mvnd"/>
 
-    <archive name="maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}.tar.gz"
+    <archive name="maven-${project.version}-mvnd-40-${os.detected.name}-${os.detected.arch}.tar.gz"
              executable="**/bin/mvnd"/>
 
 </assembly>

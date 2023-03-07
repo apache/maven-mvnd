@@ -50,7 +50,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.apache.maven.cli.DaemonMavenCli;
+import org.apache.maven.cli.DaemonCli;
 import org.mvndaemon.mvnd.builder.SmartBuilder;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
@@ -87,7 +87,7 @@ public class Server implements AutoCloseable, Runnable {
     private final String daemonId;
     private final boolean noDaemon;
     private final ServerSocketChannel socket;
-    private final DaemonMavenCli cli;
+    private final DaemonCli cli;
     private volatile DaemonInfo info;
     private final DaemonRegistry registry;
 
@@ -129,7 +129,11 @@ public class Server implements AutoCloseable, Runnable {
                 .orElse(SocketFamily.inet);
 
         try {
-            cli = new DaemonMavenCli();
+            cli = (DaemonCli) getClass()
+                    .getClassLoader()
+                    .loadClass("org.apache.maven.cli.DaemonMavenCli")
+                    .getDeclaredConstructor()
+                    .newInstance();
             registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
             socket = socketFamily.openServerSocket();
             executor = Executors.newScheduledThreadPool(1);
