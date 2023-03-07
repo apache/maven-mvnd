@@ -70,8 +70,6 @@ import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.plugin.ExtensionRealmCache;
 import org.apache.maven.plugin.PluginArtifactsCache;
-import org.apache.maven.plugin.PluginRealmCache;
-import org.apache.maven.plugin.version.PluginVersionResolver;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifactsCache;
 import org.apache.maven.properties.internal.SystemProperties;
@@ -93,7 +91,6 @@ import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
-import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
 import org.mvndaemon.mvnd.cli.EnvHelper;
 import org.mvndaemon.mvnd.common.Environment;
@@ -102,7 +99,6 @@ import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
-import org.mvndaemon.mvnd.plugin.CachingPluginVersionResolver;
 import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -119,7 +115,7 @@ import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
  *
  * @author Jason van Zyl
  */
-public class DaemonMavenCli {
+public class DaemonMavenCli implements DaemonCli {
     public static final String LOCAL_REPO_PROPERTY = "maven.repo.local";
 
     public static final String MULTIMODULE_PROJECT_DIRECTORY = "maven.multiModuleProjectDirectory";
@@ -522,9 +518,9 @@ public class DaemonMavenCli {
                 bind(CoreExportsProvider.class).toInstance(new CoreExportsProvider(exports));
                 bind(ExtensionRealmCache.class).to(InvalidatingExtensionRealmCache.class);
                 bind(PluginArtifactsCache.class).to(InvalidatingPluginArtifactsCache.class);
-                bind(PluginRealmCache.class).to(InvalidatingPluginRealmCache.class);
+                // bind(PluginRealmCache.class).to(InvalidatingPluginRealmCache.class);
                 bind(ProjectArtifactsCache.class).to(InvalidatingProjectArtifactsCache.class);
-                bind(PluginVersionResolver.class).to(CachingPluginVersionResolver.class);
+                // bind(PluginVersionResolver.class).to(CachingPluginVersionResolver.class);
             }
         });
 
