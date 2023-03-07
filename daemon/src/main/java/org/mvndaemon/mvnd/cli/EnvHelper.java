@@ -114,8 +114,7 @@ public class EnvHelper {
         // change current dir for the java.io.File class
         Class<?> fileClass = Class.forName("java.io.File");
         if (JavaVersion.getJavaSpec() >= 11.0) {
-            Field fsField = fileClass.getDeclaredField(
-                    JavaVersion.getJavaSpec() >= 21.0 ? "FS" : "fs");
+            Field fsField = fileClass.getDeclaredField(JavaVersion.getJavaSpec() >= 21.0 ? "FS" : "fs");
             fsField.setAccessible(true);
             Object fs = fsField.get(null);
             Field userDirField = fs.getClass().getDeclaredField("userDir");
