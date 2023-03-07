@@ -239,7 +239,16 @@ public class Server implements AutoCloseable, Runnable {
         try {
             while (true) {
                 try (SocketChannel socket = this.socket.accept()) {
-                    client(socket);
+                    try {
+                        // execute the client connection handling inside a new thread to guard against possible
+                        // ThreadLocal memory leaks
+                        // see https://github.com/apache/maven-mvnd/issues/798 for more details
+                        Thread handler = new Thread(() -> client(socket));
+                        handler.start();
+                        handler.join();
+                    } catch (Throwable t) {
+                        LOGGER.error("Error handling a client connection", t);
+                    }
                 }
             }
         } catch (Throwable t) {
@@ -270,7 +279,7 @@ public class Server implements AutoCloseable, Runnable {
                 updateState(DaemonState.Idle);
                 return;
             }
-            LOGGER.info("Request received: " + message);
+            LOGGER.info("Request received: {}", message);
             if (message instanceof BuildRequest) {
                 handle(connection, (BuildRequest) message);
             }
