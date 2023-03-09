@@ -54,6 +54,12 @@
       <artifactId>plexus-interactivity-api</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.takari.maven</groupId>
+      <artifactId>takari-smart-builder</artifactId>
+      <version>0.6.2</version>
+    </dependency>
+
     <!-- Logging -->
     <dependency>
       <groupId>ch.qos.logback</groupId>

@@ -115,6 +115,7 @@
     <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
     <xstream.version>1.4.20</xstream.version>
     <plexus-interactivity-api.version>1.0</plexus-interactivity-api.version>
+    <takari-smart-builder.version>0.6.2</takari-smart-builder.version>
   </properties>
 
   <dependencyManagement>
@@ -340,6 +341,12 @@
             <artifactId>junit</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>io.takari.maven</groupId>
+        <artifactId>takari-smart-builder</artifactId>
+        <version>${takari-smart-builder.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

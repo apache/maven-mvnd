@@ -34,6 +34,9 @@
     </artifactSet>
 
     <artifactSet to="/lib/ext">
+        <artifact id="io.takari.maven:takari-smart-builder:${takari-smart-builder.version}">
+            <exclusion id="*:*"/>
+        </artifact>
         <artifact id="org.apache.maven.daemon:mvnd-daemon:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
