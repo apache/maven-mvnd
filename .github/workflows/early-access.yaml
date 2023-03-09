@@ -87,5 +87,8 @@ jobs:
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v2
         with:
-          name: mvnd-${{ env.OS }}
-          path: dist-m*/target/maven-*-mvnd-*.zip
+          - name: mvnd-m39-${{ env.OS }}
+            path: dist-m39/target/maven-*-mvnd-*.zip
+
+          - name: mvnd-m40-${{ env.OS }}
+            path: dist-m40/target/maven-*-mvnd-*.zip
