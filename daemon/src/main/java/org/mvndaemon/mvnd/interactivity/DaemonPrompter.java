@@ -154,7 +154,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
             Connection con = Objects.requireNonNull(Connection.getCurrent());
             String projectId = ProjectBuildLogAppender.getProjectId();
             Message.ProjectEvent msg = Message.display(projectId, message);
-            LOGGER.info("Sending display request: " + msg);
+            LOGGER.info("Sending display request: {}", msg);
             con.dispatch(msg);
         } catch (Exception e) {
             throw new IOException("Unable to display message", e);
@@ -167,9 +167,9 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
             String projectId = ProjectBuildLogAppender.getProjectId();
             String uid = UUID.randomUUID().toString();
             Message.Prompt msg = new Message.Prompt(projectId, uid, message, password);
-            LOGGER.info("Requesting prompt: " + msg);
+            LOGGER.info("Requesting prompt: {}", msg);
             Message.PromptResponse res = con.request(msg, Message.PromptResponse.class, r -> uid.equals(r.getUid()));
-            LOGGER.info("Received response: " + res.getMessage());
+            LOGGER.info("Received response: {}", res.getMessage());
             return res.getMessage();
         } catch (Exception e) {
             throw new IOException("Unable to prompt user", e);

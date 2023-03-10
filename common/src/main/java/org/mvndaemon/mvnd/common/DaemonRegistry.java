@@ -293,10 +293,9 @@ public class DaemonRegistry implements AutoCloseable {
                 } catch (IllegalStateException | ArrayIndexOutOfBoundsException | BufferUnderflowException e) {
                     String absPath = registryFile.toAbsolutePath().normalize().toString();
                     LOGGER.warn(
-                            "Invalid daemon registry info, " + "trying to recover from this issue. "
-                                    + "If you keep getting this warning, "
-                                    + "try deleting the `registry.bin` file at ["
-                                    + absPath + "]",
+                            "Invalid daemon registry info, trying to recover from this issue. "
+                                    + "If you keep getting this warning, try deleting the `registry.bin` file at [{}]",
+                            absPath,
                             e);
                     this.reset();
                     return;
@@ -337,7 +336,7 @@ public class DaemonRegistry implements AutoCloseable {
                         try {
                             return Integer.parseInt(pid);
                         } catch (NumberFormatException x) {
-                            LOGGER.warn("Unable to determine PID from malformed /proc/self link `" + pid + "`");
+                            LOGGER.warn("Unable to determine PID from malformed /proc/self link `{}`", pid);
                         }
                     }
                 }
@@ -352,8 +351,7 @@ public class DaemonRegistry implements AutoCloseable {
             return Integer.parseInt(pid);
         } catch (NumberFormatException x) {
             int rpid = new Random().nextInt(1 << 16);
-            LOGGER.warn(
-                    "Unable to determine PID from malformed VM name `" + vmname + "`, picked a random number=" + rpid);
+            LOGGER.warn("Unable to determine PID from malformed VM name `{}`, picked a random number={}", vmname, rpid);
             return rpid;
         }
     }
