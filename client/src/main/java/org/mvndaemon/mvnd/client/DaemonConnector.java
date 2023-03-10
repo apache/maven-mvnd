@@ -498,7 +498,7 @@ public class DaemonConnector {
             sc.next();
             sc.next();
             String version = sc.next();
-            LOGGER.warn("JAVA VERSION: " + version);
+            LOGGER.warn("JAVA VERSION: {}", version);
             int is = version.charAt(0) == '"' ? 1 : 0;
             int ie = version.indexOf('.', version.indexOf('.', is));
             return Float.parseFloat(version.substring(is, ie));

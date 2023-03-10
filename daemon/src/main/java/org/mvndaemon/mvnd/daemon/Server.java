@@ -389,7 +389,7 @@ public class Server implements AutoCloseable, Runnable {
     private void requestStop(String reason) {
         DaemonState state = getState();
         if (!(state == StopRequested || state == Stopped)) {
-            LOGGER.info("Daemon will be stopped at the end of the build " + reason);
+            LOGGER.info("Daemon will be stopped at the end of the build {}", reason);
             stateLock.lock();
             try {
                 if (state == Busy) {
@@ -405,7 +405,7 @@ public class Server implements AutoCloseable, Runnable {
     }
 
     private void requestForcefulStop(String reason) {
-        LOGGER.info("Daemon is stopping immediately " + reason);
+        LOGGER.info("Daemon is stopping immediately {}", reason);
         stopNow(reason);
     }
 
@@ -533,7 +533,7 @@ public class Server implements AutoCloseable, Runnable {
                             LOGGER.info("No more message to dispatch");
                             return;
                         }
-                        LOGGER.info("Dispatch message: " + m);
+                        LOGGER.info("Dispatch message: {}", m);
                         connection.dispatch(m);
                     }
                 } catch (Throwable t) {
@@ -637,7 +637,7 @@ public class Server implements AutoCloseable, Runnable {
 
     private void updateState(DaemonState state) {
         if (getState() != state) {
-            LOGGER.info("Updating state to: " + state);
+            LOGGER.info("Updating state to: {}", state);
             stateLock.lock();
             try {
                 registry.store(info = info.withState(state));

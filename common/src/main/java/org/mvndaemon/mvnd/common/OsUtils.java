@@ -78,13 +78,15 @@ public class OsUtils {
                     return Long.parseLong(output.get(0).trim());
                 } catch (NumberFormatException e) {
                     LOGGER.warn(
-                            "Could not parse the output of " + Stream.of(cmd).collect(Collectors.joining(" "))
-                                    + " as a long:\n"
-                                    + output.stream().collect(Collectors.joining("\n")));
+                            "Could not parse the output of {} as a long:\n{}",
+                            Stream.of(cmd).collect(Collectors.joining(" ")),
+                            output.stream().collect(Collectors.joining("\n")));
                 }
             } else {
-                LOGGER.warn("Unexpected output of " + Stream.of(cmd).collect(Collectors.joining(" ")) + ":\n"
-                        + output.stream().collect(Collectors.joining("\n")));
+                LOGGER.warn(
+                        "Unexpected output of {}:\n{}",
+                        Stream.of(cmd).collect(Collectors.joining(" ")),
+                        output.stream().collect(Collectors.joining("\n")));
             }
             return -1;
         } else if (os == Os.WINDOWS) {
@@ -97,14 +99,16 @@ public class OsUtils {
                 try {
                     return Long.parseLong(nonEmptyLines.get(1).trim()) / KB;
                 } catch (NumberFormatException e) {
-                    LOGGER.warn("Could not parse the second line of "
-                            + Stream.of(cmd).collect(Collectors.joining(" "))
-                            + " output as a long:\n"
-                            + nonEmptyLines.stream().collect(Collectors.joining("\n")));
+                    LOGGER.warn(
+                            "Could not parse the second line of {} output as a long:\n{}",
+                            Stream.of(cmd).collect(Collectors.joining(" ")),
+                            nonEmptyLines.stream().collect(Collectors.joining("\n")));
                 }
             } else {
-                LOGGER.warn("Unexpected output of " + Stream.of(cmd).collect(Collectors.joining(" ")) + ":\n"
-                        + output.stream().collect(Collectors.joining("\n")));
+                LOGGER.warn(
+                        "Unexpected output of {}:\n{}",
+                        Stream.of(cmd).collect(Collectors.joining(" ")),
+                        output.stream().collect(Collectors.joining("\n")));
             }
             return -1;
         } else {
@@ -136,11 +140,14 @@ public class OsUtils {
         try (CommandProcess ps = new CommandProcess(builder.start(), output::add)) {
             final int exitCode = ps.waitFor(1000);
             if (exitCode != 0) {
-                LOGGER.warn(Stream.of(cmd).collect(Collectors.joining(" ")) + " exited with " + exitCode + ":\n"
-                        + output.stream().collect(Collectors.joining("\n")));
+                LOGGER.warn(
+                        "{} exited with {}:\n{}",
+                        Stream.of(cmd).collect(Collectors.joining(" ")),
+                        exitCode,
+                        output.stream().collect(Collectors.joining("\n")));
             }
         } catch (IOException e) {
-            LOGGER.warn("Could not execute " + Stream.of(cmd).collect(Collectors.joining(" ")));
+            LOGGER.warn("Could not execute {}", Stream.of(cmd).collect(Collectors.joining(" ")));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

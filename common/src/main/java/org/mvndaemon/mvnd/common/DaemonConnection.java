@@ -143,7 +143,7 @@ public class DaemonConnection implements AutoCloseable {
                 if (failure == null) {
                     failure = throwable;
                 } else if (!Thread.currentThread().isInterrupted()) {
-                    LOGGER.error(String.format("Could not stop %s.", element), throwable);
+                    LOGGER.error("Could not stop {}.", element, throwable);
                 }
             }
         }
