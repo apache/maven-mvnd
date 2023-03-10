@@ -189,7 +189,7 @@ for /F "usebackq delims=" %%a in ("%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config") do s
 
 :endReadAdditionalConfig
 
-for %%i in ("%MVND_HOME%"\boot\plexus-classworlds-*) do set CLASSWORLDS_JAR="%%i"
+for %%i in ("%MVND_HOME%"\mvn\boot\plexus-classworlds-*) do set CLASSWORLDS_JAR="%%i"
 set CLASSWORLDS_LAUNCHER=org.codehaus.plexus.classworlds.launcher.Launcher
 
 "%JAVACMD%" ^
