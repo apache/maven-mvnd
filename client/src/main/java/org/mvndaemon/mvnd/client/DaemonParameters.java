@@ -243,7 +243,7 @@ public class DaemonParameters {
     public Path logbackConfigurationPath() {
         return property(Environment.MVND_LOGBACK)
                 .orDefault(() -> mvndHome()
-                        .resolve("mvn/conf/logging/logback-server.xml")
+                        .resolve("mvn/conf/logging/logback-daemon.xml")
                         .toString())
                 .orFail()
                 .asPath();

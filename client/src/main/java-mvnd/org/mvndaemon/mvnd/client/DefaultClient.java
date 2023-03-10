@@ -59,6 +59,7 @@ import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.mvndaemon.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
@@ -145,6 +146,9 @@ public class DefaultClient implements Client {
                 parameters = parameters.withJvmArgs(jvmArgsStr, false);
             }
         }
+
+        // Install JUL -> SLF4j bridge
+        SLF4JBridgeHandler.install();
 
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();

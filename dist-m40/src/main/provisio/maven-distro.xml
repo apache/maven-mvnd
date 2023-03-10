@@ -31,6 +31,9 @@
         <artifact id="ch.qos.logback:logback-core">
             <exclusion id="*:*"/>
         </artifact>
+        <artifact id="org.slf4j:jul-to-slf4j">
+            <exclusion id="*:*"/>
+        </artifact>
     </artifactSet>
 
     <artifactSet to="/mvn/lib/ext">
