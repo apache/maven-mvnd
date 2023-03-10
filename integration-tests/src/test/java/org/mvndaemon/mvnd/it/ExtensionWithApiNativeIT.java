@@ -27,7 +27,7 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 @MvndNativeTest(projectDir = "src/test/projects/extension-with-api")
-public class ExtensionWithApiTest {
+public class ExtensionWithApiNativeIT {
 
     @Inject
     Client client;
