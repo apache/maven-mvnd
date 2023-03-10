@@ -270,7 +270,7 @@ public class DefaultClient implements Client {
                                 d.getPid(),
                                 d.getAddress(),
                                 d.getState(),
-                                OsUtils.kbTohumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
+                                OsUtils.kbToHumanReadable(OsUtils.findProcessRssInKb(d.getPid())),
                                 LocalDateTime.ofInstant(
                                         Instant.ofEpochMilli(Math.max(d.getLastIdle(), d.getLastBusy())),
                                         ZoneId.systemDefault()),
