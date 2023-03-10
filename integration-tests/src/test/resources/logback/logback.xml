@@ -36,7 +36,7 @@
     <appender-ref ref="DAEMON" />
   </logger>
 
-  <logger name="org.mvndaemon.mvnd.builder.SmartBuilder" level="DEBUG"/>
+  <logger name="io.takari.maven.builder.smart.SmartBuilder" level="DEBUG"/>
 
   <logger name="Sisu" level="INFO" />
 
