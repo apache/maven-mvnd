@@ -23,6 +23,7 @@ import javax.inject.Singleton;
 
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.execution.ProjectExecutionEvent;
 import org.apache.maven.execution.ProjectExecutionListener;
@@ -58,13 +59,22 @@ public class LoggingExecutionListener implements ExecutionListener, ProjectExecu
     @Override
     public void afterProjectExecutionFailure(ProjectExecutionEvent projectExecutionEvent) {
         MavenSession session = projectExecutionEvent.getSession();
+        boolean halted;
+        // The ReactorBuildStatus is only available if the SmartBuilder is used
         ReactorBuildStatus status =
                 (ReactorBuildStatus) session.getRepositorySession().getData().get(ReactorBuildStatus.class);
+        if (status != null) {
+            halted = status.isHalted();
+        } else {
+            // assume sensible default
+            Throwable t = projectExecutionEvent.getCause();
+            halted = (t instanceof RuntimeException || !(t instanceof Exception))
+                    || !MavenExecutionRequest.REACTOR_FAIL_NEVER.equals(session.getReactorFailureBehavior())
+                            && !MavenExecutionRequest.REACTOR_FAIL_AT_END.equals(session.getReactorFailureBehavior());
+        }
         Throwable cause = projectExecutionEvent.getCause();
         buildEventListener.executionFailure(
-                projectExecutionEvent.getProject().getArtifactId(),
-                status.isHalted(),
-                cause != null ? cause.toString() : null);
+                projectExecutionEvent.getProject().getArtifactId(), halted, cause != null ? cause.toString() : null);
     }
 
     @Override
