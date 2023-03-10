@@ -345,8 +345,8 @@ public class DaemonConnector {
             // classpath
             String mvndAgentPath = null;
             String plexusClassworldsPath = null;
-            try (DirectoryStream<Path> jarPaths =
-                    Files.newDirectoryStream(mvndHome.resolve("lib").resolve("ext"))) {
+            try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(
+                    mvndHome.resolve("mvn").resolve("lib").resolve("ext"))) {
                 for (Path jar : jarPaths) {
                     String s = jar.getFileName().toString();
                     if (s.endsWith(".jar")) {
@@ -356,7 +356,8 @@ public class DaemonConnector {
                     }
                 }
             }
-            try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(mvndHome.resolve("boot"))) {
+            try (DirectoryStream<Path> jarPaths =
+                    Files.newDirectoryStream(mvndHome.resolve("mvn").resolve("boot"))) {
                 for (Path jar : jarPaths) {
                     String s = jar.getFileName().toString();
                     if (s.endsWith(".jar")) {
@@ -367,7 +368,7 @@ public class DaemonConnector {
                 }
             }
             if (mvndAgentPath == null) {
-                throw new IllegalStateException("Could not find mvnd-agent jar in lib/ext/");
+                throw new IllegalStateException("Could not find mvnd-agent jar in mvn/lib/ext/");
             }
             if (plexusClassworldsPath == null) {
                 throw new IllegalStateException("Could not find plexus-classworlds jar in boot/");
@@ -428,8 +429,8 @@ public class DaemonConnector {
             }
 
             Environment.MVND_HOME.addSystemProperty(args, mvndHome.toString());
-            args.add("-Dmaven.home=" + mvndHome);
-            args.add("-Dmaven.conf=" + mvndHome.resolve("conf"));
+            args.add("-Dmaven.home=" + mvndHome.resolve("mvn"));
+            args.add("-Dmaven.conf=" + mvndHome.resolve("mvn").resolve("conf"));
             args.add("-Dclassworlds.conf=" + mvndHome.resolve("bin").resolve("mvnd-server.conf"));
 
             Environment.MVND_JAVA_HOME.addSystemProperty(
