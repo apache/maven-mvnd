@@ -21,15 +21,27 @@ package org.mvndaemon.mvnd.common;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class OsUtilsTest {
+class OsUtilsTest {
+
     @Test
-    void kbTohumanReadable() {
-        Assertions.assertEquals("0k", OsUtils.kbTohumanReadable(0));
-        Assertions.assertEquals("1001k", OsUtils.kbTohumanReadable(1001));
-        Assertions.assertEquals("1m", OsUtils.kbTohumanReadable(1024));
-        Assertions.assertEquals("1023m", OsUtils.kbTohumanReadable(1024 * 1024 - 1));
-        Assertions.assertEquals("1g", OsUtils.kbTohumanReadable(1024 * 1024));
-        Assertions.assertEquals("1t", OsUtils.kbTohumanReadable(1024 * 1024 * 1024));
+    void bytesToHumanReadable() {
+        Assertions.assertEquals("0B", OsUtils.bytesToHumanReadable(0L));
+        Assertions.assertEquals("1001B", OsUtils.bytesToHumanReadable(1001L));
+        Assertions.assertEquals("1k", OsUtils.bytesToHumanReadable(1024L));
+        Assertions.assertEquals("1023k", OsUtils.bytesToHumanReadable(1024L * 1024L - 1L));
+        Assertions.assertEquals("1m", OsUtils.bytesToHumanReadable(1024L * 1024L));
+        Assertions.assertEquals("1g", OsUtils.bytesToHumanReadable(1024L * 1024L * 1024L));
+        Assertions.assertEquals("1t", OsUtils.bytesToHumanReadable(1024L * 1024L * 1024L * 1024L));
+    }
+
+    @Test
+    void kbToHumanReadable() {
+        Assertions.assertEquals("0k", OsUtils.kbToHumanReadable(0L));
+        Assertions.assertEquals("1001k", OsUtils.kbToHumanReadable(1001L));
+        Assertions.assertEquals("1m", OsUtils.kbToHumanReadable(1024L));
+        Assertions.assertEquals("1023m", OsUtils.kbToHumanReadable(1024L * 1024L - 1L));
+        Assertions.assertEquals("1g", OsUtils.kbToHumanReadable(1024L * 1024L));
+        Assertions.assertEquals("1t", OsUtils.kbToHumanReadable(1024L * 1024L * 1024L));
     }
 
     @Test

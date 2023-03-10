@@ -40,37 +40,31 @@ public class OsUtils {
 
     private OsUtils() {}
 
-    public static String bytesTohumanReadable(long bytes) {
+    public static String bytesToHumanReadable(long bytes) {
         int unit = 0;
         while (bytes >= KB && unit < UNITS.length() - 1) {
             bytes /= KB;
             unit++;
         }
-        String kbString = String.valueOf(bytes);
-        return new StringBuilder(kbString.length() + 1)
-                .append(kbString)
-                .append(UNITS.charAt(unit))
-                .toString();
+        String bytesString = String.valueOf(bytes);
+        return bytesString + UNITS.charAt(unit);
     }
 
-    public static String kbTohumanReadable(long kb) {
+    public static String kbToHumanReadable(long kb) {
         int unit = 1;
         while (kb >= KB && unit < UNITS.length() - 1) {
             kb /= KB;
             unit++;
         }
         String kbString = String.valueOf(kb);
-        return new StringBuilder(kbString.length() + 1)
-                .append(kbString)
-                .append(UNITS.charAt(unit))
-                .toString();
+        return kbString + UNITS.charAt(unit);
     }
 
     public static long findProcessRssInKb(long pid) {
         final Os os = Os.current();
         if (os.isUnixLike()) {
             String[] cmd = {"ps", "-o", "rss=", "-p", String.valueOf(pid)};
-            final List<String> output = new ArrayList<String>(1);
+            final List<String> output = new ArrayList<>(1);
             exec(cmd, output);
             if (output.size() == 1) {
                 try {
@@ -87,7 +81,7 @@ public class OsUtils {
             return -1;
         } else if (os == Os.WINDOWS) {
             String[] cmd = {"wmic", "process", "where", "processid=" + pid, "get", "WorkingSetSize"};
-            final List<String> output = new ArrayList<String>(1);
+            final List<String> output = new ArrayList<>(1);
             exec(cmd, output);
             final List<String> nonEmptyLines =
                     output.stream().filter(l -> !l.isEmpty()).collect(Collectors.toList());
@@ -119,7 +113,7 @@ public class OsUtils {
      */
     public static String findJavaHomeFromJavaExecutable(String javaExecutable) {
         String[] cmd = {javaExecutable, "-XshowSettings:properties", "-version"};
-        final List<String> output = new ArrayList<String>();
+        final List<String> output = new ArrayList<>();
         exec(cmd, output);
         return output.stream()
                 .filter(l -> l.contains(" java.home = "))

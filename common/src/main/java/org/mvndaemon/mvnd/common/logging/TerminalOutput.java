@@ -701,9 +701,9 @@ public class TerminalOutput implements ClientOutput {
             asb.append(event.getRepositoryId());
             if (cur > 0 && cur < max) {
                 asb.append(' ');
-                asb.append(OsUtils.bytesTohumanReadable(cur));
+                asb.append(OsUtils.bytesToHumanReadable(cur));
                 asb.append('/');
-                asb.append(OsUtils.bytesTohumanReadable(max));
+                asb.append(OsUtils.bytesToHumanReadable(max));
             }
             return asb.toAttributedString();
         } else {
