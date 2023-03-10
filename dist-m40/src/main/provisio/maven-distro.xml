@@ -17,14 +17,14 @@
 -->
 <assembly>
 
-    <artifactSet to="/">
+    <artifactSet to="/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${maven4.version}">
             <unpack useRoot="false"
                     excludes="conf/logging/*,lib/maven-slf4j-provider*,lib/plexus-utils-3.*" />
         </artifact>
     </artifactSet>
 
-    <artifactSet to="/lib">
+    <artifactSet to="/mvn/lib">
         <artifact id="ch.qos.logback:logback-classic">
             <exclusion id="*:*"/>
         </artifact>
@@ -33,7 +33,7 @@
         </artifact>
     </artifactSet>
 
-    <artifactSet to="/lib/ext">
+    <artifactSet to="/mvn/lib/ext">
         <artifact id="io.takari.maven:takari-smart-builder:${takari-smart-builder.version}">
             <exclusion id="*:*"/>
         </artifact>
