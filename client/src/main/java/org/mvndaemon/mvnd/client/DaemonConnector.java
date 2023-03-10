@@ -431,7 +431,7 @@ public class DaemonConnector {
             Environment.MVND_HOME.addSystemProperty(args, mvndHome.toString());
             args.add("-Dmaven.home=" + mvndHome.resolve("mvn"));
             args.add("-Dmaven.conf=" + mvndHome.resolve("mvn").resolve("conf"));
-            args.add("-Dclassworlds.conf=" + mvndHome.resolve("bin").resolve("mvnd-server.conf"));
+            args.add("-Dclassworlds.conf=" + mvndHome.resolve("bin").resolve("mvnd-daemon.conf"));
 
             Environment.MVND_JAVA_HOME.addSystemProperty(
                     args, parameters.javaHome().toString());
