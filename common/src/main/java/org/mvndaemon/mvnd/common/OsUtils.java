@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,14 +78,11 @@ public class OsUtils {
                 } catch (NumberFormatException e) {
                     LOGGER.warn(
                             "Could not parse the output of {} as a long:\n{}",
-                            Stream.of(cmd).collect(Collectors.joining(" ")),
-                            output.stream().collect(Collectors.joining("\n")));
+                            String.join(" ", cmd),
+                            String.join("\n", output));
                 }
             } else {
-                LOGGER.warn(
-                        "Unexpected output of {}:\n{}",
-                        Stream.of(cmd).collect(Collectors.joining(" ")),
-                        output.stream().collect(Collectors.joining("\n")));
+                LOGGER.warn("Unexpected output of {}:\n{}", String.join(" ", cmd), String.join("\n", output));
             }
             return -1;
         } else if (os == Os.WINDOWS) {
@@ -101,14 +97,11 @@ public class OsUtils {
                 } catch (NumberFormatException e) {
                     LOGGER.warn(
                             "Could not parse the second line of {} output as a long:\n{}",
-                            Stream.of(cmd).collect(Collectors.joining(" ")),
-                            nonEmptyLines.stream().collect(Collectors.joining("\n")));
+                            String.join(" ", cmd),
+                            String.join("\n", nonEmptyLines));
                 }
             } else {
-                LOGGER.warn(
-                        "Unexpected output of {}:\n{}",
-                        Stream.of(cmd).collect(Collectors.joining(" ")),
-                        output.stream().collect(Collectors.joining("\n")));
+                LOGGER.warn("Unexpected output of {}:\n{}", String.join(" ", cmd), String.join("\n", output));
             }
             return -1;
         } else {
@@ -140,14 +133,10 @@ public class OsUtils {
         try (CommandProcess ps = new CommandProcess(builder.start(), output::add)) {
             final int exitCode = ps.waitFor(1000);
             if (exitCode != 0) {
-                LOGGER.warn(
-                        "{} exited with {}:\n{}",
-                        Stream.of(cmd).collect(Collectors.joining(" ")),
-                        exitCode,
-                        output.stream().collect(Collectors.joining("\n")));
+                LOGGER.warn("{} exited with {}:\n{}", String.join(" ", cmd), exitCode, String.join("\n", output));
             }
         } catch (IOException e) {
-            LOGGER.warn("Could not execute {}", Stream.of(cmd).collect(Collectors.joining(" ")));
+            LOGGER.warn("Could not execute {}", String.join(" ", cmd));
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
