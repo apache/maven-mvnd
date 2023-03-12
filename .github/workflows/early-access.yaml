@@ -28,7 +28,25 @@ env:
   JAVA_VERSION: '17'
 
 jobs:
-  build:
+  default-build:
+    name: 'Default build (without Graal)'
+    if: startsWith(github.event.head_commit.message, '[release] Release ') != true
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v2
+
+      - name: 'Run default (non-native) build'
+        run: ./mvnw verify -Dmrm=false -B -ntp -e
+
+      - name: 'Upload daemon test logs'
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: daemon-test-logs-default-build
+          path: integration-tests/target/mvnd-tests/**/daemon*.log
+
+  native-build:
     name: 'Build with Graal on ${{ matrix.os }}'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
     strategy:
