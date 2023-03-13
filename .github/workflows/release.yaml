@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: 'Check out repository'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: 'Set vars'
         shell: bash
@@ -79,7 +79,7 @@ jobs:
         run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e -DskipTests -s .mvn/release-settings.xml
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
           path: |
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - name: 'Check out repository'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: 'Set vars'
         shell: bash
@@ -113,7 +113,7 @@ jobs:
         run: ./mvnw clean verify -Psource-distribution -N -B -ntp -e
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
           path: |
@@ -126,21 +126,21 @@ jobs:
 
     steps:
       - name: 'Check out repository'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: 'Download all build artifacts'
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
 
       - name: 'Set up Java'
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'zulu'
 
       - name: 'Cache Maven packages'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
