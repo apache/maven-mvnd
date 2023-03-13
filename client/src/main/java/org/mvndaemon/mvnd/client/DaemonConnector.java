@@ -346,7 +346,7 @@ public class DaemonConnector {
             String mvndAgentPath = null;
             String plexusClassworldsPath = null;
             try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(
-                    mvndHome.resolve("mvn").resolve("lib").resolve("ext"))) {
+                    mvndHome.resolve("mvn").resolve("lib").resolve("mvnd"))) {
                 for (Path jar : jarPaths) {
                     String s = jar.getFileName().toString();
                     if (s.endsWith(".jar")) {
@@ -368,7 +368,7 @@ public class DaemonConnector {
                 }
             }
             if (mvndAgentPath == null) {
-                throw new IllegalStateException("Could not find mvnd-agent jar in mvn/lib/ext/");
+                throw new IllegalStateException("Could not find mvnd-agent jar in mvn/lib/mvnd/");
             }
             if (plexusClassworldsPath == null) {
                 throw new IllegalStateException("Could not find plexus-classworlds jar in boot/");

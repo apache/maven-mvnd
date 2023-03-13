@@ -50,6 +50,7 @@
     <module>helper</module>
     <module>common</module>
     <module>client</module>
+    <module>logging</module>
     <module>daemon</module>
     <module>daemon-m39</module>
     <module>daemon-m40</module>
@@ -238,6 +239,11 @@
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-native</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.daemon</groupId>
+        <artifactId>mvnd-logging</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

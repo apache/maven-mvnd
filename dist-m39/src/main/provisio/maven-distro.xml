@@ -25,6 +25,9 @@
     </artifactSet>
 
     <artifactSet to="/mvn/lib">
+        <artifact id="org.apache.maven.daemon:mvnd-logging:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
         <artifact id="ch.qos.logback:logback-classic">
             <exclusion id="*:*"/>
         </artifact>
@@ -36,7 +39,7 @@
         </artifact>
     </artifactSet>
 
-    <artifactSet to="/mvn/lib/ext">
+    <artifactSet to="/mvn/lib/mvnd">
         <artifact id="io.takari.maven:takari-smart-builder:${takari-smart-builder.version}">
             <exclusion id="*:*"/>
         </artifact>
