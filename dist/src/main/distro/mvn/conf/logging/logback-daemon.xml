@@ -36,6 +36,10 @@
     <appender-ref ref="DAEMON" />
   </logger>
 
+  <logger name="org.mvndaemon.mvnd.interactivity" level="DEBUG" additivity="false">
+    <appender-ref ref="DAEMON" />
+  </logger>
+
   <logger name="Sisu" level="INFO" />
 
   <!-- suppress annoying @threadSafe and checksum failure warning messages -->
