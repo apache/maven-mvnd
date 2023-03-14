@@ -350,7 +350,10 @@ public class TerminalOutput implements ClientOutput {
                 readInput.writeLock().lock();
                 try {
                     clearDisplay();
-                    terminal.writer().printf("[%s] %s", prompt.getProjectId(), prompt.getMessage());
+                    String msg = (maxThreads > 1)
+                            ? String.format("[%s] %s", prompt.getProjectId(), prompt.getMessage())
+                            : prompt.getMessage();
+                    terminal.writer().print(msg);
                     terminal.flush();
                     StringBuilder sb = new StringBuilder();
                     while (true) {
