@@ -204,6 +204,11 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                         }
                     });
                 }
+
+                final Path dotMvn = testExecutionDir.resolve(".mvn");
+                if (!Files.exists(dotMvn)) {
+                    Files.createDirectories(dotMvn);
+                }
             }
             final Path multiModuleProjectDirectory =
                     Paths.get(DaemonParameters.findDefaultMultimoduleProjectDirectory(testExecutionDir));
