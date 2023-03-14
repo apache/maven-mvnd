@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -253,22 +254,19 @@ public class DaemonMavenCli implements DaemonCli {
     void cli(CliRequest cliRequest) throws Exception {
         CLIManager cliManager = newCLIManager();
 
-        List<String> args = new ArrayList<>();
         CommandLine mavenConfig = null;
         try {
             File configFile = new File(cliRequest.multiModuleProjectDirectory, MVN_MAVEN_CONFIG);
 
             if (configFile.isFile()) {
-                for (String arg : new String(Files.readAllBytes(configFile.toPath())).split("\\s+")) {
-                    if (!arg.isEmpty()) {
-                        args.add(arg);
+                try (Stream<String> lines = Files.lines(configFile.toPath(), Charset.defaultCharset())) {
+                    String[] args = lines.filter(arg -> !arg.isEmpty()).toArray(String[]::new);
+                    mavenConfig = cliManager.parse(args);
+                    List<?> unrecognized = mavenConfig.getArgList();
+                    if (!unrecognized.isEmpty()) {
+                        // This file can only contain options, not args (goals or phases)
+                        throw new ParseException("Unrecognized maven.config file entries: " + unrecognized);
                     }
-                }
-
-                mavenConfig = cliManager.parse(args.toArray(new String[0]));
-                List<?> unrecongized = mavenConfig.getArgList();
-                if (!unrecongized.isEmpty()) {
-                    throw new ParseException("Unrecognized maven.config entries: " + unrecongized);
                 }
             }
         } catch (ParseException e) {
