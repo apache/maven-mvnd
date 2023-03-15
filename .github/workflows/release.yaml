@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ ubuntu-18.04, macOS-10.15, windows-2019 ]
+        os: [ ubuntu-20.04, macOS-10.15, windows-2019 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -88,7 +88,7 @@ jobs:
 
   source:
     name: 'Build source distributions'
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: 'Check out repository'
         uses: actions/checkout@v3
@@ -121,7 +121,7 @@ jobs:
             target/maven-mvnd-*.tar.gz
 
   release:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: [build, source]
 
     steps:
