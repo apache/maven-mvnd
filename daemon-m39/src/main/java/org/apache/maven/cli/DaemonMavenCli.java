@@ -73,7 +73,6 @@ import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.plugin.ExtensionRealmCache;
-import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.plugin.PluginRealmCache;
 import org.apache.maven.plugin.version.PluginVersionResolver;
@@ -111,7 +110,6 @@ import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.mvndaemon.mvnd.plugin.CachingPluginVersionResolver;
-import org.mvndaemon.mvnd.plugin.CliMavenPluginManager;
 import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
@@ -533,7 +531,6 @@ public class DaemonMavenCli implements DaemonCli {
                 bind(PluginArtifactsCache.class).to(InvalidatingPluginArtifactsCache.class);
                 bind(PluginRealmCache.class).to(InvalidatingPluginRealmCache.class);
                 bind(ProjectArtifactsCache.class).to(InvalidatingProjectArtifactsCache.class);
-                bind(MavenPluginManager.class).to(CliMavenPluginManager.class);
                 bind(PluginVersionResolver.class).to(CachingPluginVersionResolver.class);
             }
         });
