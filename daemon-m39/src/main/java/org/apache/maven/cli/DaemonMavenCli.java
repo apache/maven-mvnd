@@ -239,7 +239,6 @@ public class DaemonMavenCli implements DaemonCli {
             toolchains(cliRequest);
             populateRequest(cliRequest);
             encryption(cliRequest);
-            repository(cliRequest);
             return execute(cliRequest);
         } catch (ExitException e) {
             return e.exitCode;
@@ -677,13 +676,6 @@ public class DaemonMavenCli implements DaemonCli {
             throw new UnsupportedOperationException("Unsupported option: " + CLIManager.ENCRYPT_MASTER_PASSWORD);
         } else if (cliRequest.commandLine.hasOption(CLIManager.ENCRYPT_PASSWORD)) {
             throw new UnsupportedOperationException("Unsupported option: " + CLIManager.ENCRYPT_PASSWORD);
-        }
-    }
-
-    private void repository(CliRequest cliRequest) throws Exception {
-        if (cliRequest.commandLine.hasOption(CLIManager.LEGACY_LOCAL_REPOSITORY)
-                || Boolean.getBoolean("maven.legacyLocalRepo")) {
-            cliRequest.request.setUseLegacyLocalRepository(true);
         }
     }
 
