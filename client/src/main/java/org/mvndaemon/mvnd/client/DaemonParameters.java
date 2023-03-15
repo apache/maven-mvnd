@@ -124,11 +124,8 @@ public class DaemonParameters {
             if (mvndH != null) {
                 Path mvndDaemon =
                         Paths.get("mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
-                if (Files.exists(mvndH.resolve("mvn").resolve("lib").resolve(mvndDaemon))
-                        || Files.exists(mvndH.resolve("mvn")
-                                .resolve("lib")
-                                .resolve("ext")
-                                .resolve(mvndDaemon))) {
+                if (Files.exists(
+                        mvndH.resolve("mvn").resolve("lib").resolve("mvnd").resolve(mvndDaemon))) {
                     return mvndH.toString();
                 }
             }
