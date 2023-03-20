@@ -357,17 +357,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <repositories>
-    <repository>
-      <id>maven-3.9.1</id>
-      <url>https://repository.apache.org/content/repositories/maven-1888</url>
-    </repository>
-    <repository>
-      <id>maven-4.0.0-alpha-5</id>
-      <url>https://repository.apache.org/content/repositories/maven-1890</url>
-    </repository>
-  </repositories>
-
   <build>
     <pluginManagement>
       <plugins>
