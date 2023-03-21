@@ -39,7 +39,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.fusesource.jansi.internal.CLibrary;
 import org.jline.terminal.Size;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
@@ -158,10 +157,7 @@ public class TerminalOutput implements ClientOutput {
     public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
         this.start = System.currentTimeMillis();
         TerminalBuilder builder = TerminalBuilder.builder();
-        boolean outRedirected = CLibrary.isatty(1) == 0;
-        if (outRedirected) {
-            builder.dumb(true);
-        }
+        builder.systemOutput(TerminalBuilder.SystemOutput.SysErr);
         this.terminal = builder.build();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
@@ -933,7 +929,7 @@ public class TerminalOutput implements ClientOutput {
         @Override
         public void flush() {
             clearDisplay();
-            messages.forEach(terminal.writer()::println);
+            messages.forEach(System.out::println);
             messages.clear();
             terminal.flush();
         }
