@@ -1,5 +1,54 @@
 # Changelog
 
+## [1.0-m5](https://github.com/apache/maven-mvnd/tree/1.0-m5) (2023-03-22)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m4...1.0-m5)
+
+**Closed issues:**
+
+- mvnd 0.9.0 use stderr instead of stdout [\#822](https://github.com/apache/maven-mvnd/issues/822)
+- Prompter prompt is prepended with the projectId when there's only one project [\#816](https://github.com/apache/maven-mvnd/issues/816)
+- Linux native binary no longer works on ubuntu 18.04 and ubuntu 20.04 \(and likely any linux with glibc \< 2.34\) [\#812](https://github.com/apache/maven-mvnd/issues/812)
+- NPE in daemon prompter when using iteractive mode with no project \(using archetype\) [\#807](https://github.com/apache/maven-mvnd/issues/807)
+- 0.10.0-SNAPSHOT is leaking heap memory via ThreadLocal [\#798](https://github.com/apache/maven-mvnd/issues/798)
+- `NullPointerException: Cannot invoke "org.apache.maven.lifecycle.internal.ReactorBuildStatus.isHalted()" because "status" is null` [\#795](https://github.com/apache/maven-mvnd/issues/795)
+- Support maven 3.9.0 [\#788](https://github.com/apache/maven-mvnd/issues/788)
+- mvnd overwrites PATH for vanilla mvn [\#787](https://github.com/apache/maven-mvnd/issues/787)
+- Regression "WARNING: Unable to create a system terminal, creating a dumb terminal" [\#786](https://github.com/apache/maven-mvnd/issues/786)
+- `source <(mvnd --completion bash)` stopped working in 0.9.0  [\#785](https://github.com/apache/maven-mvnd/issues/785)
+- Cannot run program "infocmp" [\#782](https://github.com/apache/maven-mvnd/issues/782)
+- Threads parameter is not working on Apple Silicon [\#770](https://github.com/apache/maven-mvnd/issues/770)
+- NullPointerException [\#759](https://github.com/apache/maven-mvnd/issues/759)
+- maven dependency plugin missing pom: mvnd gives error \<=\> stock mvn warning [\#731](https://github.com/apache/maven-mvnd/issues/731)
+- mvnd incompatible with Gradle Enterprise's build-scan extension [\#725](https://github.com/apache/maven-mvnd/issues/725)
+
+**Merged pull requests:**
+
+- Use system out for build log and sys err for in progress display, fixes \#822 [\#824](https://github.com/apache/maven-mvnd/pull/824) ([gnodet](https://github.com/gnodet))
+- Upgrade to maven 3.9.1 and 4.0.0-alpha-5 and resolver 1.9.7 [\#821](https://github.com/apache/maven-mvnd/pull/821) ([gnodet](https://github.com/gnodet))
+- Fix mvnd home detection based on executable path [\#820](https://github.com/apache/maven-mvnd/pull/820) ([gnodet](https://github.com/gnodet))
+- \[MNG-7131\] maven.config doesn't handle arguments with spaces in them \(backport to mvnd\) [\#819](https://github.com/apache/maven-mvnd/pull/819) ([gnodet](https://github.com/gnodet))
+- Reuse maven scripts and get closer to stock maven [\#818](https://github.com/apache/maven-mvnd/pull/818) ([gnodet](https://github.com/gnodet))
+- Prompter prompt should not prepend the projectId when there's only one project, fixes \#816 [\#817](https://github.com/apache/maven-mvnd/pull/817) ([gnodet](https://github.com/gnodet))
+- Bump GitHub actions version [\#815](https://github.com/apache/maven-mvnd/pull/815) ([psiroky](https://github.com/psiroky))
+- Build on ubuntu 20.04 [\#814](https://github.com/apache/maven-mvnd/pull/814) ([psiroky](https://github.com/psiroky))
+- Make sure mvnd's plexus-interactivity is not in the maven classloader, fixes \#807 [\#811](https://github.com/apache/maven-mvnd/pull/811) ([gnodet](https://github.com/gnodet))
+- Random minor fixes / clean-up in OsUtils [\#809](https://github.com/apache/maven-mvnd/pull/809) ([psiroky](https://github.com/psiroky))
+- Make the default \(non-native\) build work again [\#808](https://github.com/apache/maven-mvnd/pull/808) ([psiroky](https://github.com/psiroky))
+- Avoid possible NPE, fixes \#795 [\#806](https://github.com/apache/maven-mvnd/pull/806) ([gnodet](https://github.com/gnodet))
+- Switch back to takari smart builder [\#805](https://github.com/apache/maven-mvnd/pull/805) ([gnodet](https://github.com/gnodet))
+- Upgrade to jline 3.23.0 [\#804](https://github.com/apache/maven-mvnd/pull/804) ([gnodet](https://github.com/gnodet))
+- Move back mvn script into the mvn/bin folder to avoid conflicts, fixes \#787 [\#803](https://github.com/apache/maven-mvnd/pull/803) ([gnodet](https://github.com/gnodet))
+- Fix EnvHelper\#chDir on JDK 21 [\#802](https://github.com/apache/maven-mvnd/pull/802) ([gnodet](https://github.com/gnodet))
+- Run client connection handler inside new thread, fixes \#798  [\#801](https://github.com/apache/maven-mvnd/pull/801) ([psiroky](https://github.com/psiroky))
+- Add property to disable model caching [\#797](https://github.com/apache/maven-mvnd/pull/797) ([oehme](https://github.com/oehme))
+- Provide distributions for both maven 3.9.x and 4.0.x [\#796](https://github.com/apache/maven-mvnd/pull/796) ([gnodet](https://github.com/gnodet))
+- Bump graalvm version used for early access builds [\#794](https://github.com/apache/maven-mvnd/pull/794) ([gnodet](https://github.com/gnodet))
+- Fix JUL logging [\#792](https://github.com/apache/maven-mvnd/pull/792) ([gnodet](https://github.com/gnodet))
+- Make sure to print the completion script to the standard output stream \(fix \#785\) [\#791](https://github.com/apache/maven-mvnd/pull/791) ([gnodet](https://github.com/gnodet))
+- Turn off transfer messages when running tests when possible [\#790](https://github.com/apache/maven-mvnd/pull/790) ([gnodet](https://github.com/gnodet))
+- Make Classworld setup more alike to vanilla Maven [\#784](https://github.com/apache/maven-mvnd/pull/784) ([oehme](https://github.com/oehme))
+
 ## [1.0.0-m4](https://github.com/apache/maven-mvnd/tree/1.0.0-m4) (2023-01-28)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m1...1.0.0-m4)
@@ -8,26 +57,26 @@
 
 - Timeout when connecting maven daemon [\#772](https://github.com/apache/maven-mvnd/issues/772)
 - Support for Maven 3.8.7 [\#762](https://github.com/apache/maven-mvnd/issues/762)
+- runtime jdk requirement of java client \(via mvnd.sh\)  should be aligned to JDK8 [\#669](https://github.com/apache/maven-mvnd/issues/669)
+- Timeout waiting to connect to the Maven daemon [\#637](https://github.com/apache/maven-mvnd/issues/637)
 - 1.0.0-m1 slower than 0.8.2 [\#758](https://github.com/apache/maven-mvnd/issues/758)
 - Bash Completions Kills Shell \(Mac/Homebrew\) [\#756](https://github.com/apache/maven-mvnd/issues/756)
 - Too many open files on Mac OS with JDK 11 and mvnd 0.8.2 [\#710](https://github.com/apache/maven-mvnd/issues/710)
 - exec-maven-plugin \(exec:exec\) output unexpected prefix for each line of stdout/stderr [\#708](https://github.com/apache/maven-mvnd/issues/708)
-- runtime jdk requirement of java client \(via mvnd.sh\)  should be aligned to JDK8 [\#669](https://github.com/apache/maven-mvnd/issues/669)
-- Timeout waiting to connect to the Maven daemon [\#637](https://github.com/apache/maven-mvnd/issues/637)
 
 **Merged pull requests:**
 
 - Upgrade to maven 4.0.0-m4 and resolver 1.9.4 [\#780](https://github.com/apache/maven-mvnd/pull/780) ([gnodet](https://github.com/gnodet))
+- Upgrade dependencies to latest version [\#776](https://github.com/apache/maven-mvnd/pull/776) ([gnodet](https://github.com/gnodet))
+- Publish the binaries produced by the Early Access job again [\#774](https://github.com/apache/maven-mvnd/pull/774) ([ppalaga](https://github.com/ppalaga))
+- Try native image then fallback to pure java version [\#717](https://github.com/apache/maven-mvnd/pull/717) ([gzm55](https://github.com/gzm55))
 - Fix system out / err streams when redirecting to file [\#779](https://github.com/apache/maven-mvnd/pull/779) ([gnodet](https://github.com/gnodet))
 - Make connection timeouts configurable, fixes \#772 [\#778](https://github.com/apache/maven-mvnd/pull/778) ([gnodet](https://github.com/gnodet))
-- Upgrade dependencies to latest version [\#776](https://github.com/apache/maven-mvnd/pull/776) ([gnodet](https://github.com/gnodet))
 - Upgrade jline to 3.22.0 [\#775](https://github.com/apache/maven-mvnd/pull/775) ([gnodet](https://github.com/gnodet))
-- Publish the binaries produced by the Early Access job again [\#774](https://github.com/apache/maven-mvnd/pull/774) ([ppalaga](https://github.com/ppalaga))
 - Attempt at moving mvn as first class citizen in mvnd distribution, \#392 [\#769](https://github.com/apache/maven-mvnd/pull/769) ([gnodet](https://github.com/gnodet))
 - Fix spotless config to include all java files [\#768](https://github.com/apache/maven-mvnd/pull/768) ([gnodet](https://github.com/gnodet))
 - Fix core export provider [\#764](https://github.com/apache/maven-mvnd/pull/764) ([oehme](https://github.com/oehme))
 - Fix performance problem with mvnd \(\#758\) [\#760](https://github.com/apache/maven-mvnd/pull/760) ([gnodet](https://github.com/gnodet))
-- Try native image then fallback to pure java version [\#717](https://github.com/apache/maven-mvnd/pull/717) ([gzm55](https://github.com/gzm55))
 
 ## [1.0.0-m1](https://github.com/apache/maven-mvnd/tree/1.0.0-m1) (2022-12-16)
 
@@ -438,7 +487,7 @@
 - Provide a native library, fixes \#400 [\#401](https://github.com/apache/maven-mvnd/pull/401) ([gnodet](https://github.com/gnodet))
 - Upgrade maven 3.8.1 + prototype for global lock [\#399](https://github.com/apache/maven-mvnd/pull/399) ([gnodet](https://github.com/gnodet))
 - \#390 Restrict usage of mvnd daemons to the current user by utilizing a token check [\#391](https://github.com/apache/maven-mvnd/pull/391) ([Syquel](https://github.com/Syquel))
-- Global mvn settings.xml via mvnd.properties \#383 [\#386](https://github.com/apache/maven-mvnd/pull/386) ([mgoldschmidt-ds](https://github.com/mgoldschmidt-ds))
+- Global mvn settings.xml via mvnd.properties \#383 [\#386](https://github.com/apache/maven-mvnd/pull/386) ([migoldschmidt](https://github.com/migoldschmidt))
 - Do not run server threads as daemon as it causes problems with the exec-maven-plugin \(\#276\) [\#330](https://github.com/apache/maven-mvnd/pull/330) ([gnodet](https://github.com/gnodet))
 
 ## [0.4.3](https://github.com/apache/maven-mvnd/tree/0.4.3) (2021-03-19)
