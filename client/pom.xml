@@ -34,6 +34,7 @@
     <maven.compiler.release>11</maven.compiler.release>
     <graalvm-native-static-opt />
     <graalvm-native-glibc-opt />
+    <patchelf.skip>true</patchelf.skip>
   </properties>
 
   <dependencies>
@@ -199,7 +200,10 @@
         </file>
       </activation>
       <properties>
-        <graalvm-native-glibc-opt>-H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</graalvm-native-glibc-opt>
+        <graalvm-native-glibc-opt>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc
+                                  -H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.12
+                                  -H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</graalvm-native-glibc-opt>
+        <patchelf.skip>false</patchelf.skip>
       </properties>
     </profile>
 
@@ -230,6 +234,32 @@
               <execution>
                 <goals>
                   <goal>compile-no-fork</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <configuration>
+              <skip>${patchelf.skip}</skip>
+              <executable>patchelf</executable>
+              <arguments>
+                <argument>--add-needed</argument>
+                <argument>libpthread.so.0</argument>
+                <argument>--add-needed</argument>
+                <argument>librt.so.1</argument>
+                <argument>--add-needed</argument>
+                <argument>libdl.so.2</argument>
+                <argument>${project.build.directory}/mvnd</argument>
+              </arguments>
+            </configuration>
+            <executions>
+              <execution>
+                <id>add-needed-glibc-so</id>
+                <goals>
+                  <goal>exec</goal>
                 </goals>
                 <phase>package</phase>
               </execution>
