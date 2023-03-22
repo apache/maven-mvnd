@@ -83,8 +83,10 @@ jobs:
         with:
           name: artifacts
           path: |
-            dist-*/target/maven-*-mvnd-*.zip
-            dist-*/target/maven-*-mvnd-*.tar.gz
+            dist-m39/target/maven-mvnd-*.zip
+            dist-m39/target/maven-mvnd-*.tar.gz
+            dist-m40/target/maven-mvnd-*.zip
+            dist-m40/target/maven-mvnd-*.tar.gz
 
   source:
     name: 'Build source distributions'
@@ -184,123 +186,123 @@ jobs:
           asset_name: maven-mvnd-${{ env.VERSION }}-src.tar.gz
           asset_content_type: application/tar.gz
 
-      - name: Deploy maven-mvnd-mvn39-linux-amd64.zip
+      - name: Deploy maven-mvnd-m39-linux-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn39-linux-amd64.zip
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn39-linux-amd64.zip
+          asset_path: artifacts/dist-m39/target/maven-mvnd-${{ env.VERSION }}-m39-linux-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-m39-linux-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy maven-mvnd-mvn39-linux-amd64.tar.gz
+      - name: Deploy maven-mvnd-m39-linux-amd64.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn39-linux-amd64.tar.gz
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn39-linux-amd64.tar.gz
+          asset_path: artifacts/dist-m39/target/maven-mvnd-${{ env.VERSION }}-m39-linux-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-m39-linux-amd64.tar.gz
           asset_content_type: application/x-gzip
 
-      - name: Deploy maven-mvnd-mvn39-darwin-amd64.zip
+      - name: Deploy maven-mvnd-m39-darwin-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn39-darwin-amd64.zip
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn39-darwin-amd64.zip
+          asset_path: artifacts/dist-m39/target/maven-mvnd-${{ env.VERSION }}-m39-darwin-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-m39-darwin-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy maven-mvnd-mvn39-darwin-amd64.tar.gz
+      - name: Deploy maven-mvnd-m39-darwin-amd64.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn39-darwin-amd64.tar.gz
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn39-darwin-amd64.tar.gz
+          asset_path: artifacts/dist-m39/target/maven-mvnd-${{ env.VERSION }}-m39-darwin-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-m39-darwin-amd64.tar.gz
           asset_content_type: application/x-gzip
 
-      - name: Deploy maven-mvnd-mvn39-windows-amd64.zip
+      - name: Deploy maven-mvnd-m39-windows-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn39-windows-amd64.zip
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn39-windows-amd64.zip
+          asset_path: artifacts/dist-m39/target/maven-mvnd-${{ env.VERSION }}-m39-windows-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-m39-windows-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy maven-mvnd-mvn39-windows-amd64.tar.gz
+      - name: Deploy maven-mvnd-m39-windows-amd64.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn39-windows-amd64.tar.gz
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn39-windows-amd64.tar.gz
+          asset_path: artifacts/dist-m39/target/maven-mvnd-${{ env.VERSION }}-m39-windows-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-m39-windows-amd64.tar.gz
           asset_content_type: application/x-gzip
 
-      - name: Deploy maven-mvnd-mvn40-linux-amd64.zip
+      - name: Deploy maven-mvnd-m40-linux-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn40-linux-amd64.zip
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn40-linux-amd64.zip
+          asset_path: artifacts/dist-m40/target/maven-mvnd-${{ env.VERSION }}-m40-linux-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-m40-linux-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy maven-mvnd-mvn40-linux-amd64.tar.gz
+      - name: Deploy maven-mvnd-m40-linux-amd64.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn40-linux-amd64.tar.gz
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn40-linux-amd64.tar.gz
+          asset_path: artifacts/dist-m40/target/maven-mvnd-${{ env.VERSION }}-m40-linux-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-m40-linux-amd64.tar.gz
           asset_content_type: application/x-gzip
 
-      - name: Deploy maven-mvnd-mvn40-darwin-amd64.zip
+      - name: Deploy maven-mvnd-m40-darwin-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn40-darwin-amd64.zip
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn40-darwin-amd64.zip
+          asset_path: artifacts/dist-m40/target/maven-mvnd-${{ env.VERSION }}-m40-darwin-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-m40-darwin-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy maven-mvnd-mvn40-darwin-amd64.tar.gz
+      - name: Deploy maven-mvnd-m40-darwin-amd64.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn40-darwin-amd64.tar.gz
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn40-darwin-amd64.tar.gz
+          asset_path: artifacts/dist-m40/target/maven-mvnd-${{ env.VERSION }}-m40-darwin-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-m40-darwin-amd64.tar.gz
           asset_content_type: application/x-gzip
 
-      - name: Deploy maven-mvnd-mvn40-windows-amd64.zip
+      - name: Deploy maven-mvnd-m40-windows-amd64.zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn40-windows-amd64.zip
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn40-windows-amd64.zip
+          asset_path: artifacts/dist-m40/target/maven-mvnd-${{ env.VERSION }}-m40-windows-amd64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-m40-windows-amd64.zip
           asset_content_type: application/zip
 
-      - name: Deploy maven-mvnd-mvn40-windows-amd64.tar.gz
+      - name: Deploy maven-mvnd-m40-windows-amd64.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/maven-${{ env.VERSION }}-mvnd-mvn40-windows-amd64.tar.gz
-          asset_name: maven-${{ env.VERSION }}-mvnd-mvn40-windows-amd64.tar.gz
+          asset_path: artifacts/dist-m40/target/maven-mvnd-${{ env.VERSION }}-m40-windows-amd64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-m40-windows-amd64.tar.gz
           asset_content_type: application/x-gzip
 

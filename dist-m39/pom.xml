@@ -71,7 +71,7 @@
             </goals>
             <phase>package</phase>
             <configuration>
-              <outputDirectory>${project.build.directory}/maven-${project.version}-mvnd-m39-${os.detected.name}-${os.detected.arch}</outputDirectory>
+              <outputDirectory>${project.build.directory}/maven-mvnd-${project.version}-m39-${os.detected.name}-${os.detected.arch}</outputDirectory>
             </configuration>
           </execution>
         </executions>

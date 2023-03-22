@@ -93,10 +93,10 @@
         </directory>
     </fileSet>
 
-    <archive name="maven-${project.version}-mvnd-mvn39-${os.detected.name}-${os.detected.arch}.zip"
+    <archive name="maven-mvnd-${project.version}-m39-${os.detected.name}-${os.detected.arch}.zip"
              executable="**/bin/mvnd"/>
 
-    <archive name="maven-${project.version}-mvnd-mvn39-${os.detected.name}-${os.detected.arch}.tar.gz"
+    <archive name="maven-mvnd-${project.version}-m39-${os.detected.name}-${os.detected.arch}.tar.gz"
              executable="**/bin/mvnd"/>
 
 </assembly>
