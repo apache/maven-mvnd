@@ -78,7 +78,7 @@ jobs:
               done
 
           : patch gcc startfile
-          gcc -O3 -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
+          gcc -O3 -Os -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
           ld -r /lib/x86_64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.12/Scrt1.o
           objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
 
