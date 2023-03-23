@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0-m6](https://github.com/apache/maven-mvnd/tree/1.0-m6) (2023-03-23)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0-m5...1.0-m6)
+
+**Closed issues:**
+
+- keep compatible for glibc 2.12 when build on ubuntu 22.04 [\#823](https://github.com/apache/maven-mvnd/issues/823)
+
+**Merged pull requests:**
+
+- Make native mvnd only require glibc 2.12 on ubuntu 22.04 [\#825](https://github.com/apache/maven-mvnd/pull/825) ([gzm55](https://github.com/gzm55))
+
 ## [1.0-m5](https://github.com/apache/maven-mvnd/tree/1.0-m5) (2023-03-22)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m4...1.0-m5)
