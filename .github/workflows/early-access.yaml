@@ -106,11 +106,9 @@ jobs:
         if: ${{ env.OS == 'linux' }}
         shell: bash
         run: |
-          ldd client/target/mvnd | grep -q libdl.so.2
-          ldd client/target/mvnd | grep -q libpthread.so.0
-          ldd client/target/mvnd | grep -q librt.so.1
+          (( 4 == "$(ldd client/target/mvnd | awk '{print $1}' | sort -u | grep -c 'lib\(c\|dl\|rt\|pthread\)\.so\.[0-9]')" )) || ( ldd client/target/mvnd && false )
           err=0
-          objdump -t client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[012]\)[^0-9]' || err=$?
+          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[012]\)[^0-9]' || err=$?
           (( err == 1 ))
 
       - name: 'Upload daemon test logs'
