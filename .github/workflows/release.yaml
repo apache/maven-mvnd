@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ ubuntu-20.04, macOS-10.15, windows-2019 ]
+        os: [ ubuntu-22.04, macOS-10.15, windows-2019 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -62,21 +62,37 @@ jobs:
         run: ./mvnw clean -Dmrm=false -B -ntp -e
 
       - name: 'Patch Graal libs for only requiring glibc 2.12'
+        if: ${{ env.OS == 'linux' }}
         shell: bash
         run: |
-          if [[ $OS == linux ]] && [[ $GRAALVM_HOME ]] && [[ -d "$GRAALVM_HOME/lib/static/linux-amd64/glibc" ]]; then
-            mkdir -p client/target/graalvm-libs-for-glibc-2.12
-            echo "memcpy memcpy@GLIBC_2.2.5" >client/target/glibc.redef
-            echo "posix_spawn posix_spawn@GLIBC_2.2.5" >>client/target/glibc.redef
-            find "$GRAALVM_HOME/lib/static/linux-amd64/glibc" -name '*.a' | while IFS= read -r input; do
-              output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
-              objcopy --redefine-syms=client/target/glibc.redef -- "$input" "$output" 2>/dev/null
-            done
-            find /usr/lib -name libz.a | xargs -r -I {} objcopy --redefine-syms=client/target/glibc.redef {} client/target/graalvm-libs-for-glibc-2.12/libz.a
-          fi
+          mkdir -p client/target/graalvm-libs-for-glibc-2.12
+
+          : patch common libraries
+          ( find "$GRAALVM_HOME/lib/static/linux-amd64/glibc" -name '*.a'
+            ls -1 /lib/x86_64-linux-gnu/libz.a
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-amd64/libjvm.a"
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-amd64/liblibchelper.a"
+          ) | while IFS= read -r input; do
+                output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
+                objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef -- "$input" "$output" 2>/dev/null
+              done
+
+          : patch gcc startfile
+          gcc -O3 -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
+          ld -r /lib/x86_64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.12/Scrt1.o
+          objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
 
       - name: 'Build native distribution'
         run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e -DskipTests -s .mvn/release-settings.xml
+
+      - name: 'Verify native binary for only requiring glibc 2.12'
+        if: ${{ env.OS == 'linux' }}
+        shell: bash
+        run: |
+          (( 4 == "$(ldd client/target/mvnd | awk '{print $1}' | sort -u | grep -c 'lib\(c\|dl\|rt\|pthread\)\.so\.[0-9]')" )) || ( ldd client/target/mvnd && false )
+          err=0
+          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[012]\)[^0-9]' || err=$?
+          (( err == 1 ))
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v3
@@ -90,7 +106,7 @@ jobs:
 
   source:
     name: 'Build source distributions'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: 'Check out repository'
         uses: actions/checkout@v3
@@ -123,7 +139,7 @@ jobs:
             target/maven-mvnd-*.tar.gz
 
   release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [build, source]
 
     steps:
