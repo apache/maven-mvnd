@@ -30,6 +30,8 @@ import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.sisu.Priority;
 
+import static org.mvndaemon.mvnd.common.Environment.MVND_NO_MODEL_CACHE;
+
 @Singleton
 @Named
 @Priority(10)
@@ -48,6 +50,10 @@ public class SnapshotModelCacheFactory implements ModelCacheFactory {
 
     @Override
     public ModelCache createCache(RepositorySystemSession session) {
-        return new SnapshotModelCache(globalCache, factory.createCache(session));
+        boolean noModelCache =
+                Boolean.parseBoolean(MVND_NO_MODEL_CACHE.asOptional().orElse(MVND_NO_MODEL_CACHE.getDefault()));
+        ModelCache reactorCache = factory.createCache(session);
+        ModelCache globalCache = noModelCache ? reactorCache : this.globalCache;
+        return new SnapshotModelCache(globalCache, reactorCache);
     }
 }
