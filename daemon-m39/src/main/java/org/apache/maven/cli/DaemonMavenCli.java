@@ -188,8 +188,7 @@ public class DaemonMavenCli implements DaemonCli {
         slf4jLogger = slf4jLoggerFactory.getLogger(this.getClass().getName());
         plexusLoggerManager = new Slf4jLoggerManager();
 
-        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        classWorld = new ClassWorld("plexus.core", cl);
+        this.classWorld = ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld();
 
         container = container();
 
@@ -484,6 +483,7 @@ public class DaemonMavenCli implements DaemonCli {
 
         List<File> extClassPath = Stream.of(
                         Environment.MVND_EXT_CLASSPATH.asString().split(","))
+                .filter(s -> s != null && !s.isEmpty())
                 .map(File::new)
                 .collect(Collectors.toList());
 
