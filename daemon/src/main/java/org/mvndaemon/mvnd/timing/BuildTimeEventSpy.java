@@ -124,7 +124,11 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
             });
         });
         log.accept(DIVIDER);
-        mojos.forEach((name, duration) -> log.accept(String.format("  %s [%.3fs]", name, duration / 1000d)));
+        mojos.entrySet().stream()
+                .sorted(Comparator.<Map.Entry<String, Long>>comparingLong(Entry::getValue)
+                        .reversed()
+                        .thenComparing(Map.Entry::getKey))
+                .forEach(e -> log.accept(String.format("  %s [%.3fs]", e.getKey(), e.getValue() / 1000d)));
     }
 
     private static class Session {
