@@ -17,6 +17,7 @@
 
 set -e
 export VERSION=$1
+export QUALIFIER=m39
 
 if [ "${VERSION}x" = "x" ]
 then
@@ -28,15 +29,15 @@ rm -Rf target/releases/${VERSION}
 mkdir -p target/releases/${VERSION}
 pushd target/releases
 
-darwinAmdZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-darwin-amd64.zip"
+darwinAmdZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-${QUALIFIER}-darwin-amd64.zip"
 darwinAmdSha256="$(curl -L --silent "${darwinAmdZipUrl}.sha256")"
-darwinArmZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-darwin-aarch64.zip"
+darwinArmZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-${QUALIFIER}-darwin-aarch64.zip"
 darwinArmSha256="$(curl -L --silent "${darwinArmZipUrl}.sha256")"
-linuxZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-amd64.zip"
+linuxZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-${QUALIFIER}-linux-amd64.zip"
 linuxSha256="$(curl -L --silent "${linuxZipUrl}.sha256")"
 
 echo "Updating Formula/mvnd.rb with"
-echo "version: ${VERSION}"
+echo "version: ${VERSION}-${QUALIFIER}"
 echo "darwin-amd-url: ${darwinAmdZipUrl}"
 echo "darwin-amd-sha256: ${darwinAmdSha256}"
 echo "darwin-arm-url: ${darwinArmZipUrl}"
@@ -51,15 +52,15 @@ cd homebrew-mvnd
 perl -i -0pe 's|(on_macos do[\s\S\n]+on_intel do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinAmdZipUrl}'\"$3\"'${darwinAmdSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(on_macos do[\s\S\n]+on_arm do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinArmZipUrl}'\"$3\"'${darwinArmSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(on_linux do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${linuxZipUrl}'\"$3\"'${linuxSha256}'\"|g' Formula/mvnd.rb
-perl -i -0pe 's|(version )"([^\"]+)"|$1\"'${VERSION}'\"|g' Formula/mvnd.rb
+perl -i -0pe 's|(version )"([^\"]+)"|$1\"'${VERSION}-${QUALIFIER}'\"|g' Formula/mvnd.rb
 
 if [ -n "$(git status --porcelain)" ]; then
-    echo "Committing release ${VERSION}"
+    echo "Committing release ${VERSION}-${QUALIFIER}"
     git config --global user.email "gnodet@gmail.com"
     git config --global user.name "Guillaume Nodet"
     git add -A
-    git commit -m "Release ${VERSION}"
-    git push origin master
+    git commit -m "Release ${VERSION}-${QUALIFIER}"
+    #git push origin master
 else
     echo "Nothing to commit"
 fi
