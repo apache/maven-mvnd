@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.plexus.components.interactivity.AbstractInputHandler;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.components.interactivity.OutputHandler;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Message;
