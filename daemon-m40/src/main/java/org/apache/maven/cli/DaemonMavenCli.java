@@ -45,7 +45,6 @@ import com.google.inject.AbstractModule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.maven.InternalErrorException;
 import org.apache.maven.Maven;
 import org.apache.maven.building.FileSource;
@@ -88,7 +87,6 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
@@ -637,12 +635,10 @@ public class DaemonMavenCli implements DaemonCli {
 
         List<File> jars = new ArrayList<>();
 
-        if (StringUtils.isNotEmpty(extClassPath)) {
-            for (String jar : StringUtils.split(extClassPath, File.pathSeparator)) {
+        if (extClassPath != null) {
+            for (String jar : extClassPath.split(File.pathSeparator)) {
                 File file = resolveFile(new File(jar), cliRequest.workingDirectory);
-
                 slf4jLogger.debug("  Included {}", file);
-
                 jars.add(file);
             }
         }
@@ -787,19 +783,11 @@ public class DaemonMavenCli implements DaemonCli {
 
     private void logSummary(
             ExceptionSummary summary, Map<String, String> references, String indent, boolean showErrors) {
-        String referenceKey = "";
-
-        if (StringUtils.isNotEmpty(summary.getReference())) {
-            referenceKey = references.get(summary.getReference());
-            if (referenceKey == null) {
-                referenceKey = "[Help " + (references.size() + 1) + "]";
-                references.put(summary.getReference(), referenceKey);
-            }
-        }
-
         String msg = summary.getMessage();
 
-        if (StringUtils.isNotEmpty(referenceKey)) {
+        if (!summary.getReference().isEmpty()) {
+            String referenceKey =
+                    references.computeIfAbsent(summary.getReference(), k -> "[Help " + (references.size() + 1) + "]");
             if (msg.indexOf('\n') < 0) {
                 msg += " -> " + buffer().strong(referenceKey);
             } else {
@@ -1241,29 +1229,23 @@ public class DaemonMavenCli implements DaemonCli {
 
     int calculateDegreeOfConcurrency(String threadConfiguration) {
         if (threadConfiguration.endsWith("C")) {
-            threadConfiguration = threadConfiguration.substring(0, threadConfiguration.length() - 1);
+            try {
+                String str = threadConfiguration.substring(0, threadConfiguration.length() - 1);
+                float coreMultiplier = Float.parseFloat(str);
 
-            if (!NumberUtils.isParsable(threadConfiguration)) {
+                if (coreMultiplier <= 0.0f) {
+                    throw new IllegalArgumentException("Invalid threads core multiplier value: '" + threadConfiguration
+                            + "C'. Value must be positive.");
+                }
+
+                int procs = Runtime.getRuntime().availableProcessors();
+                int threads = (int) (coreMultiplier * procs);
+                return threads == 0 ? 1 : threads;
+            } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Invalid threads core multiplier value: '" + threadConfiguration
                         + "C'. Supported are int and float values ending with C.");
             }
-
-            float coreMultiplier = Float.parseFloat(threadConfiguration);
-
-            if (coreMultiplier <= 0.0f) {
-                throw new IllegalArgumentException("Invalid threads core multiplier value: '" + threadConfiguration
-                        + "C'. Value must be positive.");
-            }
-
-            int procs = Runtime.getRuntime().availableProcessors();
-            int threads = (int) (coreMultiplier * procs);
-            return threads == 0 ? 1 : threads;
         } else {
-            if (!NumberUtils.isParsable(threadConfiguration)) {
-                throw new IllegalArgumentException(
-                        "Invalid threads value: '" + threadConfiguration + "'. Supported are int values.");
-            }
-
             try {
                 int threads = Integer.parseInt(threadConfiguration);
 

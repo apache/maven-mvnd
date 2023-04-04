@@ -31,7 +31,6 @@ import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.components.interactivity.OutputHandler;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Message;
@@ -115,7 +114,7 @@ public class DaemonPrompter extends AbstractInputHandler implements Prompter, In
             } catch (IOException e) {
                 throw new PrompterException("Failed to prompt user", e);
             }
-            if (StringUtils.isEmpty(line)) {
+            if (line == null || line.isEmpty()) {
                 line = defaultReply;
             }
             if (line != null && (possibleValues != null && !possibleValues.contains(line))) {

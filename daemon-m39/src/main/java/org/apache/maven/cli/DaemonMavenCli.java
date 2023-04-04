@@ -93,7 +93,6 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
@@ -652,12 +651,10 @@ public class DaemonMavenCli implements DaemonCli {
 
         List<File> jars = new ArrayList<>();
 
-        if (StringUtils.isNotEmpty(extClassPath)) {
-            for (String jar : StringUtils.split(extClassPath, File.pathSeparator)) {
+        if (extClassPath != null) {
+            for (String jar : extClassPath.split(File.pathSeparator)) {
                 File file = resolveFile(new File(jar), cliRequest.workingDirectory);
-
                 slf4jLogger.debug("  Included {}", file);
-
                 jars.add(file);
             }
         }
@@ -819,19 +816,11 @@ public class DaemonMavenCli implements DaemonCli {
 
     private void logSummary(
             ExceptionSummary summary, Map<String, String> references, String indent, boolean showErrors) {
-        String referenceKey = "";
-
-        if (StringUtils.isNotEmpty(summary.getReference())) {
-            referenceKey = references.get(summary.getReference());
-            if (referenceKey == null) {
-                referenceKey = "[Help " + (references.size() + 1) + "]";
-                references.put(summary.getReference(), referenceKey);
-            }
-        }
-
         String msg = summary.getMessage();
 
-        if (StringUtils.isNotEmpty(referenceKey)) {
+        if (!summary.getReference().isEmpty()) {
+            String referenceKey =
+                    references.computeIfAbsent(summary.getReference(), k -> "[Help " + (references.size() + 1) + "]");
             if (msg.indexOf('\n') < 0) {
                 msg += " -> " + buffer().strong(referenceKey);
             } else {
