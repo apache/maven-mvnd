@@ -36,7 +36,6 @@ import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
-import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
@@ -196,9 +195,17 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
 
         public String name() {
             String name = mojo.getKey();
-            String truncatedName =
-                    name.length() >= MAX_NAME_LENGTH ? StringUtils.substring(name, 0, MAX_NAME_LENGTH) : name + " ";
-            return StringUtils.rightPad(truncatedName, MAX_NAME_LENGTH, ".");
+            if (name.length() < MAX_NAME_LENGTH) {
+                StringBuilder sb = new StringBuilder(MAX_NAME_LENGTH);
+                sb.append(name);
+                sb.append(' ');
+                while (sb.length() < MAX_NAME_LENGTH) {
+                    sb.append('.');
+                }
+                return sb.toString();
+            } else {
+                return name.substring(0, MAX_NAME_LENGTH);
+            }
         }
 
         public long duration() {

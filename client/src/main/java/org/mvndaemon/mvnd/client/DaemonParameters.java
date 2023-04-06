@@ -43,7 +43,6 @@ import java.util.stream.Stream;
 
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3Reader;
-import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.InterpolationHelper;
@@ -440,8 +439,8 @@ public class DaemonParameters {
     private static List<String> parseExtClasspath(Path userDir) {
         String extClassPath = System.getProperty(EXT_CLASS_PATH);
         List<String> jars = new ArrayList<>();
-        if (StringUtils.isNotEmpty(extClassPath)) {
-            for (String jar : StringUtils.split(extClassPath, File.pathSeparator)) {
+        if (extClassPath != null) {
+            for (String jar : extClassPath.split(File.pathSeparator)) {
                 Path path = userDir.resolve(jar).toAbsolutePath();
                 jars.add(path.toString());
             }
