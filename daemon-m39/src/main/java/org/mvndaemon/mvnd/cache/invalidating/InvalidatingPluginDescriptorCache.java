@@ -48,12 +48,6 @@ import org.mvndaemon.mvnd.cache.CacheRecord;
 @Priority(10)
 public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCache {
 
-    @FunctionalInterface
-    public interface PluginDescriptorSupplier {
-        PluginDescriptor load()
-                throws PluginResolutionException, PluginDescriptorParsingException, InvalidPluginDescriptorException;
-    }
-
     protected static class Record implements CacheRecord {
 
         private final PluginDescriptor descriptor;
@@ -71,6 +65,9 @@ public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCa
         @Override
         public void invalidate() {
             ClassRealm realm = descriptor.getClassRealm();
+            if (realm == null) {
+                return;
+            }
             try {
                 realm.getWorld().disposeRealm(realm.getId());
             } catch (NoSuchRealmException e) {
@@ -97,6 +94,7 @@ public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCa
         return r != null ? clone(r.descriptor) : null;
     }
 
+    @Override
     public PluginDescriptor get(Key key, PluginDescriptorSupplier supplier)
             throws PluginDescriptorParsingException, PluginResolutionException, InvalidPluginDescriptorException {
         try {
