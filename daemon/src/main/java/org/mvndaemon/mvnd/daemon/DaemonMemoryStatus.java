@@ -160,7 +160,7 @@ public class DaemonMemoryStatus {
     }
 
     public boolean isTrashing() {
-        if (strategy !=  null && strategy.heapUsageThreshold != 0 && strategy.thrashingThreshold != 0) {
+        if (strategy != null && strategy.heapUsageThreshold != 0 && strategy.thrashingThreshold != 0) {
             GcStats stats = heapStats();
             return stats != null
                     && stats.usedPercent >= strategy.heapUsageThreshold
@@ -171,7 +171,7 @@ public class DaemonMemoryStatus {
     }
 
     public boolean isHeapSpaceExhausted() {
-        if (strategy !=  null && strategy.heapUsageThreshold != 0 && strategy.heapRateThreshold != 0) {
+        if (strategy != null && strategy.heapUsageThreshold != 0 && strategy.heapRateThreshold != 0) {
             GcStats stats = heapStats();
             return stats != null
                     && stats.usedPercent >= strategy.heapUsageThreshold
@@ -182,7 +182,7 @@ public class DaemonMemoryStatus {
     }
 
     public boolean isNonHeapSpaceExhausted() {
-        if (strategy !=  null && strategy.nonHeapUsageThreshold != 0) {
+        if (strategy != null && strategy.nonHeapUsageThreshold != 0) {
             GcStats stats = nonHeapStats();
             return stats != null && stats.usedPercent >= strategy.nonHeapUsageThreshold;
         } else {

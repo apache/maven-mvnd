@@ -18,10 +18,10 @@
  */
 package org.mvndaemon.mvnd.daemon;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -29,9 +29,12 @@ public class DaemonMemoryStatusTest {
 
     @Test
     void testStrategy() {
-        try (ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor()) {
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        try {
             DaemonMemoryStatus status = new DaemonMemoryStatus(executor);
             assertNotNull(status.strategy);
+        } finally {
+            executor.shutdownNow();
         }
     }
 }
