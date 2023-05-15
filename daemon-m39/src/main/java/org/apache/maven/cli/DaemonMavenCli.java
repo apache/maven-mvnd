@@ -227,11 +227,11 @@ public class DaemonMavenCli implements DaemonCli {
             environment(cliRequest.workingDirectory, clientEnv);
             cli(cliRequest);
             properties(cliRequest);
-            help(cliRequest);
             logging(cliRequest);
+            informativeCommands(cliRequest);
+            version(cliRequest);
             container(cliRequest);
             configure(cliRequest, eventSpyDispatcher, configurationProcessors);
-            version(cliRequest);
             toolchains(cliRequest);
             populateRequest(cliRequest);
             encryption(cliRequest);
@@ -296,9 +296,18 @@ public class DaemonMavenCli implements DaemonCli {
         }
     }
 
-    private void help(CliRequest cliRequest) throws Exception {
+    private void informativeCommands(CliRequest cliRequest) throws Exception {
         if (cliRequest.commandLine.hasOption(CLIManager.HELP)) {
             buildEventListener.log(MvndHelpFormatter.displayHelp(newCLIManager()));
+            throw new ExitException(0);
+        }
+
+        if (cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
+            if (cliRequest.commandLine.hasOption(CLIManager.QUIET)) {
+                buildEventListener.log(CLIReportingUtils.showVersionMinimal());
+            } else {
+                buildEventListener.log(CLIReportingUtils.showVersion());
+            }
             throw new ExitException(0);
         }
     }
@@ -416,11 +425,8 @@ public class DaemonMavenCli implements DaemonCli {
     }
 
     private void version(CliRequest cliRequest) throws ExitException {
-        if (cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
+        if (cliRequest.debug || cliRequest.commandLine.hasOption(CLIManager.SHOW_VERSION)) {
             buildEventListener.log(CLIReportingUtils.showVersion());
-            if (cliRequest.commandLine.hasOption(CLIManager.VERSION)) {
-                throw new ExitException(0);
-            }
         }
     }
 
