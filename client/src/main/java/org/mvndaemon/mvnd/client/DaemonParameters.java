@@ -111,6 +111,7 @@ public class DaemonParameters {
                 .orLocalProperty(provider, userPropertiesPath())
                 .orEnvironmentVariable()
                 .orFail()
+                .cache(provider)
                 .asPath()
                 .toAbsolutePath()
                 .normalize();
@@ -162,6 +163,7 @@ public class DaemonParameters {
                 .or(new ValueSource(
                         description -> description.append("java command"), DaemonParameters::javaHomeFromPath))
                 .orFail()
+                .cache(provider)
                 .asPath();
         try {
             return result.toRealPath();
@@ -716,6 +718,21 @@ public class DaemonParameters {
             } else {
                 throw couldNotgetValue();
             }
+        }
+
+        public EnvValue cache(Function<Path, Properties> provider) {
+            return new EnvValue(this, envKey, new ValueSource(sb -> sb, () -> null)) {
+                @Override
+                String get() {
+                    Properties props = provider.apply(Paths.get(DaemonParameters.class.getName() + "#cache"));
+                    String value = props.getProperty(envKey.getProperty());
+                    if (value == null) {
+                        value = super.get();
+                        props.setProperty(envKey.getProperty(), value);
+                    }
+                    return value;
+                }
+            };
         }
     }
 }
