@@ -19,8 +19,10 @@
 package org.mvndaemon.mvnd.it;
 
 import org.junit.jupiter.api.TestInstance;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Testcontainers(disabledWithoutDocker = true)
 public class AlpineLinuxTest extends AlpineLinuxNativeIT {
 
     @Override
