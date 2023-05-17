@@ -119,12 +119,11 @@ public class DaemonParameters {
 
     private String mvndHomeFromExecutable() {
         Optional<String> cmd = ProcessHandle.current().info().command();
-        System.out.println("isNative: " + Environment.isNative());
-        System.out.println("command: " + cmd.orElse(""));
-        System.out.println("args: "
-                + Arrays.toString(ProcessHandle.current().info().arguments().orElse(new String[0])));
         if (Environment.isNative() && cmd.isPresent()) {
             String cmdStr = cmd.get();
+            // When running on alpine, musl uses a dynamic loader
+            // which is used as the main exec and the full path to the
+            // executable is the argument following "--"
             if (cmdStr.startsWith("/lib/ld-musl-")) {
                 Optional<String[]> args = ProcessHandle.current().info().arguments();
                 if (args.isPresent()) {
