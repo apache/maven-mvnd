@@ -118,15 +118,27 @@ public class DaemonParameters {
 
     private String mvndHomeFromExecutable() {
         Optional<String> cmd = ProcessHandle.current().info().command();
-        Optional<String[]> args = ProcessHandle.current().info().arguments();
-        Optional<String> parent =
-                ProcessHandle.current().parent().flatMap(ph -> ph.info().command());
         System.out.println("isNative: " + Environment.isNative());
         System.out.println("command: " + cmd.orElse(""));
-        System.out.println("args: " + Arrays.toString(args.orElse(new String[0])));
-        System.out.println("parent: " + parent.orElse(""));
+        System.out.println("args: "
+                + Arrays.toString(ProcessHandle.current().info().arguments().orElse(new String[0])));
         if (Environment.isNative() && cmd.isPresent()) {
-            final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
+            String cmdStr = cmd.get();
+            if (cmdStr.startsWith("/lib/ld-musl-")) {
+                Optional<String[]> args = ProcessHandle.current().info().arguments();
+                if (args.isPresent()) {
+                    boolean nextIsArg0 = false;
+                    for (String arg : args.get()) {
+                        if (nextIsArg0) {
+                            cmdStr = arg;
+                            break;
+                        } else {
+                            nextIsArg0 = "--".equals(arg);
+                        }
+                    }
+                }
+            }
+            Path mvndH = Paths.get(cmdStr).getParent().getParent();
             if (mvndH != null) {
                 Path mvndDaemon =
                         Paths.get("mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
