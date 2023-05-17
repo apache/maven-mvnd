@@ -18,58 +18,13 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import com.google.common.util.concurrent.Uninterruptibles;
-import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.WaitAllStrategy;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
-import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.utility.DockerImageName;
+import org.junit.jupiter.api.TestInstance;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.util.concurrent.TimeUnit;
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class AlpineLinuxTest extends AlpineLinuxNativeIT {
 
-public class AlpineLinuxTest {
-
-//    @Container
-//    GenericContainer alpine = new GenericContainer(
-//        new ImageFromDockerfile()
-//            .withDockerfileFromBuilder(builder ->
-//                    builder
-//                        .from("alpine:3.16")
-//                        .run("apk add gcompat")
-//                        .cmd("/bin/sh")
-//                        .build()));
-
-    @Test
-    void testAlpine() throws Exception {
-        String mvndHome = System.getProperty("mvnd.home");
-        if (mvndHome == null) {
-            throw new IllegalStateException("System property mnvd.home is undefined");
-        }
-        String logs;
-        try (GenericContainer alpine = new GenericContainer(
-            new ImageFromDockerfile()
-                .withDockerfileFromBuilder(builder ->
-                    builder
-                        .from("bellsoft/liberica-openjdk-alpine-musl:latest")
-                        .run("apk add gcompat")
-                        .cmd("/mvnd/bin/mvnd.sh", "-v")
-                        .build()))
-            .withFileSystemBind(mvndHome, "/mvnd", BindMode.READ_WRITE)) {
-
-            alpine.withStartupAttempts(1).withStartupTimeout(Duration.ofSeconds(3));
-            alpine.start();
-            while (alpine.isRunning()) {
-                Thread.sleep(100);
-            }
-            logs = alpine.getLogs();
-        }
-        System.err.println(logs);
+    @Override
+    protected boolean isNative() {
+        return false;
     }
-
 }
