@@ -118,6 +118,8 @@ public class DaemonParameters {
 
     private String mvndHomeFromExecutable() {
         Optional<String> cmd = ProcessHandle.current().info().command();
+        System.out.println("isNative: " + Environment.isNative());
+        System.out.println("command: " + cmd.orElse(""));
         if (Environment.isNative() && cmd.isPresent()) {
             final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
             if (mvndH != null) {
