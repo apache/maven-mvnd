@@ -111,6 +111,7 @@ public class DaemonParameters {
                 .orLocalProperty(provider, userPropertiesPath())
                 .orEnvironmentVariable()
                 .orFail()
+                .cache(provider)
                 .asPath()
                 .toAbsolutePath()
                 .normalize();
@@ -119,7 +120,25 @@ public class DaemonParameters {
     private String mvndHomeFromExecutable() {
         Optional<String> cmd = ProcessHandle.current().info().command();
         if (Environment.isNative() && cmd.isPresent()) {
-            final Path mvndH = Paths.get(cmd.get()).getParent().getParent();
+            String cmdStr = cmd.get();
+            // When running on alpine, musl uses a dynamic loader
+            // which is used as the main exec and the full path to the
+            // executable is the argument following "--"
+            if (cmdStr.startsWith("/lib/ld-musl-")) {
+                Optional<String[]> args = ProcessHandle.current().info().arguments();
+                if (args.isPresent()) {
+                    boolean nextIsArg0 = false;
+                    for (String arg : args.get()) {
+                        if (nextIsArg0) {
+                            cmdStr = arg;
+                            break;
+                        } else {
+                            nextIsArg0 = "--".equals(arg);
+                        }
+                    }
+                }
+            }
+            Path mvndH = Paths.get(cmdStr).getParent().getParent();
             if (mvndH != null) {
                 Path mvndDaemon =
                         Paths.get("mvnd-daemon-" + BuildProperties.getInstance().getVersion() + ".jar");
@@ -143,6 +162,7 @@ public class DaemonParameters {
                 .or(new ValueSource(
                         description -> description.append("java command"), DaemonParameters::javaHomeFromPath))
                 .orFail()
+                .cache(provider)
                 .asPath();
         try {
             return result.toRealPath();
@@ -697,6 +717,21 @@ public class DaemonParameters {
             } else {
                 throw couldNotgetValue();
             }
+        }
+
+        public EnvValue cache(Function<Path, Properties> provider) {
+            return new EnvValue(this, envKey, new ValueSource(sb -> sb, () -> null)) {
+                @Override
+                String get() {
+                    Properties props = provider.apply(Paths.get(DaemonParameters.class.getName() + "#cache"));
+                    String value = props.getProperty(envKey.getProperty());
+                    if (value == null) {
+                        value = super.get();
+                        props.setProperty(envKey.getProperty(), value);
+                    }
+                    return value;
+                }
+            };
         }
     }
 }
