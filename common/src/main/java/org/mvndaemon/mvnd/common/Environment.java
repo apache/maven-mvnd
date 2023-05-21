@@ -226,17 +226,17 @@ public enum Environment {
     MVND_CORE_EXTENSIONS("mvnd.coreExtensions", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
      * The <code>-Xms</code> value to pass to the daemon.
-     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
+     * This option takes precedence over options specified in <code>-Dmvnd.jvmArgs</code>.
      */
     MVND_MIN_HEAP_SIZE("mvnd.minHeapSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
      * The <code>-Xmx</code> value to pass to the daemon.
-     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
+     * This option takes precedence over options specified in <code>-Dmvnd.jvmArgs</code>.
      */
     MVND_MAX_HEAP_SIZE("mvnd.maxHeapSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
      * The <code>-Xss</code> value to pass to the daemon.
-     * This option takes precedence over options specified in {@link #MVND_JVM_ARGS}.
+     * This option takes precedence over options specified in <code>-Dmvnd.jvmArgs</code>.
      */
     MVND_THREAD_STACK_SIZE(
             "mvnd.threadStackSize", null, null, OptionType.MEMORY_SIZE, Flags.DISCRIMINATING | Flags.OPTIONAL),
