@@ -121,7 +121,7 @@ public class MvndHelpFormatter {
             spaces(help, indentPos - help.length());
             wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
 
-            if (env.isDiscriminating()) {
+            if (env.isDocumentedAsDiscriminating()) {
                 indentedLine(help, terminalWidth, "This is a discriminating start parameter.", indent);
             }
             if (env.getDefault() != null) {

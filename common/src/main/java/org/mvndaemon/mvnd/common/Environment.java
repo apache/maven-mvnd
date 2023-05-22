@@ -76,8 +76,8 @@ public enum Environment {
     //
     // System properties
     //
-    /** Java home for starting the daemon */
-    JAVA_HOME("java.home", "JAVA_HOME", null, OptionType.PATH, Flags.NONE),
+    /** Java home for starting the daemon. */
+    JAVA_HOME("java.home", "JAVA_HOME", null, OptionType.PATH, Flags.DOCUMENTED_AS_DISCRIMINATING),
     /**
      * The daemon installation directory. The client normally sets this according to where its <code>mvnd</code>
      * executable is located
@@ -346,7 +346,11 @@ public enum Environment {
         this.property = property;
         this.environmentVariable = environmentVariable;
         this.default_ = default_ != null ? default_.toString() : null;
-        this.flags = flags;
+        if ((flags & Flags.DISCRIMINATING) != 0) {
+            this.flags = (flags | Flags.DOCUMENTED_AS_DISCRIMINATING);
+        } else {
+            this.flags = flags;
+        }
         this.type = type;
         if (options.length == 0) {
             this.options = Collections.emptyMap();
@@ -398,6 +402,10 @@ public enum Environment {
 
     public boolean isDiscriminating() {
         return (flags & Flags.DISCRIMINATING) != 0;
+    }
+
+    public boolean isDocumentedAsDiscriminating() {
+        return (flags & Flags.DOCUMENTED_AS_DISCRIMINATING) != 0;
     }
 
     public boolean isInternal() {
@@ -602,8 +610,15 @@ public enum Environment {
 
     static class Flags {
         private static final int NONE = 0b0;
+        /**
+         * Implies {@link #DOCUMENTED_AS_DISCRIMINATING} - this is implemented in
+         * {@link Environment#Environment(String, String, Object, OptionType, int, String...)}
+         */
         private static final int DISCRIMINATING = 0b1;
+
         private static final int INTERNAL = 0b10;
         private static final int OPTIONAL = 0b100;
+        /** Set automatically for entries having {@link #DISCRIMINATING} */
+        private static final int DOCUMENTED_AS_DISCRIMINATING = 0b1000;
     }
 }
