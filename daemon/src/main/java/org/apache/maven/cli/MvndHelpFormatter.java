@@ -121,8 +121,15 @@ public class MvndHelpFormatter {
             spaces(help, indentPos - help.length());
             wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
 
-            indentedLine(help, terminalWidth, "Default", env.getDefault(), indent);
-            indentedLine(help, terminalWidth, "Env. variable", env.getEnvironmentVariable(), indent);
+            if (env.isDiscriminating()) {
+                indentedLine(help, terminalWidth, "This is a discriminating start parameter.", indent);
+            }
+            if (env.getDefault() != null) {
+                indentedLine(help, terminalWidth, "Default: " + env.getDefault(), indent);
+            }
+            if (env.getEnvironmentVariable() != null) {
+                indentedLine(help, terminalWidth, "Env. variable: " + env.getEnvironmentVariable(), indent);
+            }
         });
 
         help.append(lineSeparator).append(lineSeparator).append("mvnd value types:");
@@ -151,14 +158,10 @@ public class MvndHelpFormatter {
         return terminalWidth;
     }
 
-    private static void indentedLine(
-            StringBuilder stringBuilder, int terminalWidth, String key, String value, String indent) {
-        int lineEnd;
-        if (value != null) {
-            lineEnd = stringBuilder.length() + terminalWidth;
-            stringBuilder.append(System.lineSeparator()).append(indent);
-            wrap(stringBuilder, key + ": " + value, terminalWidth, lineEnd, indent);
-        }
+    private static void indentedLine(StringBuilder stringBuilder, int terminalWidth, String text, String indent) {
+        final int lineEnd = stringBuilder.length() + terminalWidth;
+        stringBuilder.append(System.lineSeparator()).append(indent);
+        wrap(stringBuilder, text, terminalWidth, lineEnd, indent);
     }
 
     /**
