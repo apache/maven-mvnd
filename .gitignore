@@ -29,3 +29,6 @@ nb-configuration.xml
 
 # formatter-maven-plugin
 .cache/
+
+# https://ge.apache.org
+.mvn/.gradle-enterprise
