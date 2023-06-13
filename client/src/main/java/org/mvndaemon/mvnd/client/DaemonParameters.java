@@ -63,7 +63,7 @@ public class DaemonParameters {
     private static final Logger LOG = LoggerFactory.getLogger(DaemonParameters.class);
     private static final String EXT_CLASS_PATH = "maven.ext.class.path";
     private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
-    private static final String ENV_PREFIX = "env.";
+
 
     protected final Map<Path, Properties> mvndProperties = new ConcurrentHashMap<>();
     protected final Function<Path, Properties> provider =
@@ -490,7 +490,7 @@ public class DaemonParameters {
                 result.load(in);
                 Properties sysProps = new Properties();
                 sysProps.putAll(System.getProperties());
-                System.getenv().forEach((k, v) -> sysProps.put(k, ENV_PREFIX + v));
+                sysProps.putAll(System.getenv());
                 InterpolationHelper.performSubstitution(result, sysProps::getProperty, true, true);
             } catch (IOException e) {
                 throw new RuntimeException("Could not read " + path);
