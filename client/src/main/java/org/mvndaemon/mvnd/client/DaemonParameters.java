@@ -174,7 +174,7 @@ public class DaemonParameters {
     private static String javaHomeFromPath() {
         LOG.warn(
                 "Falling back to finding JAVA_HOME by running java executable available in PATH."
-                        + " You may want to avoid this time consumig task by setting JAVA_HOME environment variable"
+                        + " You may want to avoid this time consuming task by setting JAVA_HOME environment variable"
                         + " or by passing java.home system property through command line or in one of mvnd configuration files.");
         final String jHome = OsUtils.findJavaHomeFromJavaExecutable("java");
         if (null != jHome) {
