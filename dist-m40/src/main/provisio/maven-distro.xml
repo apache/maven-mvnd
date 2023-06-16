@@ -37,6 +37,9 @@
         <artifact id="org.slf4j:jul-to-slf4j">
             <exclusion id="*:*"/>
         </artifact>
+        <artifact id="org.apache.maven.shared:maven-shared-utils">
+            <exclusion id="*:*"/>
+        </artifact>
     </artifactSet>
 
     <artifactSet to="/mvn/lib/mvnd">
