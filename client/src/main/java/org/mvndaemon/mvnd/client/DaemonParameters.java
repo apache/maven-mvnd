@@ -490,7 +490,7 @@ public class DaemonParameters {
                 result.load(in);
                 Properties sysProps = new Properties();
                 sysProps.putAll(System.getProperties());
-                System.getenv().forEach((k, v) -> sysProps.put(k, ENV_PREFIX + v));
+                System.getenv().forEach((k, v) -> sysProps.put(ENV_PREFIX + k, v));
                 InterpolationHelper.performSubstitution(result, sysProps::getProperty, true, true);
             } catch (IOException e) {
                 throw new RuntimeException("Could not read " + path);
