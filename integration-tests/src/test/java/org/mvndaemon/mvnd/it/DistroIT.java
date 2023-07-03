@@ -81,7 +81,7 @@ public class DistroIT {
     static class Avc implements Comparable<Avc> {
 
         private static final Pattern JAR_NAME_PATTERN =
-                Pattern.compile("^(.*)(?:-([0-9]+(?:\\.[0-9]+)*))(?:-(.*))?.jar$");
+                Pattern.compile("^(.*)(?:-([0-9]+(?:\\.[0-9]+)*))(?:[-.](.*))?.jar$");
 
         public static Avc of(String jarName) {
             final Matcher m = JAR_NAME_PATTERN.matcher(jarName);

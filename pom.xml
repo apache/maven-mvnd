@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>39</version>
+    <version>40</version>
     <relativePath />
   </parent>
 
@@ -88,11 +88,11 @@
     <jline.version>3.23.0</jline.version>
     <junit.jupiter.version>5.9.2</junit.jupiter.version>
     <logback.version>1.2.11</logback.version>
-    <maven.version>4.0.0-alpha-5</maven.version>
-    <maven3.version>3.9.1</maven3.version>
+    <maven.version>4.0.0-alpha-7</maven.version>
+    <maven3.version>3.9.3</maven3.version>
     <maven4.version>${maven.version}</maven4.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.7</maven.resolver.version>
+    <maven.resolver.version>1.9.13</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.9.0.M1</sisu.version>
 
@@ -228,6 +228,12 @@
         <groupId>org.apache.maven.resolver</groupId>
         <artifactId>maven-resolver-transport-wagon</artifactId>
         <version>${maven.resolver.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-shared-utils</artifactId>
+        <version>3.4.2</version>
       </dependency>
 
       <dependency>

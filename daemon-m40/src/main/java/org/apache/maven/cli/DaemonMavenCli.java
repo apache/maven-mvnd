@@ -21,20 +21,14 @@ package org.apache.maven.cli;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,8 +39,11 @@ import com.google.inject.AbstractModule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.maven.InternalErrorException;
 import org.apache.maven.Maven;
+import org.apache.maven.api.services.MessageBuilder;
+import org.apache.maven.api.services.MessageBuilderFactory;
 import org.apache.maven.building.FileSource;
 import org.apache.maven.building.Problem;
 import org.apache.maven.building.Source;
@@ -55,6 +52,8 @@ import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cli.internal.BootstrapCoreExtensionManager;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
+import org.apache.maven.cli.jansi.JansiMessageBuilderFactory;
+import org.apache.maven.cli.jansi.MessageUtils;
 import org.apache.maven.cli.transfer.QuietMavenTransferListener;
 import org.apache.maven.cli.transfer.Slf4jMavenTransferListener;
 import org.apache.maven.eventspy.internal.EventSpyDispatcher;
@@ -68,14 +67,13 @@ import org.apache.maven.extension.internal.CoreExportsProvider;
 import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
+import org.apache.maven.model.root.RootLocator;
 import org.apache.maven.plugin.ExtensionRealmCache;
 import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifactsCache;
 import org.apache.maven.properties.internal.SystemProperties;
 import org.apache.maven.session.scope.internal.SessionScopeModule;
-import org.apache.maven.shared.utils.logging.MessageBuilder;
-import org.apache.maven.shared.utils.logging.MessageUtils;
 import org.apache.maven.toolchain.building.DefaultToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuilder;
 import org.apache.maven.toolchain.building.ToolchainsBuildingResult;
@@ -87,6 +85,9 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.interpolation.AbstractValueSource;
+import org.codehaus.plexus.interpolation.BasicInterpolator;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
@@ -106,7 +107,9 @@ import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 import static java.util.Comparator.comparing;
-import static org.apache.maven.shared.utils.logging.MessageUtils.buffer;
+import static org.apache.maven.cli.CLIManager.BATCH_MODE;
+import static org.apache.maven.cli.CLIManager.FORCE_INTERACTIVE;
+import static org.apache.maven.cli.CLIManager.NON_INTERACTIVE;
 
 /**
  * File origin:
@@ -169,12 +172,15 @@ public class DaemonMavenCli implements DaemonCli {
      */
     private BuildEventListener buildEventListener = BuildEventListener.dummy();
 
+    private MessageBuilderFactory messageBuilderFactory;
+
     public DaemonMavenCli() throws Exception {
         slf4jLoggerFactory = LoggerFactory.getILoggerFactory();
         slf4jLogger = slf4jLoggerFactory.getLogger(this.getClass().getName());
         plexusLoggerManager = new Slf4jLoggerManager();
 
         this.classWorld = ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld();
+        this.messageBuilderFactory = new JansiMessageBuilderFactory();
 
         container = container();
 
@@ -246,6 +252,49 @@ public class DaemonMavenCli implements DaemonCli {
             throw new ExitException(1);
         }
         System.setProperty("maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString());
+
+        // We need to locate the top level project which may be pointed at using
+        // the -f/--file option.  However, the command line isn't parsed yet, so
+        // we need to iterate through the args to find it and act upon it.
+        Path topDirectory = Paths.get(cliRequest.workingDirectory);
+        boolean isAltFile = false;
+        for (String arg : cliRequest.args) {
+            if (isAltFile) {
+                // this is the argument following -f/--file
+                Path path = topDirectory.resolve(arg);
+                if (Files.isDirectory(path)) {
+                    topDirectory = path;
+                } else if (Files.isRegularFile(path)) {
+                    topDirectory = path.getParent();
+                    if (!Files.isDirectory(topDirectory)) {
+                        System.err.println("Directory " + topDirectory
+                                + " extracted from the -f/--file command-line argument " + arg + " does not exist");
+                        throw new ExitException(1);
+                    }
+                } else {
+                    System.err.println(
+                            "POM file " + arg + " specified with the -f/--file command line argument does not exist");
+                    throw new ExitException(1);
+                }
+                break;
+            } else {
+                // Check if this is the -f/--file option
+                isAltFile = arg.equals(String.valueOf(CLIManager.ALTERNATE_POM_FILE)) || arg.equals("file");
+            }
+        }
+        topDirectory = getCanonicalPath(topDirectory);
+        cliRequest.topDirectory = topDirectory;
+        // We're very early in the process and we don't have the container set up yet,
+        // so we rely on the JDK services to eventually lookup a custom RootLocator.
+        // This is used to compute {@code session.rootDirectory} but all {@code project.rootDirectory}
+        // properties will be compute through the RootLocator found in the container.
+        RootLocator rootLocator =
+                ServiceLoader.load(RootLocator.class).iterator().next();
+        Path rootDirectory = rootLocator.findRoot(topDirectory);
+        if (rootDirectory == null) {
+            System.err.println(RootLocator.UNABLE_TO_FIND_ROOT_PROJECT_MESSAGE);
+        }
+        cliRequest.rootDirectory = rootDirectory;
     }
 
     void cli(CliRequest cliRequest) throws Exception {
@@ -257,7 +306,8 @@ public class DaemonMavenCli implements DaemonCli {
 
             if (configFile.isFile()) {
                 try (Stream<String> lines = Files.lines(configFile.toPath(), Charset.defaultCharset())) {
-                    String[] args = lines.filter(arg -> !arg.isEmpty()).toArray(String[]::new);
+                    String[] args = lines.filter(arg -> !arg.isEmpty() && !arg.startsWith("#"))
+                            .toArray(String[]::new);
                     mavenConfig = cliManager.parse(args);
                     List<?> unrecognized = mavenConfig.getArgList();
                     if (!unrecognized.isEmpty()) {
@@ -282,6 +332,17 @@ public class DaemonMavenCli implements DaemonCli {
             buildEventListener.log("Unable to parse command line options: " + e.getMessage());
             buildEventListener.log("Run 'mvnd --help' for available options.");
             throw new ExitException(1);
+        }
+
+        // check for presence of unsupported command line options
+        try {
+            if (cliRequest.commandLine.hasOption("llr")) {
+                throw new UnrecognizedOptionException("Option '-llr' is not supported starting with Maven 3.9.1");
+            }
+        } catch (ParseException e) {
+            System.err.println("Unsupported options: " + e.getMessage());
+            cliManager.displayHelp(System.out);
+            throw e;
         }
     }
 
@@ -345,9 +406,10 @@ public class DaemonMavenCli implements DaemonCli {
      */
     void logging(CliRequest cliRequest) {
         // LOG LEVEL
-        cliRequest.verbose = cliRequest.commandLine.hasOption(CLIManager.VERBOSE);
-        cliRequest.quiet = !cliRequest.verbose && cliRequest.commandLine.hasOption(CLIManager.QUIET);
-        cliRequest.showErrors = cliRequest.verbose || cliRequest.commandLine.hasOption(CLIManager.ERRORS);
+        CommandLine commandLine = cliRequest.commandLine;
+        cliRequest.verbose = commandLine.hasOption(CLIManager.VERBOSE) || commandLine.hasOption(CLIManager.DEBUG);
+        cliRequest.quiet = !cliRequest.verbose && commandLine.hasOption(CLIManager.QUIET);
+        cliRequest.showErrors = cliRequest.verbose || commandLine.hasOption(CLIManager.ERRORS);
 
         ch.qos.logback.classic.Level level;
         if (cliRequest.verbose) {
@@ -368,9 +430,12 @@ public class DaemonMavenCli implements DaemonCli {
         } else if (!"auto".equals(styleColor)) {
             throw new IllegalArgumentException("Invalid color configuration option [" + styleColor
                     + "]. Supported values are (auto|always|never).");
-        } else if (cliRequest.commandLine.hasOption(CLIManager.BATCH_MODE)
-                || cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
-            MessageUtils.setColorEnabled(false);
+        } else {
+            boolean isBatchMode = !commandLine.hasOption(FORCE_INTERACTIVE)
+                    && (commandLine.hasOption(BATCH_MODE) || commandLine.hasOption(NON_INTERACTIVE));
+            if (isBatchMode || commandLine.hasOption(CLIManager.LOG_FILE)) {
+                MessageUtils.setColorEnabled(false);
+            }
         }
 
         // Workaround for https://github.com/apache/maven-mvnd/issues/39
@@ -379,8 +444,8 @@ public class DaemonMavenCli implements DaemonCli {
         mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level"), null));
 
         // LOG STREAMS
-        if (cliRequest.commandLine.hasOption(CLIManager.LOG_FILE)) {
-            File logFile = new File(cliRequest.commandLine.getOptionValue(CLIManager.LOG_FILE));
+        if (commandLine.hasOption(CLIManager.LOG_FILE)) {
+            File logFile = new File(commandLine.getOptionValue(CLIManager.LOG_FILE));
             logFile = resolveFile(logFile, cliRequest.workingDirectory);
 
             // redirect stdout and stderr to file
@@ -428,12 +493,12 @@ public class DaemonMavenCli implements DaemonCli {
         if (slf4jLogger.isDebugEnabled()) {
             slf4jLogger.debug("Message scheme: {}", (MessageUtils.isColorEnabled() ? "color" : "plain"));
             if (MessageUtils.isColorEnabled()) {
-                MessageBuilder buff = MessageUtils.buffer();
+                MessageBuilder buff = MessageUtils.builder();
                 buff.a("Message styles: ");
-                buff.a(MessageUtils.level().debug("debug")).a(' ');
-                buff.a(MessageUtils.level().info("info")).a(' ');
-                buff.a(MessageUtils.level().warning("warning")).a(' ');
-                buff.a(MessageUtils.level().error("error")).a(' ');
+                buff.debug("debug").a(' ');
+                buff.info("info").a(' ');
+                buff.warning("warning").a(' ');
+                buff.error("error").a(' ');
 
                 buff.success("success").a(' ');
                 buff.failure("failure").a(' ');
@@ -447,8 +512,34 @@ public class DaemonMavenCli implements DaemonCli {
 
     // Needed to make this method package visible to make writing a unit test possible
     // Maybe it's better to move some of those methods to separate class (SoC).
-    void properties(CliRequest cliRequest) {
-        populateProperties(cliRequest.commandLine, cliRequest.systemProperties, cliRequest.userProperties);
+    void properties(CliRequest cliRequest) throws Exception {
+        Properties paths = new Properties();
+        if (cliRequest.topDirectory != null) {
+            paths.put("session.topDirectory", cliRequest.topDirectory.toString());
+        }
+        if (cliRequest.rootDirectory != null) {
+            paths.put("session.rootDirectory", cliRequest.rootDirectory.toString());
+        }
+
+        populateProperties(cliRequest.commandLine, paths, cliRequest.systemProperties, cliRequest.userProperties);
+
+        // now that we have properties, interpolate all arguments
+        BasicInterpolator interpolator =
+                createInterpolator(paths, cliRequest.systemProperties, cliRequest.userProperties);
+        CommandLine.Builder commandLineBuilder = new CommandLine.Builder();
+        for (Option option : cliRequest.commandLine.getOptions()) {
+            if (!String.valueOf(CLIManager.SET_USER_PROPERTY).equals(option.getOpt())) {
+                List<String> values = option.getValuesList();
+                for (ListIterator<String> it = values.listIterator(); it.hasNext(); ) {
+                    it.set(interpolator.interpolate(it.next()));
+                }
+            }
+            commandLineBuilder.addOption(option);
+        }
+        for (String arg : cliRequest.commandLine.getArgList()) {
+            commandLineBuilder.addArg(interpolator.interpolate(arg));
+        }
+        cliRequest.commandLine = commandLineBuilder.build();
     }
 
     void container(CliRequest cliRequest) {
@@ -522,6 +613,7 @@ public class DaemonMavenCli implements DaemonCli {
                 // bind(PluginRealmCache.class).to(InvalidatingPluginRealmCache.class);
                 bind(ProjectArtifactsCache.class).to(InvalidatingProjectArtifactsCache.class);
                 // bind(PluginVersionResolver.class).to(CachingPluginVersionResolver.class);
+                bind(MessageBuilderFactory.class).toInstance(messageBuilderFactory);
             }
         });
 
@@ -674,7 +766,8 @@ public class DaemonMavenCli implements DaemonCli {
 
         eventSpyDispatcher.onEvent(request);
 
-        slf4jLogger.info(buffer().a("Processing build on daemon ")
+        slf4jLogger.info(MessageUtils.builder()
+                .a("Processing build on daemon ")
                 .strong(Environment.MVND_ID.asString())
                 .toString());
 
@@ -710,11 +803,12 @@ public class DaemonMavenCli implements DaemonCli {
             if (!cliRequest.showErrors) {
                 slf4jLogger.error(
                         "To see the full stack trace of the errors, re-run Maven with the {} switch.",
-                        buffer().strong("-e"));
+                        MessageUtils.builder().strong("-e"));
             }
             if (!slf4jLogger.isDebugEnabled()) {
                 slf4jLogger.error(
-                        "Re-run Maven using the {} switch to enable full debug logging.", buffer().strong("-X"));
+                        "Re-run Maven using the {} switch to enable full debug logging.",
+                        MessageUtils.builder().strong("-X"));
             }
 
             if (!references.isEmpty()) {
@@ -723,7 +817,7 @@ public class DaemonMavenCli implements DaemonCli {
                         + ", please read the following articles:");
 
                 for (Entry<String, String> entry : references.entrySet()) {
-                    slf4jLogger.error("{} {}", buffer().strong(entry.getValue()), entry.getKey());
+                    slf4jLogger.error("{} {}", MessageUtils.builder().strong(entry.getValue()), entry.getKey());
                 }
             }
 
@@ -757,7 +851,7 @@ public class DaemonMavenCli implements DaemonCli {
     private void logBuildResumeHint(String resumeBuildHint) {
         slf4jLogger.error("");
         slf4jLogger.error("After correcting the problems, you can resume the build with the command");
-        slf4jLogger.error(buffer().a("  ").strong(resumeBuildHint).toString());
+        slf4jLogger.error(MessageUtils.builder().a("  ").strong(resumeBuildHint).toString());
     }
 
     /**
@@ -795,9 +889,9 @@ public class DaemonMavenCli implements DaemonCli {
             String referenceKey =
                     references.computeIfAbsent(summary.getReference(), k -> "[Help " + (references.size() + 1) + "]");
             if (msg.indexOf('\n') < 0) {
-                msg += " -> " + buffer().strong(referenceKey);
+                msg += " -> " + MessageUtils.builder().strong(referenceKey);
             } else {
-                msg += "\n-> " + buffer().strong(referenceKey);
+                msg += "\n-> " + MessageUtils.builder().strong(referenceKey);
             }
         }
 
@@ -1002,7 +1096,7 @@ public class DaemonMavenCli implements DaemonCli {
         request.setShowErrors(cliRequest.showErrors); // default: false
         File baseDirectory = new File(workingDirectory, "").getAbsoluteFile();
 
-        disableOnPresentOption(commandLine, CLIManager.BATCH_MODE, request::setInteractiveMode);
+        disableInteractiveModeIfNeeded(cliRequest, request);
         enableOnPresentOption(commandLine, CLIManager.SUPPRESS_SNAPSHOT_UPDATES, request::setNoSnapshotUpdates);
         request.setGoals(commandLine.getArgList());
         request.setReactorFailureBehavior(determineReactorFailureBehaviour(commandLine));
@@ -1014,11 +1108,13 @@ public class DaemonMavenCli implements DaemonCli {
         request.setSystemProperties(cliRequest.systemProperties);
         request.setUserProperties(cliRequest.userProperties);
         request.setMultiModuleProjectDirectory(cliRequest.multiModuleProjectDirectory);
+        request.setRootDirectory(cliRequest.rootDirectory);
+        request.setTopDirectory(cliRequest.topDirectory);
         request.setPom(determinePom(modelProcessor, commandLine, workingDirectory, baseDirectory));
         request.setTransferListener(transferListener);
         request.setExecutionListener(executionListener);
 
-        ExecutionEventLogger executionEventLogger = new ExecutionEventLogger();
+        ExecutionEventLogger executionEventLogger = new ExecutionEventLogger(messageBuilderFactory);
         executionListener.init(eventSpyDispatcher.chainListener(executionEventLogger), buildEventListener);
 
         if ((request.getPom() != null) && (request.getPom().getParentFile() != null)) {
@@ -1061,6 +1157,27 @@ public class DaemonMavenCli implements DaemonCli {
         // Allow the builder to be overridden by the user if requested. The builders are now pluggable.
         //
         request.setBuilderId(commandLine.getOptionValue(CLIManager.BUILDER, request.getBuilderId()));
+    }
+
+    private void disableInteractiveModeIfNeeded(final CliRequest cliRequest, final MavenExecutionRequest request) {
+        CommandLine commandLine = cliRequest.getCommandLine();
+        if (commandLine.hasOption(FORCE_INTERACTIVE)) {
+            return;
+        }
+
+        boolean runningOnCI = isRunningOnCI(cliRequest.getSystemProperties());
+        if (runningOnCI) {
+            slf4jLogger.info("Making this build non-interactive, because the environment variable CI equals \"true\"."
+                    + " Disable this detection by removing that variable or adding --force-interactive.");
+            request.setInteractiveMode(false);
+        } else if (commandLine.hasOption(BATCH_MODE) || commandLine.hasOption(NON_INTERACTIVE)) {
+            request.setInteractiveMode(false);
+        }
+    }
+
+    private static boolean isRunningOnCI(Properties systemProperties) {
+        String ciEnv = systemProperties.getProperty("env.CI");
+        return ciEnv != null && !"false".equals(ciEnv);
     }
 
     private String determineLocalRepositoryPath(final MavenExecutionRequest request) {
@@ -1159,7 +1276,7 @@ public class DaemonMavenCli implements DaemonCli {
     }
 
     private ExecutionListener determineExecutionListener(EventSpyDispatcher eventSpyDispatcher) {
-        ExecutionListener executionListener = new ExecutionEventLogger();
+        ExecutionListener executionListener = new ExecutionEventLogger(messageBuilderFactory);
         if (eventSpyDispatcher != null) {
             return eventSpyDispatcher.chainListener(executionListener);
         } else {
@@ -1234,8 +1351,8 @@ public class DaemonMavenCli implements DaemonCli {
     }
 
     int calculateDegreeOfConcurrency(String threadConfiguration) {
-        if (threadConfiguration.endsWith("C")) {
-            try {
+        try {
+            if (threadConfiguration.endsWith("C")) {
                 String str = threadConfiguration.substring(0, threadConfiguration.length() - 1);
                 float coreMultiplier = Float.parseFloat(str);
 
@@ -1247,12 +1364,7 @@ public class DaemonMavenCli implements DaemonCli {
                 int procs = Runtime.getRuntime().availableProcessors();
                 int threads = (int) (coreMultiplier * procs);
                 return threads == 0 ? 1 : threads;
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Invalid threads core multiplier value: '" + threadConfiguration
-                        + "C'. Supported are int and float values ending with C.");
-            }
-        } else {
-            try {
+            } else {
                 int threads = Integer.parseInt(threadConfiguration);
 
                 if (threads <= 0) {
@@ -1261,10 +1373,10 @@ public class DaemonMavenCli implements DaemonCli {
                 }
 
                 return threads;
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException(
-                        "Invalid threads value: '" + threadConfiguration + "'. Supported are integer values.");
             }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid threads value: '" + threadConfiguration
+                    + "'. Supported are int and float values ending with C.");
         }
     }
 
@@ -1285,7 +1397,9 @@ public class DaemonMavenCli implements DaemonCli {
     // System properties handling
     // ----------------------------------------------------------------------
 
-    static void populateProperties(CommandLine commandLine, Properties systemProperties, Properties userProperties) {
+    static void populateProperties(
+            CommandLine commandLine, Properties paths, Properties systemProperties, Properties userProperties)
+            throws Exception {
         addEnvVars(systemProperties);
 
         // ----------------------------------------------------------------------
@@ -1296,7 +1410,6 @@ public class DaemonMavenCli implements DaemonCli {
 
         final Properties userSpecifiedProperties =
                 commandLine.getOptionProperties(String.valueOf(CLIManager.SET_SYSTEM_PROPERTY));
-        userSpecifiedProperties.forEach((prop, value) -> setCliProperty((String) prop, (String) value, userProperties));
 
         SystemProperties.addSystemProperties(systemProperties);
 
@@ -1312,6 +1425,21 @@ public class DaemonMavenCli implements DaemonCli {
 
         String mavenBuildVersion = CLIReportingUtils.createMavenVersionString(buildProperties);
         systemProperties.setProperty("maven.build.version", mavenBuildVersion);
+
+        BasicInterpolator interpolator =
+                createInterpolator(paths, systemProperties, userProperties, userSpecifiedProperties);
+        for (Map.Entry<Object, Object> e : userSpecifiedProperties.entrySet()) {
+            String name = (String) e.getKey();
+            String value = interpolator.interpolate((String) e.getValue());
+            userProperties.setProperty(name, value);
+            // ----------------------------------------------------------------------
+            // I'm leaving the setting of system properties here as not to break
+            // the SystemPropertyProfileActivator. This won't harm embedding. jvz.
+            // ----------------------------------------------------------------------
+            if (System.getProperty(name) == null) {
+                System.setProperty(name, value);
+            }
+        }
     }
 
     public static void addEnvVars(Properties props) {
@@ -1334,6 +1462,31 @@ public class DaemonMavenCli implements DaemonCli {
         // ----------------------------------------------------------------------
 
         System.setProperty(name, value);
+    }
+
+    private static Path getCanonicalPath(Path path) {
+        try {
+            return path.toRealPath();
+        } catch (IOException e) {
+            return getCanonicalPath(path.getParent()).resolve(path.getFileName());
+        }
+    }
+
+    private static BasicInterpolator createInterpolator(Properties... properties) {
+        StringSearchInterpolator interpolator = new StringSearchInterpolator();
+        interpolator.addValueSource(new AbstractValueSource(false) {
+            @Override
+            public Object getValue(String expression) {
+                for (Properties props : properties) {
+                    Object val = props.getProperty(expression);
+                    if (val != null) {
+                        return val;
+                    }
+                }
+                return null;
+            }
+        });
+        return interpolator;
     }
 
     static class ExitException extends Exception {

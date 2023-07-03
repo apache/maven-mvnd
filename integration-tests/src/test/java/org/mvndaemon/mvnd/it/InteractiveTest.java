@@ -48,6 +48,17 @@ public class InteractiveTest {
                 MvndTestUtil.version(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
         Assertions.assertEquals("0.0.1-SNAPSHOT", version);
 
+        final TestClientOutput output = new TestClientOutput();
+        client.execute(output, "-v").assertSuccess();
+        output.describeTerminal();
+        String mavenVersion = output.getMessages().stream()
+                .filter(m -> m.getType() == Message.BUILD_LOG_MESSAGE)
+                .map(m -> ((Message.StringMessage) m).getMessage())
+                .filter(s -> s.matches("[\\s\\S]*Apache Maven ([0-9][^ ]*) [\\s\\S]*"))
+                .map(s -> s.replaceAll("[\\s\\S]*Apache Maven ([0-9][^ ]*) [\\s\\S]*", "$1"))
+                .findFirst()
+                .get();
+
         final TestClientOutput o = new TestClientOutput() {
             @Override
             public void accept(Message m) {
@@ -57,7 +68,11 @@ public class InteractiveTest {
                 super.accept(m);
             }
         };
-        client.execute(o, "versions:set").assertSuccess();
+        if (mavenVersion.startsWith("4")) {
+            client.execute(o, "--force-interactive", "versions:set").assertSuccess();
+        } else {
+            client.execute(o, "versions:set").assertSuccess();
+        }
 
         final String newVersion =
                 MvndTestUtil.version(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
