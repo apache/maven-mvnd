@@ -40,7 +40,6 @@ public class TestParameters extends DaemonParameters {
             Path javaHome,
             Path localMavenRepository,
             Path settings,
-            Path logbackConfigurationPath,
             Duration idleTimeout,
             Duration keepAlive,
             int maxLostKeepAlive,
@@ -55,7 +54,6 @@ public class TestParameters extends DaemonParameters {
                 .put(Environment.JAVA_HOME, javaHome)
                 .put(Environment.MAVEN_REPO_LOCAL, localMavenRepository)
                 .put(Environment.MAVEN_SETTINGS, settings)
-                .put(Environment.MVND_LOGBACK, logbackConfigurationPath)
                 .put(Environment.MVND_IDLE_TIMEOUT, TimeUtils.printDuration(idleTimeout))
                 .put(Environment.MVND_KEEP_ALIVE, TimeUtils.printDuration(keepAlive))
                 .put(Environment.MVND_MAX_LOST_KEEP_ALIVE, maxLostKeepAlive)
@@ -83,7 +81,6 @@ public class TestParameters extends DaemonParameters {
                 value(Environment.JAVA_HOME).asPath(),
                 value(Environment.MAVEN_REPO_LOCAL).asPath(),
                 value(Environment.MAVEN_SETTINGS).asPath(),
-                value(Environment.MVND_LOGBACK).asPath(),
                 value(Environment.MVND_IDLE_TIMEOUT).asDuration(),
                 value(Environment.MVND_KEEP_ALIVE).asDuration(),
                 value(Environment.MVND_MAX_LOST_KEEP_ALIVE).asInt(),

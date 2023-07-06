@@ -20,10 +20,9 @@ package org.mvndaemon.mvnd.it;
 
 import javax.inject.Inject;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +31,8 @@ import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.MvndSimpleLogger;
+import org.slf4j.spi.LocationAwareLogger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -42,33 +43,31 @@ public class MaxHeapNativeIT {
         @Inject
         Client client;
 
-        static ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        static List<String> messages = new CopyOnWriteArrayList<>();
 
         @BeforeAll
         static void setup() {
-            Logger logger = (Logger) LoggerFactory.getLogger("org.mvndaemon.mvnd.client.DaemonConnector");
-            logger.setLevel(Level.DEBUG);
-            logger.addAppender(appender);
-            appender.start();
+            MvndSimpleLogger logger =
+                    (MvndSimpleLogger) LoggerFactory.getLogger("org.mvndaemon.mvnd.client.DaemonConnector");
+            logger.setLogLevel(LocationAwareLogger.DEBUG_INT);
+            MvndSimpleLogger.setLogSink(messages::add);
         }
 
         @AfterAll
         static void tearDown() {
-            Logger logger = (Logger) LoggerFactory.getLogger("org.mvndaemon.mvnd.client.DaemonConnector");
-            logger.detachAppender(appender);
+            MvndSimpleLogger.setLogSink(null);
         }
 
         static String getDaemonArgs() {
-            return appender.list.stream()
-                    .filter(e -> e.getMessage().contains("Starting daemon process"))
-                    .map(e -> e.getArgumentArray()[2].toString())
+            return messages.stream()
+                    .filter(e -> e.contains("Starting daemon process"))
                     .findAny()
                     .orElseThrow();
         }
 
         @BeforeEach
         void unitSetup() {
-            appender.list.clear();
+            messages.clear();
         }
     }
 

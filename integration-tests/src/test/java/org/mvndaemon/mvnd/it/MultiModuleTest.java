@@ -74,7 +74,13 @@ public class MultiModuleTest {
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
         final TestClientOutput output = new TestClientOutput();
-        client.execute(output, "clean", "install", "-e").assertSuccess();
+        client.execute(
+                        output,
+                        "-Dorg.slf4j.simpleLogger.log.io.takari.maven.builder.smart=DEBUG",
+                        "clean",
+                        "install",
+                        "-e")
+                .assertSuccess();
 
         {
             final List<String> filteredMessages = output.getMessages().stream()

@@ -16,32 +16,36 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.mvndaemon.mvnd.logging.internal;
+package org.slf4j.impl;
 
 import org.apache.maven.cli.logging.Slf4jConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.ILoggerFactory;
 
-public class MvndSlf4jConfiguration implements Slf4jConfiguration {
+public class MvndConfiguration implements Slf4jConfiguration {
     @Override
     public void setRootLoggerLevel(Level level) {
-        ch.qos.logback.classic.Level value;
+        String value;
         switch (level) {
             case DEBUG:
-                value = ch.qos.logback.classic.Level.DEBUG;
+                value = "debug";
                 break;
 
             case INFO:
-                value = ch.qos.logback.classic.Level.INFO;
+                value = "info";
                 break;
 
             default:
-                value = ch.qos.logback.classic.Level.ERROR;
+                value = "error";
                 break;
         }
-        ((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(value);
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", value);
     }
 
     @Override
-    public void activate() {}
+    public void activate() {
+        ILoggerFactory lf = StaticLoggerBinder.getSingleton().getLoggerFactory();
+        if (lf instanceof MvndLoggerFactory) {
+            ((MvndLoggerFactory) lf).reconfigure();
+        }
+    }
 }

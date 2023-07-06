@@ -20,18 +20,12 @@
     <artifactSet to="/mvn">
         <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${maven4.version}">
             <unpack useRoot="false"
-                    excludes="conf/logging/*,lib/maven-slf4j-provider*,lib/plexus-utils-3.*" />
+                    excludes="lib/maven-slf4j-*,lib/plexus-utils-3.*" />
         </artifact>
     </artifactSet>
 
     <artifactSet to="/mvn/lib">
         <artifact id="org.apache.maven.daemon:mvnd-logging:${project.version}">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="ch.qos.logback:logback-classic">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="ch.qos.logback:logback-core">
             <exclusion id="*:*"/>
         </artifact>
         <artifact id="org.slf4j:jul-to-slf4j">
