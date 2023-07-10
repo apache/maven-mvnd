@@ -63,17 +63,6 @@ public enum Environment {
     SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:-1", "mvnd:--serial"),
 
     //
-    // Log properties
-    //
-
-    /**
-     * The location of the Logback configuration file the daemon should use to configure its logging.
-     */
-    MVND_LOGBACK("mvnd.logback", null, null, OptionType.PATH, Flags.NONE),
-    /** The system property expected by logback to set the configuration file */
-    LOGBACK_CONFIGURATION_FILE("logback.configurationFile", null, null, OptionType.PATH, Flags.INTERNAL),
-
-    //
     // System properties
     //
     /** Java home for starting the daemon. */

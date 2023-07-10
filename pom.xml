@@ -87,7 +87,6 @@
     <jansi.version>2.4.0</jansi.version>
     <jline.version>3.23.0</jline.version>
     <junit.jupiter.version>5.9.2</junit.jupiter.version>
-    <logback.version>1.2.11</logback.version>
     <maven.version>4.0.0-alpha-7</maven.version>
     <maven3.version>3.9.3</maven3.version>
     <maven4.version>${maven.version}</maven4.version>
@@ -122,16 +121,6 @@
   <dependencyManagement>
     <dependencies>
 
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-core</artifactId>
-        <version>${logback.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>

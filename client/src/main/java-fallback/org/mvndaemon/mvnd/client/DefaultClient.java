@@ -24,12 +24,6 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultClient {
     public static void main(String[] argv) throws Exception {
-        final String logbackConfFallback = System.getProperty("logback.configurationFile.fallback");
-        if (null != logbackConfFallback && !"".equals(logbackConfFallback)) {
-            System.setProperty("logback.configurationFile", logbackConfFallback);
-            System.clearProperty("logback.configurationFile.fallback");
-        }
-
         final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
         LOGGER.warn("Found old JDK, fallback to the embedded maven!");
         LOGGER.warn("Use JDK 11+ to run maven-mvnd client!");

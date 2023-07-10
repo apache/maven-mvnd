@@ -60,6 +60,8 @@ import org.mvndaemon.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.slf4j.impl.MvndLoggerFactory;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
@@ -70,8 +72,6 @@ public class DefaultClient implements Client {
     private final DaemonParameters parameters;
 
     public static void main(String[] argv) throws Exception {
-        System.clearProperty("logback.configurationFile.fallback");
-
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
 
         // Log file
@@ -114,6 +114,10 @@ public class DefaultClient implements Client {
 
         // System properties
         setSystemPropertiesFromCommandLine(args);
+
+        if (StaticLoggerBinder.getSingleton().getLoggerFactory() instanceof MvndLoggerFactory) {
+            ((MvndLoggerFactory) StaticLoggerBinder.getSingleton().getLoggerFactory()).reconfigure();
+        }
 
         DaemonParameters parameters = new DaemonParameters();
         if (parameters.serial()) {
@@ -191,9 +195,13 @@ public class DefaultClient implements Client {
                 /* This needs to be done very early, otherwise various DaemonParameters do not work properly */
                 final int eqPos = val.indexOf('=');
                 if (eqPos >= 0) {
-                    System.setProperty(val.substring(0, eqPos), val.substring(eqPos + 1));
+                    String k = val.substring(0, eqPos);
+                    String v = val.substring(eqPos + 1);
+                    System.setProperty(k, v);
+                    LOGGER.trace("Setting system property {} to {}", k, v);
                 } else {
                     System.setProperty(val, "");
+                    LOGGER.trace("Setting system property {}", val);
                 }
             }
         }

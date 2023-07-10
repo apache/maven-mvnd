@@ -54,6 +54,8 @@ import org.apache.maven.cli.internal.BootstrapCoreExtensionManager;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.apache.maven.cli.jansi.JansiMessageBuilderFactory;
 import org.apache.maven.cli.jansi.MessageUtils;
+import org.apache.maven.cli.logging.Slf4jConfiguration;
+import org.apache.maven.cli.logging.Slf4jConfigurationFactory;
 import org.apache.maven.cli.transfer.QuietMavenTransferListener;
 import org.apache.maven.cli.transfer.Slf4jMavenTransferListener;
 import org.apache.maven.eventspy.internal.EventSpyDispatcher;
@@ -103,6 +105,8 @@ import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.MvndSimpleLogger;
+import org.slf4j.spi.LocationAwareLogger;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
@@ -411,15 +415,17 @@ public class DaemonMavenCli implements DaemonCli {
         cliRequest.quiet = !cliRequest.verbose && commandLine.hasOption(CLIManager.QUIET);
         cliRequest.showErrors = cliRequest.verbose || commandLine.hasOption(CLIManager.ERRORS);
 
-        ch.qos.logback.classic.Level level;
+        Slf4jConfiguration slf4jConfiguration = Slf4jConfigurationFactory.getConfiguration(slf4jLoggerFactory);
+
         if (cliRequest.verbose) {
-            level = ch.qos.logback.classic.Level.DEBUG;
+            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_DEBUG);
+            slf4jConfiguration.setRootLoggerLevel(Slf4jConfiguration.Level.DEBUG);
         } else if (cliRequest.quiet) {
-            level = ch.qos.logback.classic.Level.WARN;
-        } else {
-            level = ch.qos.logback.classic.Level.INFO;
+            cliRequest.request.setLoggingLevel(MavenExecutionRequest.LOGGING_LEVEL_ERROR);
+            slf4jConfiguration.setRootLoggerLevel(Slf4jConfiguration.Level.ERROR);
         }
-        ((ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(level);
+        // else fall back to default log level specified in conf
+        // see https://issues.apache.org/jira/browse/MNG-2570
 
         // LOG COLOR
         String styleColor = cliRequest.getUserProperties().getProperty(STYLE_COLOR_PROPERTY, "auto");
@@ -437,11 +443,6 @@ public class DaemonMavenCli implements DaemonCli {
                 MessageUtils.setColorEnabled(false);
             }
         }
-
-        // Workaround for https://github.com/apache/maven-mvnd/issues/39
-        final ch.qos.logback.classic.Logger mvndLogger =
-                (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("org.mvndaemon.mvnd");
-        mvndLogger.setLevel(ch.qos.logback.classic.Level.toLevel(System.getProperty("mvnd.log.level"), null));
 
         // LOG STREAMS
         if (commandLine.hasOption(CLIManager.LOG_FILE)) {
@@ -462,15 +463,15 @@ public class DaemonMavenCli implements DaemonCli {
                 .asOptional()
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.FALSE)) {
-            ch.qos.logback.classic.Logger stdout =
-                    (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stdout");
-            ch.qos.logback.classic.Logger stderr =
-                    (ch.qos.logback.classic.Logger) slf4jLoggerFactory.getLogger("stderr");
-            stdout.setLevel(ch.qos.logback.classic.Level.INFO);
-            stderr.setLevel(ch.qos.logback.classic.Level.INFO);
+            MvndSimpleLogger stdout = (MvndSimpleLogger) slf4jLoggerFactory.getLogger("stdout");
+            MvndSimpleLogger stderr = (MvndSimpleLogger) slf4jLoggerFactory.getLogger("stderr");
+            stdout.setLogLevel(LocationAwareLogger.INFO_INT);
+            stderr.setLogLevel(LocationAwareLogger.INFO_INT);
             System.setOut(new LoggingOutputStream(s -> stdout.info("[stdout] " + s)).printStream());
             System.setErr(new LoggingOutputStream(s -> stderr.warn("[stderr] " + s)).printStream());
         }
+
+        slf4jConfiguration.activate();
     }
 
     private void version(CliRequest cliRequest) throws ExitException {

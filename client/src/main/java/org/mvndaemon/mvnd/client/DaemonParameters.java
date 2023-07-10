@@ -184,11 +184,21 @@ public class DaemonParameters {
     }
 
     public Path userDir() {
-        return value(Environment.USER_DIR).orSystemProperty().orFail().asPath().toAbsolutePath();
+        return value(Environment.USER_DIR)
+                .orSystemProperty()
+                .orFail()
+                .cache(provider)
+                .asPath()
+                .toAbsolutePath();
     }
 
     public Path userHome() {
-        return value(Environment.USER_HOME).orSystemProperty().orFail().asPath().toAbsolutePath();
+        return value(Environment.USER_HOME)
+                .orSystemProperty()
+                .orFail()
+                .cache(provider)
+                .asPath()
+                .toAbsolutePath();
     }
 
     public Path suppliedPropertiesPath() {
@@ -254,15 +264,6 @@ public class DaemonParameters {
                 .asPath()
                 .toAbsolutePath()
                 .normalize();
-    }
-
-    public Path logbackConfigurationPath() {
-        return property(Environment.MVND_LOGBACK)
-                .orDefault(() -> mvndHome()
-                        .resolve("mvn/conf/logging/logback-daemon.xml")
-                        .toString())
-                .orFail()
-                .asPath();
     }
 
     public String minHeapSize() {

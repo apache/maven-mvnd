@@ -238,8 +238,6 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 LOG.info("Building with mrm-maven-plugin");
                 settingsPath = createSettings(testDir.resolve("settings.xml"), mrmRepoUrl);
             }
-            final Path logback =
-                    Paths.get("src/test/resources/logback/logback.xml").toAbsolutePath();
             final Path home = deleteDir(testDir.resolve("home"));
             final TestParameters parameters = new TestParameters(
                     testDir,
@@ -251,7 +249,6 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository,
                     settingsPath,
-                    logback,
                     TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
                     keepAlive != null && !keepAlive.isEmpty()
                             ? TimeUtils.toDuration(keepAlive)
