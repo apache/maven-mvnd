@@ -1,5 +1,55 @@
 # Changelog
 
+## [1.0-m7](https://github.com/apache/maven-mvnd/tree/1.0-m7) (2023-07-11)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0-m6...1.0-m7)
+
+**Fixed bugs:**
+
+- can't use system environment variable? [\#693](https://github.com/apache/maven-mvnd/issues/693)
+
+**Closed issues:**
+
+- mvnd slower than mvn [\#867](https://github.com/apache/maven-mvnd/issues/867)
+- mvnd  The new command is not convenient to use [\#864](https://github.com/apache/maven-mvnd/issues/864)
+- mvnd is incompatible with revision，versions-maven-plugin is 2.7 [\#863](https://github.com/apache/maven-mvnd/issues/863)
+- Why？we can't  use the same command as Maven [\#860](https://github.com/apache/maven-mvnd/issues/860)
+- mvnd is not supported to `<goal>` tag in pom.xml? [\#859](https://github.com/apache/maven-mvnd/issues/859)
+- After opening debug, I compile and produce A daemon A for the first time. After completion, the second compilation generates a new daemon B. What should I do if I want to reuse the first daemon A for the second compilation [\#855](https://github.com/apache/maven-mvnd/issues/855)
+- mvnd does not recognize -Dmaven.test.skip=true [\#854](https://github.com/apache/maven-mvnd/issues/854)
+- The detection of mvnd home is broken on alpine linux [\#849](https://github.com/apache/maven-mvnd/issues/849)
+- NPE during expiration check [\#842](https://github.com/apache/maven-mvnd/issues/842)
+- Regression mvnd 1.0-m6 vs. mvn 3.9.1 [\#841](https://github.com/apache/maven-mvnd/issues/841)
+- Error resolving dependencies with variables and parent POMs - here: ${pom.version} [\#840](https://github.com/apache/maven-mvnd/issues/840)
+- Custom settings file not found [\#839](https://github.com/apache/maven-mvnd/issues/839)
+- Consistent version output [\#838](https://github.com/apache/maven-mvnd/issues/838)
+- Revert to slf4j simple logger for the actual logging to the terminal [\#835](https://github.com/apache/maven-mvnd/issues/835)
+- Older versions not available on the CDN [\#831](https://github.com/apache/maven-mvnd/issues/831)
+- Failed to load native library:jansi-2.4.0-b00c64e8b23a020c-jansi.dll. osinfo: Windows/x86\_64 [\#828](https://github.com/apache/maven-mvnd/issues/828)
+- Upgrade to maven 3.9.1? [\#826](https://github.com/apache/maven-mvnd/issues/826)
+- mvnd doesn't work in alpine [\#596](https://github.com/apache/maven-mvnd/issues/596)
+
+**Merged pull requests:**
+
+- Various upgrades [\#869](https://github.com/apache/maven-mvnd/pull/869) ([gnodet](https://github.com/gnodet))
+- Switch to slf4j simple logger for the actual logging to the terminal \(fixes \#835\) [\#868](https://github.com/apache/maven-mvnd/pull/868) ([gnodet](https://github.com/gnodet))
+- Fix interpolation of environment variables in config properties \(fixes \#693\) [\#866](https://github.com/apache/maven-mvnd/pull/866) ([gnodet](https://github.com/gnodet))
+- Bump to maven-parent 40, maven 3.9.3 and 4.0.0-alpha-7 and maven-resolver 1.9.13 [\#858](https://github.com/apache/maven-mvnd/pull/858) ([gnodet](https://github.com/gnodet))
+- fix\(log-typo\): Fix minor typo in javaHomeFromPath warn log [\#856](https://github.com/apache/maven-mvnd/pull/856) ([f-lopes](https://github.com/f-lopes))
+- Show which options are discriminating in the output of mvnd --help [\#851](https://github.com/apache/maven-mvnd/pull/851) ([ppalaga](https://github.com/ppalaga))
+- {@link } JavaDoc refs missing in the output of mvnd --help [\#850](https://github.com/apache/maven-mvnd/pull/850) ([ppalaga](https://github.com/ppalaga))
+- Fix broken detection of mvnd home on alpine linux \(fixes \#849\) [\#848](https://github.com/apache/maven-mvnd/pull/848) ([gnodet](https://github.com/gnodet))
+- Use macos-11 OS for CI [\#847](https://github.com/apache/maven-mvnd/pull/847) ([gnodet](https://github.com/gnodet))
+- Fix version display \(fixes \#838\) [\#846](https://github.com/apache/maven-mvnd/pull/846) ([gnodet](https://github.com/gnodet))
+- Upgrade to takari-smart-builder 0.6.3 \(fixes \#841\) [\#844](https://github.com/apache/maven-mvnd/pull/844) ([gnodet](https://github.com/gnodet))
+- NPE during expiration check \(fixes \#842\) [\#843](https://github.com/apache/maven-mvnd/pull/843) ([gnodet](https://github.com/gnodet))
+- Fix PluginDescriptorCache [\#834](https://github.com/apache/maven-mvnd/pull/834) ([oehme](https://github.com/oehme))
+- \[MNG-6825\] Remove plexus-utils and commons-xxx references [\#833](https://github.com/apache/maven-mvnd/pull/833) ([gnodet](https://github.com/gnodet))
+- Add MVND\_NO\_MODEL\_CACHE support to mvn39 [\#830](https://github.com/apache/maven-mvnd/pull/830) ([oehme](https://github.com/oehme))
+- Sort build times for the whole reactor by decreasing total time [\#829](https://github.com/apache/maven-mvnd/pull/829) ([gnodet](https://github.com/gnodet))
+- native image: hardening csu for old glibc [\#827](https://github.com/apache/maven-mvnd/pull/827) ([gzm55](https://github.com/gzm55))
+- Add configuration to send build scans to https://ge.apache.org [\#810](https://github.com/apache/maven-mvnd/pull/810) ([clayburn](https://github.com/clayburn))
+
 ## [1.0-m6](https://github.com/apache/maven-mvnd/tree/1.0-m6) (2023-03-23)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0-m5...1.0-m6)
@@ -7,42 +57,22 @@
 **Closed issues:**
 
 - keep compatible for glibc 2.12 when build on ubuntu 22.04 [\#823](https://github.com/apache/maven-mvnd/issues/823)
-
-**Merged pull requests:**
-
-- Make native mvnd only require glibc 2.12 on ubuntu 22.04 [\#825](https://github.com/apache/maven-mvnd/pull/825) ([gzm55](https://github.com/gzm55))
-
-## [1.0-m5](https://github.com/apache/maven-mvnd/tree/1.0-m5) (2023-03-22)
-
-[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m4...1.0-m5)
-
-**Closed issues:**
-
 - mvnd 0.9.0 use stderr instead of stdout [\#822](https://github.com/apache/maven-mvnd/issues/822)
 - Prompter prompt is prepended with the projectId when there's only one project [\#816](https://github.com/apache/maven-mvnd/issues/816)
 - Linux native binary no longer works on ubuntu 18.04 and ubuntu 20.04 \(and likely any linux with glibc \< 2.34\) [\#812](https://github.com/apache/maven-mvnd/issues/812)
 - NPE in daemon prompter when using iteractive mode with no project \(using archetype\) [\#807](https://github.com/apache/maven-mvnd/issues/807)
-- 0.10.0-SNAPSHOT is leaking heap memory via ThreadLocal [\#798](https://github.com/apache/maven-mvnd/issues/798)
-- `NullPointerException: Cannot invoke "org.apache.maven.lifecycle.internal.ReactorBuildStatus.isHalted()" because "status" is null` [\#795](https://github.com/apache/maven-mvnd/issues/795)
 - Support maven 3.9.0 [\#788](https://github.com/apache/maven-mvnd/issues/788)
-- mvnd overwrites PATH for vanilla mvn [\#787](https://github.com/apache/maven-mvnd/issues/787)
 - Regression "WARNING: Unable to create a system terminal, creating a dumb terminal" [\#786](https://github.com/apache/maven-mvnd/issues/786)
-- `source <(mvnd --completion bash)` stopped working in 0.9.0  [\#785](https://github.com/apache/maven-mvnd/issues/785)
-- Cannot run program "infocmp" [\#782](https://github.com/apache/maven-mvnd/issues/782)
-- Threads parameter is not working on Apple Silicon [\#770](https://github.com/apache/maven-mvnd/issues/770)
-- NullPointerException [\#759](https://github.com/apache/maven-mvnd/issues/759)
-- maven dependency plugin missing pom: mvnd gives error \<=\> stock mvn warning [\#731](https://github.com/apache/maven-mvnd/issues/731)
-- mvnd incompatible with Gradle Enterprise's build-scan extension [\#725](https://github.com/apache/maven-mvnd/issues/725)
 
 **Merged pull requests:**
 
+- Make native mvnd only require glibc 2.12 on ubuntu 22.04 [\#825](https://github.com/apache/maven-mvnd/pull/825) ([gzm55](https://github.com/gzm55))
 - Use system out for build log and sys err for in progress display, fixes \#822 [\#824](https://github.com/apache/maven-mvnd/pull/824) ([gnodet](https://github.com/gnodet))
 - Upgrade to maven 3.9.1 and 4.0.0-alpha-5 and resolver 1.9.7 [\#821](https://github.com/apache/maven-mvnd/pull/821) ([gnodet](https://github.com/gnodet))
 - Fix mvnd home detection based on executable path [\#820](https://github.com/apache/maven-mvnd/pull/820) ([gnodet](https://github.com/gnodet))
 - \[MNG-7131\] maven.config doesn't handle arguments with spaces in them \(backport to mvnd\) [\#819](https://github.com/apache/maven-mvnd/pull/819) ([gnodet](https://github.com/gnodet))
 - Reuse maven scripts and get closer to stock maven [\#818](https://github.com/apache/maven-mvnd/pull/818) ([gnodet](https://github.com/gnodet))
 - Prompter prompt should not prepend the projectId when there's only one project, fixes \#816 [\#817](https://github.com/apache/maven-mvnd/pull/817) ([gnodet](https://github.com/gnodet))
-- Bump GitHub actions version [\#815](https://github.com/apache/maven-mvnd/pull/815) ([psiroky](https://github.com/psiroky))
 - Build on ubuntu 20.04 [\#814](https://github.com/apache/maven-mvnd/pull/814) ([psiroky](https://github.com/psiroky))
 - Make sure mvnd's plexus-interactivity is not in the maven classloader, fixes \#807 [\#811](https://github.com/apache/maven-mvnd/pull/811) ([gnodet](https://github.com/gnodet))
 - Random minor fixes / clean-up in OsUtils [\#809](https://github.com/apache/maven-mvnd/pull/809) ([psiroky](https://github.com/psiroky))
@@ -52,11 +82,31 @@
 - Upgrade to jline 3.23.0 [\#804](https://github.com/apache/maven-mvnd/pull/804) ([gnodet](https://github.com/gnodet))
 - Move back mvn script into the mvn/bin folder to avoid conflicts, fixes \#787 [\#803](https://github.com/apache/maven-mvnd/pull/803) ([gnodet](https://github.com/gnodet))
 - Fix EnvHelper\#chDir on JDK 21 [\#802](https://github.com/apache/maven-mvnd/pull/802) ([gnodet](https://github.com/gnodet))
+- Provide distributions for both maven 3.9.x and 4.0.x [\#796](https://github.com/apache/maven-mvnd/pull/796) ([gnodet](https://github.com/gnodet))
+- Fix JUL logging [\#792](https://github.com/apache/maven-mvnd/pull/792) ([gnodet](https://github.com/gnodet))
+
+## [1.0-m5](https://github.com/apache/maven-mvnd/tree/1.0-m5) (2023-03-22)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0.0-m4...1.0-m5)
+
+**Closed issues:**
+
+- 0.10.0-SNAPSHOT is leaking heap memory via ThreadLocal [\#798](https://github.com/apache/maven-mvnd/issues/798)
+- `NullPointerException: Cannot invoke "org.apache.maven.lifecycle.internal.ReactorBuildStatus.isHalted()" because "status" is null` [\#795](https://github.com/apache/maven-mvnd/issues/795)
+- mvnd overwrites PATH for vanilla mvn [\#787](https://github.com/apache/maven-mvnd/issues/787)
+- `source <(mvnd --completion bash)` stopped working in 0.9.0  [\#785](https://github.com/apache/maven-mvnd/issues/785)
+- Cannot run program "infocmp" [\#782](https://github.com/apache/maven-mvnd/issues/782)
+- Threads parameter is not working on Apple Silicon [\#770](https://github.com/apache/maven-mvnd/issues/770)
+- NullPointerException [\#759](https://github.com/apache/maven-mvnd/issues/759)
+- maven dependency plugin missing pom: mvnd gives error \<=\> stock mvn warning [\#731](https://github.com/apache/maven-mvnd/issues/731)
+- mvnd incompatible with Gradle Enterprise's build-scan extension [\#725](https://github.com/apache/maven-mvnd/issues/725)
+
+**Merged pull requests:**
+
+- Bump GitHub actions version [\#815](https://github.com/apache/maven-mvnd/pull/815) ([psiroky](https://github.com/psiroky))
 - Run client connection handler inside new thread, fixes \#798  [\#801](https://github.com/apache/maven-mvnd/pull/801) ([psiroky](https://github.com/psiroky))
 - Add property to disable model caching [\#797](https://github.com/apache/maven-mvnd/pull/797) ([oehme](https://github.com/oehme))
-- Provide distributions for both maven 3.9.x and 4.0.x [\#796](https://github.com/apache/maven-mvnd/pull/796) ([gnodet](https://github.com/gnodet))
 - Bump graalvm version used for early access builds [\#794](https://github.com/apache/maven-mvnd/pull/794) ([gnodet](https://github.com/gnodet))
-- Fix JUL logging [\#792](https://github.com/apache/maven-mvnd/pull/792) ([gnodet](https://github.com/gnodet))
 - Make sure to print the completion script to the standard output stream \(fix \#785\) [\#791](https://github.com/apache/maven-mvnd/pull/791) ([gnodet](https://github.com/gnodet))
 - Turn off transfer messages when running tests when possible [\#790](https://github.com/apache/maven-mvnd/pull/790) ([gnodet](https://github.com/gnodet))
 - Make Classworld setup more alike to vanilla Maven [\#784](https://github.com/apache/maven-mvnd/pull/784) ([oehme](https://github.com/oehme))
@@ -73,7 +123,6 @@
 - Timeout waiting to connect to the Maven daemon [\#637](https://github.com/apache/maven-mvnd/issues/637)
 - 1.0.0-m1 slower than 0.8.2 [\#758](https://github.com/apache/maven-mvnd/issues/758)
 - Bash Completions Kills Shell \(Mac/Homebrew\) [\#756](https://github.com/apache/maven-mvnd/issues/756)
-- Too many open files on Mac OS with JDK 11 and mvnd 0.8.2 [\#710](https://github.com/apache/maven-mvnd/issues/710)
 - exec-maven-plugin \(exec:exec\) output unexpected prefix for each line of stdout/stderr [\#708](https://github.com/apache/maven-mvnd/issues/708)
 
 **Merged pull requests:**
@@ -750,7 +799,7 @@
 - Allow passing additional jvm args to the daemon [\#174](https://github.com/apache/maven-mvnd/issues/174)
 - mvndaemon.org domain transfer [\#153](https://github.com/apache/maven-mvnd/issues/153)
 - Implement build cancellation [\#127](https://github.com/apache/maven-mvnd/issues/127)
-- Provide a `mvnd.daemon` option to disable daemon for easier debugging [\#43](https://github.com/apache/maven-mvnd/issues/43)
+- Provide a `mvnd.noDaemon` option to disable daemon for easier debugging [\#43](https://github.com/apache/maven-mvnd/issues/43)
 
 **Merged pull requests:**
 
