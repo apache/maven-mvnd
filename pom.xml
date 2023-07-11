@@ -79,10 +79,11 @@
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
     <assertj.version>3.24.2</assertj.version>
-    <commons-compress.version>1.22</commons-compress.version>
+    <commons-compress.version>1.23.0</commons-compress.version>
+    <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
     <graalvm.version>22.3.1</graalvm.version>
-    <graalvm.plugin.version>0.9.18</graalvm.plugin.version>
-    <groovy.version>4.0.7</groovy.version>
+    <graalvm.plugin.version>0.9.23</graalvm.plugin.version>
+    <groovy.version>4.0.13</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.0</jansi.version>
     <jline.version>3.23.0</jline.version>
@@ -93,26 +94,23 @@
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.13</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
-    <sisu.version>0.9.0.M1</sisu.version>
+    <sisu.version>0.9.0.M2</sisu.version>
 
     <!-- plugin versions a..z -->
-    <buildnumber-maven-plugin.version>3.0.0</buildnumber-maven-plugin.version>
-    <compiler.version>3.10.1</compiler.version>
-    <groovy-maven-plugin.version>2.1.0</groovy-maven-plugin.version>
+    <buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
+    <compiler.version>3.11.0</compiler.version>
+    <groovy-maven-plugin.version>3.0.0</groovy-maven-plugin.version>
     <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
-    <maven-install-plugin.version>3.1.0</maven-install-plugin.version>
-    <maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
-    <mrm.version>1.4.1</mrm.version>
-    <surefire.version>3.0.0-M8</surefire.version>
-    <!-- keep in sync with junit-platform-launcher.version -->
+    <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
+    <maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
+    <mrm.version>1.5.0</mrm.version>
+    <surefire.version>3.1.2</surefire.version>
     <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version>
-    <!-- keep in sync with surefire.version -->
-    <release.plugin.version>3.0.0-M8</release.plugin.version>
-    <takari-lifecycle.version>1.13.9</takari-lifecycle.version>
-    <takari-provisio.version>1.0.19</takari-provisio.version>
+    <release.plugin.version>3.0.1</release.plugin.version>
+    <takari-provisio.version>1.0.20</takari-provisio.version>
 
     <javassist.version>3.29.2-GA</javassist.version>
-    <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
+    <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
     <xstream.version>1.4.20</xstream.version>
     <plexus-interactivity-api.version>1.0</plexus-interactivity-api.version>
     <takari-smart-builder.version>0.6.3</takari-smart-builder.version>
@@ -478,7 +476,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-wrapper-plugin</artifactId>
-          <version>3.1.1</version>
+          <version>3.2.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -496,6 +494,26 @@
           <execution>
             <id>checkstyle-check</id>
             <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-maven-3</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.5.4</version>
+                </requireMavenVersion>
+              </rules>
+              <fail>true</fail>
+            </configuration>
           </execution>
         </executions>
       </plugin>
