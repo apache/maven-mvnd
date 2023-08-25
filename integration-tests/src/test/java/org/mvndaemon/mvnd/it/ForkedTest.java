@@ -31,7 +31,7 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndTest(projectDir = "src/test/projects/forked")
-public class ForkedTest {
+class ForkedTest {
 
     @Inject
     Client client;

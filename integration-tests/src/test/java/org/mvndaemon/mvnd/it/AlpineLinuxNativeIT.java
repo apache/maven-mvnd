@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers(disabledWithoutDocker = true)
-public class AlpineLinuxNativeIT {
+class AlpineLinuxNativeIT {
 
     private ImageFromDockerfile image;
     private String mvndHome;

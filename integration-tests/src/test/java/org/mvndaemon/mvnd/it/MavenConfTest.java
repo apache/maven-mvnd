@@ -21,4 +21,4 @@ package org.mvndaemon.mvnd.it;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/maven-conf")
-public class MavenConfTest extends MavenConfNativeIT {}
+class MavenConfTest extends MavenConfNativeIT {}

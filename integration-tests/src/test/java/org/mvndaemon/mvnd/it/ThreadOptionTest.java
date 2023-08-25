@@ -21,4 +21,4 @@ package org.mvndaemon.mvnd.it;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/multi-module")
-public class ThreadOptionTest extends ThreadOptionNativeIT {}
+class ThreadOptionTest extends ThreadOptionNativeIT {}

@@ -35,7 +35,7 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
 @MvndNativeTest(projectDir = "src/test/projects/module-and-plugin")
-public class ModuleAndPluginNativeIT {
+class ModuleAndPluginNativeIT {
 
     @Inject
     Client client;

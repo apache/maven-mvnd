@@ -26,7 +26,7 @@ import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/attached-artifact-resolution")
-public class AttachedArtifactResolutionTest {
+class AttachedArtifactResolutionTest {
 
     @Inject
     Client client;

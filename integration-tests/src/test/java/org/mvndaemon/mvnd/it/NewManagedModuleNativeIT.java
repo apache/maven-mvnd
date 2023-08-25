@@ -37,7 +37,7 @@ import org.mvndaemon.mvnd.junit.TestParameters;
 import org.mvndaemon.mvnd.junit.TestRegistry;
 
 @MvndNativeTest(projectDir = "src/test/projects/new-managed-module")
-public class NewManagedModuleNativeIT {
+class NewManagedModuleNativeIT {
 
     @Inject
     TestParameters parameters;

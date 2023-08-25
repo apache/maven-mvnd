@@ -33,7 +33,7 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
 @MvndNativeTest(projectDir = "src/test/projects/delete-repo")
-public class DeleteRepoNativeIT {
+class DeleteRepoNativeIT {
 
     @Inject
     Client client;

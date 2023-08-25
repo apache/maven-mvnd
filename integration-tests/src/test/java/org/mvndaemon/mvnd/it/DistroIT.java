@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class DistroIT {
+class DistroIT {
 
     /**
      * Asserts that we do not have the same libs in lib/ext and in lib or boot directories.

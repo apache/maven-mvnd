@@ -35,7 +35,7 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 @MvndNativeTest(projectDir = "src/test/projects/invoker")
-public class InvokerNativeIT {
+class InvokerNativeIT {
 
     @Inject
     Client client;

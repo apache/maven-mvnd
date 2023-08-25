@@ -34,7 +34,7 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndNativeTest(projectDir = "src/test/projects/extensions")
-public class ExtensionsNativeIT {
+class ExtensionsNativeIT {
 
     @Inject
     Client client;

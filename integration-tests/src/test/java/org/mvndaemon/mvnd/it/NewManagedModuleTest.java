@@ -21,4 +21,4 @@ package org.mvndaemon.mvnd.it;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/new-managed-module")
-public class NewManagedModuleTest extends NewManagedModuleNativeIT {}
+class NewManagedModuleTest extends NewManagedModuleNativeIT {}

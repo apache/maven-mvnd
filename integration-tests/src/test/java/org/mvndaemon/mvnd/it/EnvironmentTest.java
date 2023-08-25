@@ -36,7 +36,7 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndTest(projectDir = "src/test/projects/environment")
-public class EnvironmentTest {
+class EnvironmentTest {
 
     @Inject
     TestRegistry registry;

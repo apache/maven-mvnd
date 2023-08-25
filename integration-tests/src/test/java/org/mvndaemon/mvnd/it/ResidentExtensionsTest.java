@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndTest(projectDir = "src/test/projects/resident-extensions")
-public class ResidentExtensionsTest {
+class ResidentExtensionsTest {
 
     @Inject
     ClientFactory clientFactory;

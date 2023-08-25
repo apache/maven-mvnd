@@ -29,7 +29,7 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestParameters;
 
 @MvndTest(projectDir = "src/test/projects/multi-lookup")
-public class MultiLookupTest {
+class MultiLookupTest {
 
     @Inject
     ClientFactory clientFactory;

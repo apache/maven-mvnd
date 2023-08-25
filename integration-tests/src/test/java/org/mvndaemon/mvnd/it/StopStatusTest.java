@@ -32,7 +32,7 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.TestRegistry;
 
 @MvndTest(projectDir = "src/test/projects/single-module")
-public class StopStatusTest {
+class StopStatusTest {
 
     @Inject
     Client client;

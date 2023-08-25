@@ -76,6 +76,6 @@ public class TestClientOutput implements ClientOutput {
     }
 
     public List<String> messagesToString() {
-        return messages.stream().map(m -> m.toString()).collect(Collectors.toList());
+        return messages.stream().map(Object::toString).collect(Collectors.toList());
     }
 }

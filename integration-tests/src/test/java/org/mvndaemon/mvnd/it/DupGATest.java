@@ -29,7 +29,7 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/dup-ga")
-public class DupGATest {
+class DupGATest {
 
     @Inject
     Client client;
