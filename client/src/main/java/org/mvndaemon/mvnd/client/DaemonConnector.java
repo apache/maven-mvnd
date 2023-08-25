@@ -24,7 +24,6 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -34,13 +33,18 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
@@ -69,6 +73,11 @@ import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
 public class DaemonConnector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonConnector.class);
+    private static final Function<DaemonInfo, Boolean> daemonIsIdle = di -> di.getState() == DaemonState.Idle;
+    private static final Predicate<DaemonInfo> daemonIsCanceled = di -> di.getState() == Canceled;
+    private static final Predicate<Path> isJarFile =
+            s -> s.getFileName().toString().endsWith(".jar");
+    private static final Predicate<String> nonEmpty = s -> !s.isEmpty();
 
     private final DaemonRegistry registry;
     private final DaemonParameters parameters;
@@ -100,7 +109,7 @@ public class DaemonConnector {
                 new DaemonCompatibilitySpec(parameters.javaHome(), parameters.getDaemonOpts());
         output.accept(Message.buildStatus("Looking up daemon..."));
         Map<Boolean, List<DaemonInfo>> idleBusy =
-                registry.getAll().stream().collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
+                registry.getAll().stream().collect(Collectors.groupingBy(daemonIsIdle));
         final Collection<DaemonInfo> idleDaemons = idleBusy.getOrDefault(true, Collections.emptyList());
         final Collection<DaemonInfo> busyDaemons = idleBusy.getOrDefault(false, Collections.emptyList());
 
@@ -194,6 +203,7 @@ public class DaemonConnector {
                 .collect(Collectors.groupingBy(DaemonStopEvent::getDaemonId, Collectors.minBy(this::compare)))
                 .values()
                 .stream()
+                .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
         for (DaemonStopEvent stopEvent : recentStopEvents) {
@@ -251,7 +261,7 @@ public class DaemonConnector {
             Collection<DaemonInfo> busyDaemons, DaemonCompatibilitySpec constraint) {
         DaemonClientConnection connection = null;
         List<DaemonInfo> canceledBusy =
-                busyDaemons.stream().filter(di -> di.getState() == Canceled).collect(Collectors.toList());
+                busyDaemons.stream().filter(daemonIsCanceled).collect(Collectors.toList());
         final List<DaemonInfo> compatibleCanceledDaemons = getCompatibleDaemons(canceledBusy, constraint);
         LOGGER.debug(
                 "Found {} busy daemons, {} cancelled, {} compatibles",
@@ -334,46 +344,57 @@ public class DaemonConnector {
         return String.format("%08x", new Random().nextInt());
     }
 
+    private String findLocation(
+            Path startPath, Predicate<Path> searchedJarFile, Supplier<IllegalStateException> exception)
+            throws IOException, IllegalStateException {
+        try (Stream<Path> jarPaths = Files.list(startPath)) {
+            return jarPaths.filter(isJarFile)
+                    .filter(searchedJarFile)
+                    .findFirst()
+                    .map(Path::toString)
+                    .orElseThrow(exception);
+        }
+    }
+
+    private String findPlexusClassworldsJarLocation(Path mavenDaemonHomeBoot)
+            throws IOException, IllegalStateException {
+        return findLocation(
+                mavenDaemonHomeBoot,
+                s -> s.getFileName().toString().startsWith("plexus-classworlds-"),
+                () -> new IllegalStateException("Could not find plexus-classworlds jar in boot/"));
+    }
+
+    private String findMavenDaemonAgentLocation(Path mavenDaemonAgent) throws IOException, IllegalStateException {
+        return findLocation(
+                mavenDaemonAgent,
+                s -> s.getFileName().toString().startsWith("mvnd-agent-"),
+                () -> new IllegalStateException("Could not find mvnd-agent jar in mvn/lib/mvnd/"));
+    }
+
+    private int findPort() {
+        try (ServerSocketChannel channel = SocketFamily.inet.openServerSocket()) {
+            return ((InetSocketAddress) channel.getLocalAddress()).getPort();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to find a free debug port", e);
+        }
+    }
+
     private Process startDaemonProcess(String daemonId, ClientOutput output) {
         final Path mvndHome = parameters.mvndHome();
         final Path workingDir = parameters.userDir();
         String command = "";
         try {
-            List<String> args = new ArrayList<>();
             // executable
             final String java = Os.current().isUnixLike() ? "bin/java" : "bin\\java.exe";
+
+            List<String> args = new ArrayList<>();
             args.add(parameters.javaHome().resolve(java).toString());
-            // classpath
-            String mvndAgentPath = null;
-            String plexusClassworldsPath = null;
-            try (DirectoryStream<Path> jarPaths = Files.newDirectoryStream(
-                    mvndHome.resolve("mvn").resolve("lib").resolve("mvnd"))) {
-                for (Path jar : jarPaths) {
-                    String s = jar.getFileName().toString();
-                    if (s.endsWith(".jar")) {
-                        if (s.startsWith("mvnd-agent-")) {
-                            mvndAgentPath = jar.toString();
-                        }
-                    }
-                }
-            }
-            try (DirectoryStream<Path> jarPaths =
-                    Files.newDirectoryStream(mvndHome.resolve("mvn").resolve("boot"))) {
-                for (Path jar : jarPaths) {
-                    String s = jar.getFileName().toString();
-                    if (s.endsWith(".jar")) {
-                        if (s.startsWith("plexus-classworlds-")) {
-                            plexusClassworldsPath = jar.toString();
-                        }
-                    }
-                }
-            }
-            if (mvndAgentPath == null) {
-                throw new IllegalStateException("Could not find mvnd-agent jar in mvn/lib/mvnd/");
-            }
-            if (plexusClassworldsPath == null) {
-                throw new IllegalStateException("Could not find plexus-classworlds jar in boot/");
-            }
+
+            String plexusClassworldsPath =
+                    findPlexusClassworldsJarLocation(mvndHome.resolve("mvn").resolve("boot"));
+            String mvndAgentPath = findMavenDaemonAgentLocation(
+                    mvndHome.resolve("mvn").resolve("lib").resolve("mvnd"));
+
             args.add("-classpath");
             args.add(plexusClassworldsPath);
             args.add("-javaagent:" + mvndAgentPath);
@@ -391,30 +412,21 @@ public class DaemonConnector {
                     host = "localhost";
                     port = address;
                 }
-                if (!port.matches("[0-9]+")) {
+                if (!port.matches("\\d+")) {
                     throw new IllegalArgumentException("Wrong debug address syntax: " + address);
                 }
                 int iPort = Integer.parseInt(port);
                 if (iPort == 0) {
-                    try (ServerSocketChannel channel = SocketFamily.inet.openServerSocket()) {
-                        iPort = ((InetSocketAddress) channel.getLocalAddress()).getPort();
-                    } catch (IOException e) {
-                        throw new IllegalStateException("Unable to find a free debug port", e);
-                    }
+                    iPort = findPort();
                 }
+
                 address = host + ":" + iPort;
                 output.accept(Message.buildStatus("Daemon listening for debugger on address: " + address));
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + address);
             }
             // jvm args
-            String jvmArgs = parameters.jvmArgs();
-            if (jvmArgs != null) {
-                for (String arg : jvmArgs.split(" ")) {
-                    if (!arg.isEmpty()) {
-                        args.add(arg);
-                    }
-                }
-            }
+            String jvmArgs = Objects.toString(parameters.jvmArgs(), "");
+            args.addAll(Stream.of(jvmArgs.split(" ")).filter(nonEmpty).collect(Collectors.toList()));
             // memory
             String minHeapSize = parameters.minHeapSize();
             if (minHeapSize != null) {
@@ -468,13 +480,13 @@ public class DaemonConnector {
             processBuilder
                     .environment()
                     .put(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable(), parameters.jdkJavaOpts());
-            Process process = processBuilder
+
+            return processBuilder
                     .directory(workingDir.toFile())
                     .command(args)
                     .redirectOutput(redirect)
                     .redirectError(redirect)
                     .start();
-            return process;
         } catch (Exception e) {
             throw new DaemonException.StartException(
                     String.format(
