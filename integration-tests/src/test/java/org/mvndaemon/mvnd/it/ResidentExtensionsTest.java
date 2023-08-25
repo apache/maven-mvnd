@@ -69,8 +69,8 @@ public class ResidentExtensionsTest {
     }
 
     private void assertDaemonRegistrySize(int size) {
-        Assertions.assertThat(registry.getAll().size())
-                .as("Daemon registry size should be " + size)
-                .isEqualTo(size);
+        Assertions.assertThat(registry.getAll())
+                .as("Daemon registry size should be %d actually containing:(%s)", size, registry.getAll())
+                .hasSize(size);
     }
 }
