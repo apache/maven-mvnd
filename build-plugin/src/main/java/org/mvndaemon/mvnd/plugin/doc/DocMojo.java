@@ -125,7 +125,7 @@ public class DocMojo extends AbstractMojo {
         @Override
         public synchronized Enumeration<Object> keys() {
             final Iterator<Object> it = new TreeSet<>(keySet()).iterator();
-            return new Enumeration<Object>() {
+            return new Enumeration<>() {
                 public boolean hasMoreElements() {
                     return it.hasNext();
                 }
