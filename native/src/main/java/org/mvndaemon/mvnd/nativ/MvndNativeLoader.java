@@ -262,7 +262,7 @@ public class MvndNativeLoader {
             return;
         }
 
-        List<String> triedPaths = new LinkedList<String>();
+        List<String> triedPaths = new LinkedList<>();
 
         // Try loading library from library.mvndnative.path library path */
         String mvndnativeNativeLibraryPath = System.getProperty("library.mvndnative.path");

@@ -39,7 +39,7 @@ public class OSInfo {
     public static final String PPC64 = "ppc64";
     public static final String ARM64 = "arm64";
 
-    private static final HashMap<String, String> archMapping = new HashMap<String, String>();
+    private static final HashMap<String, String> archMapping = new HashMap<>();
 
     static {
         // x86 mappings
