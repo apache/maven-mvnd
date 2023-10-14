@@ -207,6 +207,8 @@ public class DaemonMavenCli implements DaemonCli {
             throws Exception {
         this.buildEventListener = buildEventListener;
         try {
+            MessageUtils.systemInstall();
+            MessageUtils.registerShutdownHook();
             CliRequest req = new CliRequest(null, null);
             req.args = arguments.toArray(new String[0]);
             req.workingDirectory = new File(workingDirectory).getCanonicalPath();
@@ -214,6 +216,7 @@ public class DaemonMavenCli implements DaemonCli {
             return doMain(req, clientEnv);
         } finally {
             this.buildEventListener = BuildEventListener.dummy();
+            MessageUtils.systemUninstall();
         }
     }
 

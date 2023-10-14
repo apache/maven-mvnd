@@ -30,6 +30,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.maven.cli.jansi.MessageUtils;
+import org.fusesource.jansi.AnsiConsole;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.OptionType;
 
@@ -149,13 +151,9 @@ public class MvndHelpFormatter {
     }
 
     private static int getTerminalWidth() {
-        int terminalWidth;
-        try {
-            terminalWidth = Environment.MVND_TERMINAL_WIDTH.asInt();
-        } catch (Exception e) {
-            terminalWidth = 80;
-        }
-        return terminalWidth;
+        System.out.println(MessageUtils.getTerminalWidth());
+        System.out.println(AnsiConsole.isInstalled());
+        return MessageUtils.getTerminalWidth();
     }
 
     private static void indentedLine(StringBuilder stringBuilder, int terminalWidth, String text, String indent) {
@@ -208,5 +206,16 @@ public class MvndHelpFormatter {
             stringBuilder.append(' ');
         }
         return stringBuilder;
+    }
+
+    static {
+        boolean jansi = true;
+
+        try {
+            Class.forName("org.fusesource.jansi.Ansi");
+        } catch (ClassNotFoundException var2) {
+            jansi = false;
+        }
+        System.out.println(jansi);
     }
 }
