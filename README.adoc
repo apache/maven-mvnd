@@ -227,6 +227,9 @@ $ ls -lh target/mvnd
 -rwxrwxr-x. 1 ppalaga ppalaga 25M Jun  2 13:23 target/mvnd
 ----
 
+Please note that if you are using Windows as your operating system you will need the following prerequisites for building `maven-mvnd`:
+a version of Visual Studio with the workload "Desktop development with C++" and the individual component "Windows Universal CRT SDK".
+
 === Install `mvnd`
 
 [source, shell]
