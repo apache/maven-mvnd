@@ -36,7 +36,7 @@ import org.slf4j.spi.LocationAwareLogger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class MaxHeapNativeIT {
+class MaxHeapNativeIT {
 
     static class BaseTest {
 

@@ -20,7 +20,7 @@ package org.mvndaemon.mvnd.it;
 
 import org.mvndaemon.mvnd.junit.MvndTest;
 
-public class MaxHeapTest extends MaxHeapNativeIT {
+class MaxHeapTest extends MaxHeapNativeIT {
 
     @MvndTest(projectDir = "src/test/projects/max-heap/default-heap")
     static class DefaultConfig extends MaxHeapNativeIT.DefaultConfig {}

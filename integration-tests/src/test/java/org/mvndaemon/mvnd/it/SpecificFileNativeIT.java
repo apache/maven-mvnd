@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * in the test iself.
  */
 @MvndNativeTest(projectDir = "src/test/projects/specific-file")
-public class SpecificFileNativeIT {
+class SpecificFileNativeIT {
 
     @Inject
     ClientFactory clientFactory;

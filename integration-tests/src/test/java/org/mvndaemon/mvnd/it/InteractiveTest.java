@@ -34,7 +34,7 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/single-module")
 @Timeout(300)
-public class InteractiveTest {
+class InteractiveTest {
 
     @Inject
     Client client;

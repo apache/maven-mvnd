@@ -29,12 +29,12 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/single-module")
-public class SingleModuleTest extends SingleModuleNativeIT {
+class SingleModuleTest extends SingleModuleNativeIT {
 
     protected void assertJVM(TestClientOutput o, Properties props) {
         final List<String> filteredMessages = o.getMessages().stream()
                 .filter(m -> m.getType() == Message.MOJO_STARTED)
-                .map(m -> m.toString())
+                .map(Object::toString)
                 .collect(Collectors.toList());
 
         Assertions.assertThat(filteredMessages)

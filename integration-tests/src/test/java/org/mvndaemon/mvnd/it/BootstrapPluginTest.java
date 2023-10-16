@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @MvndTest(projectDir = "src/test/projects/bootstrap-plugin")
 @DisabledOnOs(OS.WINDOWS)
-public class BootstrapPluginTest {
+class BootstrapPluginTest {
 
     @Inject
     Client client;

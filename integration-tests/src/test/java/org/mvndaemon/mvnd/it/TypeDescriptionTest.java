@@ -29,7 +29,7 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/type-description")
-public class TypeDescriptionTest {
+class TypeDescriptionTest {
 
     @Inject
     Client client;

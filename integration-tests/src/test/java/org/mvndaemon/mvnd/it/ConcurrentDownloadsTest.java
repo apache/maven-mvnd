@@ -33,7 +33,7 @@ import org.mvndaemon.mvnd.junit.TestParameters;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndTest(projectDir = "src/test/projects/concurrent-downloads")
-public class ConcurrentDownloadsTest {
+class ConcurrentDownloadsTest {
 
     @Inject
     ClientFactory clientFactory;

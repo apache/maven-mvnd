@@ -30,7 +30,7 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import org.mvndaemon.mvnd.junit.MvndTestExtension;
 
 @MvndNativeTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
-public class VersionNativeIT {
+class VersionNativeIT {
 
     @Inject
     Client client;

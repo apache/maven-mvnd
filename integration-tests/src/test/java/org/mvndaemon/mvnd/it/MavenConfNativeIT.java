@@ -31,7 +31,7 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndNativeTest(projectDir = "src/test/projects/maven-conf")
-public class MavenConfNativeIT {
+class MavenConfNativeIT {
 
     @Inject
     Client client;

@@ -36,7 +36,7 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
 @MvndNativeTest(projectDir = "src/test/projects/upgrades-in-bom")
-public class UpgradesInBomNativeIT {
+class UpgradesInBomNativeIT {
 
     @Inject
     TestParameters parameters;

@@ -23,7 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Testcontainers(disabledWithoutDocker = true)
-public class AlpineLinuxTest extends AlpineLinuxNativeIT {
+class AlpineLinuxTest extends AlpineLinuxNativeIT {
 
     @Override
     protected boolean isNative() {

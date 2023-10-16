@@ -37,7 +37,7 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 @MvndNativeTest(projectDir = "src/test/projects/single-module")
-public class SingleModuleNativeIT {
+class SingleModuleNativeIT {
 
     @Inject
     Client client;

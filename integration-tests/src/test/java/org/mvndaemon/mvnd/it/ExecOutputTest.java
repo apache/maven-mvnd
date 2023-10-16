@@ -31,7 +31,7 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndTest(projectDir = "src/test/projects/exec-output")
-public class ExecOutputTest {
+class ExecOutputTest {
 
     @Inject
     Client client;

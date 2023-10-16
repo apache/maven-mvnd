@@ -21,4 +21,4 @@ package org.mvndaemon.mvnd.it;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/delete-repo")
-public class DeleteRepoTest extends DeleteRepoNativeIT {}
+class DeleteRepoTest extends DeleteRepoNativeIT {}

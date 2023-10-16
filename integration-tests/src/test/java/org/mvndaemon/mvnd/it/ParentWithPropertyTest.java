@@ -32,7 +32,7 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 import org.mvndaemon.mvnd.junit.TestUtils;
 
 @MvndTest(projectDir = "src/test/projects/parent-with-property")
-public class ParentWithPropertyTest {
+class ParentWithPropertyTest {
 
     @Inject
     Client client;

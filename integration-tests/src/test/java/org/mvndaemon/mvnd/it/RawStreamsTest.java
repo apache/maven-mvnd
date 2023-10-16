@@ -33,7 +33,7 @@ import org.mvndaemon.mvnd.junit.TestRegistry;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MvndTest(projectDir = "src/test/projects/raw-streams")
-public class RawStreamsTest {
+class RawStreamsTest {
 
     @Inject
     Client client;

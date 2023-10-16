@@ -21,4 +21,4 @@ package org.mvndaemon.mvnd.it;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/upgrades-in-bom")
-public class UpgradesInBomTest extends UpgradesInBomNativeIT {}
+class UpgradesInBomTest extends UpgradesInBomNativeIT {}

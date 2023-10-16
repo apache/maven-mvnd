@@ -29,7 +29,7 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 @MvndNativeTest(projectDir = "src/test/projects/multi-module")
-public class ThreadOptionNativeIT {
+class ThreadOptionNativeIT {
 
     @Inject
     Client client;

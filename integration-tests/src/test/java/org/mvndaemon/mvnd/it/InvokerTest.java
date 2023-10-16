@@ -21,4 +21,4 @@ package org.mvndaemon.mvnd.it;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/invoker")
-public class InvokerTest extends InvokerNativeIT {}
+class InvokerTest extends InvokerNativeIT {}

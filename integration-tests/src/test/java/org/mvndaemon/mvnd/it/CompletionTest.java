@@ -22,4 +22,4 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 import org.mvndaemon.mvnd.junit.MvndTestExtension;
 
 @MvndTest(projectDir = MvndTestExtension.TEMP_EXTERNAL)
-public class CompletionTest extends CompletionNativeIT {}
+class CompletionTest extends CompletionNativeIT {}

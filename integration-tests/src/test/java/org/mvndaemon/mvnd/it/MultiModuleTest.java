@@ -40,7 +40,7 @@ import org.mvndaemon.mvnd.common.Message.StringMessage;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/multi-module")
-public class MultiModuleTest {
+class MultiModuleTest {
 
     @Inject
     Client client;
