@@ -52,7 +52,6 @@ import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cli.internal.BootstrapCoreExtensionManager;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
-import org.apache.maven.cli.jansi.JansiMessageBuilderFactory;
 import org.apache.maven.cli.jansi.MessageUtils;
 import org.apache.maven.cli.logging.Slf4jConfiguration;
 import org.apache.maven.cli.logging.Slf4jConfigurationFactory;
@@ -184,7 +183,7 @@ public class DaemonMavenCli implements DaemonCli {
         plexusLoggerManager = new Slf4jLoggerManager();
 
         this.classWorld = ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld();
-        this.messageBuilderFactory = new JansiMessageBuilderFactory();
+        this.messageBuilderFactory = new DaemonMessageBuilderFactory();
 
         container = container();
 
@@ -289,7 +288,7 @@ public class DaemonMavenCli implements DaemonCli {
         topDirectory = getCanonicalPath(topDirectory);
         cliRequest.topDirectory = topDirectory;
         // We're very early in the process and we don't have the container set up yet,
-        // so we rely on the JDK services to eventually lookup a custom RootLocator.
+        // so we rely on the JDK services to eventually look up a custom RootLocator.
         // This is used to compute {@code session.rootDirectory} but all {@code project.rootDirectory}
         // properties will be compute through the RootLocator found in the container.
         RootLocator rootLocator =
