@@ -88,7 +88,7 @@
     <jansi.version>2.4.0</jansi.version>
     <jline.version>3.23.0</jline.version>
     <junit.jupiter.version>5.9.2</junit.jupiter.version>
-    <maven.version>4.0.0-alpha-7</maven.version>
+    <maven.version>4.0.0-alpha-8-SNAPSHOT</maven.version>
     <maven3.version>3.9.5</maven3.version>
     <maven4.version>${maven.version}</maven4.version>
     <!-- Keep in sync with Maven -->
@@ -113,7 +113,7 @@
     <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
     <xstream.version>1.4.20</xstream.version>
     <plexus-interactivity-api.version>1.0</plexus-interactivity-api.version>
-    <takari-smart-builder.version>0.6.3</takari-smart-builder.version>
+    <takari-smart-builder.version>0.6.4-SNAPSHOT</takari-smart-builder.version>
   </properties>
 
   <dependencyManagement>

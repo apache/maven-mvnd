@@ -18,6 +18,8 @@
  */
 package org.mvndaemon.mvnd.client;
 
+import javax.xml.stream.XMLStreamException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,9 +43,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.maven.cli.internal.extension.io.CoreExtensionsStaxReader;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
-import org.apache.maven.cli.internal.extension.model.io.xpp3.CoreExtensionsXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.InterpolationHelper;
 import org.mvndaemon.mvnd.common.Os;
@@ -449,7 +450,7 @@ public class DaemonParameters {
                         .map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
                         .collect(Collectors.toList());
                 return String.join(";", extensions);
-            } catch (IOException | XmlPullParserException e) {
+            } catch (IOException | XMLStreamException e) {
                 throw new RuntimeException("Unable to parse core extensions", e);
             }
         } else {
@@ -470,7 +471,7 @@ public class DaemonParameters {
     }
 
     private static List<CoreExtension> readCoreExtensionsDescriptor(Path multiModuleProjectDirectory)
-            throws IOException, XmlPullParserException {
+            throws IOException, XMLStreamException {
         if (multiModuleProjectDirectory == null) {
             return Collections.emptyList();
         }
@@ -478,7 +479,7 @@ public class DaemonParameters {
         if (!Files.exists(extensionsFile)) {
             return Collections.emptyList();
         }
-        CoreExtensionsXpp3Reader parser = new CoreExtensionsXpp3Reader();
+        CoreExtensionsStaxReader parser = new CoreExtensionsStaxReader();
         try (InputStream is = Files.newInputStream(extensionsFile)) {
             return parser.read(is).getExtensions();
         }
