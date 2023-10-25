@@ -18,8 +18,6 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import javax.xml.stream.XMLStreamException;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
@@ -28,6 +26,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 public class MvndTestUtil {
 
@@ -37,7 +36,7 @@ public class MvndTestUtil {
         try (Reader runtimeReader = Files.newBufferedReader(pomXmlPath, StandardCharsets.UTF_8)) {
             final MavenXpp3Reader rxppReader = new MavenXpp3Reader();
             return rxppReader.read(runtimeReader).getProperties();
-        } catch (IOException | XMLStreamException e) {
+        } catch (IOException | XmlPullParserException e) {
             throw new RuntimeException("Could not read or parse " + pomXmlPath);
         }
     }
@@ -46,7 +45,7 @@ public class MvndTestUtil {
         try (Reader runtimeReader = Files.newBufferedReader(pomXmlPath, StandardCharsets.UTF_8)) {
             final MavenXpp3Reader rxppReader = new MavenXpp3Reader();
             return rxppReader.read(runtimeReader).getVersion();
-        } catch (IOException | XMLStreamException e) {
+        } catch (IOException | XmlPullParserException e) {
             throw new RuntimeException("Could not read or parse " + pomXmlPath);
         }
     }
