@@ -346,10 +346,12 @@ public class TerminalOutput implements ClientOutput {
                 readInput.writeLock().lock();
                 try {
                     clearDisplay();
-                    String msg = (maxThreads > 1)
-                            ? String.format("[%s] %s", prompt.getProjectId(), prompt.getMessage())
-                            : prompt.getMessage();
-                    terminal.writer().print(msg);
+                    if (prompt.getMessage() != null) {
+                        String msg = (maxThreads > 1)
+                                ? String.format("[%s] %s", prompt.getProjectId(), prompt.getMessage())
+                                : prompt.getMessage();
+                        terminal.writer().print(msg);
+                    }
                     terminal.flush();
                     StringBuilder sb = new StringBuilder();
                     while (true) {
