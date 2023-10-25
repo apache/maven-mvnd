@@ -86,7 +86,7 @@
     <groovy.version>4.0.13</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.0</jansi.version>
-    <jline.version>3.23.0</jline.version>
+    <jline.version>3.24.0</jline.version>
     <junit.jupiter.version>5.9.2</junit.jupiter.version>
     <maven.version>4.0.0-alpha-8</maven.version>
     <maven3.version>3.9.5</maven3.version>
