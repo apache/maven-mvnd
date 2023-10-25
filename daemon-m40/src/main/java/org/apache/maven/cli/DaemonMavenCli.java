@@ -287,10 +287,10 @@ public class DaemonMavenCli implements DaemonCli {
         }
         topDirectory = getCanonicalPath(topDirectory);
         cliRequest.topDirectory = topDirectory;
-        // We're very early in the process and we don't have the container set up yet,
+        // We're very early in the process, and we don't have the container set up yet,
         // so we rely on the JDK services to eventually look up a custom RootLocator.
         // This is used to compute {@code session.rootDirectory} but all {@code project.rootDirectory}
-        // properties will be compute through the RootLocator found in the container.
+        // properties will be computed through the RootLocator found in the container.
         RootLocator rootLocator =
                 ServiceLoader.load(RootLocator.class).iterator().next();
         Path rootDirectory = rootLocator.findRoot(topDirectory);
@@ -495,6 +495,7 @@ public class DaemonMavenCli implements DaemonCli {
             if (MessageUtils.isColorEnabled()) {
                 MessageBuilder buff = MessageUtils.builder();
                 buff.a("Message styles: ");
+                buff.trace("trace").a(' ');
                 buff.debug("debug").a(' ');
                 buff.info("info").a(' ');
                 buff.warning("warning").a(' ');
@@ -571,10 +572,11 @@ public class DaemonMavenCli implements DaemonCli {
                 .filter(s -> s != null && !s.isEmpty())
                 .map(s -> {
                     String[] parts = s.split(":");
-                    CoreExtension ce = new CoreExtension();
-                    ce.setGroupId(parts[0]);
-                    ce.setArtifactId(parts[1]);
-                    ce.setVersion(parts[2]);
+                    CoreExtension ce = CoreExtension.newBuilder()
+                            .groupId(parts[0])
+                            .artifactId(parts[1])
+                            .version(parts[2])
+                            .build();
                     return ce;
                 })
                 .collect(Collectors.toList());
@@ -623,11 +625,18 @@ public class DaemonMavenCli implements DaemonCli {
 
         container.setLoggerManager(plexusLoggerManager);
 
+        AbstractValueSource extensionSource = new AbstractValueSource(false) {
+            @Override
+            public Object getValue(String expression) {
+                return null;
+            }
+        };
         for (CoreExtensionEntry extension : extensionsEntries) {
             container.discoverComponents(
                     extension.getClassRealm(),
                     new SessionScopeModule(container),
-                    new MojoExecutionScopeModule(container));
+                    new MojoExecutionScopeModule(container),
+                    new ExtensionConfigurationModule(extension, extensionSource));
         }
         return container;
     }
@@ -1181,12 +1190,12 @@ public class DaemonMavenCli implements DaemonCli {
     }
 
     private String determineLocalRepositoryPath(final MavenExecutionRequest request) {
-        String userDefinedLocalRepo = request.getUserProperties().getProperty(MavenCli.LOCAL_REPO_PROPERTY);
+        String userDefinedLocalRepo = request.getUserProperties().getProperty(DaemonMavenCli.LOCAL_REPO_PROPERTY);
         if (userDefinedLocalRepo != null) {
             return userDefinedLocalRepo;
         }
 
-        return request.getSystemProperties().getProperty(MavenCli.LOCAL_REPO_PROPERTY);
+        return request.getSystemProperties().getProperty(DaemonMavenCli.LOCAL_REPO_PROPERTY);
     }
 
     private File determinePom(
@@ -1199,22 +1208,16 @@ public class DaemonMavenCli implements DaemonCli {
             alternatePomFile = commandLine.getOptionValue(CLIManager.ALTERNATE_POM_FILE);
         }
 
+        File current = baseDirectory;
         if (alternatePomFile != null) {
-            File pom = resolveFile(new File(alternatePomFile), workingDirectory);
-            if (pom.isDirectory()) {
-                pom = new File(pom, "pom.xml");
-            }
-
-            return pom;
-        } else if (modelProcessor != null) {
-            File pom = modelProcessor.locatePom(baseDirectory);
-
-            if (pom.isFile()) {
-                return pom;
-            }
+            current = resolveFile(new File(alternatePomFile), workingDirectory);
         }
 
-        return null;
+        if (modelProcessor != null) {
+            return modelProcessor.locateExistingPom(current);
+        } else {
+            return current.isFile() ? current : null;
+        }
     }
 
     // Visible for testing
