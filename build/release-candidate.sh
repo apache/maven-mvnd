@@ -51,7 +51,9 @@ cd ${VERSION}
 for dist in m39-darwin-amd64.zip m39-darwin-amd64.tar.gz m39-darwin-aarch64.zip m39-darwin-aarch64.tar.gz m39-linux-amd64.zip m39-linux-amd64.tar.gz m39-windows-amd64.zip m39-windows-amd64.tar.gz m40-darwin-amd64.zip m40-darwin-amd64.tar.gz m40-darwin-aarch64.zip m40-darwin-aarch64.tar.gz m40-linux-amd64.zip m40-linux-amd64.tar.gz m40-windows-amd64.zip m40-windows-amd64.tar.gz src.zip src.tar.gz
 do
   FILE=maven-mvnd-${VERSION}-${dist}
+  # sha256 are used by homebrew which does not support sha512 atm
   shasum -a 256 -b ${FILE} | cut -d ' ' -f 1 > ${FILE}.sha256
+  shasum -a 512 -b ${FILE} | cut -d ' ' -f 1 > ${FILE}.sha512
   gpg --detach-sign --armor ${FILE}
 done
 
