@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.0-m8](https://github.com/apache/maven-mvnd/tree/1.0-m8) (2023-10-26)
+
+[Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0-m7...1.0-m8)
+
+**Closed issues:**
+
+- memory leak at com.sun.tools.javac.util.SharedNameTable$NameImpl [\#897](https://github.com/apache/maven-mvnd/issues/897)
+- Cannot change Platform Encoding with mvnd 1.0-m7-m40 [\#883](https://github.com/apache/maven-mvnd/issues/883)
+- How can I get the mvnd with 3.6.3 version maven? [\#880](https://github.com/apache/maven-mvnd/issues/880)
+- Update homebrew formula to use latest mvnd [\#876](https://github.com/apache/maven-mvnd/issues/876)
+- Crash on start [\#875](https://github.com/apache/maven-mvnd/issues/875)
+- java.lang.NoClassDefFoundError: Could not initialize class org.mvndaemon.mvnd.nativ.CLibrary [\#872](https://github.com/apache/maven-mvnd/issues/872)
+- Is this project interested in sponsoring? [\#871](https://github.com/apache/maven-mvnd/issues/871)
+- Maven 4 flavour does not use full terminal [\#870](https://github.com/apache/maven-mvnd/issues/870)
+
+**Merged pull requests:**
+
+- Upgrade JLine from 3.23.0 to 3.24.0 [\#899](https://github.com/apache/maven-mvnd/pull/899) ([gnodet](https://github.com/gnodet))
+- Small improvements to DaemonPrompter [\#898](https://github.com/apache/maven-mvnd/pull/898) ([gnodet](https://github.com/gnodet))
+- Switch to Maven 4.0.0-alpha-8 [\#895](https://github.com/apache/maven-mvnd/pull/895) ([gnodet](https://github.com/gnodet))
+- Support JDK 21 at build time [\#894](https://github.com/apache/maven-mvnd/pull/894) ([gnodet](https://github.com/gnodet))
+- Make sure the plugin works with maven 3 [\#893](https://github.com/apache/maven-mvnd/pull/893) ([gnodet](https://github.com/gnodet))
+- Fix terminal width \(fixes \#870\) [\#891](https://github.com/apache/maven-mvnd/pull/891) ([gnodet](https://github.com/gnodet))
+- Update build instructions for Windows [\#890](https://github.com/apache/maven-mvnd/pull/890) ([KasNotten](https://github.com/KasNotten))
+- Update: Maven 3.9.5 + Resolver 1.9.16 [\#887](https://github.com/apache/maven-mvnd/pull/887) ([cstamas](https://github.com/cstamas))
+- \[MNG-6847\] Use diamond operator [\#886](https://github.com/apache/maven-mvnd/pull/886) ([timtebeek](https://github.com/timtebeek))
+- Removed superfluous public for tests [\#882](https://github.com/apache/maven-mvnd/pull/882) ([khmarbaise](https://github.com/khmarbaise))
+
 ## [1.0-m7](https://github.com/apache/maven-mvnd/tree/1.0-m7) (2023-07-11)
 
 [Full Changelog](https://github.com/apache/maven-mvnd/compare/1.0-m6...1.0-m7)
@@ -17,20 +45,21 @@
 - mvnd is not supported to `<goal>` tag in pom.xml? [\#859](https://github.com/apache/maven-mvnd/issues/859)
 - After opening debug, I compile and produce A daemon A for the first time. After completion, the second compilation generates a new daemon B. What should I do if I want to reuse the first daemon A for the second compilation [\#855](https://github.com/apache/maven-mvnd/issues/855)
 - mvnd does not recognize -Dmaven.test.skip=true [\#854](https://github.com/apache/maven-mvnd/issues/854)
-- The detection of mvnd home is broken on alpine linux [\#849](https://github.com/apache/maven-mvnd/issues/849)
-- NPE during expiration check [\#842](https://github.com/apache/maven-mvnd/issues/842)
-- Regression mvnd 1.0-m6 vs. mvn 3.9.1 [\#841](https://github.com/apache/maven-mvnd/issues/841)
 - Error resolving dependencies with variables and parent POMs - here: ${pom.version} [\#840](https://github.com/apache/maven-mvnd/issues/840)
 - Custom settings file not found [\#839](https://github.com/apache/maven-mvnd/issues/839)
-- Consistent version output [\#838](https://github.com/apache/maven-mvnd/issues/838)
-- Revert to slf4j simple logger for the actual logging to the terminal [\#835](https://github.com/apache/maven-mvnd/issues/835)
 - Older versions not available on the CDN [\#831](https://github.com/apache/maven-mvnd/issues/831)
 - Failed to load native library:jansi-2.4.0-b00c64e8b23a020c-jansi.dll. osinfo: Windows/x86\_64 [\#828](https://github.com/apache/maven-mvnd/issues/828)
 - Upgrade to maven 3.9.1? [\#826](https://github.com/apache/maven-mvnd/issues/826)
 - mvnd doesn't work in alpine [\#596](https://github.com/apache/maven-mvnd/issues/596)
+- The detection of mvnd home is broken on alpine linux [\#849](https://github.com/apache/maven-mvnd/issues/849)
+- NPE during expiration check [\#842](https://github.com/apache/maven-mvnd/issues/842)
+- Regression mvnd 1.0-m6 vs. mvn 3.9.1 [\#841](https://github.com/apache/maven-mvnd/issues/841)
+- Consistent version output [\#838](https://github.com/apache/maven-mvnd/issues/838)
+- Revert to slf4j simple logger for the actual logging to the terminal [\#835](https://github.com/apache/maven-mvnd/issues/835)
 
 **Merged pull requests:**
 
+- Add configuration to send build scans to https://ge.apache.org [\#810](https://github.com/apache/maven-mvnd/pull/810) ([clayburn](https://github.com/clayburn))
 - Various upgrades [\#869](https://github.com/apache/maven-mvnd/pull/869) ([gnodet](https://github.com/gnodet))
 - Switch to slf4j simple logger for the actual logging to the terminal \(fixes \#835\) [\#868](https://github.com/apache/maven-mvnd/pull/868) ([gnodet](https://github.com/gnodet))
 - Fix interpolation of environment variables in config properties \(fixes \#693\) [\#866](https://github.com/apache/maven-mvnd/pull/866) ([gnodet](https://github.com/gnodet))
@@ -48,7 +77,6 @@
 - Add MVND\_NO\_MODEL\_CACHE support to mvn39 [\#830](https://github.com/apache/maven-mvnd/pull/830) ([oehme](https://github.com/oehme))
 - Sort build times for the whole reactor by decreasing total time [\#829](https://github.com/apache/maven-mvnd/pull/829) ([gnodet](https://github.com/gnodet))
 - native image: hardening csu for old glibc [\#827](https://github.com/apache/maven-mvnd/pull/827) ([gzm55](https://github.com/gzm55))
-- Add configuration to send build scans to https://ge.apache.org [\#810](https://github.com/apache/maven-mvnd/pull/810) ([clayburn](https://github.com/clayburn))
 
 ## [1.0-m6](https://github.com/apache/maven-mvnd/tree/1.0-m6) (2023-03-23)
 
