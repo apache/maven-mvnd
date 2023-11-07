@@ -66,6 +66,13 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 $ brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
+=== Other installers
+
+We're looking for contribution to support https://www.macports.org[MacPorts],
+https://community.chocolatey.org/packages/mvndaemon/[Chocolatey], https://scoop.sh/[Scoop] or
+https://github.com/joschi/asdf-mvnd#install[asdf].  If you're fancy helping us...
+
+////
 === Install using https://www.macports.org[MacPorts]
 
 [source,shell]
@@ -94,7 +101,7 @@ $ scoop install mvndaemon
 $ asdf plugin-add mvnd
 $ asdf install mvnd latest
 ----
-
+////
 
 === Set up completion
 
