@@ -272,7 +272,8 @@ public class DaemonMavenCli implements DaemonCli {
 
             if (configFile.isFile()) {
                 try (Stream<String> lines = Files.lines(configFile.toPath(), Charset.defaultCharset())) {
-                    String[] args = lines.filter(arg -> !arg.isEmpty() && !arg.startsWith("#")).toArray(String[]::new);
+                    String[] args = lines.filter(arg -> !arg.isEmpty() && !arg.startsWith("#"))
+                            .toArray(String[]::new);
                     mavenConfig = cliManager.parse(args);
                     List<?> unrecognized = mavenConfig.getArgList();
                     if (!unrecognized.isEmpty()) {
