@@ -79,7 +79,7 @@
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
     <assertj.version>3.24.2</assertj.version>
-    <commons-compress.version>1.23.0</commons-compress.version>
+    <commons-compress.version>1.26.0</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
     <graalvm.version>22.3.1</graalvm.version>
     <graalvm.plugin.version>0.9.23</graalvm.plugin.version>
