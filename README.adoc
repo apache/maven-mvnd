@@ -66,6 +66,13 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 $ brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
+=== Install using https://aquaproj.github.io/[aqua]
+
+[source,shell]
+----
+$ aqua g -i apache/maven-mvnd
+----
+
 === Other installers
 
 We're looking for contribution to support https://www.macports.org[MacPorts],
