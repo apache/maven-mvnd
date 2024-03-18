@@ -480,9 +480,19 @@ public class DaemonParameters {
             return Collections.emptyList();
         }
         CoreExtensionsStaxReader parser = new CoreExtensionsStaxReader();
+        List<CoreExtension> extensions;
         try (InputStream is = Files.newInputStream(extensionsFile)) {
-            return parser.read(is).getExtensions();
+            extensions = parser.read(is).getExtensions();
         }
+        return filterCoreExtensions(extensions);
+    }
+
+    private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
+        // for now only smart-builder: it is included in mvnd
+        return coreExtensions.stream()
+                .filter(e ->
+                        !("io.takari.maven".equals(e.getGroupId()) && "takari-smart-builder".equals(e.getArtifactId())))
+                .collect(Collectors.toList());
     }
 
     private static Properties loadProperties(Path path) {
