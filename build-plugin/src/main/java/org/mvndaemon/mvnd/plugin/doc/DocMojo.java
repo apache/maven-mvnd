@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -150,7 +151,7 @@ public class DocMojo extends AbstractMojo {
 
         @Override
         public void store(OutputStream out, String comments) throws IOException {
-            this.store(new OutputStreamWriter(out, "8859_1"), comments);
+            this.store(new OutputStreamWriter(out, StandardCharsets.ISO_8859_1), comments);
         }
 
         static class SkipFirstLineBufferedWriter extends BufferedWriter {
