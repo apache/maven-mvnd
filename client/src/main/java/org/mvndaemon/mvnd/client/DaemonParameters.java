@@ -30,11 +30,13 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -488,10 +490,17 @@ public class DaemonParameters {
     }
 
     private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
+        Set<String> exclusions = new HashSet<>();
+        String exclusionsString =
+                systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE).asString();
+        if (exclusionsString != null) {
+            exclusions.addAll(Arrays.stream(exclusionsString.split(","))
+                    .filter(e -> e != null && !e.trim().isEmpty())
+                    .collect(Collectors.toList()));
+        }
         // for now only smart-builder: it is included in mvnd
         return coreExtensions.stream()
-                .filter(e ->
-                        !("io.takari.maven".equals(e.getGroupId()) && "takari-smart-builder".equals(e.getArtifactId())))
+                .filter(e -> !exclusions.contains(e.getGroupId() + ":" + e.getArtifactId()))
                 .collect(Collectors.toList());
     }
 
