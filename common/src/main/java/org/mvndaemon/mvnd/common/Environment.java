@@ -214,9 +214,10 @@ public enum Environment {
      */
     MVND_CORE_EXTENSIONS("mvnd.coreExtensions", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * Internal option to specify the list of maven extension G:As to exclude. This option makes possible for example
-     * that a project that with vanilla Maven would use takari-smart-builder extension, be still buildable with
-     * mvnd (where use of this extension would cause issues). Value is expected as comma separated {@code g:a} pairs.
+     * Internal option to specify comma separated list of maven extension G:As to exclude (to not load them from
+     * .mvn/extensions.xml). This option makes possible for example that a project that with vanilla Maven would
+     * use takari-smart-builder extension, remain buildable with mvnd (where use of this extension would cause issues).
+     * Value is expected as comma separated {@code g1:a1,g2:a2} pairs.
      */
     MVND_CORE_EXTENSIONS_EXCLUDE(
             "mvnd.coreExtensionsExclude",

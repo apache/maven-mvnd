@@ -498,7 +498,6 @@ public class DaemonParameters {
                     .filter(e -> e != null && !e.trim().isEmpty())
                     .collect(Collectors.toList()));
         }
-        // for now only smart-builder: it is included in mvnd
         return coreExtensions.stream()
                 .filter(e -> !exclusions.contains(e.getGroupId() + ":" + e.getArtifactId()))
                 .collect(Collectors.toList());
