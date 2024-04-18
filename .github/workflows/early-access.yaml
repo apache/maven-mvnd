@@ -37,7 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 'Run default (non-native) build'
-        run: ./mvnw verify -Dmrm=false -B -ntp -e
+        run: ./mvnw verify -Dmrm=false -V -B -ntp -e
 
       - name: 'Upload daemon test logs'
         if: always()
@@ -76,7 +76,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Maven clean'
-        run: ./mvnw clean -Dmrm=false -B -ntp -e
+        run: ./mvnw clean -Dmrm=false -V -B -ntp -e
 
       - name: 'Patch Graal libs for only requiring glibc 2.12'
         if: ${{ env.OS == 'linux' }}
@@ -100,7 +100,7 @@ jobs:
           objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
 
       - name: 'Build native distribution'
-        run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e
+        run: ./mvnw verify -Pnative -Dmrm=false -V -B -ntp -e
 
       - name: 'Verify native binary for only requiring glibc 2.12'
         if: ${{ env.OS == 'linux' }}
