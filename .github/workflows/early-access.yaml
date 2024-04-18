@@ -18,13 +18,9 @@
 name: Early Access
 
 # trigger on push to branches and PR
-on:
-  push:
-    branch:
-  pull_request:
+on: [push, pull_request]
 
 env:
-  GRAALVM_VERSION: '22.3.1'
   JAVA_VERSION: '17'
 
 jobs:
@@ -34,14 +30,14 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 'Run default (non-native) build'
         run: ./mvnw verify -Dmrm=false -B -ntp -e
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
@@ -57,7 +53,7 @@ jobs:
 
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 'Set vars'
         shell: bash
@@ -70,8 +66,8 @@ jobs:
       - name: 'Set up Graal'
         uses: graalvm/setup-graalvm@v1
         with:
-          version: ${{ env.GRAALVM_VERSION }}
           java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'graalvm'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -113,19 +109,19 @@ jobs:
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: daemon-test-logs-${{ env.OS }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
       - name: 'Upload m39 artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mvnd-m39-${{ env.OS }}
           path: dist-m39/target/maven-mvnd-*.zip
 
       - name: 'Upload m40 artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: mvnd-m40-${{ env.OS }}
           path: dist-m40/target/maven-mvnd-*.zip
