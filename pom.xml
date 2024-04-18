@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>40</version>
+    <version>42</version>
     <relativePath />
   </parent>
 
@@ -68,8 +68,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <maven.compiler.source>8</maven.compiler.source>
     <maven-dist.required.jdk>8</maven-dist.required.jdk>
     <project.build.outputTimestamp>2023-10-26T05:45:19Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
@@ -87,7 +87,6 @@
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.0</jansi.version>
     <jline.version>3.24.0</jline.version>
-    <junit.jupiter.version>5.9.2</junit.jupiter.version>
     <maven.version>4.0.0-alpha-8</maven.version>
     <maven3.version>3.9.6</maven3.version>
     <maven4.version>${maven.version}</maven4.version>
@@ -152,14 +151,6 @@
         <groupId>org.graalvm.nativeimage</groupId>
         <artifactId>svm</artifactId>
         <version>${graalvm.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>${junit.jupiter.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
 
       <dependency>

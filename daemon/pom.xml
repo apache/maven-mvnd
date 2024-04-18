@@ -30,6 +30,11 @@
   <packaging>jar</packaging>
   <name>Maven Daemon - Daemon</name>
 
+  <properties>
+    <!-- If using release, sun.misc is not reachable (see SignalHelper) -->
+    <maven.compiler.release />
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>
@@ -104,6 +109,10 @@
       </resource>
     </resources>
     <plugins>
+      <plugin>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>sisu-maven-plugin</artifactId>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
