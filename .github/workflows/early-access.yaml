@@ -36,6 +36,11 @@ jobs:
       - name: 'Checkout'
         uses: actions/checkout@v4
 
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
       - name: 'Run default (non-native) build'
         run: ./mvnw verify -Dmrm=false -V -B -ntp -e
 
