@@ -30,6 +30,11 @@
   <packaging>jar</packaging>
   <name>Maven Daemon - Common</name>
 
+  <properties>
+    <!-- If using release, sun.misc is not reachable (see SignalHelper) -->
+    <maven.compiler.release />
+  </properties>
+
   <dependencies>
 
     <dependency>
