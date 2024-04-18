@@ -23,6 +23,10 @@ on: [push, pull_request]
 env:
   JAVA_VERSION: '17'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   default-build:
     name: 'Default build (without Graal)'
