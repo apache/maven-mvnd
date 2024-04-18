@@ -98,7 +98,7 @@
     <!-- plugin versions a..z -->
     <buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
     <compiler.version>3.11.0</compiler.version>
-    <groovy-maven-plugin.version>3.0.0</groovy-maven-plugin.version>
+    <groovy-maven-plugin.version>3.0.2</groovy-maven-plugin.version>
     <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
     <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
     <maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
