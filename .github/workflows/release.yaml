@@ -26,7 +26,6 @@ on:
       - '*'
 
 env:
-  GRAALVM_VERSION: '22.3.1'
   JAVA_VERSION: '17'
 
 jobs:
@@ -53,8 +52,8 @@ jobs:
       - name: 'Set up Graal'
         uses: graalvm/setup-graalvm@v1
         with:
-          version: ${{ env.GRAALVM_VERSION }}
           java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'graalvm'
           components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
