@@ -21,6 +21,7 @@ package org.apache.maven.cli;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,6 +49,7 @@ import com.google.inject.AbstractModule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.UnrecognizedOptionException;
 import org.apache.maven.InternalErrorException;
 import org.apache.maven.Maven;
 import org.apache.maven.building.FileSource;
@@ -95,6 +98,9 @@ import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.interpolation.AbstractValueSource;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
@@ -145,9 +151,14 @@ public class DaemonMavenCli implements DaemonCli {
 
     private static final String EXT_CLASS_PATH = "maven.ext.class.path";
 
-    private static final String EXTENSIONS_FILENAME = ".mvn/extensions.xml";
+    private static final String DOT_MVN = ".mvn";
 
-    private static final String MVN_MAVEN_CONFIG = ".mvn/maven.config";
+    private static final String UNABLE_TO_FIND_ROOT_PROJECT_MESSAGE = "Unable to find the root directory. Create a "
+            + DOT_MVN + " directory in the project root directory to identify it.";
+
+    private static final String EXTENSIONS_FILENAME = DOT_MVN + "/extensions.xml";
+
+    private static final String MVN_MAVEN_CONFIG = DOT_MVN + "/maven.config";
 
     public static final String STYLE_COLOR_PROPERTY = "style.color";
 
@@ -242,6 +253,9 @@ public class DaemonMavenCli implements DaemonCli {
             return execute(cliRequest);
         } catch (ExitException e) {
             return e.exitCode;
+        } catch (UnrecognizedOptionException e) {
+            // pure user error, suppress stack trace
+            return 1;
         } finally {
             eventSpyDispatcher.close();
             System.setProperties(props);
@@ -257,10 +271,86 @@ public class DaemonMavenCli implements DaemonCli {
         }
 
         if (cliRequest.multiModuleProjectDirectory == null) {
-            buildEventListener.log(String.format("-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY));
-            throw new ExitException(1);
+            String basedirProperty = System.getProperty(MULTIMODULE_PROJECT_DIRECTORY);
+            if (basedirProperty == null) {
+                System.err.format("-D%s system property is not set.", MULTIMODULE_PROJECT_DIRECTORY);
+                throw new ExitException(1);
+            }
+            File basedir = new File(basedirProperty);
+            try {
+                cliRequest.multiModuleProjectDirectory = basedir.getCanonicalFile();
+            } catch (IOException e) {
+                cliRequest.multiModuleProjectDirectory = basedir.getAbsoluteFile();
+            }
         }
-        System.setProperty("maven.multiModuleProjectDirectory", cliRequest.multiModuleProjectDirectory.toString());
+
+        // We need to locate the top level project which may be pointed at using
+        // the -f/--file option.  However, the command line isn't parsed yet, so
+        // we need to iterate through the args to find it and act upon it.
+        Path topDirectory = Paths.get(cliRequest.workingDirectory);
+        boolean isAltFile = false;
+        for (String arg : cliRequest.args) {
+            if (isAltFile) {
+                // this is the argument following -f/--file
+                Path path = topDirectory.resolve(arg);
+                if (Files.isDirectory(path)) {
+                    topDirectory = path;
+                } else if (Files.isRegularFile(path)) {
+                    topDirectory = path.getParent();
+                    if (!Files.isDirectory(topDirectory)) {
+                        System.err.println("Directory " + topDirectory
+                                + " extracted from the -f/--file command-line argument " + arg + " does not exist");
+                        throw new ExitException(1);
+                    }
+                } else {
+                    System.err.println(
+                            "POM file " + arg + " specified with the -f/--file command line argument does not exist");
+                    throw new ExitException(1);
+                }
+                break;
+            } else {
+                // Check if this is the -f/--file option
+                isAltFile = arg.equals(String.valueOf(CLIManager.ALTERNATE_POM_FILE)) || arg.equals("file");
+            }
+        }
+        topDirectory = getCanonicalPath(topDirectory);
+        cliRequest.topDirectory = topDirectory;
+        // We're very early in the process and we don't have the container set up yet,
+        // so we on searchAcceptableRootDirectory method to find us acceptable directory.
+        // The method may return null if nothing acceptable found.
+        cliRequest.rootDirectory = searchAcceptableRootDirectory(topDirectory);
+
+        //
+        // Make sure the Maven home directory is an absolute path to save us from confusion with say drive-relative
+        // Windows paths.
+        //
+        String mavenHome = System.getProperty("maven.home");
+
+        if (mavenHome != null) {
+            System.setProperty("maven.home", new File(mavenHome).getAbsolutePath());
+        }
+    }
+
+    protected boolean isAcceptableRootDirectory(Path path) {
+        return path != null && Files.isDirectory(path.resolve(DOT_MVN));
+    }
+
+    protected Path searchAcceptableRootDirectory(Path path) {
+        if (path == null) {
+            return null;
+        }
+        if (isAcceptableRootDirectory(path)) {
+            return path;
+        }
+        return searchAcceptableRootDirectory(path.getParent());
+    }
+
+    private static Path getCanonicalPath(Path path) {
+        try {
+            return path.toRealPath();
+        } catch (IOException e) {
+            return getCanonicalPath(path.getParent()).resolve(path.getFileName());
+        }
     }
 
     void cli(CliRequest cliRequest) throws Exception {
@@ -465,8 +555,77 @@ public class DaemonMavenCli implements DaemonCli {
 
     // Needed to make this method package visible to make writing a unit test possible
     // Maybe it's better to move some of those methods to separate class (SoC).
-    void properties(CliRequest cliRequest) {
-        populateProperties(cliRequest.commandLine, cliRequest.systemProperties, cliRequest.userProperties);
+    void properties(CliRequest cliRequest) throws ExitException {
+        try {
+            populateProperties(cliRequest, cliRequest.systemProperties, cliRequest.userProperties);
+
+            StringSearchInterpolator interpolator =
+                    createInterpolator(cliRequest, cliRequest.systemProperties, cliRequest.userProperties);
+            CommandLine.Builder commandLineBuilder = new CommandLine.Builder();
+            for (Option option : cliRequest.commandLine.getOptions()) {
+                if (!String.valueOf(CLIManager.SET_USER_PROPERTY).equals(option.getOpt())) {
+                    List<String> values = option.getValuesList();
+                    for (ListIterator<String> it = values.listIterator(); it.hasNext(); ) {
+                        it.set(interpolator.interpolate(it.next()));
+                    }
+                }
+                commandLineBuilder.addOption(option);
+            }
+            for (String arg : cliRequest.commandLine.getArgList()) {
+                commandLineBuilder.addArg(interpolator.interpolate(arg));
+            }
+            cliRequest.commandLine = commandLineBuilder.build();
+        } catch (InterpolationException e) {
+            String message = "ERROR: Could not interpolate properties and/or arguments: " + e.getMessage();
+            System.err.println(message);
+            throw new ExitException(1); // user error
+        } catch (MavenCli.IllegalUseOfUndefinedProperty e) {
+            String message = "ERROR: Illegal use of undefined property: " + e.property;
+            System.err.println(message);
+            if (cliRequest.rootDirectory == null) {
+                System.err.println();
+                System.err.println(UNABLE_TO_FIND_ROOT_PROJECT_MESSAGE);
+            }
+            throw new ExitException(1); // user error
+        }
+    }
+
+    protected static StringSearchInterpolator createInterpolator(CliRequest cliRequest, Properties... properties) {
+        StringSearchInterpolator interpolator = new StringSearchInterpolator();
+        interpolator.addValueSource(new AbstractValueSource(false) {
+            @Override
+            public Object getValue(String expression) {
+                if ("session.topDirectory".equals(expression)) {
+                    Path topDirectory = cliRequest.topDirectory;
+                    if (topDirectory != null) {
+                        return topDirectory.toString();
+                    } else {
+                        throw new MavenCli.IllegalUseOfUndefinedProperty(expression);
+                    }
+                } else if ("session.rootDirectory".equals(expression)) {
+                    Path rootDirectory = cliRequest.rootDirectory;
+                    if (rootDirectory != null) {
+                        return rootDirectory.toString();
+                    } else {
+                        throw new MavenCli.IllegalUseOfUndefinedProperty(expression);
+                    }
+                }
+                return null;
+            }
+        });
+        interpolator.addValueSource(new AbstractValueSource(false) {
+            @Override
+            public Object getValue(String expression) {
+                for (Properties props : properties) {
+                    Object val = props.getProperty(expression);
+                    if (val != null) {
+                        return val;
+                    }
+                }
+                return null;
+            }
+        });
+        return interpolator;
     }
 
     void container(CliRequest cliRequest) {
@@ -1289,7 +1448,8 @@ public class DaemonMavenCli implements DaemonCli {
     // System properties handling
     // ----------------------------------------------------------------------
 
-    static void populateProperties(CommandLine commandLine, Properties systemProperties, Properties userProperties) {
+    static void populateProperties(CliRequest cliRequest, Properties systemProperties, Properties userProperties)
+            throws InterpolationException {
         addEnvVars(systemProperties);
 
         // ----------------------------------------------------------------------
@@ -1298,17 +1458,25 @@ public class DaemonMavenCli implements DaemonCli {
         // are most dominant.
         // ----------------------------------------------------------------------
 
-        if (commandLine.hasOption(CLIManager.SET_SYSTEM_PROPERTY)) {
-            String[] defStrs = commandLine.getOptionValues(CLIManager.SET_SYSTEM_PROPERTY);
+        Properties cliProperties = new Properties();
+        if (cliRequest.commandLine.hasOption(CLIManager.SET_SYSTEM_PROPERTY)) {
+            String[] defStrs = cliRequest.commandLine.getOptionValues(CLIManager.SET_SYSTEM_PROPERTY);
 
             if (defStrs != null) {
                 for (String defStr : defStrs) {
-                    setCliProperty(defStr, userProperties);
+                    setCliProperty(defStr, cliProperties);
                 }
             }
         }
 
         SystemProperties.addSystemProperties(systemProperties);
+
+        StringSearchInterpolator interpolator = createInterpolator(cliRequest, cliProperties, systemProperties);
+        for (Map.Entry<Object, Object> e : cliProperties.entrySet()) {
+            String name = (String) e.getKey();
+            String value = interpolator.interpolate((String) e.getValue());
+            userProperties.setProperty(name, value);
+        }
 
         // ----------------------------------------------------------------------
         // Properties containing info about the currently running version of Maven
