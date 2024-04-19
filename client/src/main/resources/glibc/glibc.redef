@@ -28,6 +28,7 @@ pthread_create pthread_create@GLIBC_2.2.5
 pthread_getattr_np pthread_getattr_np@GLIBC_2.2.5
 pthread_join pthread_join@GLIBC_2.2.5
 pthread_kill pthread_kill@GLIBC_2.2.5
+pthread_mutex_trylock pthread_mutex_trylock@GLIBC_2.2.5
 pthread_setname_np pthread_setname_np@GLIBC_2.12
 sem_destroy sem_destroy@GLIBC_2.2.5
 sem_init sem_init@GLIBC_2.2.5
