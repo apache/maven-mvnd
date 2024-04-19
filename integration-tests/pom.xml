@@ -42,6 +42,7 @@
             org/junit/jupiter/junit-jupiter/${junit.jupiter.version}
             org/junit/jupiter/junit-jupiter-api/${junit.jupiter.version}</preinstall.artifacts>
 
+    <testcontainers.version>1.19.7</testcontainers.version>
   </properties>
 
   <dependencies>
@@ -97,13 +98,13 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>testcontainers</artifactId>
-      <version>1.18.1</version>
+      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.18.1</version>
+      <version>${testcontainers.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
