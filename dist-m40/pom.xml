@@ -30,11 +30,6 @@
   <packaging>pom</packaging>
   <name>Maven Daemon - Distribution for 4.0.x</name>
 
-  <properties>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>

@@ -31,7 +31,6 @@
   <name>Maven Daemon - Client</name>
 
   <properties>
-    <maven.compiler.release>11</maven.compiler.release>
     <graalvm-native-static-opt />
     <graalvm-native-glibc-opt />
     <patchelf.skip>true</patchelf.skip>
@@ -114,42 +113,6 @@
               <goal>create</goal>
             </goals>
             <phase>validate</phase>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>fallback-main</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <release>${maven-dist.required.jdk}</release>
-              <compileSourceRoots>
-                <root>${project.basedir}/src/main/java-fallback</root>
-              </compileSourceRoots>
-            </configuration>
-          </execution>
-          <execution>
-            <id>mvnd-main</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <multiReleaseOutput>true</multiReleaseOutput>
-              <compileSourceRoots>
-                <root>${project.basedir}/src/main/java-mvnd</root>
-              </compileSourceRoots>
-            </configuration>
           </execution>
         </executions>
       </plugin>

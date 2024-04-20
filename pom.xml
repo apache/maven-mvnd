@@ -68,9 +68,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.target>8</maven.compiler.target>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven-dist.required.jdk>8</maven-dist.required.jdk>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven-dist.required.jdk>17</maven-dist.required.jdk>
     <project.build.outputTimestamp>2023-10-26T05:45:19Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>

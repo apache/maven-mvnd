@@ -30,11 +30,6 @@
   <packaging>jar</packaging>
   <name>Maven Daemon - Common</name>
 
-  <properties>
-    <!-- If using release, sun.misc is not reachable (see SignalHelper) -->
-    <maven.compiler.release />
-  </properties>
-
   <dependencies>
 
     <dependency>
@@ -91,113 +86,5 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>jdk11-15</id>
-      <activation>
-        <jdk>[11,15)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>default-compile</id>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                  <compilerArgs>
-                    <arg>-XDignore.symbol.file</arg>
-                  </compilerArgs>
-                </configuration>
-              </execution>
-              <execution>
-                <id>jdk11</id>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                  <compilerArgs>
-                    <arg>-XDignore.symbol.file</arg>
-                  </compilerArgs>
-                  <release>11</release>
-                  <multiReleaseOutput>true</multiReleaseOutput>
-                  <compileSourceRoots>
-                    <root>${project.basedir}/src/main/java11</root>
-                  </compileSourceRoots>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>jdk16+</id>
-      <activation>
-        <jdk>[16,)</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>default-compile</id>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                  <compilerArgs>
-                    <arg>-XDignore.symbol.file</arg>
-                  </compilerArgs>
-                </configuration>
-              </execution>
-              <execution>
-                <id>jdk11</id>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                  <compilerArgs>
-                    <arg>-XDignore.symbol.file</arg>
-                  </compilerArgs>
-                  <release>11</release>
-                  <multiReleaseOutput>true</multiReleaseOutput>
-                  <compileSourceRoots>
-                    <root>${project.basedir}/src/main/java11</root>
-                  </compileSourceRoots>
-                </configuration>
-              </execution>
-              <execution>
-                <id>jdk16</id>
-                <goals>
-                  <goal>compile</goal>
-                </goals>
-                <configuration>
-                  <fork>true</fork>
-                  <compilerArgs>
-                    <arg>-XDignore.symbol.file</arg>
-                  </compilerArgs>
-                  <release>16</release>
-                  <multiReleaseOutput>true</multiReleaseOutput>
-                  <compileSourceRoots>
-                    <root>${project.basedir}/src/main/java16</root>
-                  </compileSourceRoots>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>

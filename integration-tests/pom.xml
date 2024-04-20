@@ -30,8 +30,6 @@
   <name>Maven Daemon - Integration Tests</name>
 
   <properties>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
     <mvnd.m39.home>${project.basedir}/../dist-m39/target/maven-mvnd-${project.version}-m39-${os.detected.name}-${os.detected.arch}</mvnd.m39.home>
     <mvnd.m40.home>${project.basedir}/../dist-m40/target/maven-mvnd-${project.version}-m40-${os.detected.name}-${os.detected.arch}</mvnd.m40.home>
     <preinstall.artifacts>org/apache/maven/surefire/surefire-providers/${surefire.version}
