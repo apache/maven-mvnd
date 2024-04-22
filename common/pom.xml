@@ -43,7 +43,7 @@
     </dependency>
     <dependency>
       <groupId>org.jline</groupId>
-      <artifactId>jline-terminal-jansi</artifactId>
+      <artifactId>jline-terminal-jni</artifactId>
     </dependency>
 
     <dependency>

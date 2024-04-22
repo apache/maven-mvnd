@@ -41,9 +41,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.fusesource.jansi.Ansi;
-import org.fusesource.jansi.internal.CLibrary;
+import org.jline.nativ.CLibrary;
 import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.mvndaemon.mvnd.common.DaemonException;
 import org.mvndaemon.mvnd.common.DaemonInfo;
@@ -57,11 +57,10 @@ import org.mvndaemon.mvnd.common.OsUtils;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.mvndaemon.mvnd.common.logging.TerminalOutput;
+import org.mvndaemon.mvnd.logging.slf4j.MvndLoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-import org.slf4j.impl.MvndLoggerFactory;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
@@ -115,8 +114,8 @@ public class DefaultClient implements Client {
         // System properties
         setSystemPropertiesFromCommandLine(args);
 
-        if (StaticLoggerBinder.getSingleton().getLoggerFactory() instanceof MvndLoggerFactory) {
-            ((MvndLoggerFactory) StaticLoggerBinder.getSingleton().getLoggerFactory()).reconfigure();
+        if (LoggerFactory.getILoggerFactory() instanceof MvndLoggerFactory) {
+            ((MvndLoggerFactory) LoggerFactory.getILoggerFactory()).reconfigure();
         }
 
         DaemonParameters parameters = new DaemonParameters();
@@ -251,8 +250,12 @@ public class DefaultClient implements Client {
                     + " (" + buildProperties.getRevision() + ")";
 
             boolean isColored = !"never".equals(Environment.MAVEN_COLOR.getCommandLineOption(args));
-            final String v =
-                    isColored ? Ansi.ansi().bold().a(mvndVersionString).reset().toString() : mvndVersionString;
+            final String v = isColored
+                    ? new AttributedStringBuilder()
+                            .style(AttributedStyle.BOLD)
+                            .append(mvndVersionString)
+                            .toAnsi()
+                    : mvndVersionString;
             output.accept(Message.log(v));
             // Print terminal information
             output.describeTerminal();

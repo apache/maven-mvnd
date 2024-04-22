@@ -21,4 +21,4 @@ Path helloPath = basePath.resolve('target/hello.txt')
 
 assert Files.exists(helloPath)
 
-assert helloPath.text.equals('Hello')
+assert Files.readString(helloPath).equals('Hello')
