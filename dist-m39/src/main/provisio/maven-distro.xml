@@ -64,7 +64,7 @@
         <artifact id="org.jline:jline-terminal">
             <exclusion id="*:*"/>
         </artifact>
-        <artifact id="org.jline:jline-terminal-jansi">
+        <artifact id="org.jline:jline-terminal-jni">
             <exclusion id="*:*"/>
         </artifact>
     </artifactSet>

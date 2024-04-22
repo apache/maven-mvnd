@@ -18,12 +18,15 @@
  */
 package org.apache.maven.cli;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -92,6 +95,9 @@ import org.codehaus.plexus.interpolation.AbstractValueSource;
 import org.codehaus.plexus.interpolation.BasicInterpolator;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.eclipse.aether.transfer.TransferListener;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.terminal.impl.ExternalTerminal;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingProjectArtifactsCache;
@@ -99,6 +105,7 @@ import org.mvndaemon.mvnd.cli.EnvHelper;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
+import org.mvndaemon.mvnd.logging.slf4j.MvndSimpleLogger;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
@@ -106,7 +113,6 @@ import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.MvndSimpleLogger;
 import org.slf4j.spi.LocationAwareLogger;
 import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
@@ -206,6 +212,14 @@ public class DaemonMavenCli implements DaemonCli {
             Map<String, String> clientEnv,
             BuildEventListener buildEventListener)
             throws Exception {
+        Terminal terminal = new ExternalTerminal(
+                "Maven",
+                "ansi",
+                new ByteArrayInputStream(new byte[0]),
+                new ByteArrayOutputStream(),
+                StandardCharsets.UTF_8);
+        TerminalBuilder.setTerminalOverride(terminal);
+        MessageUtils.systemInstall();
         this.buildEventListener = buildEventListener;
         try {
             CliRequest req = new CliRequest(null, null);
@@ -215,6 +229,7 @@ public class DaemonMavenCli implements DaemonCli {
             return doMain(req, clientEnv);
         } finally {
             this.buildEventListener = BuildEventListener.dummy();
+            MessageUtils.systemUninstall();
         }
     }
 

@@ -36,6 +36,10 @@
       <artifactId>maven-embedder</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-jline</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.inject</artifactId>
       <scope>provided</scope>
@@ -84,15 +88,8 @@
                   <version>${maven4.version}</version>
                   <classifier>sources</classifier>
                 </artifactItem>
-                <artifactItem>
-                  <groupId>org.slf4j</groupId>
-                  <artifactId>slf4j-simple</artifactId>
-                  <version>${slf4j.version}</version>
-                  <classifier>sources</classifier>
-                </artifactItem>
               </artifactItems>
-              <includes>org/apache/maven/logwrapper/*.java,org/slf4j/impl/*.java</includes>
-              <excludes>**/StaticLoggerBinder.java,**/StaticMDCBinder.java</excludes>
+              <includes>org/apache/maven/logwrapper/*.java</includes>
               <outputDirectory>${project.build.directory}/generated-sources/unpack</outputDirectory>
             </configuration>
           </execution>

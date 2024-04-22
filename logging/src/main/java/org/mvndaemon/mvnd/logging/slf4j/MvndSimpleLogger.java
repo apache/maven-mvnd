@@ -16,15 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.slf4j.impl;
+package org.mvndaemon.mvnd.logging.slf4j;
 
-import java.util.Date;
 import java.util.function.Consumer;
 
-import org.apache.maven.shared.utils.logging.MessageBuilder;
-import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.apache.maven.api.services.MessageBuilder;
+import org.apache.maven.jline.MessageUtils;
 
-import static org.apache.maven.shared.utils.logging.MessageUtils.level;
+import static org.apache.maven.jline.MessageUtils.builder;
 
 /**
  * Logger for Maven, that support colorization of levels and stacktraces. This class implements 2 methods introduced in
@@ -34,12 +33,12 @@ import static org.apache.maven.shared.utils.logging.MessageUtils.level;
  */
 public class MvndSimpleLogger extends MvndBaseLogger {
 
+    /*
     static final String TID_PREFIX = "tid=";
 
     static long START_TIME = System.currentTimeMillis();
 
     static boolean INITIALIZED = false;
-    static final SimpleLoggerConfiguration CONFIG_PARAMS = new SimpleLoggerConfiguration();
 
     static void lazyInit() {
         if (INITIALIZED) {
@@ -55,6 +54,8 @@ public class MvndSimpleLogger extends MvndBaseLogger {
         CONFIG_PARAMS.init();
     }
 
+     */
+
     static Consumer<String> LOG_SINK;
 
     public static void setLogSink(Consumer<String> logSink) {
@@ -64,72 +65,20 @@ public class MvndSimpleLogger extends MvndBaseLogger {
     /** The short name of this simple log instance */
     private transient String shortLogName = null;
 
+    private String traceRenderedLevel;
+    private String debugRenderedLevel;
+    private String infoRenderedLevel;
+    private String warnRenderedLevel;
+    private String errorRenderedLevel;
+
     MvndSimpleLogger(String name) {
         super(name);
         configure(CONFIG_PARAMS.defaultLogLevel);
     }
 
-    String recursivelyComputeLevelString() {
-        String tempName = name;
-        String levelString = null;
-        int indexOfLastDot = tempName.length();
-        while ((levelString == null) && (indexOfLastDot > -1)) {
-            tempName = tempName.substring(0, indexOfLastDot);
-            levelString = CONFIG_PARAMS.getStringProperty(SimpleLogger.LOG_KEY_PREFIX + tempName, null);
-            indexOfLastDot = tempName.lastIndexOf(".");
-        }
-        return levelString;
-    }
-
     @Override
-    protected void doLog(int level, String message, Throwable t) {
-        StringBuilder buf = new StringBuilder(32);
-
-        // Append date-time if so configured
-        if (CONFIG_PARAMS.showDateTime) {
-            if (CONFIG_PARAMS.dateFormatter != null) {
-                buf.append(getFormattedDate());
-                buf.append(' ');
-            } else {
-                buf.append(System.currentTimeMillis() - START_TIME);
-                buf.append(' ');
-            }
-        }
-
-        // Append current thread name if so configured
-        if (CONFIG_PARAMS.showThreadName) {
-            buf.append('[');
-            buf.append(Thread.currentThread().getName());
-            buf.append("] ");
-        }
-
-        if (CONFIG_PARAMS.showThreadId) {
-            buf.append(TID_PREFIX);
-            buf.append(Thread.currentThread().getId());
-            buf.append(' ');
-        }
-
-        if (CONFIG_PARAMS.levelInBrackets) buf.append('[');
-
-        // Append a readable representation of the log level
-        String levelStr = renderLevel(level);
-        buf.append(levelStr);
-        if (CONFIG_PARAMS.levelInBrackets) buf.append(']');
-        buf.append(' ');
-
-        // Append the name of the log instance if so configured
-        if (CONFIG_PARAMS.showShortLogName) {
-            if (shortLogName == null) shortLogName = computeShortName();
-            buf.append(String.valueOf(shortLogName)).append(" - ");
-        } else if (CONFIG_PARAMS.showLogName) {
-            buf.append(String.valueOf(name)).append(" - ");
-        }
-
-        // Append the message
-        buf.append(message);
-
+    void write(StringBuilder buf, Throwable t) {
         writeThrowable(t, buf);
-
         Consumer<String> sink = LOG_SINK;
         if (sink != null) {
             sink.accept(buf.toString());
@@ -138,28 +87,26 @@ public class MvndSimpleLogger extends MvndBaseLogger {
         }
     }
 
-    protected String getFormattedDate() {
-        Date now = new Date();
-        return CONFIG_PARAMS.dateFormatter.format(now);
-    }
-
-    private String computeShortName() {
-        return name.substring(name.lastIndexOf(".") + 1);
-    }
-
     protected String renderLevel(int level) {
+        if (traceRenderedLevel == null) {
+            traceRenderedLevel = builder().trace("TRACE").build();
+            debugRenderedLevel = builder().debug("DEBUG").build();
+            infoRenderedLevel = builder().info("INFO").build();
+            warnRenderedLevel = builder().warning("WARNING").build();
+            errorRenderedLevel = builder().error("ERROR").build();
+        }
         switch (level) {
             case LOG_LEVEL_TRACE:
-                return level().debug("TRACE").toString();
+                return traceRenderedLevel;
             case LOG_LEVEL_DEBUG:
-                return level().debug("DEBUG").toString();
+                return debugRenderedLevel;
             case LOG_LEVEL_INFO:
-                return level().info("INFO").toString();
+                return infoRenderedLevel;
             case LOG_LEVEL_WARN:
-                return level().warning("WARNING").toString();
+                return warnRenderedLevel;
             case LOG_LEVEL_ERROR:
             default:
-                return level().error("ERROR").toString();
+                return errorRenderedLevel;
         }
     }
 
@@ -167,13 +114,14 @@ public class MvndSimpleLogger extends MvndBaseLogger {
         if (t == null) {
             return;
         }
-        MessageBuilder builder = MessageUtils.buffer(sb);
+        MessageBuilder builder = MessageUtils.builder();
         builder.failure(t.getClass().getName());
         if (t.getMessage() != null) {
             builder.a(": ");
             builder.failure(t.getMessage());
         }
         builder.newline();
+        sb.append(builder);
 
         printStackTrace(t, builder, "");
     }

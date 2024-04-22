@@ -30,8 +30,8 @@ import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
+import org.mvndaemon.mvnd.logging.slf4j.MvndSimpleLogger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.MvndSimpleLogger;
 import org.slf4j.spi.LocationAwareLogger;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;

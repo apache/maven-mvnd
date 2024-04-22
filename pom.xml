@@ -86,13 +86,13 @@
     <groovy.version>4.0.21</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
-    <jline.version>3.25.1</jline.version>
+    <jline.version>3.25.2-SNAPSHOT</jline.version>
     <maven.version>4.0.0-alpha-14-SNAPSHOT</maven.version>
     <maven3.version>3.9.6</maven3.version>
     <maven4.version>${maven.version}</maven4.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.18</maven.resolver.version>
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4j.version>2.0.11</slf4j.version>
     <sisu.version>0.9.0.M2</sisu.version>
 
     <!-- plugin versions a..z -->
@@ -160,6 +160,11 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-embedder</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-jline</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -284,13 +289,8 @@
       </dependency>
       <dependency>
         <groupId>org.jline</groupId>
-        <artifactId>jline-terminal-jansi</artifactId>
+        <artifactId>jline-terminal-jni</artifactId>
         <version>${jline.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>${jansi.version}</version>
       </dependency>
 
       <dependency>
@@ -370,6 +370,7 @@
               <exclude>src/test/projects/**/.project</exclude>
               <exclude>src/test/projects/**/.settings/**</exclude>
               <exclude>src/test/projects/**/target/**</exclude>
+              <exclude>**/META-INF/services/**</exclude>
             </excludes>
           </configuration>
         </plugin>

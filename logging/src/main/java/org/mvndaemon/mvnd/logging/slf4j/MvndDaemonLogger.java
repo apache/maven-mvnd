@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.slf4j.impl;
+package org.mvndaemon.mvnd.logging.slf4j;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -24,6 +24,10 @@ import java.io.StringWriter;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+
+import org.slf4j.Marker;
+import org.slf4j.event.Level;
+import org.slf4j.helpers.MessageFormatter;
 
 public class MvndDaemonLogger extends MvndBaseLogger {
 
@@ -37,32 +41,35 @@ public class MvndDaemonLogger extends MvndBaseLogger {
     }
 
     @Override
-    protected void doLog(int level, String message, Throwable t) {
+    protected String renderLevel(int levelInt) {
+        switch (levelInt) {
+            case LOG_LEVEL_ERROR:
+                return "E";
+            case LOG_LEVEL_WARN:
+                return "W";
+            case LOG_LEVEL_INFO:
+                return "I";
+            case LOG_LEVEL_DEBUG:
+                return "D";
+            case LOG_LEVEL_TRACE:
+                return "T";
+        }
+        throw new IllegalStateException("Unrecognized level [" + levelInt + "]");
+    }
+
+    @Override
+    protected void handleNormalizedLoggingCall(
+            Level level, Marker marker, String messagePattern, Object[] arguments, Throwable throwable) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         pw.append(dateTimeFormatter.format(LocalTime.now()));
         pw.append(" ");
-        switch (level) {
-            case LOG_LEVEL_ERROR:
-                pw.append("E");
-                break;
-            case LOG_LEVEL_WARN:
-                pw.append("W");
-                break;
-            case LOG_LEVEL_INFO:
-                pw.append("I");
-                break;
-            case LOG_LEVEL_DEBUG:
-                pw.append("D");
-                break;
-            case LOG_LEVEL_TRACE:
-                pw.append("T");
-                break;
-        }
+        pw.append(renderLevel(level.toInt()));
         pw.append(" ");
+        String message = MessageFormatter.basicArrayFormat(messagePattern, arguments);
         pw.append(message);
-        if (t != null) {
-            t.printStackTrace(pw);
+        if (throwable != null) {
+            throwable.printStackTrace(pw);
         }
         PrintStream printStream = MvndSimpleLogger.CONFIG_PARAMS.outputChoice.getTargetPrintStream();
         printStream.println(sw);
