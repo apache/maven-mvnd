@@ -91,7 +91,7 @@
     <maven3.version>3.9.6</maven3.version>
     <maven4.version>${maven.version}</maven4.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.18</maven.resolver.version>
+    <maven.resolver.version>1.9.19</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.9.0.M2</sisu.version>
 
