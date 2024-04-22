@@ -87,7 +87,7 @@
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.25.1</jline.version>
-    <maven.version>4.0.0-alpha-8</maven.version>
+    <maven.version>4.0.0-alpha-14-SNAPSHOT</maven.version>
     <maven3.version>3.9.6</maven3.version>
     <maven4.version>${maven.version}</maven4.version>
     <!-- Keep in sync with Maven -->
@@ -456,7 +456,7 @@
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>enforce-maven-3</id>
+            <id>enforce-maven-version</id>
             <goals>
               <goal>enforce</goal>
             </goals>
@@ -468,6 +468,13 @@
               </rules>
               <fail>true</fail>
             </configuration>
+          </execution>
+          <execution>
+            <id>enforce-bytecode-version</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <phase>none</phase>
           </execution>
         </executions>
       </plugin>

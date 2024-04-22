@@ -52,7 +52,6 @@ import org.apache.maven.cli.configuration.SettingsXmlConfigurationProcessor;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cli.internal.BootstrapCoreExtensionManager;
 import org.apache.maven.cli.internal.extension.model.CoreExtension;
-import org.apache.maven.cli.jansi.MessageUtils;
 import org.apache.maven.cli.logging.Slf4jConfiguration;
 import org.apache.maven.cli.logging.Slf4jConfigurationFactory;
 import org.apache.maven.cli.transfer.QuietMavenTransferListener;
@@ -62,10 +61,12 @@ import org.apache.maven.exception.DefaultExceptionHandler;
 import org.apache.maven.exception.ExceptionHandler;
 import org.apache.maven.exception.ExceptionSummary;
 import org.apache.maven.execution.*;
+import org.apache.maven.execution.scope.internal.MojoExecutionScope;
 import org.apache.maven.execution.scope.internal.MojoExecutionScopeModule;
 import org.apache.maven.extension.internal.CoreExports;
 import org.apache.maven.extension.internal.CoreExportsProvider;
 import org.apache.maven.extension.internal.CoreExtensionEntry;
+import org.apache.maven.jline.MessageUtils;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.building.ModelProcessor;
 import org.apache.maven.model.root.RootLocator;
@@ -74,6 +75,7 @@ import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.artifact.ProjectArtifactsCache;
 import org.apache.maven.properties.internal.SystemProperties;
+import org.apache.maven.session.scope.internal.SessionScope;
 import org.apache.maven.session.scope.internal.SessionScopeModule;
 import org.apache.maven.toolchain.building.DefaultToolchainsBuildingRequest;
 import org.apache.maven.toolchain.building.ToolchainsBuilder;
@@ -634,8 +636,8 @@ public class DaemonMavenCli implements DaemonCli {
         for (CoreExtensionEntry extension : extensionsEntries) {
             container.discoverComponents(
                     extension.getClassRealm(),
-                    new SessionScopeModule(container),
-                    new MojoExecutionScopeModule(container),
+                    new SessionScopeModule(container.lookup(SessionScope.class)),
+                    new MojoExecutionScopeModule(container.lookup(MojoExecutionScope.class)),
                     new ExtensionConfigurationModule(extension, extensionSource));
         }
         return container;

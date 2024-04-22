@@ -19,6 +19,7 @@
 package org.apache.maven.project;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.apache.maven.building.Source;
 import org.apache.maven.model.building.ModelCache;
@@ -33,22 +34,14 @@ public class SnapshotModelCache implements ModelCache {
         this.reactorCache = Objects.requireNonNull(reactorCache);
     }
 
-    public Object get(Source path, String tag) {
-        return reactorCache.get(path, tag);
-    }
-
-    public void put(Source path, String tag, Object data) {
-        reactorCache.put(path, tag, data);
+    @Override
+    public <T> T computeIfAbsent(String groupId, String artifactId, String version, String tag, Supplier<T> data) {
+        return getDelegate(version).computeIfAbsent(groupId, artifactId, version, tag, data);
     }
 
     @Override
-    public void put(String groupId, String artifactId, String version, String tag, Object data) {
-        getDelegate(version).put(groupId, artifactId, version, tag, data);
-    }
-
-    @Override
-    public Object get(String groupId, String artifactId, String version, String tag) {
-        return getDelegate(version).get(groupId, artifactId, version, tag);
+    public <T> T computeIfAbsent(Source path, String tag, Supplier<T> data) {
+        return reactorCache.computeIfAbsent(path, tag, data);
     }
 
     private ModelCache getDelegate(String version) {
