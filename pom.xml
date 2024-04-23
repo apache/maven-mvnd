@@ -52,10 +52,7 @@
     <module>client</module>
     <module>logging</module>
     <module>daemon</module>
-    <module>daemon-m39</module>
-    <module>daemon-m40</module>
-    <module>dist-m39</module>
-    <module>dist-m40</module>
+    <module>dist</module>
     <module>integration-tests</module>
   </modules>
 
@@ -87,9 +84,7 @@
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.25.1</jline.version>
-    <maven.version>4.0.0-alpha-8</maven.version>
-    <maven3.version>3.9.6</maven3.version>
-    <maven4.version>${maven.version}</maven4.version>
+    <maven.version>3.9.6</maven.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.18</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
@@ -155,6 +150,11 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -241,29 +241,13 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist-m39</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist-m40</artifactId>
+        <artifactId>mvnd-dist</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-daemon</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-daemon-m39</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-daemon-m40</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

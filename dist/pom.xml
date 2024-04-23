@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright 2019 the original author or authors.
+    Copyright 2019-2021 the original author or authors.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -25,21 +25,28 @@
     <version>1.0-m9-SNAPSHOT</version>
   </parent>
 
-  <artifactId>mvnd-daemon-m39</artifactId>
+  <artifactId>mvnd-dist</artifactId>
 
-  <packaging>jar</packaging>
-  <name>Maven Daemon - Daemon 3.9.x specifics</name>
+  <packaging>pom</packaging>
+  <name>Maven Daemon - Distribution</name>
+
+  <properties>
+    <maven.compiler.target>11</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+  </properties>
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
-      <version>${maven3.version}</version>
+      <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-agent</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-embedder</artifactId>
-      <version>${maven3.version}</version>
+      <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-helper-agent</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-client</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>
@@ -50,8 +57,20 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.eclipse.sisu</groupId>
-        <artifactId>sisu-maven-plugin</artifactId>
+        <groupId>ca.vanzyl.provisio.maven.plugins</groupId>
+        <artifactId>provisio-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>maven-distro</id>
+            <goals>
+              <goal>provision</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <outputDirectory>${project.build.directory}/maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

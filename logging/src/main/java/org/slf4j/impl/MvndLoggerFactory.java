@@ -18,37 +18,20 @@
  */
 package org.slf4j.impl;
 
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.maven.logwrapper.LogLevelRecorder;
-import org.apache.maven.logwrapper.MavenSlf4jWrapperFactory;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 
 /**
  * LogFactory for Maven which can create a simple logger or one which, if set, fails the build on a severity threshold.
  */
-public class MvndLoggerFactory implements MavenSlf4jWrapperFactory {
-    private LogLevelRecorder logLevelRecorder = null;
+public class MvndLoggerFactory implements ILoggerFactory {
     private final ConcurrentMap<String, Logger> loggerMap = new ConcurrentHashMap<>();
 
     public MvndLoggerFactory() {
         MvndSimpleLogger.lazyInit();
-    }
-
-    @Override
-    public void setLogLevelRecorder(LogLevelRecorder logLevelRecorder) {
-        if (this.logLevelRecorder != null) {
-            throw new IllegalStateException("LogLevelRecorder has already been set.");
-        }
-
-        this.logLevelRecorder = logLevelRecorder;
-    }
-
-    @Override
-    public Optional<LogLevelRecorder> getLogLevelRecorder() {
-        return Optional.ofNullable(logLevelRecorder);
     }
 
     /**
@@ -62,10 +45,8 @@ public class MvndLoggerFactory implements MavenSlf4jWrapperFactory {
     private Logger getNewLoggingInstance(String name) {
         if (name.startsWith("org.mvndaemon.mvnd.daemon")) {
             return new MvndDaemonLogger(name);
-        } else if (logLevelRecorder == null) {
-            return new MvndSimpleLogger(name);
         } else {
-            return new MvndFailOnSeverityLogger(name, logLevelRecorder);
+            return new MvndSimpleLogger(name);
         }
     }
 
