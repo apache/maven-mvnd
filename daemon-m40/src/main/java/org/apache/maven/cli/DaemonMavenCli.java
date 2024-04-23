@@ -642,63 +642,55 @@ public class DaemonMavenCli implements DaemonCli {
     }
 
     private List<CoreExtensionEntry> loadCoreExtensions(
-            List<CoreExtension> extensions, ClassRealm containerRealm, Set<String> providedArtifacts) {
-        try {
-            if (extensions.isEmpty()) {
-                return Collections.emptyList();
-            }
-            ContainerConfiguration cc = new DefaultContainerConfiguration() //
-                    .setClassWorld(classWorld) //
-                    .setRealm(containerRealm) //
-                    .setClassPathScanning(PlexusConstants.SCANNING_INDEX) //
-                    .setAutoWiring(true) //
-                    .setJSR250Lifecycle(true) //
-                    .setName("maven");
-
-            DefaultPlexusContainer container = new DefaultPlexusContainer(cc, new AbstractModule() {
-                @Override
-                protected void configure() {
-                    bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
-                }
-            });
-            MavenExecutionRequestPopulator executionRequestPopulator = null;
-            try {
-                CliRequest cliRequest = new CliRequest(new String[0], classWorld);
-                cliRequest.commandLine = new CommandLine.Builder().build();
-                container.setLookupRealm(null);
-                container.setLoggerManager(plexusLoggerManager);
-                container.getLoggerManager().setThresholds(cliRequest.request.getLoggingLevel());
-                Thread.currentThread().setContextClassLoader(container.getContainerRealm());
-                executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
-                final Map<String, ConfigurationProcessor> configurationProcessors =
-                        container.lookupMap(ConfigurationProcessor.class);
-                final EventSpyDispatcher eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
-                properties(cliRequest);
-                configure(cliRequest, eventSpyDispatcher, configurationProcessors);
-                LoggingExecutionListener executionListener = container.lookup(LoggingExecutionListener.class);
-                populateRequest(
-                        cliRequest,
-                        cliRequest.request,
-                        eventSpyDispatcher,
-                        container.lookup(ModelProcessor.class),
-                        createTransferListener(cliRequest),
-                        buildEventListener,
-                        executionListener);
-                executionRequestPopulator.populateDefaults(cliRequest.request);
-                BootstrapCoreExtensionManager resolver = container.lookup(BootstrapCoreExtensionManager.class);
-                return Collections.unmodifiableList(
-                        resolver.loadCoreExtensions(cliRequest.request, providedArtifacts, extensions));
-            } finally {
-                executionRequestPopulator = null;
-                container.dispose();
-            }
-        } catch (RuntimeException e) {
-            // runtime exceptions are most likely bugs in maven, let them bubble up to the user
-            throw e;
-        } catch (Exception e) {
-            slf4jLogger.warn("Failed to load extensions descriptor {}: {}", extensions, e.getMessage());
+            List<CoreExtension> extensions, ClassRealm containerRealm, Set<String> providedArtifacts) throws Exception {
+        if (extensions.isEmpty()) {
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+        ContainerConfiguration cc = new DefaultContainerConfiguration() //
+                .setClassWorld(classWorld) //
+                .setRealm(containerRealm) //
+                .setClassPathScanning(PlexusConstants.SCANNING_INDEX) //
+                .setAutoWiring(true) //
+                .setJSR250Lifecycle(true) //
+                .setName("maven");
+
+        DefaultPlexusContainer container = new DefaultPlexusContainer(cc, new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(ILoggerFactory.class).toInstance(slf4jLoggerFactory);
+            }
+        });
+        MavenExecutionRequestPopulator executionRequestPopulator = null;
+        try {
+            CliRequest cliRequest = new CliRequest(new String[0], classWorld);
+            cliRequest.commandLine = new CommandLine.Builder().build();
+            container.setLookupRealm(null);
+            container.setLoggerManager(plexusLoggerManager);
+            container.getLoggerManager().setThresholds(cliRequest.request.getLoggingLevel());
+            Thread.currentThread().setContextClassLoader(container.getContainerRealm());
+            executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
+            final Map<String, ConfigurationProcessor> configurationProcessors =
+                    container.lookupMap(ConfigurationProcessor.class);
+            final EventSpyDispatcher eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
+            properties(cliRequest);
+            configure(cliRequest, eventSpyDispatcher, configurationProcessors);
+            LoggingExecutionListener executionListener = container.lookup(LoggingExecutionListener.class);
+            populateRequest(
+                    cliRequest,
+                    cliRequest.request,
+                    eventSpyDispatcher,
+                    container.lookup(ModelProcessor.class),
+                    createTransferListener(cliRequest),
+                    buildEventListener,
+                    executionListener);
+            executionRequestPopulator.populateDefaults(cliRequest.request);
+            BootstrapCoreExtensionManager resolver = container.lookup(BootstrapCoreExtensionManager.class);
+            return Collections.unmodifiableList(
+                    resolver.loadCoreExtensions(cliRequest.request, providedArtifacts, extensions));
+        } finally {
+            executionRequestPopulator = null;
+            container.dispose();
+        }
     }
 
     private ClassRealm setupContainerRealm(
