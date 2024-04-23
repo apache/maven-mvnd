@@ -29,11 +29,9 @@ import org.apache.maven.execution.ProjectExecutionEvent;
 import org.apache.maven.execution.ProjectExecutionListener;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.lifecycle.internal.ReactorBuildStatus;
-import org.eclipse.sisu.Typed;
 
 @Singleton
 @Named
-@Typed({LoggingExecutionListener.class, ExecutionListener.class, ProjectExecutionListener.class})
 public class LoggingExecutionListener implements ExecutionListener, ProjectExecutionListener {
 
     private ExecutionListener delegate;
