@@ -29,7 +29,7 @@
 
   <groupId>org.apache.maven.daemon</groupId>
   <artifactId>mvnd</artifactId>
-  <version>1.0-m9-SNAPSHOT</version>
+  <version>2.0-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Maven Daemon - Parent</name>
@@ -52,10 +52,7 @@
     <module>client</module>
     <module>logging</module>
     <module>daemon</module>
-    <module>daemon-m39</module>
-    <module>daemon-m40</module>
-    <module>dist-m39</module>
-    <module>dist-m40</module>
+    <module>dist</module>
     <module>integration-tests</module>
   </modules>
 
@@ -68,10 +65,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.target>8</maven.compiler.target>
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven-dist.required.jdk>8</maven-dist.required.jdk>
-    <project.build.outputTimestamp>2023-10-26T05:45:19Z</project.build.outputTimestamp>
+    <maven.compiler.release>17</maven.compiler.release>
+    <maven-dist.required.jdk>17</maven-dist.required.jdk>
+    <project.build.outputTimestamp>2024-04-23T19:44:34Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
@@ -88,8 +84,6 @@
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.25.1</jline.version>
     <maven.version>4.0.0-alpha-8</maven.version>
-    <maven3.version>3.9.6</maven3.version>
-    <maven4.version>${maven.version}</maven4.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.18</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
@@ -155,6 +149,11 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -241,29 +240,13 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist-m39</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist-m40</artifactId>
+        <artifactId>mvnd-dist</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-daemon</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-daemon-m39</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-daemon-m40</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -457,7 +440,7 @@
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>enforce-maven-3</id>
+            <id>enforce-bytecode-version</id>
             <goals>
               <goal>enforce</goal>
             </goals>
@@ -466,6 +449,18 @@
                 <requireMavenVersion>
                   <version>3.5.4</version>
                 </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>[17,)</version>
+                </requireJavaVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${maven.compiler.release}</maxJdkVersion>
+                  <ignoredScopes>
+                    <ignoredScope>test</ignoredScope>
+                  </ignoredScopes>
+                  <excludes>
+                    <exclude>org.jline:jline</exclude>
+                  </excludes>
+                </enforceBytecodeVersion>
               </rules>
               <fail>true</fail>
             </configuration>

@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.apache.maven.daemon</groupId>
     <artifactId>mvnd</artifactId>
-    <version>1.0-m9-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>mvnd-integration-tests</artifactId>
@@ -32,8 +32,7 @@
   <properties>
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
-    <mvnd.m39.home>${project.basedir}/../dist-m39/target/maven-mvnd-${project.version}-m39-${os.detected.name}-${os.detected.arch}</mvnd.m39.home>
-    <mvnd.m40.home>${project.basedir}/../dist-m40/target/maven-mvnd-${project.version}-m40-${os.detected.name}-${os.detected.arch}</mvnd.m40.home>
+    <mvnd.home>${project.basedir}/../dist/target/maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</mvnd.home>
     <preinstall.artifacts>org/apache/maven/surefire/surefire-providers/${surefire.version}
             org/apache/maven/surefire/surefire-junit-platform/${surefire.version}
             org/junit/platform/junit-platform-launcher/${junit-platform-launcher.version}
@@ -58,19 +57,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>
-      <artifactId>mvnd-dist-m39</artifactId>
-      <type>pom</type>
-      <scope>test</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-simple</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven.daemon</groupId>
-      <artifactId>mvnd-dist-m40</artifactId>
+      <artifactId>mvnd-dist</artifactId>
       <type>pom</type>
       <scope>test</scope>
       <exclusions>
@@ -130,25 +117,7 @@
             <phase>test</phase>
             <configuration>
               <systemPropertyVariables>
-                <mvnd.home>${mvnd.m39.home}</mvnd.home>
-                <project.version>${project.version}</project.version>
-                <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
-                <os.detected.name>${os.detected.name}</os.detected.name>
-                <os.detected.arch>${os.detected.arch}</os.detected.arch>
-                <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
-                <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
-              </systemPropertyVariables>
-            </configuration>
-          </execution>
-          <execution>
-            <id>mvn-40</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <phase>test</phase>
-            <configuration>
-              <systemPropertyVariables>
-                <mvnd.home>${mvnd.m40.home}</mvnd.home>
+                <mvnd.home>${mvnd.home}</mvnd.home>
                 <project.version>${project.version}</project.version>
                 <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
                 <os.detected.name>${os.detected.name}</os.detected.name>
@@ -235,25 +204,7 @@
                 <configuration>
                   <systemPropertyVariables>
                     <project.version>${project.version}</project.version>
-                    <mvnd.home>${mvnd.m39.home}</mvnd.home>
-                    <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
-                    <os.detected.name>${os.detected.name}</os.detected.name>
-                    <os.detected.arch>${os.detected.arch}</os.detected.arch>
-                    <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
-                    <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
-                  </systemPropertyVariables>
-                </configuration>
-              </execution>
-              <execution>
-                <id>native-40</id>
-                <goals>
-                  <goal>integration-test</goal>
-                  <goal>verify</goal>
-                </goals>
-                <configuration>
-                  <systemPropertyVariables>
-                    <project.version>${project.version}</project.version>
-                    <mvnd.home>${mvnd.m40.home}</mvnd.home>
+                    <mvnd.home>${mvnd.home}</mvnd.home>
                     <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
                     <os.detected.name>${os.detected.name}</os.detected.name>
                     <os.detected.arch>${os.detected.arch}</os.detected.arch>

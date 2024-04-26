@@ -123,14 +123,8 @@ jobs:
           name: daemon-test-logs-${{ env.OS }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
-      - name: 'Upload m39 artifact'
+      - name: 'Upload artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: mvnd-m39-${{ env.OS }}
-          path: dist-m39/target/maven-mvnd-*.zip
-
-      - name: 'Upload m40 artifact'
-        uses: actions/upload-artifact@v4
-        with:
-          name: mvnd-m40-${{ env.OS }}
-          path: dist-m40/target/maven-mvnd-*.zip
+          name: mvnd-${{ env.OS }}
+          path: dist/target/maven-mvnd-*.zip
