@@ -80,10 +80,10 @@
     <graalvm.version>22.3.1</graalvm.version>
     <graalvm.plugin.version>0.10.1</graalvm.plugin.version>
     <groovy.version>4.0.21</groovy.version>
-    <jakarta.inject.version>1.0</jakarta.inject.version>
+    <jakarta.inject.version>1.0.5</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.25.1</jline.version>
-    <maven.version>4.0.0-alpha-8</maven.version>
+    <maven-bom.version>4.0.0-alpha-8</maven-bom.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.18</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
@@ -148,23 +148,15 @@
 
       <dependency>
         <groupId>org.apache.maven</groupId>
-        <artifactId>maven-model</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-core</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-embedder</artifactId>
-        <version>${maven.version}</version>
+        <artifactId>maven-bom</artifactId>
+        <version>${maven-bom.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>apache-maven</artifactId>
-        <version>${maven.version}</version>
+        <version>${maven-bom.version}</version>
         <classifier>bin</classifier>
         <type>tar.gz</type>
       </dependency>

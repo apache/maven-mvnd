@@ -18,7 +18,7 @@
 <assembly>
 
     <artifactSet to="/mvn">
-        <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${maven.version}">
+        <artifact id="org.apache.maven:apache-maven:tar.gz:bin:${maven-bom.version}">
             <unpack useRoot="false"
                     excludes="lib/maven-slf4j-*,lib/plexus-utils-3.*" />
         </artifact>

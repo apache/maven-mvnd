@@ -103,7 +103,7 @@ jobs:
 
   source:
     name: 'Build source distributions'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: 'Check out repository'
         uses: actions/checkout@v4
@@ -136,7 +136,7 @@ jobs:
             target/maven-mvnd-*.tar.gz
 
   release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [build, source]
 
     steps:
@@ -258,4 +258,3 @@ jobs:
           asset_path: artifacts/dist/target/maven-mvnd-${{ env.VERSION }}-windows-amd64.tar.gz
           asset_name: maven-mvnd-${{ env.VERSION }}-windows-amd64.tar.gz
           asset_content_type: application/x-gzip
-
