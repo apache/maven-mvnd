@@ -29,7 +29,7 @@
   <name>Maven Daemon - Native Library</name>
 
   <properties>
-    <picocli.version>4.5.2</picocli.version>
+    <picocli.version>4.7.5</picocli.version>
   </properties>
 
   <dependencies>
