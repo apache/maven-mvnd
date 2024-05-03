@@ -65,6 +65,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <maven.compiler.release>17</maven.compiler.release>
     <maven-dist.required.jdk>17</maven-dist.required.jdk>
     <project.build.outputTimestamp>2024-04-23T19:44:34Z</project.build.outputTimestamp>
@@ -82,11 +84,11 @@
     <groovy.version>4.0.21</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
-    <jline.version>3.25.1</jline.version>
-    <maven.version>4.0.0-alpha-8</maven.version>
+    <jline.version>3.26.1</jline.version>
+    <maven.version>4.0.0-beta-1-SNAPSHOT</maven.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.18</maven.resolver.version>
-    <slf4j.version>1.7.36</slf4j.version>
+    <slf4j.version>2.0.11</slf4j.version>
     <sisu.version>0.9.0.M2</sisu.version>
 
     <!-- plugin versions a..z -->
@@ -159,6 +161,11 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-embedder</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-jline</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -263,6 +270,11 @@
 
       <dependency>
         <groupId>org.jline</groupId>
+        <artifactId>jline</artifactId>
+        <version>${jline.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jline</groupId>
         <artifactId>jline-terminal</artifactId>
         <version>${jline.version}</version>
       </dependency>
@@ -272,9 +284,9 @@
         <version>${jline.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>${jansi.version}</version>
+        <groupId>org.jline</groupId>
+        <artifactId>jline-terminal-jni</artifactId>
+        <version>${jline.version}</version>
       </dependency>
 
       <dependency>
@@ -315,6 +327,12 @@
         <artifactId>takari-smart-builder</artifactId>
         <version>${takari-smart-builder.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>32.1.3-jre</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -354,6 +372,7 @@
               <exclude>src/test/projects/**/.project</exclude>
               <exclude>src/test/projects/**/.settings/**</exclude>
               <exclude>src/test/projects/**/target/**</exclude>
+              <exclude>**/META-INF/services/**</exclude>
             </excludes>
           </configuration>
         </plugin>
@@ -453,7 +472,7 @@
                   <version>[17,)</version>
                 </requireJavaVersion>
                 <enforceBytecodeVersion>
-                  <maxJdkVersion>${maven.compiler.release}</maxJdkVersion>
+                  <maxJdkVersion>${maven-dist.required.jdk}</maxJdkVersion>
                   <ignoredScopes>
                     <ignoredScope>test</ignoredScope>
                   </ignoredScopes>

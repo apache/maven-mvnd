@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.slf4j.impl;
+package org.mvndaemon.mvnd.logging.slf4j;
 
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;

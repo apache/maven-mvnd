@@ -23,14 +23,14 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.apache.maven.api.annotations.Experimental;
-import org.apache.maven.cli.jansi.JansiMessageBuilderFactory;
+import org.apache.maven.jline.JLineMessageBuilderFactory;
 import org.mvndaemon.mvnd.common.Environment;
 
 @Named
 @Singleton
 @Priority(10)
 @Experimental
-public class DaemonMessageBuilderFactory extends JansiMessageBuilderFactory {
+public class DaemonMessageBuilderFactory extends JLineMessageBuilderFactory {
 
     @Override
     public int getTerminalWidth() {

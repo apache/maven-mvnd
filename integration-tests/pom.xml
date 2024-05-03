@@ -30,8 +30,8 @@
   <name>Maven Daemon - Integration Tests</name>
 
   <properties>
-    <maven.compiler.target>11</maven.compiler.target>
-    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
     <mvnd.home>${project.basedir}/../dist/target/maven-mvnd-${project.version}-${os.detected.name}-${os.detected.arch}</mvnd.home>
     <preinstall.artifacts>org/apache/maven/surefire/surefire-providers/${surefire.version}
             org/apache/maven/surefire/surefire-junit-platform/${surefire.version}
@@ -103,31 +103,16 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <rerunFailingTestsCount>4</rerunFailingTestsCount>
+          <systemPropertyVariables>
+            <mvnd.home>${mvnd.home}</mvnd.home>
+            <project.version>${project.version}</project.version>
+            <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
+            <os.detected.name>${os.detected.name}</os.detected.name>
+            <os.detected.arch>${os.detected.arch}</os.detected.arch>
+            <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
+            <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
+          </systemPropertyVariables>
         </configuration>
-        <executions>
-          <execution>
-            <id>default-test</id>
-            <phase>none</phase>
-          </execution>
-          <execution>
-            <id>mvn-39</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <phase>test</phase>
-            <configuration>
-              <systemPropertyVariables>
-                <mvnd.home>${mvnd.home}</mvnd.home>
-                <project.version>${project.version}</project.version>
-                <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
-                <os.detected.name>${os.detected.name}</os.detected.name>
-                <os.detected.arch>${os.detected.arch}</os.detected.arch>
-                <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
-                <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
-              </systemPropertyVariables>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

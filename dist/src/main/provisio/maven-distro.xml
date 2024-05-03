@@ -58,15 +58,6 @@
         <artifact id="org.apache.maven.daemon:mvnd-native:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
-        <artifact id="org.codehaus.plexus:plexus-interactivity-api">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="org.jline:jline-terminal">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="org.jline:jline-terminal-jansi">
-            <exclusion id="*:*"/>
-        </artifact>
     </artifactSet>
 
     <fileSet to="/">

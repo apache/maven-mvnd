@@ -16,10 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.slf4j.impl;
+package org.mvndaemon.mvnd.logging.slf4j;
 
 import org.apache.maven.cli.logging.Slf4jConfiguration;
 import org.slf4j.ILoggerFactory;
+import org.slf4j.LoggerFactory;
 
 public class MvndConfiguration implements Slf4jConfiguration {
     @Override
@@ -43,7 +44,7 @@ public class MvndConfiguration implements Slf4jConfiguration {
 
     @Override
     public void activate() {
-        ILoggerFactory lf = StaticLoggerBinder.getSingleton().getLoggerFactory();
+        ILoggerFactory lf = LoggerFactory.getILoggerFactory();
         if (lf instanceof MvndLoggerFactory) {
             ((MvndLoggerFactory) lf).reconfigure();
         }
