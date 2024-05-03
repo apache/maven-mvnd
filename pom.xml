@@ -327,6 +327,12 @@
         <artifactId>takari-smart-builder</artifactId>
         <version>${takari-smart-builder.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>32.1.3-jre</version>
+        <scope>provided</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

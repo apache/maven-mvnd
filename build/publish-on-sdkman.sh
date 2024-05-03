@@ -69,7 +69,7 @@ RESPONSE="$(curl -s -X PUT \
     -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
-    -d '{"candidate": "mvnd", "version": "'${VERSION}-m39'"}' \
+    -d '{"candidate": "mvnd", "version": "'${VERSION}'"}' \
     https://vendors.sdkman.io/default)"
 
 node -pe "

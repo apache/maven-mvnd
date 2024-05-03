@@ -103,31 +103,16 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <rerunFailingTestsCount>4</rerunFailingTestsCount>
+          <systemPropertyVariables>
+            <mvnd.home>${mvnd.home}</mvnd.home>
+            <project.version>${project.version}</project.version>
+            <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
+            <os.detected.name>${os.detected.name}</os.detected.name>
+            <os.detected.arch>${os.detected.arch}</os.detected.arch>
+            <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
+            <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
+          </systemPropertyVariables>
         </configuration>
-        <executions>
-          <execution>
-            <id>default-test</id>
-            <phase>none</phase>
-          </execution>
-          <execution>
-            <id>mvn-39</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <phase>test</phase>
-            <configuration>
-              <systemPropertyVariables>
-                <mvnd.home>${mvnd.home}</mvnd.home>
-                <project.version>${project.version}</project.version>
-                <mrm.repository.url>${mrm.repository.url}</mrm.repository.url>
-                <os.detected.name>${os.detected.name}</os.detected.name>
-                <os.detected.arch>${os.detected.arch}</os.detected.arch>
-                <mvnd.test.hostLocalMavenRepo>${settings.localRepository}</mvnd.test.hostLocalMavenRepo>
-                <preinstall.artifacts>${preinstall.artifacts}</preinstall.artifacts>
-              </systemPropertyVariables>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
