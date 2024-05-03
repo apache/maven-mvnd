@@ -41,7 +41,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.jline.nativ.CLibrary;
+import org.jline.terminal.spi.SystemStream;
+import org.jline.terminal.spi.TerminalExt;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -92,19 +93,6 @@ public class DefaultClient implements Client {
         // Batch mode
         final boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args)
                 || Environment.COMPLETION.hasCommandLineOption(args);
-
-        // Color
-        Color styleColor =
-                Color.of(Environment.MAVEN_COLOR.removeCommandLineOption(args)).orElse(Color.auto);
-        if (styleColor == Color.auto) {
-            /* Translate from auto to either always or never */
-            /* stdout is not a terminal e.g. when stdout is redirected to a file */
-            final boolean stdoutIsTerminal = CLibrary.isatty(1) != 0;
-            styleColor = (batchMode || logFile != null || !stdoutIsTerminal) ? Color.never : Color.always;
-        }
-        /* We cannot use Environment.addCommandLineOption() because that one would pass --color to the daemon
-         * and --color is not supported there yet. */
-        args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
 
         String userJdkJavaOpts = System.getenv(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable());
         if (userJdkJavaOpts != null) {
@@ -157,6 +145,21 @@ public class DefaultClient implements Client {
         boolean noBuffering = batchMode || parameters.noBuffering();
         try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
             try {
+                // Color
+                // We need to defer this part until the terminal is created
+                Color styleColor = Color.of(Environment.MAVEN_COLOR.removeCommandLineOption(args))
+                        .orElse(Color.auto);
+                if (styleColor == Color.auto) {
+                    /* Translate from auto to either always or never */
+                    /* stdout is not a terminal e.g. when stdout is redirected to a file */
+                    final boolean stdoutIsTerminal =
+                            ((TerminalExt) output.getTerminal()).getProvider().isSystemStream(SystemStream.Output);
+                    styleColor = (batchMode || logFile != null || !stdoutIsTerminal) ? Color.never : Color.always;
+                }
+                /* We cannot use Environment.addCommandLineOption() because that one would pass --color to the daemon
+                 * and --color is not supported there yet. */
+                args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
+
                 final ExecutionResult result = new DefaultClient(parameters).execute(output, args);
                 exitCode = result.getExitCode();
             } catch (DaemonException.InterruptedException e) {

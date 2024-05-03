@@ -65,12 +65,6 @@ public class MvndSimpleLogger extends MvndBaseLogger {
     /** The short name of this simple log instance */
     private transient String shortLogName = null;
 
-    private String traceRenderedLevel;
-    private String debugRenderedLevel;
-    private String infoRenderedLevel;
-    private String warnRenderedLevel;
-    private String errorRenderedLevel;
-
     MvndSimpleLogger(String name) {
         super(name);
         configure(CONFIG_PARAMS.defaultLogLevel);
@@ -88,25 +82,18 @@ public class MvndSimpleLogger extends MvndBaseLogger {
     }
 
     protected String renderLevel(int level) {
-        if (traceRenderedLevel == null) {
-            traceRenderedLevel = builder().trace("TRACE").build();
-            debugRenderedLevel = builder().debug("DEBUG").build();
-            infoRenderedLevel = builder().info("INFO").build();
-            warnRenderedLevel = builder().warning("WARNING").build();
-            errorRenderedLevel = builder().error("ERROR").build();
-        }
         switch (level) {
             case LOG_LEVEL_TRACE:
-                return traceRenderedLevel;
+                return builder().trace("TRACE").build();
             case LOG_LEVEL_DEBUG:
-                return debugRenderedLevel;
+                return builder().debug("DEBUG").build();
             case LOG_LEVEL_INFO:
-                return infoRenderedLevel;
+                return builder().info("INFO").build();
             case LOG_LEVEL_WARN:
-                return warnRenderedLevel;
+                return builder().warning("WARNING").build();
             case LOG_LEVEL_ERROR:
             default:
-                return errorRenderedLevel;
+                return builder().error("ERROR").build();
         }
     }
 

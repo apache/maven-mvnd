@@ -498,6 +498,10 @@ public class TerminalOutput implements ClientOutput {
         return terminal.getWidth();
     }
 
+    public Terminal getTerminal() {
+        return terminal;
+    }
+
     void readInputLoop() {
         try {
             while (!closing) {
