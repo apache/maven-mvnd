@@ -101,7 +101,7 @@
     <javassist.version>3.29.2-GA</javassist.version>
     <xstream.version>1.4.20</xstream.version>
     <plexus-interactivity-api.version>1.3</plexus-interactivity-api.version>
-    <takari-smart-builder.version>0.6.5</takari-smart-builder.version>
+    <takari-smart-builder.version>0.6.6</takari-smart-builder.version>
   </properties>
 
   <dependencyManagement>
