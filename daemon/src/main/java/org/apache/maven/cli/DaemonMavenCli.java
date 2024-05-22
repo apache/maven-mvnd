@@ -1141,6 +1141,7 @@ public class DaemonMavenCli implements DaemonCli {
         request.setMakeBehavior(determineMakeBehavior(commandLine));
         request.setCacheNotFound(true);
         request.setCacheTransferError(false);
+        request.setIgnoreTransitiveRepositories(commandLine.hasOption(CLIManager.IGNORE_TRANSITIVE_REPOSITORIES));
 
         performProjectActivation(commandLine, request.getProjectActivation());
         performProfileActivation(commandLine, request.getProfileActivation());
