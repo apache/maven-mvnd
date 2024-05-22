@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extensions>
+    <!-- nonexistent: if not ignored, will explode -->
+    <extension>
+        <groupId>foo</groupId>
+        <artifactId>bar</artifactId>
+        <version>1.0.0</version>
+    </extension>
+</extensions>

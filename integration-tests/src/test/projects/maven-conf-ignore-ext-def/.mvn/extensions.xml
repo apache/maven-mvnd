@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extensions>
+    <!-- By def ignored: basically the build should "just work" -->
+    <extension>
+        <groupId>io.takari.maven</groupId>
+        <artifactId>takari-smart-builder</artifactId>
+        <version>0.6.4</version>
+    </extension>
+</extensions>
