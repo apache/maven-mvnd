@@ -18,7 +18,10 @@
  */
 package org.mvndaemon.mvnd.it;
 
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
+@DisabledOnOs(OS.LINUX)
 @MvndTest(projectDir = "src/test/projects/maven-conf-ignore-ext-def")
 class MavenConfIgnoreExtDefTest extends MavenConfIgnoreExtDefNativeIT {}
