@@ -490,16 +490,21 @@ public class DaemonParameters {
 
     private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
         Set<String> exclusions = new HashSet<>();
-        String exclusionsString =
-                systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE).asString();
+        String exclusionsString = systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE)
+                .orDefault()
+                .asString();
         if (exclusionsString != null) {
             exclusions.addAll(Arrays.stream(exclusionsString.split(","))
                     .filter(e -> e != null && !e.trim().isEmpty())
                     .collect(Collectors.toList()));
         }
-        return coreExtensions.stream()
-                .filter(e -> !exclusions.contains(e.getGroupId() + ":" + e.getArtifactId()))
-                .collect(Collectors.toList());
+        if (!exclusions.isEmpty()) {
+            return coreExtensions.stream()
+                    .filter(e -> !exclusions.contains(e.getGroupId() + ":" + e.getArtifactId()))
+                    .collect(Collectors.toList());
+        } else {
+            return coreExtensions;
+        }
     }
 
     private static Properties loadProperties(Path path) {
