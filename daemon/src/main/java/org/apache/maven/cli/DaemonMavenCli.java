@@ -1141,6 +1141,15 @@ public class DaemonMavenCli implements DaemonCli {
         request.setMakeBehavior(determineMakeBehavior(commandLine));
         request.setCacheNotFound(true);
         request.setCacheTransferError(false);
+        boolean strictArtifactDescriptorPolicy = commandLine.hasOption(CLIManager.STRICT_ARTIFACT_DESCRIPTOR_POLICY)
+                && Boolean.parseBoolean(commandLine.getOptionValue(CLIManager.STRICT_ARTIFACT_DESCRIPTOR_POLICY));
+        if (strictArtifactDescriptorPolicy) {
+            request.setIgnoreMissingArtifactDescriptor(false);
+            request.setIgnoreInvalidArtifactDescriptor(false);
+        } else {
+            request.setIgnoreMissingArtifactDescriptor(true);
+            request.setIgnoreInvalidArtifactDescriptor(true);
+        }
         request.setIgnoreTransitiveRepositories(commandLine.hasOption(CLIManager.IGNORE_TRANSITIVE_REPOSITORIES));
 
         performProjectActivation(commandLine, request.getProjectActivation());
