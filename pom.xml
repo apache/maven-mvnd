@@ -80,12 +80,12 @@
     <commons-compress.version>1.26.1</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
     <graalvm.version>22.3.1</graalvm.version>
-    <graalvm.plugin.version>0.10.1</graalvm.plugin.version>
+    <graalvm.plugin.version>0.10.2</graalvm.plugin.version>
     <groovy.version>4.0.21</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.26.1</jline.version>
-    <maven.version>4.0.0-beta-1-SNAPSHOT</maven.version>
+    <maven.version>4.0.0-beta-2</maven.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>2.0.0-alpha-11</maven.resolver.version>
     <slf4j.version>2.0.11</slf4j.version>
@@ -96,7 +96,7 @@
     <groovy-maven-plugin.version>3.0.2</groovy-maven-plugin.version>
     <mrm.version>1.6.0</mrm.version>
     <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version>
-    <takari-provisio.version>1.0.24</takari-provisio.version>
+    <takari-provisio.version>1.0.25</takari-provisio.version>
 
     <javassist.version>3.29.2-GA</javassist.version>
     <xstream.version>1.4.20</xstream.version>
@@ -336,6 +336,21 @@
     </dependencies>
   </dependencyManagement>
 
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>maven-2117</id>
+      <url>https://repository.apache.org/content/repositories/maven-2117/</url>
+    </repository>
+  </repositories>
+
   <build>
     <pluginManagement>
       <plugins>
@@ -433,12 +448,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-wrapper-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.3.1</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -466,7 +481,7 @@
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.5.4</version>
+                  <version>3.6.3</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
                   <version>[17,)</version>
