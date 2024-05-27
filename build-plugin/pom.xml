@@ -35,7 +35,7 @@
     <maven.compiler.source>11</maven.compiler.source>
 
     <roaster.version>2.29.0.Final</roaster.version>
-    <maven.version>3.9.6</maven.version>
+    <maven.version>3.9.7</maven.version>
     <maven.plugin-tools.version>3.13.0</maven.plugin-tools.version>
   </properties>
 
