@@ -76,8 +76,8 @@
 
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
-    <assertj.version>3.25.3</assertj.version>
-    <commons-compress.version>1.26.1</commons-compress.version>
+    <assertj.version>3.26.0</assertj.version>
+    <commons-compress.version>1.26.2</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
     <graalvm.version>22.3.1</graalvm.version>
     <graalvm.plugin.version>0.10.2</graalvm.plugin.version>
@@ -336,21 +336,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <repositories>
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>maven-2126</id>
-      <url>https://repository.apache.org/content/repositories/maven-2126/</url>
-    </repository>
-  </repositories>
-
   <build>
     <pluginManagement>
       <plugins>
@@ -448,7 +433,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-wrapper-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.3.2</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
