@@ -68,7 +68,6 @@
       <plugin>
         <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-build-maven-plugin</artifactId>
-        <version>${project.version}</version>
         <executions>
           <execution>
             <goals>
@@ -101,6 +100,7 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <executions>
               <execution>
@@ -145,6 +145,7 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
             <executions>
               <execution>

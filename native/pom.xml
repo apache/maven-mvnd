@@ -28,10 +28,6 @@
   <packaging>jar</packaging>
   <name>Maven Daemon - Native Library</name>
 
-  <properties>
-    <picocli.version>4.7.6</picocli.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
@@ -46,7 +42,6 @@
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli-codegen</artifactId>
-      <version>${picocli.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

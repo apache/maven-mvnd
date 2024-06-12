@@ -94,7 +94,6 @@
     <dependency>
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.inject</artifactId>
-      <version>${sisu.version}</version>
       <scope>compile</scope>
     </dependency>
 
