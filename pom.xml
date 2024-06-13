@@ -275,6 +275,11 @@
         <artifactId>org.eclipse.sisu.inject</artifactId>
         <version>${sisu.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.plexus</artifactId>
+        <version>${sisu.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.jline</groupId>
