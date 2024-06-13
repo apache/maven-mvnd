@@ -288,7 +288,12 @@
       </dependency>
       <dependency>
         <groupId>org.jline</groupId>
-        <artifactId>jline-terminal-jansi</artifactId>
+        <artifactId>jline-terminal-jni</artifactId>
+        <version>${jline.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jline</groupId>
+        <artifactId>jline-terminal-ffm</artifactId>
         <version>${jline.version}</version>
       </dependency>
       <dependency>
@@ -523,6 +528,23 @@
                 <requireMavenVersion>
                   <version>3.5.4</version>
                 </requireMavenVersion>
+              </rules>
+              <fail>true</fail>
+            </configuration>
+          </execution>
+          <execution>
+            <id>enforce-bytecode-version</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
+                  <excludes>
+                    <exclude>org.jline:jline-terminal-ffm</exclude>
+                  </excludes>
+                </enforceBytecodeVersion>
               </rules>
               <fail>true</fail>
             </configuration>
