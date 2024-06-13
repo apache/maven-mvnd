@@ -68,9 +68,10 @@ jobs:
       - name: 'Set vars'
         shell: bash
         run: |
+          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          echo "ARCH=$ARCH" >> $GITHUB_ENV
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
-          [[ $OS == 'ubuntu' ]] && echo "OS=linux" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
-          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          echo "OS=$OS" >> $GITHUB_ENV
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up Graal'
@@ -121,11 +122,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daemon-test-logs-${{ env.OS }}
+          name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: mvnd-${{ env.OS }}
+          name: mvnd-${{ env.OS }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
