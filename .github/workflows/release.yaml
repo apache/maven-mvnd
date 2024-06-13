@@ -34,6 +34,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
+        # binaries wanted: linux amd64, mac intel, mac M1, windows x86
         os: [ ubuntu-latest, macos-13, macos-14, windows-latest ]
     runs-on: ${{ matrix.os }}
 
@@ -44,8 +45,9 @@ jobs:
       - name: 'Set vars'
         shell: bash
         run: |
+          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          echo "ARCH=$ARCH" >> $GITHUB_ENV
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
-          [[ $OS == 'ubuntu' ]] && echo "OS=linux" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
           [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -111,8 +113,9 @@ jobs:
       - name: 'Set vars'
         shell: bash
         run: |
+          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          echo "ARCH=$ARCH" >> $GITHUB_ENV
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
-          [[ $OS == 'ubuntu' ]] && echo "OS=linux" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
           [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -158,8 +161,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          key: ${{ runner.os }}-${{ runner.arch }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-${{ runner.arch }}-m2
 
       - name: ls -R
         run: ls -R
@@ -237,6 +240,26 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: artifacts/dist/target/maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
           asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
+          asset_content_type: application/x-gzip
+
+      - name: Deploy maven-mvnd-darwin-arm64.zip
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/dist/target/maven-mvnd-${{ env.VERSION }}-darwin-arm64.zip
+          asset_name: maven-mvnd-${{ env.VERSION }}-darwin-arm64.zip
+          asset_content_type: application/zip
+
+      - name: Deploy maven-mvnd-darwin-arm64.tar.gz
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/dist/target/maven-mvnd-${{ env.VERSION }}-darwin-arm64.tar.gz
+          asset_name: maven-mvnd-${{ env.VERSION }}-darwin-arm64.tar.gz
           asset_content_type: application/x-gzip
 
       - name: Deploy maven-mvnd-windows-amd64.zip

@@ -84,7 +84,7 @@
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.26.1</jline.version>
-    <maven.version>3.9.8-20240612.175612-19</maven.version>
+    <maven.version>3.9.8</maven.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.20</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>

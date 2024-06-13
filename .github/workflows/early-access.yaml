@@ -42,7 +42,7 @@ jobs:
           distribution: 'temurin'
 
       - name: 'Run default (non-native) build'
-        run: ./mvnw verify -Dmrm=false -V -B -ntp -e
+        run: ./mvnw verify -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload daemon test logs'
         if: always()
@@ -71,7 +71,7 @@ jobs:
           ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
           echo "ARCH=$ARCH" >> $GITHUB_ENV
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
-          echo "OS=$OS" >> $GITHUB_ENV
+          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up Graal'
@@ -107,7 +107,7 @@ jobs:
           objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
 
       - name: 'Build native distribution'
-        run: ./mvnw verify -Pnative -Dmrm=false -V -B -ntp -e
+        run: ./mvnw verify -Pnative -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Verify native binary for only requiring glibc 2.12'
         if: ${{ env.OS == 'linux' }}
