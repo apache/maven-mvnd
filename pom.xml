@@ -82,7 +82,6 @@
     <graalvm.plugin.version>0.10.2</graalvm.plugin.version>
     <groovy.version>4.0.21</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
-    <jansi.version>2.4.1</jansi.version>
     <jline.version>3.26.1</jline.version>
     <maven.version>3.9.8</maven.version>
     <!-- Keep in sync with Maven -->
@@ -295,11 +294,6 @@
         <groupId>org.jline</groupId>
         <artifactId>jline-terminal-ffm</artifactId>
         <version>${jline.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>${jansi.version}</version>
       </dependency>
 
       <dependency>
