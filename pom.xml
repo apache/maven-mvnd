@@ -79,7 +79,7 @@
     <assertj.version>3.26.0</assertj.version>
     <commons-compress.version>1.26.2</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
-    <graalvm.version>22.3.1</graalvm.version>
+    <graalvm.version>24.0.1</graalvm.version>
     <graalvm.plugin.version>0.10.2</graalvm.plugin.version>
     <groovy.version>4.0.21</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
