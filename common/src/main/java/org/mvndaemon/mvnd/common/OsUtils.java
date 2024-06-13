@@ -138,7 +138,7 @@ public class OsUtils {
 
     /**
      * A simple wrapper over {@link Process} that manages its destroying and offers Java 8-like
-     * {@link #waitFor(long, TimeUnit, String[])} with timeout.
+     * {@link #waitFor(long)} with timeout.
      */
     public static class CommandProcess implements AutoCloseable {
         public static final int TIMEOUT_EXIT_CODE = Integer.MIN_VALUE + 42;
