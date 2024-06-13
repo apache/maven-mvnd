@@ -46,10 +46,22 @@ jobs:
         shell: bash
         run: |
           ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
-          [[ $ARCH == 'x64' ]] && echo "ARCH=amd64" >> $GITHUB_ENV || echo "ARCH=$ARCH" >> $GITHUB_ENV
-          [[ $ARCH == 'arm64' ]] && echo "ARCH=aarch64" >> $GITHUB_ENV || echo "ARCH=$ARCH" >> $GITHUB_ENV
+          if [[ $ARCH == 'x64' ]]
+          then
+            echo "ARCH=amd64" >> $GITHUB_ENV
+          elif [[ $ARCH == 'arm64' ]]
+          then
+            echo "ARCH=aarch64" >> $GITHUB_ENV
+          else
+            echo "ARCH=$ARCH" >> $GITHUB_ENV
+          fi
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
-          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          if [[ $OS == 'macos' ]]
+          then
+            echo "OS=darwin" >> $GITHUB_ENV
+          else
+            echo "OS=$OS" >> $GITHUB_ENV
+          fi
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up Graal'
@@ -115,10 +127,22 @@ jobs:
         shell: bash
         run: |
           ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
-          [[ $ARCH == 'x64' ]] && echo "ARCH=amd64" >> $GITHUB_ENV || echo "ARCH=$ARCH" >> $GITHUB_ENV
-          [[ $ARCH == 'arm64' ]] && echo "ARCH=aarch64" >> $GITHUB_ENV || echo "ARCH=$ARCH" >> $GITHUB_ENV
+          if [[ $ARCH == 'x64' ]]
+          then
+            echo "ARCH=amd64" >> $GITHUB_ENV
+          elif [[ $ARCH == 'arm64' ]]
+          then
+            echo "ARCH=aarch64" >> $GITHUB_ENV
+          else
+            echo "ARCH=$ARCH" >> $GITHUB_ENV
+          fi
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
-          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          if [[ $OS == 'macos' ]]
+          then
+            echo "OS=darwin" >> $GITHUB_ENV
+          else
+            echo "OS=$OS" >> $GITHUB_ENV
+          fi
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up Graal'
