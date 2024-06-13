@@ -98,6 +98,7 @@
                 <enforceBytecodeVersion>
                   <maxJdkVersion>${maven.compiler.release}</maxJdkVersion>
                   <excludes>
+                    <exclude>org.jline:jline-terminal-ffm</exclude>
                     <exclude>org.graalvm.nativeimage:svm</exclude>
                   </excludes>
                 </enforceBytecodeVersion>
