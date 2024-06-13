@@ -20,5 +20,7 @@ package org.mvndaemon.mvnd.common;
 
 public class ProcessHelper {
 
-    public static void killChildrenProcesses() {}
+    public static void killChildrenProcesses() {
+        ProcessHandle.current().descendants().forEach(ProcessHandle::destroy);
+    }
 }

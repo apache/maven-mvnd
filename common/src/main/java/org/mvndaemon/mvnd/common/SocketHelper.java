@@ -20,20 +20,22 @@ package org.mvndaemon.mvnd.common;
 
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.net.StandardProtocolFamily;
+import java.net.UnixDomainSocketAddress;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
 public class SocketHelper {
 
     public static SocketChannel openUnixSocket() throws IOException {
-        throw new UnsupportedOperationException("Unix sockets are supported only on JDK >= 16");
+        return SocketChannel.open(StandardProtocolFamily.UNIX);
     }
 
     public static ServerSocketChannel openUnixServerSocket() throws IOException {
-        throw new UnsupportedOperationException("Unix sockets are supported only on JDK >= 16");
+        return ServerSocketChannel.open(StandardProtocolFamily.UNIX).bind(null, 0);
     }
 
     public static SocketAddress unixSocketAddressOf(String s) {
-        throw new UnsupportedOperationException("Unix sockets are supported only on JDK >= 16");
+        return UnixDomainSocketAddress.of(s);
     }
 }
