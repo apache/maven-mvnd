@@ -31,7 +31,7 @@ jobs:
   default-build:
     name: 'Default build (without Graal)'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
         uses: actions/checkout@v4
@@ -69,7 +69,8 @@ jobs:
         shell: bash
         run: |
           ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
-          echo "ARCH=$ARCH" >> $GITHUB_ENV
+          [[ $ARCH == 'x64' ]] && echo "ARCH=amd64" >> $GITHUB_ENV || echo "ARCH=$ARCH" >> $GITHUB_ENV
+          [[ $ARCH == 'arm64' ]] && echo "ARCH=aarch64" >> $GITHUB_ENV || echo "ARCH=$ARCH" >> $GITHUB_ENV
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
           [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
