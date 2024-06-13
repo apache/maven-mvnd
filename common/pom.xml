@@ -79,54 +79,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <fork>true</fork>
-              <compilerArgs>
-                <arg>-XDignore.symbol.file</arg>
-              </compilerArgs>
-            </configuration>
-          </execution>
-          <execution>
-            <id>jdk11</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <fork>true</fork>
-              <compilerArgs>
-                <arg>-XDignore.symbol.file</arg>
-              </compilerArgs>
-              <release>11</release>
-              <multiReleaseOutput>true</multiReleaseOutput>
-              <compileSourceRoots>
-                <root>${project.basedir}/src/main/java11</root>
-              </compileSourceRoots>
-            </configuration>
-          </execution>
-          <execution>
-            <id>jdk16</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <fork>true</fork>
-              <compilerArgs>
-                <arg>-XDignore.symbol.file</arg>
-              </compilerArgs>
-              <release>16</release>
-              <multiReleaseOutput>true</multiReleaseOutput>
-              <compileSourceRoots>
-                <root>${project.basedir}/src/main/java16</root>
-              </compileSourceRoots>
-            </configuration>
-          </execution>
-        </executions>
+        <configuration>
+          <fork>true</fork>
+          <compilerArgs>
+            <arg>-XDignore.symbol.file</arg>
+          </compilerArgs>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
