@@ -142,3 +142,7 @@ git commit -m "Next is $NEXT_VERSION"
 # git push origin mvnd-1.x
 
 # NOTE: Manually push once done: git push origin mvnd-1.x --tags
+echo "=============================================================================="
+echo "Release done, nothing got pushed (yet); please push changes with command below"
+echo "$ git push origin mvnd-1.x --tags"
+echo ""
