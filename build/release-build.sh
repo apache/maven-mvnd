@@ -42,9 +42,9 @@ startup_check()
       local branch
       branch=${branch_ref##refs/heads/}
 
-      if [ "$branch" != "master" ]
+      if [ "$branch" != "mvnd-1.x" ]
       then
-        echo "Not working on the master - cannot proceed"
+        echo "Not working on the mvnd-1.x - cannot proceed"
         exit 1
       fi
 
@@ -68,7 +68,7 @@ startup_check()
       fi
 
       if [[ $unpull -gt 0 ]]; then
-        echo "There are changes which have not been pulled - cannot proceed. The following commits have been added to master since your last pull:"
+        echo "There are changes which have not been pulled - cannot proceed. The following commits have been added to mvnd-1.x since your last pull:"
         local unpulled
         unpulled=$(git rev-list $branch..$branch_origin)
         for commit in $unpulled; do
@@ -139,4 +139,4 @@ mvn versions:set -DnewVersion=$NEXT_VERSION
 # commit
 git add -A
 git commit -m "Next is $NEXT_VERSION"
-git push origin master
+git push origin mvnd-1.x
