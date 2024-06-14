@@ -6,6 +6,8 @@
 ./build/release-build.sh <released-version> <next-SNAPSHOT>
 ----
 
+Warning for Fedora users: The RedHat `podman` is usually preinstalled and happily coexisting with `Docker`. Make sure Docker is being used, usually by setting `OCI_EXE=docker` env variable.
+
 * While the `darwin-aarch64` is not supported by github, you need to perform a clean build on the tagged branch on a Apple M1 computer and upload the two binary distributions as additional assets to the draft release that has been generated at github.
 
 * Once the workflow completes, run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release-candidate.sh[release-candidate script] which will download the built assemblies, compute the checksums and signatures, commit them to the https://dist.apache.org/repos/dist/dev/maven/mvnd/[dev distribution repository]
