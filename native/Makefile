@@ -96,7 +96,7 @@ target/dockcross/dockcross-linux-x86: dockcross
 	docker run --rm dockcross/linux-x86$(linux-x86-digest) > target/dockcross/dockcross-linux-x86
 	chmod +x target/dockcross/dockcross-linux-x86
 linux-x86: download-includes target/dockcross/dockcross-linux-x86
-	target/dockcross/dockcross-linux-x86 bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86'
+	target/dockcross/dockcross-linux-x86 --image dockcross/linux-x86$(linux-x86-digest) bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86'
 
 linux-x86_64: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
@@ -110,7 +110,7 @@ target/dockcross/dockcross-linux-armv6: dockcross
 	docker run --rm dockcross/linux-armv6$(linux-armv6-digest) > target/dockcross/dockcross-linux-armv6
 	chmod +x target/dockcross/dockcross-linux-armv6
 linux-armv6: download-includes target/dockcross/dockcross-linux-armv6
-	target/dockcross/dockcross-linux-armv6 bash -c 'make clean-native native CROSS_PREFIX=armv6-unknown-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
+	target/dockcross/dockcross-linux-armv6 --image dockcross/linux-armv6$(linux-armv6-digest) bash -c 'make clean-native native CROSS_PREFIX=armv6-unknown-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
 
 linux-armv7: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
@@ -128,13 +128,13 @@ target/dockcross/dockcross-windows-static-x86: dockcross
 	docker run --rm dockcross/windows-static-x86$(windows-static-x86-digest) > target/dockcross/dockcross-windows-static-x86
 	chmod +x target/dockcross/dockcross-windows-static-x86
 win-x86: download-includes target/dockcross/dockcross-windows-static-x86
-	target/dockcross/dockcross-windows-static-x86 bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
+	target/dockcross/dockcross-windows-static-x86 --image dockcross/windows-static-x86$(windows-static-x86-digest) bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
 
 target/dockcross/dockcross-windows-static-x64: dockcross
 	docker run --rm dockcross/windows-static-x64$(windows-static-x64-digest) > target/dockcross/dockcross-windows-static-x64
 	chmod +x target/dockcross/dockcross-windows-static-x64
 win-x86_64: download-includes target/dockcross/dockcross-windows-static-x64
-	target/dockcross/dockcross-windows-static-x64 bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
+	target/dockcross/dockcross-windows-static-x64 --image dockcross/windows-static-x64$(windows-static-x64-digest) bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
 
 mac-x86: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
