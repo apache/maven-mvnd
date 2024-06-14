@@ -154,7 +154,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Build source distribution'
-        run: ./mvnw clean verify -Psource-distribution -N -B -ntp -e
+        run: ./mvnw clean verify -Psource-distribution -N -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v4
