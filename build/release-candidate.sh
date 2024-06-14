@@ -40,15 +40,9 @@ rm -Rf target/releases/${VERSION}
 mkdir -p target/releases/${VERSION}
 pushd target/releases
 
-runsUrl=$(echo "https://api.github.com/repos/apache/maven-mvnd/actions/runs" | sed -e 's?https://api.github.com??g')
-artifactsUrl=$(gh api -H "Accept: application/vnd.github.v3+json" $runsUrl --jq '.workflow_runs[] | select(.name=="Release" and .head_branch=="'${VERSION}'") | .artifacts_url' | sed -e 's?https://api.github.com??g')
-downloadUrl=$(gh api -H "Accept: application/vnd.github.v3+json" $artifactsUrl --jq '.artifacts[] | select(.name = "artifacts") | .archive_download_url' | sed -e 's?https://api.github.com??g')
-echo "Downloading artifacts from $downloadUrl"
-gh api $downloadUrl > artifacts-${VERSION}.zip
-unzip artifacts-${VERSION}.zip -d ${VERSION}
-cd ${VERSION}
+gh release download ${VERSION}
 
-for dist in darwin-amd64.zip darwin-amd64.tar.gz darwin-aarch64.zip darwin-aarch64.tar.gz linux-amd64.zip linux-amd64.tar.gz windows-amd64.zip windows-amd64.tar.gz src.zip src.tar.gz
+for dist in $1/maven-mvnd*.*
 do
   FILE=maven-mvnd-${VERSION}-${dist}
   # sha256 are used by homebrew which does not support sha512 atm
@@ -58,6 +52,9 @@ do
 done
 
 cd ..
+
+exit 100
+
 svn co https://dist.apache.org/repos/dist/dev/maven/mvnd
 mv ${VERSION} mvnd
 cd mvnd
