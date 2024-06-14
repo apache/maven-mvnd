@@ -36,14 +36,15 @@ then
   exit 1
 fi
 
-rm -Rf target/releases/${VERSION}
-mkdir -p target/releases/${VERSION}
-pushd target/releases/${VERSION}
+rm -Rf target/releases/mvnd/${VERSION}
+mkdir -p target/releases/mvnd/${VERSION}
+pushd target/releases/mvnd/${VERSION}
 
 gh release download ${VERSION}
 
-for dist in $1/maven-mvnd*.*
+for dist in maven-mvnd*.*
 do
+  echo "Processing ${dist}"
   # sha256 are used by homebrew which does not support sha512 atm
   shasum -a 256 -b ${dist} | cut -d ' ' -f 1 > ${dist}.sha256
   shasum -a 512 -b ${dist} | cut -d ' ' -f 1 > ${dist}.sha512
