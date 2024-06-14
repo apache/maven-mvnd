@@ -234,7 +234,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-linux-amd64/dist/target/maven-mvnd-${{ env.VERSION }}-linux-amd64.zip
+          asset_path: mvnd-linux-amd64/maven-mvnd-${{ env.VERSION }}-linux-amd64.zip
           asset_name: maven-mvnd-${{ env.VERSION }}-linux-amd64.zip
           asset_content_type: application/zip
 
@@ -244,7 +244,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-linux-amd64/dist/target/maven-mvnd-${{ env.VERSION }}-linux-amd64.tar.gz
+          asset_path: mvnd-linux-amd64/maven-mvnd-${{ env.VERSION }}-linux-amd64.tar.gz
           asset_name: maven-mvnd-${{ env.VERSION }}-linux-amd64.tar.gz
           asset_content_type: application/x-gzip
 
@@ -254,7 +254,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-darwin-amd64/dist/target/maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
+          asset_path: mvnd-darwin-amd64/maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
           asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
           asset_content_type: application/zip
 
@@ -264,7 +264,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-darwin-amd64/dist/target/maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
+          asset_path: mvnd-darwin-amd64/maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
           asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
           asset_content_type: application/x-gzip
 
@@ -274,17 +274,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-darwin-aarch64/dist/target/maven-mvnd-${{ env.VERSION }}-darwin-aarch64.zip
+          asset_path: mvnd-darwin-aarch64/maven-mvnd-${{ env.VERSION }}-darwin-aarch64.zip
           asset_name: maven-mvnd-${{ env.VERSION }}-darwin-aarch64.zip
           asset_content_type: application/zip
 
-      - name: Deploy maven-mvnd-darwin-aarch.tar.gz
+      - name: Deploy maven-mvnd-darwin-aarch64.tar.gz
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-darwin-aarch64/dist/target/maven-mvnd-${{ env.VERSION }}-darwin-aarch64.tar.gz
+          asset_path: mvnd-darwin-aarch64/maven-mvnd-${{ env.VERSION }}-darwin-aarch64.tar.gz
           asset_name: maven-mvnd-${{ env.VERSION }}-darwin-aarch64.tar.gz
           asset_content_type: application/x-gzip
 
@@ -294,7 +294,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-windows-amd64/dist/target/maven-mvnd-${{ env.VERSION }}-windows-amd64.zip
+          asset_path: mvnd-windows-amd64/maven-mvnd-${{ env.VERSION }}-windows-amd64.zip
           asset_name: maven-mvnd-${{ env.VERSION }}-windows-amd64.zip
           asset_content_type: application/zip
 
@@ -304,7 +304,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-windows-amd64/dist/target/maven-mvnd-${{ env.VERSION }}-windows-amd64.tar.gz
+          asset_path: mvnd-windows-amd64/maven-mvnd-${{ env.VERSION }}-windows-amd64.tar.gz
           asset_name: maven-mvnd-${{ env.VERSION }}-windows-amd64.tar.gz
           asset_content_type: application/x-gzip
 
