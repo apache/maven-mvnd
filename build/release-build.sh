@@ -113,11 +113,6 @@ startup_check
 # update version
 mvn versions:set -DnewVersion=$VERSION
 
-# update changelog
-docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator \
-    --user apache --project maven-mvnd --token $GITHUB_TOKEN --future-release $VERSION \
-    --exclude-tags early-access,0.9.0,1.0.0-m2,build-1.0.0-m2,1.0.0-m3
-
 # rebuild native libraries
 pushd native
 make native-all
