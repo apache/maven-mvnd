@@ -38,24 +38,20 @@ fi
 
 rm -Rf target/releases/${VERSION}
 mkdir -p target/releases/${VERSION}
-pushd target/releases
+pushd target/releases/${VERSION}
 
 gh release download ${VERSION}
 
 for dist in $1/maven-mvnd*.*
 do
-  FILE=maven-mvnd-${VERSION}-${dist}
   # sha256 are used by homebrew which does not support sha512 atm
-  shasum -a 256 -b ${FILE} | cut -d ' ' -f 1 > ${FILE}.sha256
-  shasum -a 512 -b ${FILE} | cut -d ' ' -f 1 > ${FILE}.sha512
-  gpg --detach-sign --armor ${FILE}
+  shasum -a 256 -b ${dist} | cut -d ' ' -f 1 > ${dist}.sha256
+  shasum -a 512 -b ${dist} | cut -d ' ' -f 1 > ${dist}.sha512
+  gpg --detach-sign --armor ${dist}
 done
 
 cd ..
-
 svn co https://dist.apache.org/repos/dist/dev/maven/mvnd
-mv ${VERSION} mvnd
-cd mvnd
 svn add ${VERSION}
 svn commit -m "Release Apache Maven Daemon ${VERSION}"
 
