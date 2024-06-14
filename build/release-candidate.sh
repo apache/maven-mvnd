@@ -53,8 +53,6 @@ done
 
 cd ..
 
-exit 100
-
 svn co https://dist.apache.org/repos/dist/dev/maven/mvnd
 mv ${VERSION} mvnd
 cd mvnd
