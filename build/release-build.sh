@@ -113,7 +113,7 @@ startup_check
 # update version
 mvn versions:set -DnewVersion=$VERSION
 
-# udpate changelog
+# update changelog
 docker run -it --rm -v "$(pwd)":/usr/local/src/your-app githubchangeloggenerator/github-changelog-generator \
     --user apache --project maven-mvnd --token $GITHUB_TOKEN --future-release $VERSION \
     --exclude-tags early-access,0.9.0,1.0.0-m2,build-1.0.0-m2,1.0.0-m3
@@ -129,7 +129,7 @@ git commit -m "[release] Release $VERSION"
 
 # Create and push tag
 git tag $VERSION
-git push origin $VERSION
+# git push origin $VERSION
 # Pushing a tag will trigger the CI to build the release and publish
 # the artifacts on https://github.com/apache/maven-mvnd/releases
 
@@ -139,4 +139,10 @@ mvn versions:set -DnewVersion=$NEXT_VERSION
 # commit
 git add -A
 git commit -m "Next is $NEXT_VERSION"
-git push origin mvnd-1.x
+# git push origin mvnd-1.x
+
+# NOTE: Manually push once done: git push origin mvnd-1.x --tags
+echo "=============================================================================="
+echo "Release done, nothing got pushed (yet); please push changes with command below"
+echo "$ git push origin mvnd-1.x --tags"
+echo ""
