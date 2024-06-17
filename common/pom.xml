@@ -44,10 +44,6 @@
       <groupId>org.jline</groupId>
       <artifactId>jline-terminal-jni</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.jline</groupId>
-      <artifactId>jline-terminal-ffm</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
