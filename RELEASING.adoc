@@ -1,12 +1,12 @@
 = How to release `mvnd`
 
-* Run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release-build.sh[release script] which will update the versions, the changelog, the native binaries and will tag the new git commit. This new tag will trigger the https://raw.githubusercontent.com/apache/maven-mvnd/master/.github/workflows/release.yaml[release workflow] on this newly created tag.
+* Run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release-build.sh[release script] which will update the versions, the native binaries and will tag the new git commit. This new tag will trigger the https://raw.githubusercontent.com/apache/maven-mvnd/master/.github/workflows/release.yaml[release workflow] on this newly created tag.
 [source,shell]
 ----
 ./build/release-build.sh <released-version> <next-SNAPSHOT>
 ----
 
-* While the `darwin-aarch64` is not supported by github, you need to perform a clean build on the tagged branch on a Apple M1 computer and upload the two binary distributions as additional assets to the draft release that has been generated at github.
+Warning for Fedora users: The RedHat `podman` is usually preinstalled and happily coexisting with `Docker`. Make sure Docker is being used, usually by setting `OCI_EXE=docker` env variable.
 
 * Once the workflow completes, run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release-candidate.sh[release-candidate script] which will download the built assemblies, compute the checksums and signatures, commit them to the https://dist.apache.org/repos/dist/dev/maven/mvnd/[dev distribution repository]
 https://github.com/apache/maven-mvnd/releases[releases] and also upload them as assets to the staging area for the github draft release.
