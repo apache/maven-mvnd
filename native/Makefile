@@ -19,13 +19,13 @@ include Makefile.common
 
 .PHONY: all package native native-all deploy crossbuild ducible clean-native
 
-linux-armv6-digest:=@sha256:7bad6ab302af34bdf6634c8c2b02c8dc6ac932c67da9ecc199c549ab405e971e
-linux-x86-digest:=@sha256:7a8fda5ff1bb436ac1f2e7d40043deb630800fce33d123d04779d48f85702dcd
-windows-static-x86-digest:=@sha256:99d7069789560ef77a7504ead4a2b5e3c245cb45a45f964c74fecbf649398d3a
-windows-static-x64-digest:=@sha256:f159861bc80b29e5dafb223477167bec53ecec6cdacb051d31e90c5823542100
+linux-armv6-digest:=@sha256:a90a7deda7f561932d9ad658f8d661d17eeb44f4e7f7024ac087db1d0b95c6f5
+linux-x86-digest:=@sha256:fbe45fcb0c2ce82f84a998a1d37d67b3906502723ed89f8191c3243d9d835d17
+windows-static-x86-digest:=@sha256:b205eeeafaef4f44482d16254670da815d5679b03cf8e51e4adc3539d1c4a9c0
+windows-static-x64-digest:=@sha256:d385eec5b60e0892b3171c5cba3b892afccb3a45aed1ee9dc41b8a13c50e8aa5
 cross-build-digest:=@sha256:8dbaa86462270db93ae1b1b319bdd88d89272faf3a68632daf4fa36b414a326e
 freebsd-crossbuild-digest:=@sha256:cda62697a15d8bdc0bc26e780b1771ee78f12c55e7d5813e62c478af5a747c43
-mcandre-snek-digest:=@sha256:9f84e9fcdf66daafc1f1c3fb772a6c97977714e17800aeac2e3bbe5dc5039dd0
+mcandre-snek-digest:=@sha256:e5aaf20daece19796dcd0553feb971143b71cc67d13d79d73649cc689fb87287
 
 all: package
 
@@ -96,7 +96,7 @@ target/dockcross/dockcross-linux-x86: dockcross
 	docker run --rm dockcross/linux-x86$(linux-x86-digest) > target/dockcross/dockcross-linux-x86
 	chmod +x target/dockcross/dockcross-linux-x86
 linux-x86: download-includes target/dockcross/dockcross-linux-x86
-	target/dockcross/dockcross-linux-x86 bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86'
+	target/dockcross/dockcross-linux-x86 --image dockcross/linux-x86$(linux-x86-digest) bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86'
 
 linux-x86_64: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
@@ -110,7 +110,7 @@ target/dockcross/dockcross-linux-armv6: dockcross
 	docker run --rm dockcross/linux-armv6$(linux-armv6-digest) > target/dockcross/dockcross-linux-armv6
 	chmod +x target/dockcross/dockcross-linux-armv6
 linux-armv6: download-includes target/dockcross/dockcross-linux-armv6
-	target/dockcross/dockcross-linux-armv6 bash -c 'make clean-native native CROSS_PREFIX=armv6-unknown-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
+	target/dockcross/dockcross-linux-armv6 --image dockcross/linux-armv6$(linux-armv6-digest) bash -c 'make clean-native native CROSS_PREFIX=armv6-unknown-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
 
 linux-armv7: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
@@ -128,13 +128,13 @@ target/dockcross/dockcross-windows-static-x86: dockcross
 	docker run --rm dockcross/windows-static-x86$(windows-static-x86-digest) > target/dockcross/dockcross-windows-static-x86
 	chmod +x target/dockcross/dockcross-windows-static-x86
 win-x86: download-includes target/dockcross/dockcross-windows-static-x86
-	target/dockcross/dockcross-windows-static-x86 bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
+	target/dockcross/dockcross-windows-static-x86 --image dockcross/windows-static-x86$(windows-static-x86-digest) bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
 
 target/dockcross/dockcross-windows-static-x64: dockcross
 	docker run --rm dockcross/windows-static-x64$(windows-static-x64-digest) > target/dockcross/dockcross-windows-static-x64
 	chmod +x target/dockcross/dockcross-windows-static-x64
 win-x86_64: download-includes target/dockcross/dockcross-windows-static-x64
-	target/dockcross/dockcross-windows-static-x64 bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
+	target/dockcross/dockcross-windows-static-x64 --image dockcross/windows-static-x64$(windows-static-x64-digest) bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
 
 mac-x86: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
