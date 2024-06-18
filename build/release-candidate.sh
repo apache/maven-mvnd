@@ -52,7 +52,7 @@ do
 done
 
 cd ..
-svn co https://dist.apache.org/repos/dist/dev/maven/mvnd
+svn co https://dist.apache.org/repos/dist/dev/maven/mvnd .
 svn add ${VERSION}
 svn commit -m "Release Apache Maven Daemon ${VERSION}"
 
