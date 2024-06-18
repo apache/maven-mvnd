@@ -295,6 +295,11 @@
         <artifactId>jline-terminal-ffm</artifactId>
         <version>${jline.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.jline</groupId>
+        <artifactId>jline-native</artifactId>
+        <version>${jline.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>info.picocli</groupId>
