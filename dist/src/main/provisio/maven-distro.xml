@@ -67,6 +67,9 @@
         <artifact id="org.jline:jline-terminal-jni">
             <exclusion id="*:*"/>
         </artifact>
+        <artifact id="org.jline:jline-native">
+            <exclusion id="*:*"/>
+        </artifact>
     </artifactSet>
 
     <fileSet to="/">
