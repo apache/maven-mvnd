@@ -312,9 +312,14 @@ public class TerminalOutput implements ClientOutput {
                 break;
             }
             case Message.DISPLAY: {
-                Message.StringMessage d = (Message.StringMessage) entry;
                 clearDisplay();
-                terminal.writer().printf("%s%n", d.getMessage());
+                if (entry instanceof StringMessage) {
+                    Message.StringMessage d = (Message.StringMessage) entry;
+                    terminal.writer().printf("%s%n", d.getMessage());
+                } else if (entry instanceof ProjectEvent) {
+                    Message.ProjectEvent d = (Message.ProjectEvent) entry;
+                    terminal.writer().printf("[%s] %s%n", d.getProjectId(), d.getMessage());
+                }
                 break;
             }
             case Message.PRINT_OUT: {
