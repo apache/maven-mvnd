@@ -228,6 +228,7 @@
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
               <buildArgs>--no-fallback
+                         -march=compatibility
                          -H:+UnlockExperimentalVMOptions
                          ${graalvm-native-static-opt}
                          ${graalvm-native-glibc-opt}
