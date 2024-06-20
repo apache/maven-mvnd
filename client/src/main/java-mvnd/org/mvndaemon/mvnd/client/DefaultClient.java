@@ -85,6 +85,12 @@ public class DefaultClient implements Client {
             }
         }
 
+        // Diag
+        if (Environment.DIAG.removeCommandLineOption(args) != null) {
+            org.jline.terminal.impl.Diag.diag(System.out);
+            return;
+        }
+
         // Serial
         if (Environment.SERIAL.removeCommandLineOption(args) != null) {
             System.setProperty(Environment.SERIAL.getProperty(), Boolean.toString(true));
