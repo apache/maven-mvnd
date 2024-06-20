@@ -26,11 +26,11 @@ on:
       - '*'
 
 env:
-  JAVA_VERSION: '17'
+  JAVA_VERSION: '22'
 
 jobs:
   build:
-    name: 'Build with Graal on ${{ matrix.os }}'
+    name: 'Build with GraalVM on ${{ matrix.os }}'
     strategy:
       fail-fast: true
       matrix:
@@ -64,7 +64,7 @@ jobs:
           fi
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-      - name: 'Set up Graal'
+      - name: 'Set up GraalVM'
         uses: graalvm/setup-graalvm@v1
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -75,7 +75,7 @@ jobs:
       - name: 'Maven clean'
         run: ./mvnw clean -Dmrm=false -B -ntp -e
 
-      - name: 'Patch Graal libs for only requiring glibc 2.12'
+      - name: 'Patch GraalVM libs for only requiring glibc 2.12'
         if: ${{ env.OS == 'linux' }}
         shell: bash
         run: |
@@ -145,7 +145,7 @@ jobs:
           fi
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-      - name: 'Set up Graal'
+      - name: 'Set up GraalVM'
         uses: graalvm/setup-graalvm@v1
         with:
           version: ${{ env.GRAALVM_VERSION }}

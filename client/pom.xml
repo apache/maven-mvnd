@@ -223,9 +223,10 @@
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
-              <buildArgs>--no-server
-                         --no-fallback
-                         --allow-incomplete-classpath
+              <buildArgs>--no-fallback
+                         -H:+UnlockExperimentalVMOptions
+                         -H:+ForeignAPISupport
+                         -march=compatibility
                          ${graalvm-native-static-opt}
                          ${graalvm-native-glibc-opt}
                          -H:IncludeResources=org/mvndaemon/mvnd/.*
