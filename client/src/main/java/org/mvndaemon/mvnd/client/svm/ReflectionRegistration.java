@@ -18,10 +18,8 @@
  */
 package org.mvndaemon.mvnd.client.svm;
 
-import com.oracle.svm.core.annotate.AutomaticFeature;
 import org.graalvm.nativeimage.hosted.Feature;
 
-@AutomaticFeature
 public class ReflectionRegistration implements Feature {
     public void beforeAnalysis(BeforeAnalysisAccess access) {
         //        try {

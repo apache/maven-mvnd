@@ -58,6 +58,8 @@
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
     </dependency>
+
+    <!-- GraalVM SVM: provided, uses only to configure native image build -->
     <dependency>
       <groupId>org.graalvm.nativeimage</groupId>
       <artifactId>svm</artifactId>
@@ -99,7 +101,6 @@
                   <maxJdkVersion>${maven.compiler.release}</maxJdkVersion>
                   <excludes>
                     <exclude>org.jline:jline-terminal-ffm</exclude>
-                    <exclude>org.graalvm.nativeimage:svm</exclude>
                   </excludes>
                 </enforceBytecodeVersion>
               </rules>
@@ -220,6 +221,9 @@
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
             <configuration>
+              <metadataRepository>
+                <enabled>true</enabled>
+              </metadataRepository>
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
@@ -239,6 +243,7 @@
                          --initialize-at-run-time=org.jline.nativ.Kernel32
                          --initialize-at-run-time=org.jline.nativ.OSInfo
                          -H:+PrintClassInitialization
+                         --features=org.mvndaemon.mvnd.client.svm.ReflectionRegistration
                          -ea</buildArgs>
             </configuration>
             <executions>
