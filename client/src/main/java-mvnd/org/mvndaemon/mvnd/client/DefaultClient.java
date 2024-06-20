@@ -165,7 +165,7 @@ public class DefaultClient implements Client {
             } catch (DaemonException.InterruptedException e) {
                 final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
                 String str = new AttributedString(System.lineSeparator() + "Canceled by user", s).toAnsi();
-                output.accept(Message.display(str));
+                output.accept(Message.err(str));
                 exitCode = 130;
             }
         }

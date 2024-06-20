@@ -59,7 +59,7 @@ public class TestClientOutput implements ClientOutput {
 
     @Override
     public void describeTerminal() {
-        accept(Message.display("Test terminal"));
+        accept(Message.display("test", "Test terminal"));
     }
 
     @Override

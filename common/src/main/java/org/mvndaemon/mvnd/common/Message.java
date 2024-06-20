@@ -499,6 +499,8 @@ public abstract class Message {
 
         private String mnemonic() {
             switch (type) {
+                case DISPLAY:
+                    return "Display";
                 case PROJECT_LOG_MESSAGE:
                     return "ProjectLogMessage";
                 default:
@@ -730,8 +732,6 @@ public abstract class Message {
                     return "KeyboardInput";
                 case BUILD_LOG_MESSAGE:
                     return "BuildLogMessage";
-                case DISPLAY:
-                    return "Display";
                 case PRINT_OUT:
                     return "PrintOut";
                 case PRINT_ERR:
@@ -1110,10 +1110,6 @@ public abstract class Message {
 
     public static StringMessage buildStatus(String payload) {
         return new StringMessage(BUILD_STATUS, payload);
-    }
-
-    public static StringMessage display(String message) {
-        return new StringMessage(DISPLAY, message);
     }
 
     public static RequestInput requestInput(String projectId) {
