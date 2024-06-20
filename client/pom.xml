@@ -229,7 +229,6 @@
               <imageName>mvnd</imageName>
               <buildArgs>--no-fallback
                          -H:+UnlockExperimentalVMOptions
-                         -march=compatibility
                          ${graalvm-native-static-opt}
                          ${graalvm-native-glibc-opt}
                          -H:IncludeResources=org/mvndaemon/mvnd/.*
