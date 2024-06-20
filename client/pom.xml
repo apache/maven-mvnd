@@ -237,12 +237,6 @@
                          -H:-ParseRuntimeOptions
                          -H:+AddAllCharsets
                          -H:+ReportExceptionStackTraces
-                         --initialize-at-run-time=org.jline.nativ.CLibrary
-                         --initialize-at-run-time=org.jline.nativ.JLineLibrary
-                         --initialize-at-run-time=org.jline.nativ.JLineNativeLoader
-                         --initialize-at-run-time=org.jline.nativ.Kernel32
-                         --initialize-at-run-time=org.jline.nativ.OSInfo
-                         -H:+PrintClassInitialization
                          --features=org.mvndaemon.mvnd.client.svm.ReflectionRegistration
                          -ea</buildArgs>
             </configuration>
