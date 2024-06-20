@@ -225,7 +225,6 @@
               <imageName>mvnd</imageName>
               <buildArgs>--no-fallback
                          -H:+UnlockExperimentalVMOptions
-                         -H:+ForeignAPISupport
                          -march=compatibility
                          ${graalvm-native-static-opt}
                          ${graalvm-native-glibc-opt}
