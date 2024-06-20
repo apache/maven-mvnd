@@ -87,7 +87,7 @@ public class DefaultClient implements Client {
 
         // Diag
         if (Environment.DIAG.removeCommandLineOption(args) != null) {
-            Diag.diag(System.out);
+            org.jline.terminal.impl.Diag.diag(System.out);
             return;
         }
 
