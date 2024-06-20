@@ -26,7 +26,7 @@ on:
   pull_request:
 
 env:
-  JAVA_VERSION: '17'
+  JAVA_VERSION: '22'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,7 +34,7 @@ concurrency:
 
 jobs:
   default-build:
-    name: 'Default build (without Graal)'
+    name: 'Default build (without GraalVM)'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
     runs-on: ubuntu-latest
     steps:
@@ -57,7 +57,7 @@ jobs:
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
   native-build:
-    name: 'Build with Graal on ${{ matrix.os }}'
+    name: 'Build with GraalVM on ${{ matrix.os }}'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
     strategy:
       fail-fast: false
@@ -92,18 +92,17 @@ jobs:
           fi
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-      - name: 'Set up Graal'
+      - name: 'Set up GraalVM'
         uses: graalvm/setup-graalvm@v1
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'graalvm'
-          components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Maven clean'
         run: ./mvnw clean -Dmrm=false -V -B -ntp -e
 
-      - name: 'Patch Graal libs for only requiring glibc 2.12'
+      - name: 'Patch GraalVM libs for only requiring glibc 2.12'
         if: ${{ env.OS == 'linux' }}
         shell: bash
         run: |

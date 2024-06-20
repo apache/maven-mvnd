@@ -59,6 +59,8 @@ public enum Environment {
     STATUS(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--status"),
     /** Stop all daemon instances registered in the registry specified by <code>mvnd.registry</code> */
     STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--stop"),
+    /** Terminal diagnosis */
+    DIAG(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--diag"),
     /** Use one thread, no log buffering and the default project builder to behave like a standard maven */
     SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:-1", "mvnd:--serial"),
 
