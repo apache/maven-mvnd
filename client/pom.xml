@@ -237,7 +237,6 @@
                          -H:-ParseRuntimeOptions
                          -H:+AddAllCharsets
                          -H:+ReportExceptionStackTraces
-                         --features=org.mvndaemon.mvnd.client.svm.ReflectionRegistration
                          -ea</buildArgs>
             </configuration>
             <executions>
