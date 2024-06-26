@@ -108,6 +108,7 @@ public class MvndSimpleLogger extends MvndBaseLogger {
             builder.failure(t.getMessage());
         }
         builder.newline();
+        sb.append(System.lineSeparator());
         sb.append(builder);
 
         printStackTrace(t, builder, "");
