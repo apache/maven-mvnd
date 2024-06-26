@@ -66,6 +66,8 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 $ brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
+Note: There are two formulae: the `mvnd` that install latest, and `mvnd@1` that installs 1.x line.
+
 === Install using https://www.macports.org[MacPorts]
 
 [source,shell]
