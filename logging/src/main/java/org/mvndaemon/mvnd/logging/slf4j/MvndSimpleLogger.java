@@ -102,6 +102,7 @@ public class MvndSimpleLogger extends MvndBaseLogger {
             return;
         }
         MessageBuilder builder = MessageUtils.builder();
+        builder.newline();
         builder.failure(t.getClass().getName());
         if (t.getMessage() != null) {
             builder.a(": ");
