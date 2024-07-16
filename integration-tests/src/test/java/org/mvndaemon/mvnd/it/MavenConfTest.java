@@ -18,10 +18,10 @@
  */
 package org.mvndaemon.mvnd.it;
 
+import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.junit.MvndTest;
-
-import java.io.IOException;
 
 @MvndTest(projectDir = "src/test/projects/maven-conf")
 class MavenConfTest extends MavenConfNativeIT {
