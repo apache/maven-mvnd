@@ -18,7 +18,18 @@
  */
 package org.mvndaemon.mvnd.it;
 
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 @MvndTest(projectDir = "src/test/projects/maven-conf")
-class MavenConfTest extends MavenConfNativeIT {}
+class MavenConfTest extends MavenConfNativeIT {
+
+    @Test
+    @Override
+    void multiModuleProjectDirectory() throws IOException, InterruptedException {
+        // empty test as multiModuleProjectDirectory is set by the client
+        // and can not be really tested
+    }
+}

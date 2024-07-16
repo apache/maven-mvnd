@@ -1443,7 +1443,6 @@ public class DaemonMavenCli implements DaemonCli {
 
     static void populateProperties(CliRequest cliRequest, Properties systemProperties, Properties userProperties)
             throws InterpolationException {
-        addEnvVars(systemProperties);
 
         // ----------------------------------------------------------------------
         // Options that are set on the command line become system properties
@@ -1462,6 +1461,7 @@ public class DaemonMavenCli implements DaemonCli {
             }
         }
 
+        addEnvVars(systemProperties);
         SystemProperties.addSystemProperties(systemProperties);
 
         StringSearchInterpolator interpolator = createInterpolator(cliRequest, cliProperties, systemProperties);
@@ -1470,6 +1470,14 @@ public class DaemonMavenCli implements DaemonCli {
             String value = interpolator.interpolate((String) e.getValue());
             userProperties.setProperty(name, value);
         }
+
+        systemProperties.putAll(userProperties);
+
+        // ----------------------------------------------------------------------
+        // I'm leaving the setting of system properties here as not to break
+        // the SystemPropertyProfileActivator. This won't harm embedding. jvz.
+        // ----------------------------------------------------------------------
+        userProperties.forEach((k, v) -> System.setProperty((String) k, (String) v));
 
         // ----------------------------------------------------------------------
         // Properties containing info about the currently running version of Maven
