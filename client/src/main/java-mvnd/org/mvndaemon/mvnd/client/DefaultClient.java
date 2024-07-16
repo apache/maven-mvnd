@@ -132,9 +132,11 @@ public class DefaultClient implements Client {
         } else {
             dir = parameters.userDir();
         }
+        Path multiModuleProjectDirectory = parameters.multiModuleProjectDirectory(dir);
         System.setProperty(
-                Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.getProperty(),
-                parameters.multiModuleProjectDirectory(dir).toString());
+                Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.getProperty(), multiModuleProjectDirectory.toString());
+        Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.addCommandLineOption(
+                args, multiModuleProjectDirectory.toString());
 
         // .mvn/jvm.config
         if (Files.isRegularFile(parameters.jvmConfigPath())) {
