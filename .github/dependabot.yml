@@ -28,3 +28,14 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+      time: '04:07'
+
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+      time: '04:14'
+    open-pull-requests-limit: 10
+    target-branch: "mvnd-1.x"
+    labels:
+      - "backport"
