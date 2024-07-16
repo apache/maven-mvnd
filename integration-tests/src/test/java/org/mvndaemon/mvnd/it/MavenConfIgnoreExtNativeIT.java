@@ -26,8 +26,8 @@ import org.mvndaemon.mvnd.junit.MvndNativeTest;
 @MvndNativeTest(projectDir = "src/test/projects/maven-conf-ignore-ext")
 class MavenConfIgnoreExtNativeIT extends MavenConfNativeIT {
     @Override
-    protected List<String> mvndParams() {
-        ArrayList<String> result = new ArrayList<>(super.mvndParams());
+    protected List<String> mvndParams(String expression) {
+        ArrayList<String> result = new ArrayList<>(super.mvndParams(expression));
         result.add("-Dmvnd.coreExtensionsExclude=foo:bar");
         return result;
     }
