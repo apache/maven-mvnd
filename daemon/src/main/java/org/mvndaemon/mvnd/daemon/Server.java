@@ -37,11 +37,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -271,13 +271,13 @@ public class Server implements AutoCloseable, Runnable {
 
         try (DaemonConnection connection = new DaemonConnection(socket)) {
             LOGGER.info("Waiting for request");
-            SynchronousQueue<Message> request = new SynchronousQueue<>();
+            CompletableFuture<Message> request = new CompletableFuture<>();
             new DaemonThread(() -> {
                         Message message = connection.receive();
-                        request.offer(message);
+                        request.complete(message);
                     })
                     .start();
-            Message message = request.poll(1, TimeUnit.MINUTES);
+            Message message = request.get(1, TimeUnit.MINUTES);
             if (message == null) {
                 LOGGER.info("Could not receive request after one minute, dropping connection");
                 updateState(DaemonState.Idle);
