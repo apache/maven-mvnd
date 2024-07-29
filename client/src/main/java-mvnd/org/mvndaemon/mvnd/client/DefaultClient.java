@@ -41,9 +41,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.fusesource.jansi.Ansi;
-import org.fusesource.jansi.internal.CLibrary;
+import org.jline.terminal.spi.SystemStream;
+import org.jline.terminal.spi.TerminalExt;
 import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.mvndaemon.mvnd.common.DaemonException;
 import org.mvndaemon.mvnd.common.DaemonInfo;
@@ -57,11 +58,10 @@ import org.mvndaemon.mvnd.common.OsUtils;
 import org.mvndaemon.mvnd.common.TimeUtils;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.mvndaemon.mvnd.common.logging.TerminalOutput;
+import org.mvndaemon.mvnd.logging.slf4j.MvndLoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-import org.slf4j.impl.MvndLoggerFactory;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
@@ -85,6 +85,12 @@ public class DefaultClient implements Client {
             }
         }
 
+        // Diag
+        if (Environment.DIAG.removeCommandLineOption(args) != null) {
+            org.jline.terminal.impl.Diag.diag(System.out);
+            return;
+        }
+
         // Serial
         if (Environment.SERIAL.removeCommandLineOption(args) != null) {
             System.setProperty(Environment.SERIAL.getProperty(), Boolean.toString(true));
@@ -94,19 +100,6 @@ public class DefaultClient implements Client {
         final boolean batchMode = Environment.MAVEN_BATCH_MODE.hasCommandLineOption(args)
                 || Environment.COMPLETION.hasCommandLineOption(args);
 
-        // Color
-        Color styleColor =
-                Color.of(Environment.MAVEN_COLOR.removeCommandLineOption(args)).orElse(Color.auto);
-        if (styleColor == Color.auto) {
-            /* Translate from auto to either always or never */
-            /* stdout is not a terminal e.g. when stdout is redirected to a file */
-            final boolean stdoutIsTerminal = CLibrary.isatty(1) != 0;
-            styleColor = (batchMode || logFile != null || !stdoutIsTerminal) ? Color.never : Color.always;
-        }
-        /* We cannot use Environment.addCommandLineOption() because that one would pass --color to the daemon
-         * and --color is not supported there yet. */
-        args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
-
         String userJdkJavaOpts = System.getenv(Environment.JDK_JAVA_OPTIONS.getEnvironmentVariable());
         if (userJdkJavaOpts != null) {
             Environment.JDK_JAVA_OPTIONS.addCommandLineOption(args, userJdkJavaOpts);
@@ -115,8 +108,8 @@ public class DefaultClient implements Client {
         // System properties
         setSystemPropertiesFromCommandLine(args);
 
-        if (StaticLoggerBinder.getSingleton().getLoggerFactory() instanceof MvndLoggerFactory) {
-            ((MvndLoggerFactory) StaticLoggerBinder.getSingleton().getLoggerFactory()).reconfigure();
+        if (LoggerFactory.getILoggerFactory() instanceof MvndLoggerFactory) {
+            ((MvndLoggerFactory) LoggerFactory.getILoggerFactory()).reconfigure();
         }
 
         DaemonParameters parameters = new DaemonParameters();
@@ -139,9 +132,11 @@ public class DefaultClient implements Client {
         } else {
             dir = parameters.userDir();
         }
+        Path multiModuleProjectDirectory = parameters.multiModuleProjectDirectory(dir);
         System.setProperty(
-                Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.getProperty(),
-                parameters.multiModuleProjectDirectory(dir).toString());
+                Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.getProperty(), multiModuleProjectDirectory.toString());
+        Environment.MAVEN_MULTIMODULE_PROJECT_DIRECTORY.addCommandLineOption(
+                args, multiModuleProjectDirectory.toString());
 
         // .mvn/jvm.config
         if (Files.isRegularFile(parameters.jvmConfigPath())) {
@@ -158,12 +153,27 @@ public class DefaultClient implements Client {
         boolean noBuffering = batchMode || parameters.noBuffering();
         try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
             try {
+                // Color
+                // We need to defer this part until the terminal is created
+                Color styleColor = Color.of(Environment.MAVEN_COLOR.removeCommandLineOption(args))
+                        .orElse(Color.auto);
+                if (styleColor == Color.auto) {
+                    /* Translate from auto to either always or never */
+                    /* stdout is not a terminal e.g. when stdout is redirected to a file */
+                    final boolean stdoutIsTerminal =
+                            ((TerminalExt) output.getTerminal()).getProvider().isSystemStream(SystemStream.Output);
+                    styleColor = (batchMode || logFile != null || !stdoutIsTerminal) ? Color.never : Color.always;
+                }
+                /* We cannot use Environment.addCommandLineOption() because that one would pass --color to the daemon
+                 * and --color is not supported there yet. */
+                args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
+
                 final ExecutionResult result = new DefaultClient(parameters).execute(output, args);
                 exitCode = result.getExitCode();
             } catch (DaemonException.InterruptedException e) {
                 final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
                 String str = new AttributedString(System.lineSeparator() + "Canceled by user", s).toAnsi();
-                output.accept(Message.display(str));
+                output.accept(Message.err(str));
                 exitCode = 130;
             }
         }
@@ -251,8 +261,12 @@ public class DefaultClient implements Client {
                     + " (" + buildProperties.getRevision() + ")";
 
             boolean isColored = !"never".equals(Environment.MAVEN_COLOR.getCommandLineOption(args));
-            final String v =
-                    isColored ? Ansi.ansi().bold().a(mvndVersionString).reset().toString() : mvndVersionString;
+            final String v = isColored
+                    ? new AttributedStringBuilder()
+                            .style(AttributedStyle.BOLD)
+                            .append(mvndVersionString)
+                            .toAnsi()
+                    : mvndVersionString;
             output.accept(Message.log(v));
             // Print terminal information
             output.describeTerminal();

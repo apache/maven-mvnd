@@ -23,13 +23,13 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>40</version>
+    <version>43</version>
     <relativePath />
   </parent>
 
   <groupId>org.apache.maven.daemon</groupId>
   <artifactId>mvnd</artifactId>
-  <version>1.0-m9-SNAPSHOT</version>
+  <version>2.0.0-beta-2-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Maven Daemon - Parent</name>
@@ -52,10 +52,7 @@
     <module>client</module>
     <module>logging</module>
     <module>daemon</module>
-    <module>daemon-m39</module>
-    <module>daemon-m40</module>
-    <module>dist-m39</module>
-    <module>dist-m40</module>
+    <module>dist</module>
     <module>integration-tests</module>
   </modules>
 
@@ -68,52 +65,47 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven-dist.required.jdk>8</maven-dist.required.jdk>
-    <project.build.outputTimestamp>2023-10-26T05:45:19Z</project.build.outputTimestamp>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
+    <maven-dist.required.jdk>17</maven-dist.required.jdk>
+    <project.build.outputTimestamp>2024-06-20T16:09:45Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
 
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
-    <assertj.version>3.24.2</assertj.version>
-    <commons-compress.version>1.23.0</commons-compress.version>
+    <assertj.version>3.26.3</assertj.version>
+    <commons-compress.version>1.26.2</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
-    <graalvm.version>22.3.1</graalvm.version>
-    <graalvm.plugin.version>0.9.23</graalvm.plugin.version>
-    <groovy.version>4.0.13</groovy.version>
+    <graalvm.version>23.1.3</graalvm.version>
+    <graalvm.plugin.version>0.10.2</graalvm.plugin.version>
+    <groovy.version>4.0.22</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
-    <jansi.version>2.4.0</jansi.version>
-    <jline.version>3.24.0</jline.version>
-    <junit.jupiter.version>5.9.2</junit.jupiter.version>
-    <maven.version>4.0.0-alpha-8</maven.version>
-    <maven3.version>3.9.5</maven3.version>
-    <maven4.version>${maven.version}</maven4.version>
+    <jansi.version>2.4.1</jansi.version>
+    <jline.version>3.26.3</jline.version>
+    <maven.version>4.0.0-beta-3</maven.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.16</maven.resolver.version>
-    <slf4j.version>1.7.36</slf4j.version>
-    <sisu.version>0.9.0.M2</sisu.version>
+    <maven.resolver.version>2.0.0</maven.resolver.version>
+    <slf4j.version>2.0.11</slf4j.version>
+    <sisu.version>0.9.0.M3</sisu.version>
+    <maven.plugin-tools.version>3.13.1</maven.plugin-tools.version>
 
     <!-- plugin versions a..z -->
     <buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
-    <compiler.version>3.11.0</compiler.version>
-    <groovy-maven-plugin.version>3.0.0</groovy-maven-plugin.version>
-    <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
-    <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
-    <maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
-    <mrm.version>1.5.0</mrm.version>
-    <surefire.version>3.1.2</surefire.version>
+    <groovy-maven-plugin.version>3.0.2</groovy-maven-plugin.version>
+    <mrm.version>1.6.0</mrm.version>
     <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version>
-    <release.plugin.version>3.0.1</release.plugin.version>
-    <takari-provisio.version>1.0.20</takari-provisio.version>
+    <takari-provisio.version>1.0.25</takari-provisio.version>
 
-    <javassist.version>3.29.2-GA</javassist.version>
-    <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
+    <javassist.version>3.30.2-GA</javassist.version>
+    <picocli.version>4.7.6</picocli.version>
+    <plexus-interactivity-api.version>1.3</plexus-interactivity-api.version>
+    <roaster.version>2.29.0.Final</roaster.version>
+    <takari-smart-builder.version>1.0.0</takari-smart-builder.version>
+    <testcontainers.version>1.20.0</testcontainers.version>
     <xstream.version>1.4.20</xstream.version>
-    <plexus-interactivity-api.version>1.0</plexus-interactivity-api.version>
-    <takari-smart-builder.version>0.6.4</takari-smart-builder.version>
   </properties>
 
   <dependencyManagement>
@@ -137,12 +129,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.graalvm.sdk</groupId>
-        <artifactId>graal-sdk</artifactId>
-        <version>${graalvm.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.apache.groovy</groupId>
         <artifactId>groovy</artifactId>
         <version>${groovy.version}</version>
@@ -155,14 +141,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.junit</groupId>
-        <artifactId>junit-bom</artifactId>
-        <version>${junit.jupiter.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-
-      <dependency>
         <groupId>jakarta.inject</groupId>
         <artifactId>jakarta.inject-api</artifactId>
         <version>${jakarta.inject.version}</version>
@@ -170,7 +148,17 @@
 
       <dependency>
         <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-model</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-core</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -180,10 +168,20 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
+        <artifactId>maven-jline</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
         <artifactId>apache-maven</artifactId>
         <version>${maven.version}</version>
         <classifier>bin</classifier>
         <type>tar.gz</type>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.plugin-tools</groupId>
+        <artifactId>maven-plugin-annotations</artifactId>
+        <version>${maven.plugin-tools.version}</version>
       </dependency>
 
       <dependency>
@@ -217,6 +215,7 @@
         <version>${maven.resolver.version}</version>
       </dependency>
 
+      <!-- Only for MessageBuilder/MessageUtils -->
       <dependency>
         <groupId>org.apache.maven.shared</groupId>
         <artifactId>maven-shared-utils</artifactId>
@@ -256,13 +255,7 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist-m39</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist-m40</artifactId>
+        <artifactId>mvnd-dist</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
       </dependency>
@@ -273,18 +266,14 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-daemon-m39</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-daemon-m40</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-helper-agent</artifactId>
         <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.takari.maven</groupId>
+        <artifactId>takari-smart-builder</artifactId>
+        <version>${takari-smart-builder.version}</version>
       </dependency>
 
       <dependency>
@@ -292,7 +281,28 @@
         <artifactId>org.eclipse.sisu.inject</artifactId>
         <version>${sisu.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.eclipse.sisu</groupId>
+        <artifactId>org.eclipse.sisu.plexus</artifactId>
+        <version>${sisu.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>6.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>33.2.1-jre</version>
+        <scope>provided</scope>
+      </dependency>
 
+      <dependency>
+        <groupId>org.jline</groupId>
+        <artifactId>jline</artifactId>
+        <version>${jline.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.jline</groupId>
         <artifactId>jline-terminal</artifactId>
@@ -304,9 +314,15 @@
         <version>${jline.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>${jansi.version}</version>
+        <groupId>org.jline</groupId>
+        <artifactId>jline-terminal-jni</artifactId>
+        <version>${jline.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-codegen</artifactId>
+        <version>${picocli.version}</version>
       </dependency>
 
       <dependency>
@@ -323,6 +339,11 @@
         <groupId>org.slf4j</groupId>
         <artifactId>jul-to-slf4j</artifactId>
         <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.forge.roaster</groupId>
+        <artifactId>roaster-jdt</artifactId>
+        <version>${roaster.version}</version>
       </dependency>
 
       <dependency>
@@ -343,9 +364,14 @@
       </dependency>
 
       <dependency>
-        <groupId>io.takari.maven</groupId>
-        <artifactId>takari-smart-builder</artifactId>
-        <version>${takari-smart-builder.version}</version>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainers.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${testcontainers.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -354,14 +380,16 @@
     <pluginManagement>
       <plugins>
         <plugin>
+          <groupId>org.apache.maven.daemon</groupId>
+          <artifactId>mvnd-build-maven-plugin</artifactId>
+          <version>${project.version}</version>
+        </plugin>
+        <plugin>
           <groupId>com.diffplug.spotless</groupId>
           <artifactId>spotless-maven-plugin</artifactId>
-          <version>2.40.0</version>
           <configuration>
             <java>
-              <palantirJavaFormat>
-                <version>2.38.0</version>
-              </palantirJavaFormat>
+              <palantirJavaFormat />
               <includes>
                 <include>src/main/java/**/*.java</include>
                 <include>src/main/java-fallback/**/*.java</include>
@@ -389,6 +417,7 @@
               <exclude>src/test/projects/**/.project</exclude>
               <exclude>src/test/projects/**/.settings/**</exclude>
               <exclude>src/test/projects/**/target/**</exclude>
+              <exclude>**/META-INF/services/**</exclude>
             </excludes>
           </configuration>
         </plugin>
@@ -403,36 +432,6 @@
               <version>${xstream.version}</version>
             </dependency>
           </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>${compiler.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <version>${surefire.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${surefire.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>${maven-jar-plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>${maven-install-plugin.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <version>${maven-shade-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.gmavenplus</groupId>
@@ -462,10 +461,29 @@
           <artifactId>native-maven-plugin</artifactId>
           <version>${graalvm.plugin.version}</version>
         </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.7.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>3.8.0</version>
+          <configuration>
+            <release>${maven-dist.required.jdk}</release>
+            <detectJavaApiLink>false</detectJavaApiLink>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>${maven.plugin-tools.version}</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
-          <version>${release.plugin.version}</version>
           <configuration>
             <useReleaseProfile>false</useReleaseProfile>
             <autoVersionSubmodules>true</autoVersionSubmodules>
@@ -480,12 +498,18 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-wrapper-plugin</artifactId>
-          <version>3.2.0</version>
+          <version>3.3.2</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.6.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
-          <version>3.1.0</version>
+          <version>3.3.0</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -506,15 +530,27 @@
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
           <execution>
-            <id>enforce-maven-3</id>
+            <id>enforce-bytecode-version</id>
             <goals>
               <goal>enforce</goal>
             </goals>
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.5.4</version>
+                  <version>3.6.3</version>
                 </requireMavenVersion>
+                <requireJavaVersion>
+                  <version>[17,)</version>
+                </requireJavaVersion>
+                <enforceBytecodeVersion>
+                  <maxJdkVersion>${maven-dist.required.jdk}</maxJdkVersion>
+                  <ignoredScopes>
+                    <ignoredScope>test</ignoredScope>
+                  </ignoredScopes>
+                  <excludes>
+                    <exclude>org.jline:jline</exclude>
+                  </excludes>
+                </enforceBytecodeVersion>
               </rules>
               <fail>true</fail>
             </configuration>
@@ -588,7 +624,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
-            <version>${maven-assembly-plugin.version}</version>
             <executions>
               <execution>
                 <id>create-source-distribution</id>

@@ -83,8 +83,15 @@
 
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-plugin-plugin</artifactId>
+                <configuration>
+                    <goalPrefix>mvnd-its</goalPrefix>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-invoker-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.6.1</version>
                 <configuration>
                     <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                     <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>

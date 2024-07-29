@@ -36,16 +36,15 @@ function publishRelease() {
     VERSION=$1
     SDKMAN_PLATFORM=$2
     MVND_PLATFORM=$3
-    QUALIFIER=$4
 
-    FILE="maven-mvnd-${VERSION}-${QUALIFIER}-${MVND_PLATFORM}.zip"
+    FILE="maven-mvnd-${VERSION}-${MVND_PLATFORM}.zip"
     URL="https://downloads.apache.org/maven/mvnd/${VERSION}/${FILE}"
     RESPONSE="$(curl -s -X POST \
         -H "Consumer-Key: ${SDKMAN_CONSUMER_KEY}" \
         -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
         -H "Content-Type: application/json" \
         -H "Accept: application/json" \
-        -d '{"candidate": "mvnd", "version": "'${VERSION}-${QUALIFIER}'", "platform" : "'${SDKMAN_PLATFORM}'", "url": "'${URL}'"}' \
+        -d '{"candidate": "mvnd", "version": "'${VERSION}'", "platform" : "'${SDKMAN_PLATFORM}'", "url": "'${URL}'"}' \
         https://vendors.sdkman.io/release)"
 
     node -pe "
@@ -59,14 +58,10 @@ function publishRelease() {
     " "${RESPONSE}"
 }
 
-publishRelease ${VERSION} LINUX_64 linux-amd64 m39
-publishRelease ${VERSION} MAC_OSX darwin-amd64 m39
-publishRelease ${VERSION} MAC_ARM64 darwin-aarch64 m39
-publishRelease ${VERSION} WINDOWS_64 windows-amd64 m39
-publishRelease ${VERSION} LINUX_64 linux-amd64 m40
-publishRelease ${VERSION} MAC_OSX darwin-amd64 m40
-publishRelease ${VERSION} MAC_ARM64 darwin-aarch64 m40
-publishRelease ${VERSION} WINDOWS_64 windows-amd64 m40
+publishRelease ${VERSION} LINUX_64 linux-amd64
+publishRelease ${VERSION} MAC_OSX darwin-amd64
+publishRelease ${VERSION} MAC_ARM64 darwin-aarch64
+publishRelease ${VERSION} WINDOWS_64 windows-amd64
 
 echo "Setting ${VERSION} as a default"
 RESPONSE="$(curl -s -X PUT \
@@ -74,7 +69,7 @@ RESPONSE="$(curl -s -X PUT \
     -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
-    -d '{"candidate": "mvnd", "version": "'${VERSION}-m39'"}' \
+    -d '{"candidate": "mvnd", "version": "'${VERSION}'"}' \
     https://vendors.sdkman.io/default)"
 
 node -pe "
@@ -95,7 +90,7 @@ RESPONSE="$(curl -s -X POST \
     -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json" \
-    -d '{"candidate": "mvnd", "version": "'${VERSION}-m39'", "url": "'${RELEASE_URL}'"}' \
+    -d '{"candidate": "mvnd", "version": "'${VERSION}'", "url": "'${RELEASE_URL}'"}' \
     https://vendors.sdkman.io/announce/struct)"
 
 node -pe "
@@ -108,20 +103,3 @@ node -pe "
     }
 " "${RESPONSE}"
 
-RESPONSE="$(curl -s -X POST \
-    -H "Consumer-Key: ${SDKMAN_CONSUMER_KEY}" \
-    -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
-    -H "Content-Type: application/json" \
-    -H "Accept: application/json" \
-    -d '{"candidate": "mvnd", "version": "'${VERSION}-m40'", "url": "'${RELEASE_URL}'"}' \
-    https://vendors.sdkman.io/announce/struct)"
-
-node -pe "
-    var json = JSON.parse(process.argv[1]);
-    if (json.status == 200 || json.status == 201) {
-        json.status + ' as expected from /announce/freeform';
-    } else {
-        console.log('Unexpected status from /announce/freeform: ' + process.argv[1]);
-        process.exit(1);
-    }
-" "${RESPONSE}"

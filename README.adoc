@@ -35,8 +35,8 @@ This architecture brings the following advantages:
 
 * By default, `mvnd` is building your modules in parallel using multiple CPU cores. The number of utilized cores is
   given by the formula `Math.max(Runtime.getRuntime().availableProcessors() - 1, 1)`. If your source tree does not
-  support parallel builds, pass `-T1` on the command line to make your build serial.
-* Improved console output: we believe that the output of a parallel build on a stock Maven is hard to follow. Therefore,
+  support parallel builds, pass `-T1` into the command line to make your build serial.
+* Improved console output: we believe that the output of a parallel build on stock Maven is hard to follow. Therefore,
 we implemented a simplified non-rolling view showing the status of each build thread on a separate line. This is
 what it looks like on a machine with 24 cores:
 +
@@ -66,6 +66,15 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 $ brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
+Note: There are two formulae: the `mvnd` that install latest, and `mvnd@1` that installs 1.x line.
+
+=== Install using https://www.macports.org[MacPorts]
+
+[source,shell]
+----
+$ sudo port install mvnd
+----
+
 === Install using https://aquaproj.github.io/[aqua]
 
 [source,shell]
@@ -75,18 +84,10 @@ $ aqua g -i apache/maven-mvnd
 
 === Other installers
 
-We're looking for contribution to support https://www.macports.org[MacPorts],
-https://community.chocolatey.org/packages/mvndaemon/[Chocolatey], https://scoop.sh/[Scoop] or
-https://github.com/joschi/asdf-mvnd#install[asdf].  If you're fancy helping us...
+We're looking for contribution to support https://community.chocolatey.org/packages/mvndaemon/[Chocolatey], https://scoop.sh/[Scoop] or
+https://github.com/joschi/asdf-mvnd#install[asdf].  If you fancy helping us...
 
 ////
-=== Install using https://www.macports.org[MacPorts]
-
-[source,shell]
-----
-$ sudo port install mvnd
-----
-
 === Install using https://community.chocolatey.org/packages/mvndaemon/[Chocolatey]
 
 [source,shell]
@@ -115,19 +116,10 @@ $ asdf install mvnd latest
 Optionally, you can set up completion as follows:
 [source,shell]
 ----
-# ensure to set MVND_HOME to point to your mvnd distribution, note that sdkman does it for you
+# ensure that MVND_HOME points to your mvnd distribution, note that sdkman does it for you
 $ echo 'source $MVND_HOME/bin/mvnd-bash-completion.bash' >> ~/.bashrc
 ----
 `bash` is the only shell supported at this time.
-
-=== Note for oh-my-zsh users ===
-
-Users that use `oh-my-zsh` often use completion for maven.  The default maven completion plugin defines `mvnd` as an alias to `mvn deploy`. So before being able to use `mvnd`, you need to unalias using the following command:
-[source,shell]
-----
-$ unalias mvnd
-----
-
 
 === Install manually
 
@@ -135,7 +127,7 @@ $ unalias mvnd
 * Unzip to a directory of your choice
 * Add the `bin` directory to `PATH`
 * Optionally, you can create `~/.m2/mvnd.properties` and set the `java.home` property in case you do not want to bother
-  with setting `JAVA_HOME` environment variable.
+  with setting the `JAVA_HOME` environment variable.
 * Test whether `mvnd` works:
 +
 [source,shell]
@@ -175,11 +167,11 @@ mvnd verify
 
 `--stop` kills all running daemons
 
-The complete list of options is printed when executing `mvnd --help`.
+`mvnd --help` prints the complete list of options
 
 
 == Configuration
-Configuration can be provided through properties file.  Mvnd read properties file from the following locations:
+Configuration can be provided through the properties file.  Mvnd reads the properties file from the following locations:
 
 * the properties path supplied using `MVND_PROPERTIES_PATH` environment variable or `mvnd.propertiesPath` system variable
 * the local properties path located at `[PROJECT_HOME]/.mvn/mvnd.properties`

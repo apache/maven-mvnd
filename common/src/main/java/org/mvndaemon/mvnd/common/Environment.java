@@ -59,6 +59,8 @@ public enum Environment {
     STATUS(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--status"),
     /** Stop all daemon instances registered in the registry specified by <code>mvnd.registry</code> */
     STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--stop"),
+    /** Terminal diagnosis */
+    DIAG(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--diag"),
     /** Use one thread, no log buffering and the default project builder to behave like a standard maven */
     SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:-1", "mvnd:--serial"),
 
@@ -213,6 +215,18 @@ public enum Environment {
      * Internal option to specify the list of maven extension to register.
      */
     MVND_CORE_EXTENSIONS("mvnd.coreExtensions", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
+    /**
+     * Internal option to specify comma separated list of maven extension G:As to exclude (to not load them from
+     * .mvn/extensions.xml). This option makes possible for example that a project that with vanilla Maven would
+     * use takari-smart-builder extension, remain buildable with mvnd (where use of this extension would cause issues).
+     * Value is expected as comma separated {@code g1:a1,g2:a2} pairs.
+     */
+    MVND_CORE_EXTENSIONS_EXCLUDE(
+            "mvnd.coreExtensionsExclude",
+            null,
+            "io.takari.maven:takari-smart-builder",
+            OptionType.STRING,
+            Flags.OPTIONAL),
     /**
      * The <code>-Xms</code> value to pass to the daemon.
      * This option takes precedence over options specified in <code>-Dmvnd.jvmArgs</code>.

@@ -20,65 +20,89 @@ name: Early Access
 # trigger on push to branches and PR
 on:
   push:
-    branch:
+    branches:
+      - master
+      - mvnd-1.x
   pull_request:
 
 env:
-  GRAALVM_VERSION: '22.3.1'
-  JAVA_VERSION: '17'
+  JAVA_VERSION: '22'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   default-build:
-    name: 'Default build (without Graal)'
+    name: 'Default build (without GraalVM)'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
 
       - name: 'Run default (non-native) build'
-        run: ./mvnw verify -Dmrm=false -B -ntp -e
+        run: ./mvnw verify -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
   native-build:
-    name: 'Build with Graal on ${{ matrix.os }}'
+    name: 'Build with GraalVM on ${{ matrix.os }}'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04, macOS-11, windows-2019 ]
+        # binaries wanted: linux amd64, mac intel, mac M1, windows x86
+        os: [ ubuntu-latest, macos-13, macos-14, windows-latest ]
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 'Set vars'
         shell: bash
         run: |
+          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          if [[ $ARCH == 'x64' ]]
+          then
+            echo "ARCH=amd64" >> $GITHUB_ENV
+          elif [[ $ARCH == 'arm64' ]]
+          then
+            echo "ARCH=aarch64" >> $GITHUB_ENV
+          else
+            echo "ARCH=$ARCH" >> $GITHUB_ENV
+          fi
           OS=$(echo '${{ runner.os }}' | awk '{print tolower($0)}')
-          [[ $OS == 'ubuntu' ]] && echo "OS=linux" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
-          [[ $OS == 'macos' ]] && echo "OS=darwin" >> $GITHUB_ENV || echo "OS=$OS" >> $GITHUB_ENV
+          if [[ $OS == 'macos' ]]
+          then
+            echo "OS=darwin" >> $GITHUB_ENV
+          else
+            echo "OS=$OS" >> $GITHUB_ENV
+          fi
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-      - name: 'Set up Graal'
+      - name: 'Set up GraalVM'
         uses: graalvm/setup-graalvm@v1
         with:
-          version: ${{ env.GRAALVM_VERSION }}
           java-version: ${{ env.JAVA_VERSION }}
-          components: 'native-image'
+          distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Maven clean'
-        run: ./mvnw clean -Dmrm=false -B -ntp -e
+        run: ./mvnw clean -Dmrm=false -V -B -ntp -e
 
-      - name: 'Patch Graal libs for only requiring glibc 2.12'
+      - name: 'Patch GraalVM libs for only requiring glibc 2.12'
         if: ${{ env.OS == 'linux' }}
         shell: bash
         run: |
@@ -100,7 +124,7 @@ jobs:
           objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
 
       - name: 'Build native distribution'
-        run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e
+        run: ./mvnw verify -Pnative -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Verify native binary for only requiring glibc 2.12'
         if: ${{ env.OS == 'linux' }}
@@ -113,19 +137,13 @@ jobs:
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: daemon-test-logs-${{ env.OS }}
+          name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
-      - name: 'Upload m39 artifact'
-        uses: actions/upload-artifact@v3
+      - name: 'Upload artifact'
+        uses: actions/upload-artifact@v4
         with:
-          name: mvnd-m39-${{ env.OS }}
-          path: dist-m39/target/maven-mvnd-*.zip
-
-      - name: 'Upload m40 artifact'
-        uses: actions/upload-artifact@v3
-        with:
-          name: mvnd-m40-${{ env.OS }}
-          path: dist-m40/target/maven-mvnd-*.zip
+          name: mvnd-${{ env.OS }}-${{ env.ARCH }}
+          path: dist/target/maven-mvnd-*.zip

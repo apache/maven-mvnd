@@ -75,7 +75,7 @@ public class InterpolationHelper {
      * <p>
      * This method performs property variable substitution on the
      * specified value. If the specified value contains the syntax
-     * <tt>${&lt;prop-name&gt;}</tt>, where <tt>&lt;prop-name&gt;</tt>
+     * {@code ${prop-name}}, where {@code prop-name}
      * refers to either a configuration property or a system property,
      * then the corresponding property value is substituted for the variable
      * placeholder. Multiple variable placeholders may exist in the

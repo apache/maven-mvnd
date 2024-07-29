@@ -55,9 +55,9 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
+import org.mvndaemon.mvnd.logging.slf4j.MvndBaseLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.SimpleLogger;
 
 import static java.lang.Thread.sleep;
 import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
@@ -434,7 +434,7 @@ public class DaemonConnector {
             args.add("-Dmaven.conf=" + mvndHome.resolve("mvn").resolve("conf"));
             args.add("-Dclassworlds.conf=" + mvndHome.resolve("bin").resolve("mvnd-daemon.conf"));
 
-            args.add("-D" + SimpleLogger.LOG_FILE_KEY + "="
+            args.add("-D" + MvndBaseLogger.LOG_FILE_KEY + "="
                     + parameters.daemonStorage().resolve("daemon-" + daemonId + ".log"));
 
             Environment.MVND_JAVA_HOME.addSystemProperty(
