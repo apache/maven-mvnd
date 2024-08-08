@@ -63,7 +63,7 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 
 [source,shell]
 ----
-$ brew install mvndaemon/homebrew-mvnd/mvnd
+$ brew install mvndaemon/homebrew-mvnd/mvnd@1
 ----
 
 Note: There are two formulae: the `mvnd` that install latest, and `mvnd@1` that installs 1.x line.
