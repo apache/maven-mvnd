@@ -83,9 +83,9 @@
     <groovy.version>4.0.22</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jline.version>3.26.3</jline.version>
-    <maven.version>3.9.8</maven.version>
+    <maven.version>3.9.9</maven.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.21</maven.resolver.version>
+    <maven.resolver.version>1.9.22</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.9.0.M3</sisu.version>
 
@@ -358,6 +358,21 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>maven-2179</id>
+      <url>https://repository.apache.org/content/repositories/maven-2179/</url>
+    </repository>
+  </repositories>
 
   <build>
     <pluginManagement>
