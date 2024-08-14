@@ -369,8 +369,8 @@
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-      <id>maven-2179</id>
-      <url>https://repository.apache.org/content/repositories/maven-2179/</url>
+      <id>maven-2180</id>
+      <url>https://repository.apache.org/content/repositories/maven-2180/</url>
     </repository>
   </repositories>
 
