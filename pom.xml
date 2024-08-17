@@ -359,21 +359,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <repositories>
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>maven-2180</id>
-      <url>https://repository.apache.org/content/repositories/maven-2180/</url>
-    </repository>
-  </repositories>
-
   <build>
     <pluginManagement>
       <plugins>
