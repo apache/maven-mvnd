@@ -76,9 +76,9 @@
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
     <assertj.version>3.26.3</assertj.version>
-    <commons-compress.version>1.27.0</commons-compress.version>
+    <commons-compress.version>1.27.1</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
-    <graalvm.version>23.1.3</graalvm.version>
+    <graalvm.version>24.0.2</graalvm.version>
     <graalvm.plugin.version>0.10.2</graalvm.plugin.version>
     <groovy.version>4.0.22</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
@@ -93,10 +93,11 @@
     <buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
     <groovy-maven-plugin.version>3.0.2</groovy-maven-plugin.version>
     <mrm.version>1.6.0</mrm.version>
-    <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version>
+    <junit-platform-launcher.version>1.10.3</junit-platform-launcher.version>
     <takari-provisio.version>1.0.25</takari-provisio.version>
 
     <picocli.version>4.7.6</picocli.version>
+    <!-- 2.29+ is Java 17+ -->
     <roaster.version>2.28.0.Final</roaster.version>
     <maven.plugin-tools.version>3.14.0</maven.plugin-tools.version>
     <javassist.version>3.30.2-GA</javassist.version>
