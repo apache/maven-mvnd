@@ -94,7 +94,7 @@
     <groovy-maven-plugin.version>3.0.2</groovy-maven-plugin.version>
     <mrm.version>1.6.0</mrm.version>
     <junit-platform-launcher.version>1.10.3</junit-platform-launcher.version>
-    <takari-provisio.version>1.0.25</takari-provisio.version>
+    <takari-provisio.version>1.0.26</takari-provisio.version>
 
     <picocli.version>4.7.6</picocli.version>
     <!-- 2.29+ is Java 17+ -->
