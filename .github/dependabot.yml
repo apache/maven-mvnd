@@ -17,25 +17,20 @@
 version: 2
 updates:
 
-  - package-ecosystem: maven
+  - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: daily
-      time: '04:00'
-    open-pull-requests-limit: 10
+      interval: "daily"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
-      time: '04:07'
 
-  - package-ecosystem: maven
+  - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: daily
-      time: '04:14'
-    open-pull-requests-limit: 10
+      interval: "daily"
     target-branch: "mvnd-1.x"
     labels:
       - "backport"
