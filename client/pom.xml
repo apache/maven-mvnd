@@ -213,6 +213,9 @@
           <exists>target/graalvm-libs-for-glibc-2.12</exists>
         </file>
       </activation>
+      <properties>
+        <patchelf.skip>false</patchelf.skip>
+      </properties>
       <build>
         <plugins>
           <plugin>
