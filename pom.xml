@@ -82,7 +82,6 @@
     <graalvm.version>24.0.2</graalvm.version>
     <graalvm.plugin.version>0.10.3</graalvm.plugin.version>
     <groovy.version>4.0.23</groovy.version>
-
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.26.3</jline.version>
