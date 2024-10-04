@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.maven.api.cli.ParserRequest;
-import org.apache.maven.api.cli.mvn.resident.ResidentMavenInvoker;
-import org.apache.maven.api.cli.mvn.resident.ResidentMavenParser;
 import org.apache.maven.cling.invoker.ProtoLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.jline.JLineMessageBuilderFactory;
@@ -40,8 +38,8 @@ import org.mvndaemon.mvnd.cli.EnvHelper;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 
 public class DaemonMavenCling implements DaemonCli {
-    private final ResidentMavenParser parser;
-    private final ResidentMavenInvoker invoker;
+    private final DaemonMavenParser parser;
+    private final DaemonMavenInvoker invoker;
 
     public DaemonMavenCling() {
         this.parser = new DaemonMavenParser();
