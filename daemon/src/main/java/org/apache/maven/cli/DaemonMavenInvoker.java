@@ -22,7 +22,6 @@ import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
 import org.apache.maven.execution.ExecutionListener;
-import org.apache.maven.execution.MavenExecutionRequest;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
@@ -34,19 +33,19 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     }
 
     @Override
-    protected void populateRequest(LocalContext context, MavenExecutionRequest request) throws Exception {
-        super.populateRequest(context, request);
-    }
-
-    @Override
     protected ExecutionListener determineExecutionListener(LocalContext context) {
-        LoggingExecutionListener listener = context.lookup.lookup(LoggingExecutionListener.class);
-        ExecutionEventLogger executionEventLogger =
-                new ExecutionEventLogger(context.invokerRequest.messageBuilderFactory());
-        listener.init(
-                context.eventSpyDispatcher.chainListener(executionEventLogger),
-                context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class));
-        return listener;
+        if (context.lookup != null) {
+            LoggingExecutionListener listener = context.lookup.lookup(LoggingExecutionListener.class);
+            ExecutionEventLogger executionEventLogger =
+                    new ExecutionEventLogger(context.invokerRequest.messageBuilderFactory());
+            listener.init(
+                    context.eventSpyDispatcher.chainListener(executionEventLogger),
+                    context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class));
+            return listener;
+        } else {
+            // this branch happens in "early" step of container capsule to load extensions
+            return super.determineExecutionListener(context);
+        }
     }
 
     @Override
