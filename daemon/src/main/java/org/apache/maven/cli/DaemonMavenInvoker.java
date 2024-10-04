@@ -18,8 +18,6 @@
  */
 package org.apache.maven.cli;
 
-import java.util.Properties;
-
 import org.apache.maven.api.cli.InvokerException;
 import org.apache.maven.api.cli.Options;
 import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
@@ -45,7 +43,6 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
 
     @Override
     public int invoke(MavenInvokerRequest<MavenOptions> invokerRequest) throws InvokerException {
-        Properties props = (Properties) System.getProperties().clone();
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             return super.invoke(invokerRequest);
@@ -57,7 +54,6 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
                     .log(e.getMessage());
             throw e;
         } finally {
-            System.setProperties(props);
             Thread.currentThread().setContextClassLoader(tccl);
         }
     }
