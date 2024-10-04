@@ -63,11 +63,11 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     }
 
     @Override
-    protected void logging(LocalContext context) throws Exception {
-        super.logging(context);
+    protected void configureLogging(LocalContext context) throws Exception {
+        super.configureLogging(context);
 
         DaemonMavenOptions options = (DaemonMavenOptions) context.invokerRequest.options();
-        if (!options.rawStreams().orElse(false)) {
+        if (options.logFile().isEmpty() && !options.rawStreams().orElse(false)) {
             MvndSimpleLogger stdout = (MvndSimpleLogger) context.loggerFactory.getLogger("stdout");
             MvndSimpleLogger stderr = (MvndSimpleLogger) context.loggerFactory.getLogger("stderr");
             stdout.setLogLevel(LocationAwareLogger.INFO_INT);
