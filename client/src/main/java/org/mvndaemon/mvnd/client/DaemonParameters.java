@@ -45,8 +45,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.maven.api.cli.extensions.CoreExtension;
 import org.apache.maven.cli.internal.extension.io.CoreExtensionsStaxReader;
-import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.InterpolationHelper;
 import org.mvndaemon.mvnd.common.Os;

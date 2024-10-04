@@ -26,7 +26,7 @@ import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 /**
  * Simple interface to bridge maven 3.9.x and 4.0.x CLI
  */
-public interface DaemonCli {
+public interface DaemonCli extends AutoCloseable {
     int main(
             List<String> args,
             String workingDir,
