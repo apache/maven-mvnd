@@ -21,15 +21,22 @@ package org.apache.maven.cli;
 import java.util.Properties;
 
 import org.apache.maven.api.cli.InvokerException;
-import org.apache.maven.api.cli.mvn.resident.ResidentMavenInvokerRequest;
+import org.apache.maven.api.cli.Options;
+import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
+import org.apache.maven.api.cli.mvn.MavenOptions;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
 import org.apache.maven.execution.ExecutionListener;
+import org.apache.maven.jline.MessageUtils;
 import org.eclipse.aether.transfer.TransferListener;
+import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.logging.slf4j.MvndSimpleLogger;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
+import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
+import org.slf4j.spi.LocationAwareLogger;
 
 public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     public DaemonMavenInvoker(ProtoLookup protoLookup) {
@@ -37,7 +44,7 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     }
 
     @Override
-    public int invoke(ResidentMavenInvokerRequest invokerRequest) throws InvokerException {
+    public int invoke(MavenInvokerRequest<MavenOptions> invokerRequest) throws InvokerException {
         Properties props = (Properties) System.getProperties().clone();
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
@@ -52,6 +59,33 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
         } finally {
             System.setProperties(props);
             Thread.currentThread().setContextClassLoader(tccl);
+        }
+    }
+
+    @Override
+    protected void logging(LocalContext context) throws Exception {
+        super.logging(context);
+
+        DaemonMavenOptions options = (DaemonMavenOptions) context.invokerRequest.options();
+        if (!options.rawStreams().orElse(false)) {
+            MvndSimpleLogger stdout = (MvndSimpleLogger) context.loggerFactory.getLogger("stdout");
+            MvndSimpleLogger stderr = (MvndSimpleLogger) context.loggerFactory.getLogger("stderr");
+            stdout.setLogLevel(LocationAwareLogger.INFO_INT);
+            stderr.setLogLevel(LocationAwareLogger.INFO_INT);
+            System.setOut(new LoggingOutputStream(s -> stdout.info("[stdout] " + s)).printStream());
+            System.setErr(new LoggingOutputStream(s -> stderr.warn("[stderr] " + s)).printStream());
+        }
+    }
+
+    @Override
+    protected void preCommands(LocalContext context) throws Exception {
+        Options mavenOptions = context.invokerRequest.options();
+        if (mavenOptions.verbose().orElse(false) || mavenOptions.showVersion().orElse(false)) {
+            context.invokerRequest
+                    .parserRequest()
+                    .lookup()
+                    .lookup(BuildEventListener.class)
+                    .log(CLIReportingUtils.showVersion());
         }
     }
 
@@ -76,5 +110,20 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
         return new DaemonMavenTransferListener(
                 context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class),
                 super.determineTransferListener(context, noTransferProgress));
+    }
+
+    @Override
+    protected int doExecute(LocalContext context) throws Exception {
+        context.logger.info(MessageUtils.builder()
+                .a("Processing build on daemon ")
+                .strong(Environment.MVND_ID.asString())
+                .toString());
+
+        try {
+            return super.doExecute(context);
+        } finally {
+            LoggingOutputStream.forceFlush(System.out);
+            LoggingOutputStream.forceFlush(System.err);
+        }
     }
 }

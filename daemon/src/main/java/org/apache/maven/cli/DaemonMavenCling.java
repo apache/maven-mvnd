@@ -29,7 +29,6 @@ import java.util.Map;
 import org.apache.maven.api.cli.ParserRequest;
 import org.apache.maven.cling.invoker.ProtoLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
-import org.apache.maven.jline.JLineMessageBuilderFactory;
 import org.apache.maven.jline.MessageUtils;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
@@ -74,14 +73,14 @@ public class DaemonMavenCling implements DaemonCli {
 
         HashMap<String, String> environment = new HashMap<>(env);
         environment.put("maven.multiModuleProjectDirectory", projectDir);
-        return invoker.invoke(parser.parse(
-                ParserRequest.builder("mvnd", "Maven Daemon", args, new ProtoLogger(), new JLineMessageBuilderFactory())
-                        .cwd(Paths.get(workingDir))
-                        .lookup(ProtoLookup.builder()
-                                .addMapping(Environment.class, () -> environment)
-                                .addMapping(BuildEventListener.class, buildEventListener)
-                                .build())
-                        .build()));
+        return invoker.invoke(parser.parse(ParserRequest.builder(
+                        "mvnd", "Maven Daemon", args, new ProtoLogger(), new DaemonMessageBuilderFactory())
+                .cwd(Paths.get(workingDir))
+                .lookup(ProtoLookup.builder()
+                        .addMapping(Environment.class, () -> environment)
+                        .addMapping(BuildEventListener.class, buildEventListener)
+                        .build())
+                .build()));
     }
 
     /**

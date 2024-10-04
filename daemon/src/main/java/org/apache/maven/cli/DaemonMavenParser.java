@@ -19,13 +19,49 @@
 package org.apache.maven.cli;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.cli.ParseException;
+import org.apache.maven.api.cli.Options;
 import org.apache.maven.api.cli.ParserException;
 import org.apache.maven.api.cli.ParserRequest;
-import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenParser;
+import org.apache.maven.api.cli.extensions.CoreExtension;
+import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
+import org.apache.maven.api.cli.mvn.MavenOptions;
+import org.apache.maven.cling.invoker.mvn.BaseMavenParser;
+import org.apache.maven.cling.invoker.mvn.DefaultMavenInvokerRequest;
 
-public class DaemonMavenParser extends DefaultResidentMavenParser {
+public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvokerRequest<MavenOptions>> {
+    @Override
+    protected DefaultMavenInvokerRequest<MavenOptions> getInvokerRequest(
+            ParserRequest parserRequest,
+            Path cwd,
+            Path installationDirectory,
+            Path userHomeDirectory,
+            Map<String, String> userProperties,
+            Map<String, String> systemProperties,
+            Path topDirectory,
+            Path rootDirectory,
+            ArrayList<CoreExtension> extensions,
+            Options options) {
+        return new DefaultMavenInvokerRequest<>(
+                parserRequest,
+                cwd,
+                installationDirectory,
+                userHomeDirectory,
+                userProperties,
+                systemProperties,
+                topDirectory,
+                rootDirectory,
+                parserRequest.in(),
+                parserRequest.out(),
+                parserRequest.err(),
+                extensions,
+                (DaemonMavenOptions) options);
+    }
+
     @Override
     protected Path getRootDirectory(ParserRequest parserRequest, Path cwd, Path topDirectory) throws ParserException {
         Map<String, String> env = parserRequest
@@ -34,5 +70,20 @@ public class DaemonMavenParser extends DefaultResidentMavenParser {
                 .getEnvironment();
         System.setProperty("maven.multiModuleProjectDirectory", env.get("maven.multiModuleProjectDirectory"));
         return super.getRootDirectory(parserRequest, cwd, topDirectory);
+    }
+
+    @Override
+    protected MavenOptions parseArgs(String source, List<String> args) throws ParserException {
+        try {
+            return CommonsCliDaemonMavenOptions.parse(source, args.toArray(new String[0]));
+        } catch (ParseException e) {
+            throw new ParserException("Failed to parse source " + source, e.getCause());
+        }
+    }
+
+    @Override
+    protected MavenOptions assembleOptions(List<MavenOptions> parsedOptions) {
+        return LayeredDaemonMavenOptions.layerDaemonMavenOptions(
+                parsedOptions.stream().map(o -> (DaemonMavenOptions) o).toList());
     }
 }
