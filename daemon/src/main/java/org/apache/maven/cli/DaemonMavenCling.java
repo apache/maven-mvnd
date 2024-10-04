@@ -21,6 +21,7 @@ package org.apache.maven.cli;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +30,6 @@ import org.apache.maven.api.cli.mvn.resident.ResidentMavenInvoker;
 import org.apache.maven.api.cli.mvn.resident.ResidentMavenParser;
 import org.apache.maven.cling.invoker.ProtoLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
-import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenParser;
 import org.apache.maven.jline.JLineMessageBuilderFactory;
 import org.apache.maven.jline.MessageUtils;
 import org.codehaus.plexus.classworlds.ClassWorld;
@@ -44,7 +44,7 @@ public class DaemonMavenCling implements DaemonCli {
     private final ResidentMavenInvoker invoker;
 
     public DaemonMavenCling() {
-        this.parser = new DefaultResidentMavenParser();
+        this.parser = new DaemonMavenParser();
         this.invoker = new DaemonMavenInvoker(ProtoLookup.builder()
                 .addMapping(
                         ClassWorld.class, ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld())
@@ -72,11 +72,22 @@ public class DaemonMavenCling implements DaemonCli {
                 StandardCharsets.UTF_8);
         MessageUtils.systemInstall(terminal);
         EnvHelper.environment(workingDir, env);
+
+        HashMap<String, String> environment = new HashMap<>(env);
+        environment.put("maven.multiModuleProjectDirectory", projectDir);
         return invoker.invoke(parser.parse(
                 ParserRequest.builder("mvnd", "Maven Daemon", args, new ProtoLogger(), new JLineMessageBuilderFactory())
                         .lookup(ProtoLookup.builder()
+                                .addMapping(Environment.class, () -> environment)
                                 .addMapping(BuildEventListener.class, buildEventListener)
                                 .build())
                         .build()));
+    }
+
+    /**
+     * Key for environment.
+     */
+    interface Environment {
+        Map<String, String> getEnvironment();
     }
 }

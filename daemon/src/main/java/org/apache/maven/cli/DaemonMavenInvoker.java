@@ -18,6 +18,10 @@
  */
 package org.apache.maven.cli;
 
+import java.util.Properties;
+
+import org.apache.maven.api.cli.InvokerException;
+import org.apache.maven.api.cli.mvn.resident.ResidentMavenInvokerRequest;
 import org.apache.maven.cli.event.ExecutionEventLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
@@ -30,6 +34,25 @@ import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
 public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     public DaemonMavenInvoker(ProtoLookup protoLookup) {
         super(protoLookup);
+    }
+
+    @Override
+    public int invoke(ResidentMavenInvokerRequest invokerRequest) throws InvokerException {
+        Properties props = (Properties) System.getProperties().clone();
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        try {
+            return super.invoke(invokerRequest);
+        } catch (InvokerException e) {
+            invokerRequest
+                    .parserRequest()
+                    .lookup()
+                    .lookup(BuildEventListener.class)
+                    .log(e.getMessage());
+            throw e;
+        } finally {
+            System.setProperties(props);
+            Thread.currentThread().setContextClassLoader(tccl);
+        }
     }
 
     @Override
