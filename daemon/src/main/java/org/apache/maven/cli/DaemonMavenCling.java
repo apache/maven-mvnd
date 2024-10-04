@@ -21,6 +21,7 @@ package org.apache.maven.cli;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,7 @@ public class DaemonMavenCling implements DaemonCli {
         environment.put("maven.multiModuleProjectDirectory", projectDir);
         return invoker.invoke(parser.parse(
                 ParserRequest.builder("mvnd", "Maven Daemon", args, new ProtoLogger(), new JLineMessageBuilderFactory())
+                        .cwd(Paths.get(workingDir))
                         .lookup(ProtoLookup.builder()
                                 .addMapping(Environment.class, () -> environment)
                                 .addMapping(BuildEventListener.class, buildEventListener)
