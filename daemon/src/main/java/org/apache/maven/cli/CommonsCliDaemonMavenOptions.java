@@ -31,6 +31,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.maven.cling.invoker.mvn.CommonsCliMavenOptions;
 import org.codehaus.plexus.interpolation.BasicInterpolator;
 import org.codehaus.plexus.interpolation.InterpolationException;
+import org.mvndaemon.mvnd.common.Environment;
 
 import static org.apache.maven.cling.invoker.Utils.createInterpolator;
 
@@ -50,7 +51,8 @@ public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions impleme
 
     @Override
     public Optional<Boolean> rawStreams() {
-        if (commandLine.hasOption(CLIManager.RAW_STREAMS)) {
+        if (commandLine.hasOption(CLIManager.RAW_STREAMS)
+                || Environment.MVND_RAW_STREAMS.asOptional().isPresent()) {
             return Optional.of(Boolean.TRUE);
         }
         return Optional.empty();
