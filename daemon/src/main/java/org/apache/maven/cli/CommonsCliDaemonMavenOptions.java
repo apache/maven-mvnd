@@ -44,6 +44,10 @@ public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions impleme
         super(source, cliManager, commandLine);
     }
 
+    public org.apache.commons.cli.Options getOptions() {
+        return this.cliManager.getOptions();
+    }
+
     @Override
     public Optional<Boolean> rawStreams() {
         if (commandLine.hasOption(CLIManager.RAW_STREAMS)) {

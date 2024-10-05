@@ -18,7 +18,6 @@
  */
 package org.apache.maven.cli;
 
-import org.apache.maven.api.cli.InvokerException;
 import org.apache.maven.api.cli.Options;
 import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
@@ -43,23 +42,6 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     }
 
     @Override
-    public int invoke(MavenInvokerRequest<MavenOptions> invokerRequest) throws InvokerException {
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        try {
-            return super.invoke(invokerRequest);
-        } catch (InvokerException e) {
-            invokerRequest
-                    .parserRequest()
-                    .lookup()
-                    .lookup(BuildEventListener.class)
-                    .log(e.getMessage());
-            throw e;
-        } finally {
-            Thread.currentThread().setContextClassLoader(tccl);
-        }
-    }
-
-    @Override
     protected void configureLogging(LocalContext context) throws Exception {
         super.configureLogging(context);
 
@@ -71,6 +53,27 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
             stderr.setLogLevel(LocationAwareLogger.INFO_INT);
             System.setOut(new LoggingOutputStream(s -> stdout.info("[stdout] " + s)).printStream());
             System.setErr(new LoggingOutputStream(s -> stderr.warn("[stderr] " + s)).printStream());
+        }
+    }
+
+    @Override
+    protected void helpOrVersionAndMayExit(LocalContext context) throws Exception {
+        MavenInvokerRequest<MavenOptions> invokerRequest = context.invokerRequest;
+        BuildEventListener buildEventListener =
+                context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class);
+        if (invokerRequest.options().help().isPresent()) {
+            // TODO: ugly, clenup
+            buildEventListener.log(
+                    MvndHelpFormatter.displayHelp((CommonsCliDaemonMavenOptions) context.invokerRequest.options()));
+            throw new ExitException(0);
+        }
+        if (invokerRequest.options().showVersionAndExit().isPresent()) {
+            if (invokerRequest.options().quiet().orElse(false)) {
+                buildEventListener.log(CLIReportingUtils.showVersionMinimal());
+            } else {
+                buildEventListener.log(CLIReportingUtils.showVersion());
+            }
+            throw new ExitException(0);
         }
     }
 

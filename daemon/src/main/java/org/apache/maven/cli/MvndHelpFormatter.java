@@ -51,7 +51,7 @@ public class MvndHelpFormatter {
      * @param  cliManager
      * @return            the string containing the help message
      */
-    public static String displayHelp(CLIManager cliManager) {
+    public static String displayHelp(CommonsCliDaemonMavenOptions cliManager) {
         int terminalWidth = getTerminalWidth();
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8.name())) {
@@ -63,7 +63,7 @@ public class MvndHelpFormatter {
                     terminalWidth,
                     "mvnd [options] [<goal(s)>] [<phase(s)>]",
                     "\nOptions:",
-                    cliManager.options,
+                    cliManager.getOptions(),
                     1,
                     3,
                     "\n",
