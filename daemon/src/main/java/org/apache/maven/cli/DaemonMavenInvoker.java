@@ -124,6 +124,12 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
                 .a("Processing build on daemon ")
                 .strong(Environment.MVND_ID.asString())
                 .toString());
+        context.logger.info("Daemon status dump:");
+        context.logger.info("CWD: " + context.invokerRequest.cwd());
+        context.logger.info("MAVEN_HOME: " + context.invokerRequest.installationDirectory());
+        context.logger.info("USER_HOME: " + context.invokerRequest.userHomeDirectory());
+        context.logger.info("topDirectory: " + context.invokerRequest.topDirectory());
+        context.logger.info("rootDirectory: " + context.invokerRequest.rootDirectory());
 
         try {
             return super.doExecute(context);
