@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.maven.api.cli.Options;
@@ -32,6 +33,7 @@ import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
 import org.apache.maven.cling.invoker.mvn.BaseMavenParser;
 import org.apache.maven.cling.invoker.mvn.DefaultMavenInvokerRequest;
+import org.mvndaemon.mvnd.common.Environment;
 
 public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvokerRequest<MavenOptions>> {
     @Override
@@ -85,5 +87,20 @@ public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvoke
     protected MavenOptions assembleOptions(List<MavenOptions> parsedOptions) {
         return LayeredDaemonMavenOptions.layerDaemonMavenOptions(
                 parsedOptions.stream().map(o -> (DaemonMavenOptions) o).toList());
+    }
+
+    @Override
+    protected List<CoreExtension> readCoreExtensionsDescriptor(String extensionsFile, Path cwd) throws ParserException {
+        return Stream.of(Environment.MVND_CORE_EXTENSIONS.asString().split(";"))
+                .filter(s -> s != null && !s.isEmpty())
+                .map(s -> {
+                    String[] parts = s.split(":");
+                    return CoreExtension.newBuilder()
+                            .groupId(parts[0])
+                            .artifactId(parts[1])
+                            .version(parts[2])
+                            .build();
+                })
+                .toList();
     }
 }

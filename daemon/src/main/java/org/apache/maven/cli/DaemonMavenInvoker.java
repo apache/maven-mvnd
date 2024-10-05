@@ -23,6 +23,7 @@ import org.apache.maven.api.cli.Options;
 import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
 import org.apache.maven.cli.event.ExecutionEventLogger;
+import org.apache.maven.cling.invoker.ContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
 import org.apache.maven.execution.ExecutionListener;
@@ -83,6 +84,12 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
                     .lookup(BuildEventListener.class)
                     .log(CLIReportingUtils.showVersion());
         }
+    }
+
+    @Override
+    protected ContainerCapsuleFactory<MavenOptions, MavenInvokerRequest<MavenOptions>, LocalContext>
+            createContainerCapsuleFactory() {
+        return new DaemonPlexusContainerCapsuleFactory();
     }
 
     @Override
