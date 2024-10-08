@@ -18,7 +18,6 @@
  */
 package org.apache.maven.cli;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,16 +49,6 @@ public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvoke
                 context.parserRequest.err(),
                 context.extensions,
                 (DaemonMavenOptions) context.options);
-    }
-
-    @Override
-    protected Path getRootDirectory(LocalContext context) throws ParserException {
-        Map<String, String> env = context.parserRequest
-                .lookup()
-                .lookup(DaemonMavenCling.Environment.class)
-                .getEnvironment();
-        System.setProperty("maven.multiModuleProjectDirectory", env.get("maven.multiModuleProjectDirectory"));
-        return super.getRootDirectory(context);
     }
 
     @Override

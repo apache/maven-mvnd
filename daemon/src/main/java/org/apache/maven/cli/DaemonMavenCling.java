@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,14 +69,12 @@ public class DaemonMavenCling implements DaemonCli {
                 StandardCharsets.UTF_8);
         MessageUtils.systemInstall(terminal);
         EnvHelper.environment(workingDir, env);
-
-        HashMap<String, String> environment = new HashMap<>(env);
-        environment.put("maven.multiModuleProjectDirectory", projectDir);
+        System.setProperty("maven.multiModuleProjectDirectory", projectDir);
         return invoker.invoke(parser.parse(ParserRequest.builder(
                         "mvnd", "Maven Daemon", args, new ProtoLogger(), new DaemonMessageBuilderFactory())
                 .cwd(Paths.get(workingDir))
                 .lookup(ProtoLookup.builder()
-                        .addMapping(Environment.class, () -> environment)
+                        .addMapping(Environment.class, () -> env)
                         .addMapping(BuildEventListener.class, buildEventListener)
                         .build())
                 .build()));
