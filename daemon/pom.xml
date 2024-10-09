@@ -60,7 +60,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-embedder</artifactId>
+      <artifactId>maven-resolver-provider</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-cli</artifactId>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>

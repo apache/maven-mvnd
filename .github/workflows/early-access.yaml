@@ -55,6 +55,7 @@ jobs:
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
+          include-hidden-files: 'true'
 
   native-build:
     name: 'Build with GraalVM on ${{ matrix.os }}'
@@ -141,6 +142,7 @@ jobs:
         with:
           name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
+          include-hidden-files: 'true'
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v4

@@ -21,7 +21,6 @@ package org.apache.maven.cli;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Set;
@@ -48,13 +47,13 @@ public class MvndHelpFormatter {
     /**
      * Returns Maven option descriptions combined with mvnd options descriptions
      *
-     * @param  cliManager
+     * @param  cliManager The cli manager
      * @return            the string containing the help message
      */
-    public static String displayHelp(CLIManager cliManager) {
+    public static String displayHelp(CommonsCliDaemonMavenOptions cliManager) {
         int terminalWidth = getTerminalWidth();
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8.name())) {
+        try (PrintStream out = new PrintStream(baos, false, StandardCharsets.UTF_8)) {
             out.println();
             PrintWriter pw = new PrintWriter(out);
             HelpFormatter formatter = new HelpFormatter();
@@ -63,16 +62,14 @@ public class MvndHelpFormatter {
                     terminalWidth,
                     "mvnd [options] [<goal(s)>] [<phase(s)>]",
                     "\nOptions:",
-                    cliManager.options,
+                    cliManager.getOptions(),
                     1,
                     3,
                     "\n",
                     false);
             pw.flush();
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
         }
-        final String mvnHelp = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        final String mvnHelp = baos.toString(StandardCharsets.UTF_8);
         final Matcher m = COLUMNS_DETECTOR_PATTERN.matcher(mvnHelp);
         final String indent = m.find() ? m.group() : "                                        ";
 
@@ -201,12 +198,8 @@ public class MvndHelpFormatter {
      *
      * @param  stringBuilder the {@link StringBuilder} to append to
      * @param  count         the number of spaces to append
-     * @return               the given {@code stringBuilder}
      */
-    static StringBuilder spaces(StringBuilder stringBuilder, int count) {
-        for (int i = 0; i < count; i++) {
-            stringBuilder.append(' ');
-        }
-        return stringBuilder;
+    static void spaces(StringBuilder stringBuilder, int count) {
+        stringBuilder.append(" ".repeat(Math.max(0, count)));
     }
 }

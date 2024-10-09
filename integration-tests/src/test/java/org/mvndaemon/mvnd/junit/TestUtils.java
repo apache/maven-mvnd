@@ -19,7 +19,6 @@
 package org.mvndaemon.mvnd.junit;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
@@ -34,7 +33,7 @@ public class TestUtils {
             if (originalSrc.equals(newSrc)) {
                 throw new IllegalStateException("[" + find + "] not found in " + path);
             }
-            Files.write(path, newSrc.getBytes(StandardCharsets.UTF_8));
+            Files.writeString(path, newSrc);
         } catch (IOException e) {
             throw new RuntimeException("Could not read or write " + path, e);
         }

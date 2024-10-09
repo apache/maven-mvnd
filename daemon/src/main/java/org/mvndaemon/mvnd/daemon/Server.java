@@ -131,7 +131,7 @@ public class Server implements AutoCloseable, Runnable {
         try {
             cli = (DaemonCli) getClass()
                     .getClassLoader()
-                    .loadClass("org.apache.maven.cli.DaemonMavenCli")
+                    .loadClass("org.apache.maven.cli.DaemonMavenCling")
                     .getDeclaredConstructor()
                     .newInstance();
             registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
@@ -187,7 +187,11 @@ public class Server implements AutoCloseable, Runnable {
                     try {
                         registry.close();
                     } finally {
-                        socket.close();
+                        try {
+                            socket.close();
+                        } finally {
+                            cli.close();
+                        }
                     }
                 }
             }

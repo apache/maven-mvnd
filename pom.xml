@@ -81,20 +81,22 @@
     <graalvm.version>24.1.0</graalvm.version>
     <graalvm.plugin.version>0.10.3</graalvm.plugin.version>
     <groovy.version>4.0.23</groovy.version>
-    <jakarta.inject.version>1.0</jakarta.inject.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.27.0</jline.version>
-    <maven.version>4.0.0-beta-3</maven.version>
+    <maven.version>4.0.0-beta-5-SNAPSHOT</maven.version>
+
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>2.0.0</maven.resolver.version>
-    <slf4j.version>2.0.11</slf4j.version>
+    <maven.resolver.version>2.0.1</maven.resolver.version>
+    <slf4j.version>2.0.16</slf4j.version>
     <sisu.version>0.9.0.M3</sisu.version>
     <maven.plugin-tools.version>3.15.0</maven.plugin-tools.version>
+    <version.plexus-utils>4.0.2</version.plexus-utils>
+    <version.plexus-xml>4.0.4</version.plexus-xml>
+    <jakarta.inject.version>2.0.1</jakarta.inject.version>
 
     <!-- plugin versions a..z -->
     <buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
     <groovy-maven-plugin.version>4.0.1</groovy-maven-plugin.version>
-    <mrm.version>1.6.0</mrm.version>
     <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version>
     <takari-provisio.version>1.1.1</takari-provisio.version>
 
@@ -159,10 +161,32 @@
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
         <version>${maven.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-slf4j-provider</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-resolver-provider</artifactId>
+        <version>${maven.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-embedder</artifactId>
+        <version>${maven.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-slf4j-provider</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-cli</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -444,11 +468,6 @@
               <type>pom</type>
             </dependency>
           </dependencies>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>mrm-maven-plugin</artifactId>
-          <version>${mrm.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

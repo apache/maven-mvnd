@@ -75,7 +75,7 @@ class MavenConfNativeIT {
 
     protected List<String> mvndParams(String expression) {
         return Arrays.asList(
-                "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
+                "org.apache.maven.plugins:maven-help-plugin:3.5.0:evaluate",
                 "-D",
                 "expression=" + expression,
                 "-q",

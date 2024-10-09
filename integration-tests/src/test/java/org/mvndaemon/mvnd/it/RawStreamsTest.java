@@ -52,7 +52,6 @@ class RawStreamsTest {
         final TestClientOutput o = new TestClientOutput();
         client.execute(o, "validate", "--quiet", "--raw-streams").assertSuccess();
         String expected = "PrintOut{payload='Hello'}";
-        o.getMessages().forEach(m -> System.out.println(m.toString()));
         assertTrue(
                 o.getMessages().stream().anyMatch(m -> m.toString().contains(expected)),
                 "Output should contain " + expected);
