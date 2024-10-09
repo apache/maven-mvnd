@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.apache.maven.api.cli.ParserRequest;
 import org.apache.maven.cling.invoker.ProtoLogger;
@@ -83,7 +84,5 @@ public class DaemonMavenCling implements DaemonCli {
     /**
      * Key for environment.
      */
-    interface Environment {
-        Map<String, String> getEnvironment();
-    }
+    interface Environment extends Supplier<Map<String, String>> {}
 }

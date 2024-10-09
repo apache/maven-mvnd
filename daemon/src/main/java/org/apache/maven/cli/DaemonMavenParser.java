@@ -72,7 +72,7 @@ public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvoke
         Map<String, String> env = context.parserRequest
                 .lookup()
                 .lookup(DaemonMavenCling.Environment.class)
-                .getEnvironment();
+                .get();
         systemProperties.putAll(env);
         return systemProperties;
     }
