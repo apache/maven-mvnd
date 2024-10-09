@@ -78,7 +78,7 @@
     <assertj.version>3.26.3</assertj.version>
     <commons-compress.version>1.27.1</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
-    <graalvm.version>24.0.2</graalvm.version>
+    <graalvm.version>24.1.0</graalvm.version>
     <graalvm.plugin.version>0.10.3</graalvm.plugin.version>
     <groovy.version>4.0.23</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
@@ -104,7 +104,7 @@
     <xstream.version>1.4.20</xstream.version>
     <plexus-interactivity-api.version>1.3</plexus-interactivity-api.version>
     <takari-smart-builder.version>1.0.2</takari-smart-builder.version>
-    <testcontainers.version>1.20.1</testcontainers.version>
+    <testcontainers.version>1.20.2</testcontainers.version>
   </properties>
 
   <dependencyManagement>
