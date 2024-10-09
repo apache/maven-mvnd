@@ -55,6 +55,7 @@ jobs:
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
+          include-hidden-files: 'true'
 
   native-build:
     name: 'Build with GraalVM on ${{ matrix.os }}'
