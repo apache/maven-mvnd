@@ -32,8 +32,6 @@
 
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
-    <graalvm-native-static-opt />
-    <graalvm-native-glibc-opt />
     <patchelf.skip>true</patchelf.skip>
   </properties>
 
@@ -190,9 +188,19 @@
           <family>!mac</family>
         </os>
       </activation>
-      <properties>
-        <graalvm-native-static-opt>-H:+StaticExecutableWithDynamicLibC</graalvm-native-static-opt>
-      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <configuration>
+              <buildArgs combine.children="append">
+                <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <profile>
@@ -206,11 +214,23 @@
         </file>
       </activation>
       <properties>
-        <graalvm-native-glibc-opt>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc
-                                  -H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.12
-                                  -H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</graalvm-native-glibc-opt>
         <patchelf.skip>false</patchelf.skip>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <configuration>
+              <buildArgs combine.children="append">
+                <buildArg>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc</buildArg>
+                <buildArg>-H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
+                <buildArg>-H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <profile>
@@ -227,17 +247,17 @@
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
-              <buildArgs>--no-fallback
-                         -march=compatibility
-                         -H:+UnlockExperimentalVMOptions
-                         ${graalvm-native-static-opt}
-                         ${graalvm-native-glibc-opt}
-                         -H:IncludeResources=org/mvndaemon/mvnd/.*
-                         -H:IncludeResources=mvnd-bash-completion.bash
-                         -H:-ParseRuntimeOptions
-                         -H:+AddAllCharsets
-                         -H:+ReportExceptionStackTraces
-                         -ea</buildArgs>
+              <buildArgs combine.children="append">
+                <buildArg>--no-fallback</buildArg>
+                <buildArg>-march=compatibility</buildArg>
+                <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                <buildArg>-H:IncludeResources=org/mvndaemon/mvnd/.*</buildArg>
+                <buildArg>-H:IncludeResources=mvnd-bash-completion.bash</buildArg>
+                <buildArg>-H:-ParseRuntimeOptions</buildArg>
+                <buildArg>-H:+AddAllCharsets</buildArg>
+                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>-ea</buildArg>
+              </buildArgs>
             </configuration>
             <executions>
               <execution>
