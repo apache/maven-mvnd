@@ -142,6 +142,7 @@ jobs:
         with:
           name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
+          include-hidden-files: 'true'
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v4
