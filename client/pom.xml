@@ -165,7 +165,7 @@
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
             <configuration>
-              <buildArgs combine.self="append">
+              <buildArgs combine.children="append">
                 <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
               </buildArgs>
             </configuration>
@@ -193,7 +193,7 @@
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
             <configuration>
-              <buildArgs combine.self="append">
+              <buildArgs combine.children="append">
                 <buildArg>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc</buildArg>
                 <buildArg>-H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
                 <buildArg>-H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
@@ -215,7 +215,7 @@
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
-              <buildArgs combine.self="append">
+              <buildArgs combine.children="append">
                 <buildArg>--no-fallback</buildArg>
                 <buildArg>-march=compatibility</buildArg>
                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
