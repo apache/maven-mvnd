@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.junit;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
@@ -41,8 +42,10 @@ public class JvmTestClient extends DefaultClient {
 
     @Override
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
+        argv = new ArrayList<>(argv);
         setMultiModuleProjectDirectory(argv);
         setSystemPropertiesFromCommandLine(argv);
+        argv.addAll(Arrays.asList("-D", "maven.resolver.transport", "apache"));
         argv = new ArrayList<>(argv);
         if (parameters instanceof TestParameters && ((TestParameters) parameters).isNoTransferProgress()) {
             argv.add("-ntp");
