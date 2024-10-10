@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.apache.maven.logging.ProjectBuildLogAppender;
 import org.codehaus.plexus.components.interactivity.AbstractInputHandler;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.components.interactivity.OutputHandler;
@@ -35,7 +36,6 @@ import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.daemon.Connection;
-import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

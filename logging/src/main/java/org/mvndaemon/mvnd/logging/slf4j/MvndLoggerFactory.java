@@ -18,64 +18,21 @@
  */
 package org.mvndaemon.mvnd.logging.slf4j;
 
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.apache.maven.logwrapper.LogLevelRecorder;
-import org.apache.maven.logwrapper.MavenSlf4jWrapperFactory;
+import org.apache.maven.slf4j.MavenLoggerFactory;
 import org.slf4j.Logger;
 
 /**
  * LogFactory for Maven which can create a simple logger or one which, if set, fails the build on a severity threshold.
  */
-public class MvndLoggerFactory implements MavenSlf4jWrapperFactory {
-    private LogLevelRecorder logLevelRecorder = null;
-    private final ConcurrentMap<String, Logger> loggerMap = new ConcurrentHashMap<>();
+public class MvndLoggerFactory extends MavenLoggerFactory {
 
-    public MvndLoggerFactory() {
-        MvndSimpleLogger.lazyInit();
-    }
+    public MvndLoggerFactory() {}
 
-    @Override
-    public void setLogLevelRecorder(LogLevelRecorder logLevelRecorder) {
-        if (this.logLevelRecorder != null) {
-            throw new IllegalStateException("LogLevelRecorder has already been set.");
-        }
-
-        this.logLevelRecorder = logLevelRecorder;
-    }
-
-    @Override
-    public Optional<LogLevelRecorder> getLogLevelRecorder() {
-        return Optional.ofNullable(logLevelRecorder);
-    }
-
-    /**
-     * Return an appropriate {@link Logger} instance by name.
-     */
-    @Override
-    public Logger getLogger(String name) {
-        return loggerMap.computeIfAbsent(name, this::getNewLoggingInstance);
-    }
-
-    private Logger getNewLoggingInstance(String name) {
+    protected Logger getNewLoggingInstance(String name) {
         if (name.startsWith("org.mvndaemon.mvnd.daemon")) {
             return new MvndDaemonLogger(name);
-        } else if (logLevelRecorder == null) {
-            return new MvndSimpleLogger(name);
         } else {
-            return new MvndFailOnSeverityLogger(name, logLevelRecorder);
+            return super.getNewLoggingInstance(name);
         }
-    }
-
-    public void reconfigure() {
-        SimpleLoggerConfiguration config = MvndSimpleLogger.CONFIG_PARAMS;
-        config.init();
-        loggerMap.values().forEach(l -> {
-            if (l instanceof MvndSimpleLogger) {
-                ((MvndSimpleLogger) l).configure(config.defaultLogLevel);
-            }
-        });
     }
 }

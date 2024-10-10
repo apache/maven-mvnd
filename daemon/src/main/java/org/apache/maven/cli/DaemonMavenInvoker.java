@@ -18,23 +18,24 @@
  */
 package org.apache.maven.cli;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+
 import org.apache.maven.api.cli.Options;
 import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
-import org.apache.maven.cli.event.ExecutionEventLogger;
+import org.apache.maven.api.services.MavenException;
 import org.apache.maven.cling.invoker.ContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
-import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.jline.MessageUtils;
-import org.eclipse.aether.transfer.TransferListener;
+import org.apache.maven.logging.BuildEventListener;
+import org.apache.maven.logging.LoggingOutputStream;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.impl.ExternalTerminal;
 import org.mvndaemon.mvnd.common.Environment;
-import org.mvndaemon.mvnd.logging.slf4j.MvndSimpleLogger;
-import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
-import org.mvndaemon.mvnd.logging.smart.LoggingExecutionListener;
-import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
-import org.mvndaemon.mvnd.transfer.DaemonMavenTransferListener;
-import org.slf4j.spi.LocationAwareLogger;
 
 public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     public DaemonMavenInvoker(ProtoLookup protoLookup) {
@@ -44,16 +45,45 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     @Override
     protected void configureLogging(LocalContext context) throws Exception {
         super.configureLogging(context);
+    }
 
-        DaemonMavenOptions options = (DaemonMavenOptions) context.invokerRequest.options();
-        if (options.logFile().isEmpty() && !options.rawStreams().orElse(false)) {
-            MvndSimpleLogger stdout = (MvndSimpleLogger) context.loggerFactory.getLogger("stdout");
-            MvndSimpleLogger stderr = (MvndSimpleLogger) context.loggerFactory.getLogger("stderr");
-            stdout.setLogLevel(LocationAwareLogger.INFO_INT);
-            stderr.setLogLevel(LocationAwareLogger.INFO_INT);
-            System.setOut(new LoggingOutputStream(s -> stdout.info("[stdout] " + s)).printStream());
-            System.setErr(new LoggingOutputStream(s -> stderr.warn("[stderr] " + s)).printStream());
+    @Override
+    protected Terminal createTerminal(LocalContext context) {
+        try {
+            Terminal terminal = new ExternalTerminal(
+                    "Maven",
+                    "ansi",
+                    context.invokerRequest.in().get(),
+                    context.invokerRequest.out().get(),
+                    StandardCharsets.UTF_8);
+            doConfigureWithTerminal(context, terminal);
+            // If raw-streams options has been set, we need to decorate to push back to the client
+            if (context.invokerRequest.options().rawStreams().orElse(false)) {
+                BuildEventListener bel = determineBuildEventListener(context);
+                OutputStream out = context.invokerRequest.out().orElse(null);
+                System.setOut(out != null ? printStream(out) : new LoggingOutputStream(bel::log).printStream());
+                OutputStream err = context.invokerRequest.err().orElse(null);
+                System.setErr(err != null ? printStream(err) : new LoggingOutputStream(bel::log).printStream());
+            }
+            return terminal;
+        } catch (IOException e) {
+            throw new MavenException("Error creating terminal", e);
         }
+    }
+
+    private PrintStream printStream(OutputStream outputStream) {
+        if (outputStream instanceof LoggingOutputStream los) {
+            return los.printStream();
+        } else if (outputStream instanceof PrintStream ps) {
+            return ps;
+        } else {
+            return new PrintStream(outputStream);
+        }
+    }
+
+    @Override
+    protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(LocalContext context) {
+        return protoLookup.lookup(BuildEventListener.class);
     }
 
     @Override
@@ -62,7 +92,7 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
         BuildEventListener buildEventListener =
                 context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class);
         if (invokerRequest.options().help().isPresent()) {
-            // TODO: ugly, clenup
+            // TODO: ugly, cleanup
             buildEventListener.log(
                     MvndHelpFormatter.displayHelp((CommonsCliDaemonMavenOptions) context.invokerRequest.options()));
             throw new ExitException(0);
@@ -93,29 +123,6 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     protected ContainerCapsuleFactory<MavenOptions, MavenInvokerRequest<MavenOptions>, LocalContext>
             createContainerCapsuleFactory() {
         return new DaemonPlexusContainerCapsuleFactory();
-    }
-
-    @Override
-    protected ExecutionListener determineExecutionListener(LocalContext context) {
-        if (context.lookup != null) {
-            LoggingExecutionListener listener = context.lookup.lookup(LoggingExecutionListener.class);
-            ExecutionEventLogger executionEventLogger =
-                    new ExecutionEventLogger(context.invokerRequest.messageBuilderFactory());
-            listener.init(
-                    context.eventSpyDispatcher.chainListener(executionEventLogger),
-                    context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class));
-            return listener;
-        } else {
-            // this branch happens in "early" step of container capsule to load extensions
-            return super.determineExecutionListener(context);
-        }
-    }
-
-    @Override
-    protected TransferListener determineTransferListener(LocalContext context, boolean noTransferProgress) {
-        return new DaemonMavenTransferListener(
-                context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class),
-                super.determineTransferListener(context, noTransferProgress));
     }
 
     @Override

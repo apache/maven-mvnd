@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -31,7 +30,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.maven.cling.invoker.mvn.CommonsCliMavenOptions;
 import org.codehaus.plexus.interpolation.BasicInterpolator;
 import org.codehaus.plexus.interpolation.InterpolationException;
-import org.mvndaemon.mvnd.common.Environment;
 
 import static org.apache.maven.cling.invoker.Utils.createInterpolator;
 
@@ -47,15 +45,6 @@ public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions impleme
 
     public org.apache.commons.cli.Options getOptions() {
         return this.cliManager.getOptions();
-    }
-
-    @Override
-    public Optional<Boolean> rawStreams() {
-        if (commandLine.hasOption(CLIManager.RAW_STREAMS)
-                || Environment.MVND_RAW_STREAMS.asOptional().isPresent()) {
-            return Optional.of(Boolean.TRUE);
-        }
-        return Optional.empty();
     }
 
     private static CommonsCliDaemonMavenOptions interpolate(

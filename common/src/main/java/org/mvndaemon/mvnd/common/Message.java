@@ -986,8 +986,8 @@ public abstract class Message {
                     + repositoryUrl + '\'' + ", resourceName='"
                     + resourceName + '\'' + ", contentLength="
                     + contentLength + ", transferredBytes="
-                    + transferredBytes + ", exception='"
-                    + exception + '\'' + '}';
+                    + transferredBytes
+                    + (exception != null ? ", exception='" + exception + '\'' : "") + '}';
         }
 
         private String mnemonic() {

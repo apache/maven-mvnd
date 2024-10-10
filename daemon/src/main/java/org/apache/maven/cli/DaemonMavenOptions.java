@@ -20,15 +20,10 @@ package org.apache.maven.cli;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.maven.api.cli.mvn.MavenOptions;
 
 public interface DaemonMavenOptions extends MavenOptions {
-    /**
-     * Should use raw-streams to communicate with daemon.
-     */
-    Optional<Boolean> rawStreams();
 
     @Override
     DaemonMavenOptions interpolate(Collection<Map<String, String>> properties);
