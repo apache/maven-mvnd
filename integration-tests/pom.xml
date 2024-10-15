@@ -141,7 +141,7 @@
             <artifactId>maven-failsafe-plugin</artifactId>
             <executions>
               <execution>
-                <id>native-39</id>
+                <id>native</id>
                 <goals>
                   <goal>integration-test</goal>
                   <goal>verify</goal>

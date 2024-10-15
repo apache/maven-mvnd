@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.apache.maven.slf4j.MavenSimpleLogger;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
-import org.mvndaemon.mvnd.logging.slf4j.MvndSimpleLogger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.LocationAwareLogger;
 
@@ -47,15 +47,15 @@ class MaxHeapNativeIT {
 
         @BeforeAll
         static void setup() {
-            MvndSimpleLogger logger =
-                    (MvndSimpleLogger) LoggerFactory.getLogger("org.mvndaemon.mvnd.client.DaemonConnector");
+            MavenSimpleLogger logger =
+                    (MavenSimpleLogger) LoggerFactory.getLogger("org.mvndaemon.mvnd.client.DaemonConnector");
             logger.setLogLevel(LocationAwareLogger.DEBUG_INT);
-            MvndSimpleLogger.setLogSink(messages::add);
+            MavenSimpleLogger.setLogSink(messages::add);
         }
 
         @AfterAll
         static void tearDown() {
-            MvndSimpleLogger.setLogSink(null);
+            MavenSimpleLogger.setLogSink(null);
         }
 
         static String getDaemonArgs() {

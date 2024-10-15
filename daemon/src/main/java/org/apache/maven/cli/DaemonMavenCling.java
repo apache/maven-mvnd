@@ -18,9 +18,8 @@
  */
 package org.apache.maven.cli;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
@@ -29,30 +28,12 @@ import java.util.function.Supplier;
 import org.apache.maven.api.cli.ParserRequest;
 import org.apache.maven.cling.invoker.ProtoLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
-import org.apache.maven.jline.MessageUtils;
+import org.apache.maven.logging.BuildEventListener;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.impl.ExternalTerminal;
 import org.mvndaemon.mvnd.cli.EnvHelper;
-import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 
 public class DaemonMavenCling implements DaemonCli {
-    private final DaemonMavenParser parser;
-    private final DaemonMavenInvoker invoker;
-
-    public DaemonMavenCling() {
-        this.parser = new DaemonMavenParser();
-        this.invoker = new DaemonMavenInvoker(ProtoLookup.builder()
-                .addMapping(
-                        ClassWorld.class, ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld())
-                .build());
-    }
-
-    @Override
-    public void close() throws Exception {
-        invoker.close();
-    }
 
     @Override
     public int main(
@@ -60,25 +41,32 @@ public class DaemonMavenCling implements DaemonCli {
             String workingDir,
             String projectDir,
             Map<String, String> env,
-            BuildEventListener buildEventListener)
+            BuildEventListener buildEventListener,
+            InputStream in,
+            OutputStream out,
+            OutputStream err)
             throws Exception {
-        Terminal terminal = new ExternalTerminal(
-                "Maven",
-                "ansi",
-                new ByteArrayInputStream(new byte[0]),
-                new ByteArrayOutputStream(),
-                StandardCharsets.UTF_8);
-        MessageUtils.systemInstall(terminal);
         EnvHelper.environment(workingDir, env);
         System.setProperty("maven.multiModuleProjectDirectory", projectDir);
-        return invoker.invoke(parser.parse(ParserRequest.builder(
-                        "mvnd", "Maven Daemon", args, new ProtoLogger(), new DaemonMessageBuilderFactory())
-                .cwd(Paths.get(workingDir))
-                .lookup(ProtoLookup.builder()
-                        .addMapping(Environment.class, () -> env)
-                        .addMapping(BuildEventListener.class, buildEventListener)
-                        .build())
-                .build()));
+
+        try (DaemonMavenInvoker invoker = new DaemonMavenInvoker(ProtoLookup.builder()
+                .addMapping(
+                        ClassWorld.class, ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld())
+                .addMapping(BuildEventListener.class, buildEventListener)
+                .build())) {
+            DaemonMavenParser parser = new DaemonMavenParser();
+            return invoker.invoke(parser.parse(ParserRequest.builder(
+                            "mvnd", "Maven Daemon", args, new ProtoLogger(), new DaemonMessageBuilderFactory())
+                    .cwd(Paths.get(workingDir))
+                    .in(in)
+                    .out(out)
+                    .err(err)
+                    .lookup(ProtoLookup.builder()
+                            .addMapping(Environment.class, () -> env)
+                            .addMapping(BuildEventListener.class, buildEventListener)
+                            .build())
+                    .build()));
+        }
     }
 
     /**

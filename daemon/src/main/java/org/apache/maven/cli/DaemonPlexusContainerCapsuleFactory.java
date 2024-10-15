@@ -27,19 +27,11 @@ import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
 import org.apache.maven.cling.invoker.PlexusContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
-import org.codehaus.plexus.logging.LoggerManager;
 import org.mvndaemon.mvnd.common.Environment;
-import org.mvndaemon.mvnd.logging.internal.Slf4jLoggerManager;
 
 public class DaemonPlexusContainerCapsuleFactory
         extends PlexusContainerCapsuleFactory<
                 MavenOptions, MavenInvokerRequest<MavenOptions>, DefaultResidentMavenInvoker.LocalContext> {
-    private final Slf4jLoggerManager slf4jLoggerManager = new Slf4jLoggerManager();
-
-    @Override
-    protected LoggerManager createLoggerManager() {
-        return slf4jLoggerManager;
-    }
 
     @Override
     protected List<Path> parseExtClasspath(DefaultResidentMavenInvoker.LocalContext context) throws Exception {

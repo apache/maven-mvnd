@@ -297,10 +297,6 @@ public enum Environment {
      */
     MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL),
     /**
-     * Whether or not decorate output and error streams
-     **/
-    MVND_RAW_STREAMS("mvnd.rawStreams", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:--raw-streams"),
-    /**
      * Overall timeout to connect to a daemon.
      */
     MVND_CONNECT_TIMEOUT("mvnd.connectTimeout", null, "10 seconds", OptionType.DURATION, Flags.NONE),

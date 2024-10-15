@@ -323,11 +323,6 @@ public class DefaultClient implements Client {
                 return DefaultResult.success(argv);
             }
 
-            // Raw streams
-            if (Environment.MVND_RAW_STREAMS.removeCommandLineOption(args) != null) {
-                args.add("-D" + Environment.MVND_RAW_STREAMS.getProperty());
-            }
-
             Optional<String> threads = Optional.ofNullable(Environment.MVND_THREADS.removeCommandLineOption(args));
             Environment.MVND_THREADS.addCommandLineOption(args, threads.orElseGet(parameters::threads));
 

@@ -52,6 +52,9 @@ import java.util.stream.Collectors;
 
 import io.takari.maven.builder.smart.SmartBuilder;
 import org.apache.maven.cli.DaemonCli;
+import org.apache.maven.logging.BuildEventListener;
+import org.apache.maven.logging.LoggingOutputStream;
+import org.apache.maven.logging.ProjectBuildLogAppender;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
 import org.mvndaemon.mvnd.common.DaemonExpirationStatus;
@@ -67,9 +70,6 @@ import org.mvndaemon.mvnd.common.SignalHelper;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
-import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
-import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
-import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,11 +187,7 @@ public class Server implements AutoCloseable, Runnable {
                     try {
                         registry.close();
                     } finally {
-                        try {
-                            socket.close();
-                        } finally {
-                            cli.close();
-                        }
+                        socket.close();
                     }
                 }
             }
@@ -509,7 +505,7 @@ public class Server implements AutoCloseable, Runnable {
         final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
         final DaemonInputStream daemonInputStream =
                 new DaemonInputStream(projectId -> sendQueue.add(Message.requestInput(projectId)));
-        try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(buildEventListener)) {
+        try {
 
             LOGGER.info("Executing request");
 
@@ -610,15 +606,17 @@ public class Server implements AutoCloseable, Runnable {
                         }
                     }
                 });
-                System.setIn(daemonInputStream);
-                System.setOut(new LoggingOutputStream(s -> sendQueue.add(Message.out(s))).printStream());
-                System.setErr(new LoggingOutputStream(s -> sendQueue.add(Message.err(s))).printStream());
+                LoggingOutputStream output = new LoggingOutputStream(s -> sendQueue.add(Message.out(s)));
+                LoggingOutputStream error = new LoggingOutputStream(s -> sendQueue.add(Message.err(s)));
                 int exitCode = cli.main(
                         buildRequest.getArgs(),
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
                         buildRequest.getEnv(),
-                        buildEventListener);
+                        buildEventListener,
+                        daemonInputStream,
+                        output,
+                        error);
                 LOGGER.info("Build finished, finishing message dispatch");
                 buildEventListener.finish(exitCode);
             } catch (Throwable t) {
