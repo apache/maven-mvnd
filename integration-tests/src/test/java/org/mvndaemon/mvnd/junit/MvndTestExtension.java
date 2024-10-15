@@ -21,7 +21,6 @@ package org.mvndaemon.mvnd.junit;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -225,19 +224,6 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
 
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
-            String mrmRepoUrl = System.getProperty("mrm.repository.url");
-            if ("".equals(mrmRepoUrl)) {
-                mrmRepoUrl = null;
-            }
-            final Path settingsPath;
-            if (mrmRepoUrl == null) {
-                LOG.info("Building without mrm-maven-plugin");
-                settingsPath = null;
-                prefillLocalRepo(localMavenRepository);
-            } else {
-                LOG.info("Building with mrm-maven-plugin");
-                settingsPath = createSettings(testDir.resolve("settings.xml"), mrmRepoUrl);
-            }
             final Path home = deleteDir(testDir.resolve("home"));
             final TestParameters parameters = new TestParameters(
                     testDir,
@@ -248,7 +234,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository,
-                    settingsPath,
+                    null,
                     TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
                     keepAlive != null && !keepAlive.isEmpty()
                             ? TimeUtils.toDuration(keepAlive)
@@ -289,22 +275,6 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     }
                 }
             });
-        }
-
-        static Path createSettings(Path settingsPath, String mrmRepoUrl) {
-            final Path settingsTemplatePath = Paths.get("src/test/resources/settings-template.xml");
-            try {
-                final String template = Files.readString(settingsTemplatePath);
-                final String content = template.replaceAll("@mrm.repository.url@", mrmRepoUrl);
-                try {
-                    Files.write(settingsPath, content.getBytes(StandardCharsets.UTF_8));
-                } catch (Exception e) {
-                    throw new RuntimeException("Could not write " + settingsPath);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read " + settingsTemplatePath);
-            }
-            return settingsPath;
         }
 
         public MvndResource(TestParameters parameters, TestRegistry registry, boolean isNative, long timeoutMs) {
