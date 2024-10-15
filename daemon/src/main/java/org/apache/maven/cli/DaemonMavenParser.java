@@ -56,7 +56,7 @@ public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvoke
         try {
             return CommonsCliDaemonMavenOptions.parse(source, args.toArray(new String[0]));
         } catch (ParseException e) {
-            throw new ParserException("Failed to parse source " + source, e.getCause());
+            throw new ParserException("Failed to parse source " + source + ": " + e.getMessage(), e.getCause());
         }
     }
 
