@@ -20,18 +20,38 @@ package org.apache.maven.cli;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
 import org.apache.maven.cling.invoker.PlexusContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
+import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.mvndaemon.mvnd.common.Environment;
 
 public class DaemonPlexusContainerCapsuleFactory
         extends PlexusContainerCapsuleFactory<
                 MavenOptions, MavenInvokerRequest<MavenOptions>, DefaultResidentMavenInvoker.LocalContext> {
+
+    @Override
+    protected Set<String> collectExportedArtifacts(
+            CoreExtensionEntry coreEntry, List<CoreExtensionEntry> extensionEntries) {
+        HashSet<String> result = new HashSet<>(super.collectExportedArtifacts(coreEntry, extensionEntries));
+        result.add("org.codehaus.plexus:plexus-interactivity-api");
+        return result;
+    }
+
+    @Override
+    protected Set<String> collectExportedPackages(
+            CoreExtensionEntry coreEntry, List<CoreExtensionEntry> extensionEntries) {
+        HashSet<String> result = new HashSet<>(super.collectExportedPackages(coreEntry, extensionEntries));
+        result.add("org.mvndaemon.mvnd.interactivity");
+        result.add("org.codehaus.plexus.components.interactivity");
+        return result;
+    }
 
     @Override
     protected List<Path> parseExtClasspath(DefaultResidentMavenInvoker.LocalContext context) throws Exception {

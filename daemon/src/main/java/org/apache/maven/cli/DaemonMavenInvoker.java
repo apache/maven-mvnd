@@ -18,9 +18,11 @@
  */
 package org.apache.maven.cli;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.maven.api.cli.Options;
@@ -92,9 +94,11 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
         BuildEventListener buildEventListener =
                 context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class);
         if (invokerRequest.options().help().isPresent()) {
-            // TODO: ugly, cleanup
-            buildEventListener.log(
-                    MvndHelpFormatter.displayHelp((CommonsCliDaemonMavenOptions) context.invokerRequest.options()));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (PrintWriter pw = new PrintWriter(new PrintStream(baos), true, StandardCharsets.UTF_8)) {
+                context.invokerRequest.options().displayHelp(invokerRequest.parserRequest(), pw);
+            }
+            buildEventListener.log(baos.toString(StandardCharsets.UTF_8));
             throw new ExitException(0);
         }
         if (invokerRequest.options().showVersionAndExit().isPresent()) {
