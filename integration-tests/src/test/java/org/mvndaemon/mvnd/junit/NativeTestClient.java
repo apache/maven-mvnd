@@ -35,6 +35,8 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.OsUtils.CommandProcess;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
+import static org.mvndaemon.mvnd.junit.TestUtils.augmentArgs;
+
 /**
  * A wrapper around the native executable.
  */
@@ -66,7 +68,8 @@ public class NativeTestClient implements Client {
     public ExecutionResult execute(ClientOutput output, List<String> args) throws InterruptedException {
         final List<String> cmd = new ArrayList<>(args.size() + 6);
         cmd.add(mvndNativeExecutablePath.toString());
-        cmd.addAll(args);
+        cmd.addAll(augmentArgs(args));
+
         add(Environment.MVND_DAEMON_STORAGE, cmd, parameters::daemonStorage);
         add(Environment.MAVEN_REPO_LOCAL, cmd, parameters::mavenRepoLocal);
         add(Environment.MAVEN_SETTINGS, cmd, parameters::settings);
