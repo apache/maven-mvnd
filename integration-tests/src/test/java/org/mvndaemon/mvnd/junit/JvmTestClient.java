@@ -30,6 +30,8 @@ import org.mvndaemon.mvnd.client.ExecutionResult;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
+import static org.mvndaemon.mvnd.junit.TestUtils.augmentArgs;
+
 public class JvmTestClient extends DefaultClient {
 
     private final DaemonParameters parameters;
@@ -47,7 +49,7 @@ public class JvmTestClient extends DefaultClient {
         if (parameters instanceof TestParameters && ((TestParameters) parameters).isNoTransferProgress()) {
             argv.add("-ntp");
         }
-        final ExecutionResult delegate = super.execute(output, argv);
+        final ExecutionResult delegate = super.execute(output, augmentArgs(argv));
         if (output instanceof TestClientOutput) {
             return new JvmTestResult(delegate, ((TestClientOutput) output).messagesToString());
         }

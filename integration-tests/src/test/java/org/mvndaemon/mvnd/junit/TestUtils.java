@@ -21,10 +21,25 @@ package org.mvndaemon.mvnd.junit;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class TestUtils {
+    /**
+     * IT circumvention for JDK transport low timeouts and GH macOS runners networking issues.
+     * If arguments does not contain settings for timeouts (ie as part of test), they will be
+     * added to increase timeouts for IT runs.
+     */
+    public static List<String> augmentArgs(List<String> args) {
+        ArrayList<String> result = new ArrayList<>(args);
+        if (result.stream().noneMatch(s -> s.contains("aether.transport.http.connectTimeout"))) {
+            result.add("-Daether.transport.http.connectTimeout=1800000");
+        }
+        // note: def value for requestTimeout=1800000; not setting it as it is fine
+        return result;
+    }
 
     public static void replace(Path path, String find, String replacement) {
         try {
