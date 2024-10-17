@@ -81,7 +81,7 @@ public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvoke
     @Override
     protected Map<String, String> populateUserProperties(LocalContext context) throws ParserException, IOException {
         HashMap<String, String> props = new HashMap<>(super.populateUserProperties(context));
-        props.put("aether.transport.jdk.httpVersion", "HTTP_1_1");
+        props.put("maven.resolver.transport", "apache");
         return props;
     }
 
