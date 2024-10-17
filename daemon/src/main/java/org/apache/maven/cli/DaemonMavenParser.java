@@ -18,6 +18,7 @@
  */
 package org.apache.maven.cli;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,13 @@ public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvoke
                 .get();
         systemProperties.putAll(env);
         return systemProperties;
+    }
+
+    @Override
+    protected Map<String, String> populateUserProperties(LocalContext context) throws ParserException, IOException {
+        HashMap<String, String> props = new HashMap<>(super.populateUserProperties(context));
+        props.put("maven.resolver.transport", "apache");
+        return props;
     }
 
     @Override
