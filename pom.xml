@@ -16,15 +16,12 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" root="true" xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
 
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
     <version>43</version>
-    <relativePath />
   </parent>
 
   <groupId>org.apache.maven.daemon</groupId>
@@ -42,19 +39,6 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-
-  <modules>
-    <module>build-plugin</module>
-    <module>native</module>
-    <module>agent</module>
-    <module>helper</module>
-    <module>common</module>
-    <module>client</module>
-    <module>logging</module>
-    <module>daemon</module>
-    <module>dist</module>
-    <module>integration-tests</module>
-  </modules>
 
   <scm>
     <connection>scm:git:${repository.url}.git</connection>
@@ -84,7 +68,7 @@
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.27.1</jline.version>
     <maven.version>4.0.0-beta-5</maven.version>
-    <required-maven.version>3.9.9</required-maven.version>
+    <required-maven.version>4.0.0-beta-5</required-maven.version>
 
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>2.0.2</maven.resolver.version>
@@ -112,16 +96,13 @@
 
   <dependencyManagement>
     <dependencies>
-
       <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-simple</artifactId>
-        <version>${slf4j.version}</version>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>apache-maven</artifactId>
+        <version>${maven.version}</version>
+        <classifier>fat</classifier>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
 
       <dependency>
@@ -131,63 +112,11 @@
       </dependency>
 
       <dependency>
-        <groupId>org.apache.groovy</groupId>
-        <artifactId>groovy</artifactId>
-        <version>${groovy.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>org.graalvm.nativeimage</groupId>
         <artifactId>svm</artifactId>
         <version>${graalvm.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>jakarta.inject</groupId>
-        <artifactId>jakarta.inject-api</artifactId>
-        <version>${jakarta.inject.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-plugin-api</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-model</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-core</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-resolver-provider</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-embedder</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-cli</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-jline</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven</groupId>
-        <artifactId>maven-logging</artifactId>
-        <version>${maven.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>apache-maven</artifactId>
@@ -199,37 +128,6 @@
         <groupId>org.apache.maven.plugin-tools</groupId>
         <artifactId>maven-plugin-annotations</artifactId>
         <version>${maven.plugin-tools.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-api</artifactId>
-        <version>${maven.resolver.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-impl</artifactId>
-        <version>${maven.resolver.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-spi</artifactId>
-        <version>${maven.resolver.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-util</artifactId>
-        <version>${maven.resolver.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-connector-basic</artifactId>
-        <version>${maven.resolver.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-transport-wagon</artifactId>
-        <version>${maven.resolver.version}</version>
       </dependency>
 
       <!-- Only for MessageBuilder/MessageUtils -->
@@ -246,95 +144,9 @@
       </dependency>
 
       <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-native</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-logging</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-agent</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-client</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-common</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-dist</artifactId>
-        <version>${project.version}</version>
-        <type>pom</type>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-daemon</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.daemon</groupId>
-        <artifactId>mvnd-helper-agent</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>io.takari.maven</groupId>
         <artifactId>takari-smart-builder</artifactId>
         <version>${takari-smart-builder.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.eclipse.sisu</groupId>
-        <artifactId>org.eclipse.sisu.inject</artifactId>
-        <version>${sisu.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.sisu</groupId>
-        <artifactId>org.eclipse.sisu.plexus</artifactId>
-        <version>${sisu.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.inject</groupId>
-        <artifactId>guice</artifactId>
-        <version>6.0.0</version>
-        <classifier>classes</classifier>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>33.3.1-jre</version>
-        <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.jline</groupId>
-        <artifactId>jline</artifactId>
-        <version>${jline.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jline</groupId>
-        <artifactId>jline-terminal</artifactId>
-        <version>${jline.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jline</groupId>
-        <artifactId>jline-terminal-jansi</artifactId>
-        <version>${jline.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jline</groupId>
-        <artifactId>jline-terminal-jni</artifactId>
-        <version>${jline.version}</version>
       </dependency>
 
       <dependency>
@@ -343,16 +155,6 @@
         <version>${picocli.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>log4j-over-slf4j</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jcl-over-slf4j</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>jul-to-slf4j</artifactId>
@@ -368,11 +170,6 @@
         <groupId>org.javassist</groupId>
         <artifactId>javassist</artifactId>
         <version>${javassist.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-interactivity-api</artifactId>
-        <version>${plexus-interactivity-api.version}</version>
       </dependency>
 
       <dependency>
