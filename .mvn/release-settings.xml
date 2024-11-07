@@ -6,8 +6,8 @@
             <id>maven-staging</id>
             <repositories>
                 <repository>
-                    <id>maven-staging-1</id>
-                    <url>https://repository.apache.org/content/repositories/maven-1859/</url>
+                    <id>maven-staging-rc1</id>
+                    <url>https://repository.apache.org/content/repositories/maven-2247/</url>
                     <releases>
                         <enabled>true</enabled>
                     </releases>

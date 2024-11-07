@@ -72,7 +72,7 @@ public class DaemonMavenCling implements DaemonCli {
         EnvHelper.environment(workingDir, env);
         System.setProperty("maven.multiModuleProjectDirectory", projectDir);
 
-        return invoker.invoke(parser.parse(ParserRequest.builder(
+        return invoker.invoke(parser.parseInvocation(ParserRequest.builder(
                         "mvnd", "Maven Daemon", args, new ProtoLogger(), new DaemonMessageBuilderFactory())
                 .cwd(Paths.get(workingDir))
                 .in(in)

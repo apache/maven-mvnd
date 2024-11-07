@@ -104,7 +104,7 @@ public enum Environment {
     /** Batch mode */
     MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-B", "mvn:--batch-mode"),
     /** Debug */
-    MAVEN_DEBUG(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--debug"),
+    MAVEN_DEBUG(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--verbose"),
     /** Version */
     MAVEN_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-v", "mvn:-version", "mvn:--version"),
     /** Show version */

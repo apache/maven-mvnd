@@ -69,8 +69,6 @@ public class DefaultClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
 
-    private final DaemonParameters parameters;
-
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
 
@@ -223,6 +221,8 @@ public class DefaultClient implements Client {
                 .filter(e -> e != Environment.MAVEN_DEFINE)
                 .noneMatch(e -> e.hasCommandLineOption(Collections.singletonList(arg)));
     }
+
+    private final DaemonParameters parameters;
 
     public DefaultClient(DaemonParameters parameters) {
         // Those options are needed in order to be able to set the environment correctly
@@ -484,7 +484,6 @@ public class DefaultClient implements Client {
         }
 
         private DefaultResult(List<String> args, Exception exception, int exitCode) {
-            super();
             this.args = args;
             this.exception = exception;
             this.exitCode = exitCode;
