@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
@@ -59,7 +59,7 @@ class SingleModuleNativeIT {
 
         final TestClientOutput o = new TestClientOutput();
         client.execute(o, "clean", "install", "-e", "-B").assertSuccess();
-        final Properties props =
+        final Map<String, String> props =
                 MvndTestUtil.properties(parameters.multiModuleProjectDirectory().resolve("pom.xml"));
 
         final List<String> messages = o.getMessages().stream()
@@ -87,14 +87,14 @@ class SingleModuleNativeIT {
         Assertions.assertThat(installedJar).exists();
     }
 
-    protected void assertJVM(TestClientOutput o, Properties props) {
+    protected void assertJVM(TestClientOutput o, Map<String, String> props) {
         /* implemented in the subclass */
     }
 
-    String mojoStartedLogMessage(Properties props, String pluginArtifactId, String mojo, String executionId) {
+    String mojoStartedLogMessage(Map<String, String> props, String pluginArtifactId, String mojo, String executionId) {
         return "\\Q--- "
                 + pluginArtifactId.replace("maven-", "").replace("-plugin", "")
-                + ":" + props.getProperty(pluginArtifactId + ".version") + ":" + mojo + " ("
+                + ":" + props.get(pluginArtifactId + ".version") + ":" + mojo + " ("
                 + executionId + ") @ single-module ---\\E";
     }
 }
