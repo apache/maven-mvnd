@@ -28,7 +28,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.apache.log4j.Logger;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -39,13 +38,15 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.TimeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.mvndaemon.mvnd.junit.TestParameters.TEST_MIN_THREADS;
 import static org.mvndaemon.mvnd.junit.TestUtils.deleteDir;
 
 public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
-    private static final Logger LOG = Logger.getLogger(MvndTestExtension.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MvndTestExtension.class);
 
     /** A placeholder to replace with a temporary directory outside of the current source tree */
     public static final String TEMP_EXTERNAL = "${temp.external}";

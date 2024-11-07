@@ -54,6 +54,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
         <configuration>
+          <requiredMavenVersion>${required-maven.version}</requiredMavenVersion>
           <goalPrefix>mvnd-build</goalPrefix>
           <mojoDependencies>
             <dep>org.apache.maven:maven-plugin-api</dep>
