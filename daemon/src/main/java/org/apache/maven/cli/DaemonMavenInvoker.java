@@ -18,17 +18,9 @@
  */
 package org.apache.maven.cli;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-
 import org.apache.maven.api.cli.Options;
 import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
-import org.apache.maven.api.services.MavenException;
 import org.apache.maven.cling.invoker.ContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
@@ -36,7 +28,7 @@ import org.apache.maven.jline.MessageUtils;
 import org.apache.maven.logging.BuildEventListener;
 import org.apache.maven.logging.LoggingOutputStream;
 import org.jline.terminal.Terminal;
-import org.jline.terminal.impl.ExternalTerminal;
+import org.jline.terminal.TerminalBuilder;
 import org.mvndaemon.mvnd.common.Environment;
 
 public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
@@ -51,36 +43,19 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
 
     @Override
     protected Terminal createTerminal(LocalContext context) {
-        try {
-            Terminal terminal = new ExternalTerminal(
-                    "Maven",
-                    "ansi",
-                    context.invokerRequest.in().get(),
-                    context.invokerRequest.out().get(),
-                    StandardCharsets.UTF_8);
-            doConfigureWithTerminal(context, terminal);
-            // If raw-streams options has been set, we need to decorate to push back to the client
-            if (context.invokerRequest.options().rawStreams().orElse(false)) {
-                BuildEventListener bel = determineBuildEventListener(context);
-                OutputStream out = context.invokerRequest.out().orElse(null);
-                System.setOut(out != null ? printStream(out) : new LoggingOutputStream(bel::log).printStream());
-                OutputStream err = context.invokerRequest.err().orElse(null);
-                System.setErr(err != null ? printStream(err) : new LoggingOutputStream(bel::log).printStream());
-            }
-            return terminal;
-        } catch (IOException e) {
-            throw new MavenException("Error creating terminal", e);
-        }
-    }
-
-    private PrintStream printStream(OutputStream outputStream) {
-        if (outputStream instanceof LoggingOutputStream los) {
-            return los.printStream();
-        } else if (outputStream instanceof PrintStream ps) {
-            return ps;
-        } else {
-            return new PrintStream(outputStream);
-        }
+        MessageUtils.systemInstall(
+                builder -> {
+                    builder.streams(
+                            context.invokerRequest.in().get(),
+                            context.invokerRequest.out().get());
+                    builder.systemOutput(TerminalBuilder.SystemOutput.ForcedSysOut);
+                    builder.provider(TerminalBuilder.PROP_PROVIDER_EXEC);
+                    if (context.coloredOutput != null) {
+                        builder.color(context.coloredOutput);
+                    }
+                },
+                terminal -> doConfigureWithTerminal(context, terminal));
+        return MessageUtils.getTerminal();
     }
 
     @Override
@@ -94,11 +69,7 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
         BuildEventListener buildEventListener =
                 context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class);
         if (invokerRequest.options().help().isPresent()) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (PrintWriter pw = new PrintWriter(new PrintStream(baos), true, StandardCharsets.UTF_8)) {
-                context.invokerRequest.options().displayHelp(invokerRequest.parserRequest(), pw);
-            }
-            buildEventListener.log(baos.toString(StandardCharsets.UTF_8));
+            context.invokerRequest.options().displayHelp(invokerRequest.parserRequest(), buildEventListener::log);
             throw new ExitException(0);
         }
         if (invokerRequest.options().showVersionAndExit().isPresent()) {
