@@ -18,68 +18,60 @@
  */
 package org.apache.maven.cli;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
+import org.apache.maven.api.cli.InvokerException;
+import org.apache.maven.api.cli.InvokerRequest;
 import org.apache.maven.api.cli.Options;
-import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
-import org.apache.maven.api.cli.mvn.MavenOptions;
-import org.apache.maven.api.services.MavenException;
 import org.apache.maven.cling.invoker.ContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.ProtoLookup;
-import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
+import org.apache.maven.cling.invoker.mvn.resident.ResidentMavenContext;
+import org.apache.maven.cling.invoker.mvn.resident.ResidentMavenInvoker;
+import org.apache.maven.cling.utils.CLIReportingUtils;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.jline.MessageUtils;
 import org.apache.maven.logging.BuildEventListener;
 import org.apache.maven.logging.LoggingOutputStream;
 import org.jline.terminal.Terminal;
-import org.jline.terminal.impl.ExternalTerminal;
+import org.jline.terminal.TerminalBuilder;
 import org.mvndaemon.mvnd.common.Environment;
 
-public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
+public class DaemonMavenInvoker extends ResidentMavenInvoker {
     public DaemonMavenInvoker(ProtoLookup protoLookup) {
         super(protoLookup);
     }
 
-    // TODO: this is a hack, and fixes issue in DefaultResidentMavenInvoker that does not copy TCCL
-    private ClassLoader tccl;
-
-    protected int doInvoke(LocalContext context) throws Exception {
-        try {
-            if (tccl != null) {
-                context.currentThreadContextClassLoader = tccl;
-                Thread.currentThread().setContextClassLoader(context.currentThreadContextClassLoader);
-            }
-            return super.doInvoke(context);
-        } finally {
-            this.tccl = context.currentThreadContextClassLoader;
+    @Override
+    protected void createTerminal(ResidentMavenContext context) {
+        MessageUtils.systemInstall(
+                builder -> {
+                    builder.streams(
+                            context.invokerRequest.in().orElseThrow(),
+                            context.invokerRequest.out().orElseThrow());
+                    builder.systemOutput(TerminalBuilder.SystemOutput.ForcedSysOut);
+                    builder.provider(TerminalBuilder.PROP_PROVIDER_EXEC);
+                    if (context.coloredOutput != null) {
+                        builder.color(context.coloredOutput);
+                    }
+                },
+                terminal -> doConfigureWithTerminal(context, terminal));
+        context.terminal = MessageUtils.getTerminal();
+        context.closeables.add(MessageUtils::systemUninstall);
+        MessageUtils.registerShutdownHook();
+        if (context.coloredOutput != null) {
+            MessageUtils.setColorEnabled(context.coloredOutput);
         }
     }
 
     @Override
-    protected Terminal createTerminal(LocalContext context) {
-        try {
-            Terminal terminal = new ExternalTerminal(
-                    "Maven",
-                    "ansi",
-                    context.invokerRequest.in().get(),
-                    context.invokerRequest.out().get(),
-                    StandardCharsets.UTF_8);
-            doConfigureWithTerminal(context, terminal);
-            // If raw-streams options has been set, we need to decorate to push back to the client
-            if (context.invokerRequest.options().rawStreams().orElse(false)) {
-                BuildEventListener bel = determineBuildEventListener(context);
-                OutputStream out = context.invokerRequest.out().orElse(null);
-                System.setOut(out != null ? printStream(out) : new LoggingOutputStream(bel::log).printStream());
-                OutputStream err = context.invokerRequest.err().orElse(null);
-                System.setErr(err != null ? printStream(err) : new LoggingOutputStream(bel::log).printStream());
-            }
-            return terminal;
-        } catch (IOException e) {
-            throw new MavenException("Error creating terminal", e);
+    protected void doConfigureWithTerminal(ResidentMavenContext context, Terminal terminal) {
+        super.doConfigureWithTerminal(context, terminal);
+        Optional<Boolean> rawStreams = context.invokerRequest.options().rawStreams();
+        if (rawStreams.orElse(false)) {
+            System.setOut(printStream(context.invokerRequest.out().orElseThrow()));
+            System.setErr(printStream(context.invokerRequest.err().orElseThrow()));
         }
     }
 
@@ -94,22 +86,18 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     }
 
     @Override
-    protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(LocalContext context) {
+    protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(ResidentMavenContext context) {
         return context.invokerRequest.lookup().lookup(BuildEventListener.class);
     }
 
     @Override
-    protected void helpOrVersionAndMayExit(LocalContext context) throws Exception {
-        MavenInvokerRequest<MavenOptions> invokerRequest = context.invokerRequest;
+    protected void helpOrVersionAndMayExit(ResidentMavenContext context) throws Exception {
+        InvokerRequest invokerRequest = context.invokerRequest;
         BuildEventListener buildEventListener =
                 context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class);
         if (invokerRequest.options().help().isPresent()) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (PrintWriter pw = new PrintWriter(new PrintStream(baos), true, StandardCharsets.UTF_8)) {
-                context.invokerRequest.options().displayHelp(invokerRequest.parserRequest(), pw);
-            }
-            buildEventListener.log(baos.toString(StandardCharsets.UTF_8));
-            throw new ExitException(0);
+            context.invokerRequest.options().displayHelp(invokerRequest.parserRequest(), buildEventListener::log);
+            throw new InvokerException.ExitException(0);
         }
         if (invokerRequest.options().showVersionAndExit().isPresent()) {
             if (invokerRequest.options().quiet().orElse(false)) {
@@ -117,12 +105,12 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
             } else {
                 buildEventListener.log(CLIReportingUtils.showVersion());
             }
-            throw new ExitException(0);
+            throw new InvokerException.ExitException(0);
         }
     }
 
     @Override
-    protected void preCommands(LocalContext context) throws Exception {
+    protected void preCommands(ResidentMavenContext context) throws Exception {
         Options mavenOptions = context.invokerRequest.options();
         if (mavenOptions.verbose().orElse(false) || mavenOptions.showVersion().orElse(false)) {
             context.invokerRequest
@@ -134,26 +122,25 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
     }
 
     @Override
-    protected ContainerCapsuleFactory<MavenOptions, MavenInvokerRequest<MavenOptions>, LocalContext>
-            createContainerCapsuleFactory() {
+    protected ContainerCapsuleFactory<ResidentMavenContext> createContainerCapsuleFactory() {
         return new DaemonPlexusContainerCapsuleFactory();
     }
 
     @Override
-    protected int doExecute(LocalContext context) throws Exception {
+    protected int doExecute(ResidentMavenContext context, MavenExecutionRequest request) throws Exception {
         context.logger.info(MessageUtils.builder()
                 .a("Processing build on daemon ")
                 .strong(Environment.MVND_ID.asString())
                 .toString());
-        context.logger.info("Daemon status dump:");
-        context.logger.info("CWD: " + context.invokerRequest.cwd());
-        context.logger.info("MAVEN_HOME: " + context.invokerRequest.installationDirectory());
-        context.logger.info("USER_HOME: " + context.invokerRequest.userHomeDirectory());
-        context.logger.info("topDirectory: " + context.invokerRequest.topDirectory());
-        context.logger.info("rootDirectory: " + context.invokerRequest.rootDirectory());
+        context.logger.debug("Daemon status dump:");
+        context.logger.debug("CWD: " + context.invokerRequest.cwd());
+        context.logger.debug("MAVEN_HOME: " + context.invokerRequest.installationDirectory());
+        context.logger.debug("USER_HOME: " + context.invokerRequest.userHomeDirectory());
+        context.logger.debug("topDirectory: " + context.invokerRequest.topDirectory());
+        context.logger.debug("rootDirectory: " + context.invokerRequest.rootDirectory());
 
         try {
-            return super.doExecute(context);
+            return super.doExecute(context, request);
         } finally {
             LoggingOutputStream.forceFlush(System.out);
             LoggingOutputStream.forceFlush(System.err);

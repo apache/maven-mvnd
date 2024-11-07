@@ -26,31 +26,11 @@ import java.util.stream.Stream;
 import org.apache.commons.cli.ParseException;
 import org.apache.maven.api.cli.ParserException;
 import org.apache.maven.api.cli.extensions.CoreExtension;
-import org.apache.maven.api.cli.mvn.MavenInvokerRequest;
 import org.apache.maven.api.cli.mvn.MavenOptions;
-import org.apache.maven.cling.invoker.mvn.BaseMavenParser;
-import org.apache.maven.cling.invoker.mvn.DefaultMavenInvokerRequest;
+import org.apache.maven.cling.invoker.mvn.MavenParser;
 import org.mvndaemon.mvnd.common.Environment;
 
-public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvokerRequest<MavenOptions>> {
-    @Override
-    protected DefaultMavenInvokerRequest<MavenOptions> getInvokerRequest(LocalContext context) {
-        return new DefaultMavenInvokerRequest<>(
-                context.parserRequest,
-                context.cwd,
-                context.installationDirectory,
-                context.userHomeDirectory,
-                context.userProperties,
-                context.systemProperties,
-                context.topDirectory,
-                context.rootDirectory,
-                context.parserRequest.in(),
-                context.parserRequest.out(),
-                context.parserRequest.err(),
-                context.extensions,
-                (DaemonMavenOptions) context.options);
-    }
-
+public class DaemonMavenParser extends MavenParser {
     @Override
     protected MavenOptions parseArgs(String source, List<String> args) throws ParserException {
         try {
@@ -58,12 +38,6 @@ public class DaemonMavenParser extends BaseMavenParser<MavenOptions, MavenInvoke
         } catch (ParseException e) {
             throw new ParserException("Failed to parse source " + source + ": " + e.getMessage(), e.getCause());
         }
-    }
-
-    @Override
-    protected MavenOptions assembleOptions(List<MavenOptions> parsedOptions) {
-        return LayeredDaemonMavenOptions.layerDaemonMavenOptions(
-                parsedOptions.stream().map(o -> (DaemonMavenOptions) o).toList());
     }
 
     @Override

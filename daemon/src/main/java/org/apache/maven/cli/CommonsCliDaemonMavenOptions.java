@@ -18,35 +18,25 @@
  */
 package org.apache.maven.cli;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.maven.cling.invoker.mvn.CommonsCliMavenOptions;
 import org.apache.maven.jline.MessageUtils;
-import org.codehaus.plexus.interpolation.BasicInterpolator;
-import org.codehaus.plexus.interpolation.InterpolationException;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.OptionType;
 
-import static org.apache.maven.cling.invoker.Utils.createInterpolator;
-
-public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions implements DaemonMavenOptions {
+public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions {
     public static CommonsCliDaemonMavenOptions parse(String source, String[] args) throws ParseException {
         CLIManager cliManager = new CLIManager();
         return new CommonsCliDaemonMavenOptions(source, cliManager, cliManager.parse(args));
@@ -56,44 +46,7 @@ public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions impleme
         super(source, cliManager, commandLine);
     }
 
-    public org.apache.commons.cli.Options getOptions() {
-        return this.cliManager.getOptions();
-    }
-
-    private static CommonsCliDaemonMavenOptions interpolate(
-            CommonsCliDaemonMavenOptions options, Collection<Map<String, String>> properties) {
-        try {
-            // now that we have properties, interpolate all arguments
-            BasicInterpolator interpolator = createInterpolator(properties);
-            CommandLine.Builder commandLineBuilder = new CommandLine.Builder();
-            commandLineBuilder.setDeprecatedHandler(o -> {});
-            for (Option option : options.commandLine.getOptions()) {
-                if (!CLIManager.USER_PROPERTY.equals(option.getOpt())) {
-                    List<String> values = option.getValuesList();
-                    for (ListIterator<String> it = values.listIterator(); it.hasNext(); ) {
-                        it.set(interpolator.interpolate(it.next()));
-                    }
-                }
-                commandLineBuilder.addOption(option);
-            }
-            for (String arg : options.commandLine.getArgList()) {
-                commandLineBuilder.addArg(interpolator.interpolate(arg));
-            }
-            return new CommonsCliDaemonMavenOptions(
-                    options.source, (CLIManager) options.cliManager, commandLineBuilder.build());
-        } catch (InterpolationException e) {
-            throw new IllegalArgumentException("Could not interpolate CommonsCliOptions", e);
-        }
-    }
-
-    @Override
-    public DaemonMavenOptions interpolate(Collection<Map<String, String>> properties) {
-        return interpolate(this, properties);
-    }
-
     protected static class CLIManager extends CommonsCliMavenOptions.CLIManager {
-        public static final String RAW_STREAMS = "ras";
-
         private static final Pattern HTML_TAGS_PATTERN = Pattern.compile("<[^>]*>");
         private static final Pattern COLUMNS_DETECTOR_PATTERN = Pattern.compile("^[ ]+[^s]");
         private static final Pattern WS_PATTERN = Pattern.compile("\\s+");
@@ -103,28 +56,15 @@ public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions impleme
         }
 
         @Override
-        protected void prepareOptions(Options options) {
-            super.prepareOptions(options);
-            options.addOption(Option.builder(RAW_STREAMS)
-                    .longOpt("raw-streams")
-                    .desc("Use raw-streams for daemon communication")
-                    .build());
-        }
-
-        @Override
-        public void displayHelp(String command, PrintWriter pw) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (PrintWriter pww = new PrintWriter(new PrintStream(baos), true, StandardCharsets.UTF_8)) {
-                super.displayHelp(command, pww);
-            }
-            final String mvnHelp = baos.toString(StandardCharsets.UTF_8);
-            final Matcher m = COLUMNS_DETECTOR_PATTERN.matcher(mvnHelp);
+        public void displayHelp(String command, Consumer<String> pw) {
+            List<String> mvnHelp = new ArrayList<>();
+            super.displayHelp(command, mvnHelp::add);
+            final Matcher m = COLUMNS_DETECTOR_PATTERN.matcher(String.join("\n", mvnHelp));
             final String indent = m.find() ? m.group() : "                                        ";
 
-            final int terminalWidth = getTerminalWidth();
+            int terminalWidth = getTerminalWidth() <= 0 ? 74 : getTerminalWidth();
             final String lineSeparator = System.lineSeparator();
-            final StringBuilder help =
-                    new StringBuilder(mvnHelp).append(lineSeparator).append("mvnd specific options:");
+            final StringBuilder help = new StringBuilder().append(lineSeparator).append("mvnd specific options:");
 
             Environment.documentedEntries().forEach(entry -> {
                 final Environment env = entry.getEntry();
@@ -190,9 +130,8 @@ public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions impleme
                 spaces(help, indentPos - help.length());
                 wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
             });
-
-            pw.print(help);
-            pw.flush();
+            Stream.concat(mvnHelp.stream(), Stream.of(help.toString().split(lineSeparator)))
+                    .forEach(pw);
         }
 
         private static int getTerminalWidth() {
