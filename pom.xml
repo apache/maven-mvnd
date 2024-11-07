@@ -90,7 +90,7 @@
     <maven.resolver.version>2.0.2</maven.resolver.version>
     <slf4j.version>2.0.16</slf4j.version>
     <sisu.version>0.9.0.M3</sisu.version>
-    <maven.plugin-tools.version>3.15.0</maven.plugin-tools.version>
+    <maven.plugin-tools.version>3.15.1</maven.plugin-tools.version>
     <version.plexus-utils>4.0.2</version.plexus-utils>
     <version.plexus-xml>4.0.4</version.plexus-xml>
     <jakarta.inject.version>2.0.1</jakarta.inject.version>
