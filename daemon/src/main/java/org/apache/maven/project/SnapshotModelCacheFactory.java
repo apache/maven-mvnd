@@ -18,16 +18,13 @@
  */
 package org.apache.maven.project;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
-
-import org.apache.maven.model.building.ModelCache;
-import org.apache.maven.repository.internal.DefaultModelCacheFactory;
-import org.apache.maven.repository.internal.ModelCacheFactory;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositorySystemSession;
-import org.eclipse.sisu.Priority;
+import org.apache.maven.api.di.Inject;
+import org.apache.maven.api.di.Named;
+import org.apache.maven.api.di.Priority;
+import org.apache.maven.api.di.Singleton;
+import org.apache.maven.api.services.model.ModelCache;
+import org.apache.maven.api.services.model.ModelCacheFactory;
+import org.apache.maven.internal.impl.model.DefaultModelCacheFactory;
 
 import static org.mvndaemon.mvnd.common.Environment.MVND_NO_MODEL_CACHE;
 
@@ -42,14 +39,14 @@ public class SnapshotModelCacheFactory implements ModelCacheFactory {
     @Inject
     public SnapshotModelCacheFactory(DefaultModelCacheFactory factory) {
         this.factory = factory;
-        this.globalCache = factory.createCache(new DefaultRepositorySystemSession());
+        this.globalCache = factory.newInstance();
     }
 
     @Override
-    public ModelCache createCache(RepositorySystemSession session) {
+    public ModelCache newInstance() {
         boolean noModelCache =
                 Boolean.parseBoolean(MVND_NO_MODEL_CACHE.asOptional().orElse(MVND_NO_MODEL_CACHE.getDefault()));
-        ModelCache reactorCache = factory.createCache(session);
+        ModelCache reactorCache = factory.newInstance();
         ModelCache globalCache = noModelCache ? reactorCache : this.globalCache;
         return new SnapshotModelCache(globalCache, reactorCache);
     }
