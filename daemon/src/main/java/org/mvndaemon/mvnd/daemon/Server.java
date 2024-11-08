@@ -187,7 +187,11 @@ public class Server implements AutoCloseable, Runnable {
                     try {
                         registry.close();
                     } finally {
-                        socket.close();
+                        try {
+                            socket.close();
+                        } finally {
+                            cli.close();
+                        }
                     }
                 }
             }

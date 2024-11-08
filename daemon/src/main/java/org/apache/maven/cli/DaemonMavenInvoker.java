@@ -85,7 +85,7 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
 
     @Override
     protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(LocalContext context) {
-        return protoLookup.lookup(BuildEventListener.class);
+        return context.invokerRequest.lookup().lookup(BuildEventListener.class);
     }
 
     @Override
