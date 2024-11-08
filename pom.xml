@@ -107,7 +107,7 @@
     <roaster.version>2.29.0.Final</roaster.version>
     <takari-smart-builder.version>1.0.2</takari-smart-builder.version>
     <testcontainers.version>1.20.3</testcontainers.version>
-    <xstream.version>1.4.20</xstream.version>
+    <xstream.version>1.4.21</xstream.version>
   </properties>
 
   <dependencyManagement>
