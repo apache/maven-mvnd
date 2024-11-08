@@ -44,21 +44,6 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
         super(protoLookup);
     }
 
-    // TODO: this is a hack, and fixes issue in DefaultResidentMavenInvoker that does not copy TCCL
-    private ClassLoader tccl;
-
-    protected int doInvoke(LocalContext context) throws Exception {
-        try {
-            if (tccl != null) {
-                context.currentThreadContextClassLoader = tccl;
-                Thread.currentThread().setContextClassLoader(context.currentThreadContextClassLoader);
-            }
-            return super.doInvoke(context);
-        } finally {
-            this.tccl = context.currentThreadContextClassLoader;
-        }
-    }
-
     @Override
     protected Terminal createTerminal(LocalContext context) {
         try {
