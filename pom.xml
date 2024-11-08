@@ -83,7 +83,7 @@
     <groovy.version>4.0.23</groovy.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.27.1</jline.version>
-    <maven.version>4.0.0-beta-5</maven.version>
+    <maven.version>4.0.0-beta-6-SNAPSHOT</maven.version>
     <required-maven.version>3.9.9</required-maven.version>
 
     <!-- Keep in sync with Maven -->
