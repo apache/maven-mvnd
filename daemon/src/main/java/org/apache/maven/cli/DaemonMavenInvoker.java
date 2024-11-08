@@ -44,9 +44,19 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
         super(protoLookup);
     }
 
-    @Override
-    protected void configureLogging(LocalContext context) throws Exception {
-        super.configureLogging(context);
+    // TODO: this is a hack, and fixes issue in DefaultResidentMavenInvoker that does not copy TCCL
+    private ClassLoader tccl;
+
+    protected int doInvoke(LocalContext context) throws Exception {
+        try {
+            if (tccl != null) {
+                context.currentThreadContextClassLoader = tccl;
+                Thread.currentThread().setContextClassLoader(context.currentThreadContextClassLoader);
+            }
+            return super.doInvoke(context);
+        } finally {
+            this.tccl = context.currentThreadContextClassLoader;
+        }
     }
 
     @Override
@@ -85,7 +95,7 @@ public class DaemonMavenInvoker extends DefaultResidentMavenInvoker {
 
     @Override
     protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(LocalContext context) {
-        return protoLookup.lookup(BuildEventListener.class);
+        return context.invokerRequest.lookup().lookup(BuildEventListener.class);
     }
 
     @Override
