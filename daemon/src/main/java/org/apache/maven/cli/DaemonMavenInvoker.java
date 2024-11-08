@@ -24,6 +24,7 @@ import org.apache.maven.api.cli.mvn.MavenOptions;
 import org.apache.maven.cling.invoker.ContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.resident.DefaultResidentMavenInvoker;
+import org.apache.maven.cling.utils.CLIReportingUtils;
 import org.apache.maven.jline.MessageUtils;
 import org.apache.maven.logging.BuildEventListener;
 import org.apache.maven.logging.LoggingOutputStream;
