@@ -21,8 +21,8 @@ package org.apache.maven.project;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import org.apache.maven.building.Source;
-import org.apache.maven.model.building.ModelCache;
+import org.apache.maven.api.services.Source;
+import org.apache.maven.api.services.model.ModelCache;
 
 public class SnapshotModelCache implements ModelCache {
 
@@ -42,6 +42,11 @@ public class SnapshotModelCache implements ModelCache {
     @Override
     public <T> T computeIfAbsent(Source path, String tag, Supplier<T> data) {
         return reactorCache.computeIfAbsent(path, tag, data);
+    }
+
+    @Override
+    public void clear() {
+        reactorCache.clear();
     }
 
     private ModelCache getDelegate(String version) {
