@@ -283,9 +283,16 @@ public class Server implements AutoCloseable, Runnable {
                 updateState(DaemonState.Idle);
                 return;
             }
-            LOGGER.info("Request received: {}", message);
             if (message instanceof BuildRequest) {
-                handle(connection, (BuildRequest) message);
+                BuildRequest buildRequest = (BuildRequest) message;
+                LOGGER.info("Request received: {}", message);
+                if (Boolean.getBoolean("mvnd.dump.client.env")) {
+                    // Environment can contain passwords or tokens, so do not dump, unless specifically asked for
+                    LOGGER.trace("Client environment dump: {}", buildRequest.getEnv());
+                }
+                handle(connection, buildRequest);
+            } else {
+                LOGGER.info("Ignoring message: {}", message);
             }
         } catch (Throwable t) {
             LOGGER.error("Error reading request", t);
