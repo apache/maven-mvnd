@@ -367,8 +367,7 @@ public abstract class Message {
             return "BuildRequest{" + "args="
                     + args + ", workingDir='"
                     + workingDir + '\'' + ", projectDir='"
-                    + projectDir + '\'' + ", env='"
-                    + env + '\'' + '}';
+                    + projectDir + '\'' + '}';
         }
 
         @Override
