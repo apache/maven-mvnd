@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Message {
     public static final int BUILD_REQUEST = 1;
@@ -125,10 +126,13 @@ public abstract class Message {
         throw new IllegalStateException("Unexpected message type: " + type);
     }
 
+    private static final AtomicLong sequence = new AtomicLong();
+
+    final long seq = sequence.incrementAndGet();
     final long timestamp = System.nanoTime();
 
     public static Comparator<Message> getMessageComparator() {
-        return Comparator.comparingInt(Message::getClassOrder).thenComparingLong(Message::timestamp);
+        return Comparator.comparingInt(Message::getClassOrder).thenComparingLong(Message::seq);
     }
 
     public static int getClassOrder(Message m) {
@@ -176,6 +180,10 @@ public abstract class Message {
             default:
                 throw new IllegalStateException("Unexpected message type " + m.getType() + ": " + m);
         }
+    }
+
+    public long seq() {
+        return seq;
     }
 
     public long timestamp() {
