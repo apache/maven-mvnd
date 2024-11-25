@@ -339,6 +339,13 @@ public class DaemonParameters {
     }
 
     /**
+     * @return <code>true</code> if maven should be executed in debug mode.
+     */
+    public boolean debug() {
+        return value(Environment.MVND_DEBUG).orSystemProperty().orDefault().asBoolean();
+    }
+
+    /**
      *
      * @return if mvnd should behave as maven
      */
@@ -352,6 +359,10 @@ public class DaemonParameters {
      */
     public DaemonParameters cd(Path newUserDir) {
         return derive(b -> b.put(Environment.USER_DIR, newUserDir));
+    }
+
+    public DaemonParameters debug(boolean debug) {
+        return derive(b -> b.put(Environment.MVND_DEBUG, debug));
     }
 
     public DaemonParameters withJdkJavaOpts(String opts, boolean before) {

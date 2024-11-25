@@ -103,8 +103,8 @@ public enum Environment {
     MAVEN_LOG_FILE(null, null, null, OptionType.PATH, Flags.INTERNAL, "mvn:-l", "mvn:--log-file"),
     /** Batch mode */
     MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-B", "mvn:--batch-mode"),
-    /** Debug */
-    MAVEN_DEBUG(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--verbose"),
+    /** Verbose */
+    MAVEN_VERBOSE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--verbose"),
     /** Version */
     MAVEN_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-v", "mvn:-version", "mvn:--version"),
     /** Show version */
@@ -166,7 +166,7 @@ public enum Environment {
      * <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000</code>; otherwise the debug argument is
      * not passed to the daemon.
      */
-    MVND_DEBUG("mvnd.debug", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.DISCRIMINATING),
+    MVND_DEBUG("mvnd.debug", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.DISCRIMINATING, "mvn:--debug"),
     /**
      * The tcp address used to launch the debug mode. Defaults to <code>8000</code>, which is similar to
      * <code>localhost:8000</code>.  In order to remote debug from a different computer, you need to allow
