@@ -248,10 +248,10 @@ public class DefaultClient implements Client {
 
         boolean version = Environment.MAVEN_VERSION.hasCommandLineOption(args);
         boolean showVersion = Environment.MAVEN_SHOW_VERSION.hasCommandLineOption(args);
-        boolean debug = Environment.MAVEN_DEBUG.hasCommandLineOption(args);
+        boolean verbose = Environment.MAVEN_VERBOSE.hasCommandLineOption(args);
 
         // Print version if needed
-        if (version || showVersion || debug) {
+        if (version || showVersion || verbose) {
             // Print mvnd version
             BuildProperties buildProperties = BuildProperties.getInstance();
             final String mvndVersionString = "Apache Maven Daemon (mvnd) " + buildProperties.getVersion() + " "
@@ -336,6 +336,10 @@ public class DefaultClient implements Client {
             Optional<String> repo = Optional.ofNullable(Environment.MAVEN_REPO_LOCAL.removeCommandLineOption(args))
                     .or(() -> Optional.ofNullable(parameters.mavenRepoLocal()).map(Path::toString));
             repo.ifPresent(r -> Environment.MAVEN_REPO_LOCAL.addCommandLineOption(args, r));
+
+            if (Environment.MVND_DEBUG.removeCommandLineOption(args) != null) {
+                System.setProperty(Environment.MVND_DEBUG.getProperty(), "true");
+            }
 
             String width = Optional.ofNullable(Environment.MVND_TERMINAL_WIDTH.removeCommandLineOption(args))
                     .orElseGet(() -> {
