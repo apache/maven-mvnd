@@ -112,7 +112,7 @@ public enum Environment {
     /** Define */
     MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "mvn:-D", "mvn:--define"),
     /** Whether the output should be styled using ANSI color codes; possible values: auto, always, never */
-    MAVEN_COLOR("style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
+    MAVEN_COLOR("maven.style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
 
     //
     // mvnd properties
@@ -584,7 +584,18 @@ public enum Environment {
         auto;
 
         public static Optional<Color> of(String color) {
-            return color == null ? Optional.empty() : Optional.of(Color.valueOf(color));
+            if (color == null) {
+                return Optional.empty();
+            } else if ("always".equals(color) || "yes".equals(color) || "force".equals(color)) {
+                return Optional.of(Color.always);
+            } else if ("never".equals(color) || "no".equals(color) || "none".equals(color)) {
+                return Optional.of(Color.never);
+            } else if ("auto".equals(color) || "tty".equals(color) || "if-tty".equals(color)) {
+                return Optional.of(Color.auto);
+            } else {
+                throw new IllegalArgumentException(
+                        "Invalid color configuration value '" + color + "'. Supported are 'auto', 'always', 'never'.");
+            }
         }
     }
 
