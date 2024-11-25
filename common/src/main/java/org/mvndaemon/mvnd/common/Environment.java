@@ -588,7 +588,18 @@ public enum Environment {
         auto;
 
         public static Optional<Color> of(String color) {
-            return color == null ? Optional.empty() : Optional.of(Color.valueOf(color));
+            if (color == null) {
+                return Optional.empty();
+            } else if ("always".equals(color) || "yes".equals(color) || "force".equals(color)) {
+                return Optional.of(Color.always);
+            } else if ("never".equals(color) || "no".equals(color) || "none".equals(color)) {
+                return Optional.of(Color.never);
+            } else if ("auto".equals(color) || "tty".equals(color) || "if-tty".equals(color)) {
+                return Optional.of(Color.auto);
+            } else {
+                throw new IllegalArgumentException(
+                        "Invalid color configuration value '" + color + "'. Supported are 'auto', 'always', 'never'.");
+            }
         }
     }
 
