@@ -59,7 +59,7 @@ if [ -n "$(git status --porcelain)" ]; then
     git config --global user.name "Guillaume Nodet"
     git add -A
     git commit -m "Release ${VERSION}"
-    #git push origin master
+    git push origin master
 else
     echo "Nothing to commit"
 fi
