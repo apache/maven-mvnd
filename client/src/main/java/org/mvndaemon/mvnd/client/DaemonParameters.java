@@ -18,8 +18,6 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import javax.xml.stream.XMLStreamException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,13 +28,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -45,8 +41,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.maven.api.cli.extensions.CoreExtension;
-import org.apache.maven.cling.internal.extension.io.CoreExtensionsStaxReader;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.InterpolationHelper;
 import org.mvndaemon.mvnd.common.Os;
@@ -291,7 +285,7 @@ public class DaemonParameters {
 
     /**
      * @return the number of threads (same syntax as Maven's {@code -T}/{@code --threads} option) to pass to the daemon
-     *         unless the user passes his own `-T` or `--threads`.
+     * unless the user passes his own `-T` or `--threads`.
      */
     public String threads() {
         return property(Environment.MVND_THREADS)
@@ -321,7 +315,7 @@ public class DaemonParameters {
 
     /**
      * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the
-     *         default
+     * default
      */
     public Path mavenRepoLocal() {
         return property(Environment.MAVEN_REPO_LOCAL).asPath();
@@ -346,7 +340,6 @@ public class DaemonParameters {
     }
 
     /**
-     *
      * @return if mvnd should behave as maven
      */
     public boolean serial() {
@@ -354,8 +347,8 @@ public class DaemonParameters {
     }
 
     /**
-     * @param  newUserDir where to change the current directory to
-     * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
+     * @param newUserDir where to change the current directory to
+     * @return a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
     public DaemonParameters cd(Path newUserDir) {
         return derive(b -> b.put(Environment.USER_DIR, newUserDir));
@@ -457,14 +450,20 @@ public class DaemonParameters {
         if (env == Environment.MVND_EXT_CLASSPATH) {
             List<String> cp = parseExtClasspath(userHome());
             return String.join(",", cp);
-        } else if (env == Environment.MVND_CORE_EXTENSIONS) {
+        } else if (env == Environment.MVND_CORE_EXTENSIONS_FILE_PATH) {
             try {
-                List<String> extensions = readCoreExtensionsDescriptor(multiModuleProjectDirectory()).stream()
-                        .map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
-                        .collect(Collectors.toList());
-                return String.join(";", extensions);
-            } catch (IOException | XMLStreamException e) {
-                throw new RuntimeException("Unable to parse core extensions", e);
+                return resolveCoreExtensionFilePath(multiModuleProjectDirectory());
+            } catch (IOException e) {
+                throw new RuntimeException("Unable to resolve core extension configuration file path", e);
+            }
+        } else if (env == Environment.MVND_CORE_EXTENSIONS_EXCLUDE) {
+            String exclusionsString = systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE)
+                    .orDefault()
+                    .asString();
+            if (exclusionsString != null) {
+                return exclusionsString;
+            } else {
+                return "";
             }
         } else {
             return env.getDefault();
@@ -483,40 +482,15 @@ public class DaemonParameters {
         return jars;
     }
 
-    private static List<CoreExtension> readCoreExtensionsDescriptor(Path multiModuleProjectDirectory)
-            throws IOException, XMLStreamException {
+    private static String resolveCoreExtensionFilePath(Path multiModuleProjectDirectory) throws IOException {
         if (multiModuleProjectDirectory == null) {
-            return Collections.emptyList();
+            return "";
         }
         Path extensionsFile = multiModuleProjectDirectory.resolve(EXTENSIONS_FILENAME);
         if (!Files.exists(extensionsFile)) {
-            return Collections.emptyList();
+            return "";
         }
-        CoreExtensionsStaxReader parser = new CoreExtensionsStaxReader();
-        List<CoreExtension> extensions;
-        try (InputStream is = Files.newInputStream(extensionsFile)) {
-            extensions = parser.read(is).getExtensions();
-        }
-        return filterCoreExtensions(extensions);
-    }
-
-    private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
-        Set<String> exclusions = new HashSet<>();
-        String exclusionsString = systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE)
-                .orDefault()
-                .asString();
-        if (exclusionsString != null) {
-            exclusions.addAll(Arrays.stream(exclusionsString.split(","))
-                    .filter(e -> e != null && !e.trim().isEmpty())
-                    .collect(Collectors.toList()));
-        }
-        if (!exclusions.isEmpty()) {
-            return coreExtensions.stream()
-                    .filter(e -> !exclusions.contains(e.getGroupId() + ":" + e.getArtifactId()))
-                    .collect(Collectors.toList());
-        } else {
-            return coreExtensions;
-        }
+        return extensionsFile.toAbsolutePath().toString();
     }
 
     private static Properties loadProperties(Path path) {
@@ -571,7 +545,9 @@ public class DaemonParameters {
             this.valueSupplier = valueSupplier;
         }
 
-        /** Mostly for debugging */
+        /**
+         * Mostly for debugging
+         */
         @Override
         public String toString() {
             return descriptionFunction.apply(new StringBuilder()).toString();
