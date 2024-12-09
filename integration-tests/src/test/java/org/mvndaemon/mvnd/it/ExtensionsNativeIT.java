@@ -54,7 +54,6 @@ class ExtensionsNativeIT {
         client.execute(o, "-v").assertSuccess();
         assertDaemonRegistrySize(1);
         DaemonInfo daemon = registry.getAll().iterator().next();
-        assertTrue(daemon.getOptions().contains("mvnd.coreExtensions=fr.jcgay.maven:maven-profiler:3.0"));
 
         registry.awaitIdle(daemon.getId());
 
@@ -66,5 +65,21 @@ class ExtensionsNativeIT {
         Assertions.assertThat(registry.getAll().size())
                 .as("Daemon registry size should be " + size)
                 .isEqualTo(size);
+    }
+
+    @Test
+    void coreExtensionFilePathOption() throws InterruptedException {
+        registry.killAll();
+        assertDaemonRegistrySize(0);
+
+        final TestClientOutput o = new TestClientOutput();
+        client.execute(o, "-v").assertSuccess();
+        assertDaemonRegistrySize(1);
+        DaemonInfo daemon = registry.getAll().iterator().next();
+
+        daemon.getOptions().stream()
+                .filter(s -> s.startsWith("mvnd.coreExtensionFilePath="))
+                .findFirst()
+                .ifPresent(s -> assertTrue(s.endsWith(".mvn\\extensions.xml") || s.endsWith(".mvn/extensions.xml")));
     }
 }

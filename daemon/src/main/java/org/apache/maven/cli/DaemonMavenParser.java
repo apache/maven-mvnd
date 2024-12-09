@@ -18,15 +18,25 @@
  */
 package org.apache.maven.cli;
 
+import javax.xml.stream.XMLStreamException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.ParseException;
 import org.apache.maven.api.cli.ParserException;
 import org.apache.maven.api.cli.extensions.CoreExtension;
 import org.apache.maven.api.cli.mvn.MavenOptions;
+import org.apache.maven.cling.internal.extension.io.CoreExtensionsStaxReader;
 import org.apache.maven.cling.invoker.mvn.MavenParser;
 import org.mvndaemon.mvnd.common.Environment;
 
@@ -53,16 +63,40 @@ public class DaemonMavenParser extends MavenParser {
 
     @Override
     protected List<CoreExtension> readCoreExtensionsDescriptor(LocalContext context) {
-        return Stream.of(Environment.MVND_CORE_EXTENSIONS.asString().split(";"))
-                .filter(s -> s != null && !s.isEmpty())
-                .map(s -> {
-                    String[] parts = s.split(":");
-                    return CoreExtension.newBuilder()
-                            .groupId(parts[0])
-                            .artifactId(parts[1])
-                            .version(parts[2])
-                            .build();
-                })
-                .toList();
+        String coreExtensionsFilePath = Environment.MVND_CORE_EXTENSIONS_FILE_PATH.asString();
+        if (!coreExtensionsFilePath.isEmpty()) {
+            try {
+                return readCoreExtensionsDescriptor(Path.of(coreExtensionsFilePath));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    private List<CoreExtension> readCoreExtensionsDescriptor(Path extensionsFile)
+            throws IOException, XMLStreamException {
+
+        CoreExtensionsStaxReader parser = new CoreExtensionsStaxReader();
+        List<CoreExtension> extensions;
+        try (InputStream is = Files.newInputStream(extensionsFile)) {
+            extensions = parser.read(is).getExtensions();
+        }
+        return filterCoreExtensions(extensions);
+    }
+
+    private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
+        String exclusionsString = Environment.MVND_CORE_EXTENSIONS_EXCLUDE.asString();
+        Set<String> exclusions = Arrays.stream(exclusionsString.split(","))
+                .filter(e -> e != null && !e.trim().isEmpty())
+                .collect(Collectors.toSet());
+        if (!exclusions.isEmpty()) {
+            return coreExtensions.stream()
+                    .filter(e -> !exclusions.contains(e.getGroupId() + ":" + e.getArtifactId()))
+                    .collect(Collectors.toList());
+        } else {
+            return coreExtensions;
+        }
     }
 }
