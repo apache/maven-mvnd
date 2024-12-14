@@ -27,7 +27,7 @@ import org.apache.maven.api.cli.InvokerRequest;
 import org.apache.maven.api.cli.Options;
 import org.apache.maven.cling.invoker.ContainerCapsuleFactory;
 import org.apache.maven.cling.invoker.ProtoLookup;
-import org.apache.maven.cling.invoker.mvn.resident.ResidentMavenContext;
+import org.apache.maven.cling.invoker.mvn.MavenContext;
 import org.apache.maven.cling.invoker.mvn.resident.ResidentMavenInvoker;
 import org.apache.maven.cling.utils.CLIReportingUtils;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -44,7 +44,7 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     }
 
     @Override
-    protected void createTerminal(ResidentMavenContext context) {
+    protected void createTerminal(MavenContext context) {
         MessageUtils.systemInstall(
                 builder -> {
                     builder.streams(
@@ -66,7 +66,7 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     }
 
     @Override
-    protected void doConfigureWithTerminal(ResidentMavenContext context, Terminal terminal) {
+    protected void doConfigureWithTerminal(MavenContext context, Terminal terminal) {
         super.doConfigureWithTerminal(context, terminal);
         Optional<Boolean> rawStreams = context.invokerRequest.options().rawStreams();
         if (rawStreams.orElse(false)) {
@@ -86,12 +86,12 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     }
 
     @Override
-    protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(ResidentMavenContext context) {
+    protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(MavenContext context) {
         return context.invokerRequest.lookup().lookup(BuildEventListener.class);
     }
 
     @Override
-    protected void helpOrVersionAndMayExit(ResidentMavenContext context) throws Exception {
+    protected void helpOrVersionAndMayExit(MavenContext context) throws Exception {
         InvokerRequest invokerRequest = context.invokerRequest;
         BuildEventListener buildEventListener =
                 context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class);
@@ -110,7 +110,7 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     }
 
     @Override
-    protected void preCommands(ResidentMavenContext context) throws Exception {
+    protected void preCommands(MavenContext context) throws Exception {
         Options mavenOptions = context.invokerRequest.options();
         if (mavenOptions.verbose().orElse(false) || mavenOptions.showVersion().orElse(false)) {
             context.invokerRequest
@@ -122,12 +122,12 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     }
 
     @Override
-    protected ContainerCapsuleFactory<ResidentMavenContext> createContainerCapsuleFactory() {
+    protected ContainerCapsuleFactory<MavenContext> createContainerCapsuleFactory() {
         return new DaemonPlexusContainerCapsuleFactory();
     }
 
     @Override
-    protected int doExecute(ResidentMavenContext context, MavenExecutionRequest request) throws Exception {
+    protected int doExecute(MavenContext context, MavenExecutionRequest request) throws Exception {
         context.logger.info(MessageUtils.builder()
                 .a("Processing build on daemon ")
                 .strong(Environment.MVND_ID.asString())

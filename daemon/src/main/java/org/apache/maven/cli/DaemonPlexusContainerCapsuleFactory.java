@@ -26,11 +26,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.apache.maven.cling.invoker.PlexusContainerCapsuleFactory;
-import org.apache.maven.cling.invoker.mvn.resident.ResidentMavenContext;
+import org.apache.maven.cling.invoker.mvn.MavenContext;
 import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.mvndaemon.mvnd.common.Environment;
 
-public class DaemonPlexusContainerCapsuleFactory extends PlexusContainerCapsuleFactory<ResidentMavenContext> {
+public class DaemonPlexusContainerCapsuleFactory extends PlexusContainerCapsuleFactory<MavenContext> {
 
     @Override
     protected Set<String> collectExportedArtifacts(
@@ -50,7 +50,7 @@ public class DaemonPlexusContainerCapsuleFactory extends PlexusContainerCapsuleF
     }
 
     @Override
-    protected List<Path> parseExtClasspath(ResidentMavenContext context) throws Exception {
+    protected List<Path> parseExtClasspath(MavenContext context) throws Exception {
         return Stream.of(Environment.MVND_EXT_CLASSPATH.asString().split(","))
                 .filter(s -> s != null && !s.isEmpty())
                 .map(Paths::get)
