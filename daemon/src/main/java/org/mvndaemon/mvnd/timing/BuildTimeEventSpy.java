@@ -18,6 +18,9 @@
  */
 package org.mvndaemon.mvnd.timing;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
@@ -28,14 +31,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.apache.maven.api.di.Named;
-import org.apache.maven.api.di.Singleton;
-import org.apache.maven.api.di.Typed;
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
+import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,8 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private Session session;
+
+    public BuildTimeEventSpy() {}
 
     private static String getExecutionProperty(final ExecutionEvent event, final String property, final String def) {
         MavenSession mavenSession = event.getSession();

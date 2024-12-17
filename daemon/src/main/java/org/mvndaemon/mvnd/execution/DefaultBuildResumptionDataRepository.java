@@ -37,6 +37,9 @@ package org.mvndaemon.mvnd.execution;
  * under the License.
  */
 
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -46,8 +49,6 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.apache.maven.api.di.Named;
-import org.apache.maven.api.di.Singleton;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.project.MavenProject;
 import org.slf4j.Logger;
