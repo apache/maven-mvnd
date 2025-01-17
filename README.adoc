@@ -75,19 +75,19 @@ Note: There are two formulae: the `mvnd` that install latest, and `mvnd@1` that 
 sudo port install mvnd
 ----
 
+=== Install using https://aquaproj.github.io/[aqua]
+
+[source,shell]
+----
+$ aqua g -i apache/maven-mvnd
+----
+
 === Other installers
 
 We're looking for contribution to support https://community.chocolatey.org/packages/mvndaemon/[Chocolatey], https://scoop.sh/[Scoop] or
 https://github.com/joschi/asdf-mvnd#install[asdf].  If you fancy helping us...
 
 ////
-=== Install using https://www.macports.org[MacPorts]
-
-[source,shell]
-----
-$ sudo port install mvnd
-----
-
 === Install using https://community.chocolatey.org/packages/mvndaemon/[Chocolatey]
 
 [source,shell]
