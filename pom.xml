@@ -80,7 +80,7 @@
     <commons-compress.version>1.27.1</commons-compress.version>
     <graalvm.version>24.1.1</graalvm.version>
     <graalvm.plugin.version>0.10.4</graalvm.plugin.version>
-    <groovy.version>4.0.24</groovy.version>
+    <groovy.version>4.0.25</groovy.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.28.0</jline.version>
     <maven.version>4.0.0-rc-3-SNAPSHOT</maven.version>
