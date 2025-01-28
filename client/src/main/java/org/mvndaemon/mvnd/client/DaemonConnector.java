@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.apache.maven.slf4j.MavenSimpleLogger;
+import org.apache.maven.api.Constants;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -440,7 +440,7 @@ public class DaemonConnector {
             args.add("-Dmaven.conf=" + mvndHome.resolve("mvn").resolve("conf"));
             args.add("-Dclassworlds.conf=" + mvndHome.resolve("bin").resolve("mvnd-daemon.conf"));
 
-            args.add("-D" + MavenSimpleLogger.LOG_FILE_KEY + "="
+            args.add("-D" + Constants.MAVEN_LOGGER_LOG_FILE + "="
                     + parameters.daemonStorage().resolve("daemon-" + daemonId + ".log"));
 
             Environment.MVND_JAVA_HOME.addSystemProperty(
