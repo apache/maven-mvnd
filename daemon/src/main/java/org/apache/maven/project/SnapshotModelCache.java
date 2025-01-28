@@ -18,9 +18,11 @@
  */
 package org.apache.maven.project;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import org.apache.maven.api.RemoteRepository;
 import org.apache.maven.api.services.Source;
 import org.apache.maven.api.services.model.ModelCache;
 
@@ -35,8 +37,15 @@ public class SnapshotModelCache implements ModelCache {
     }
 
     @Override
-    public <T> T computeIfAbsent(String groupId, String artifactId, String version, String tag, Supplier<T> data) {
-        return getDelegate(version).computeIfAbsent(groupId, artifactId, version, tag, data);
+    public <T> T computeIfAbsent(
+            List<RemoteRepository> repositories,
+            String groupId,
+            String artifactId,
+            String version,
+            String classifier,
+            String tag,
+            Supplier<T> data) {
+        return getDelegate(version).computeIfAbsent(repositories, groupId, artifactId, version, classifier, tag, data);
     }
 
     @Override
