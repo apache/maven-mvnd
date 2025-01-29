@@ -19,8 +19,8 @@
 package org.mvndaemon.mvnd.cache.impl;
 
 import org.apache.maven.api.di.Named;
+import org.apache.maven.api.di.Priority;
 import org.apache.maven.api.di.Singleton;
-import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 import org.mvndaemon.mvnd.cache.CacheRecord;

@@ -25,21 +25,21 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.apache.maven.api.di.Named;
+import org.apache.maven.api.di.Priority;
+import org.apache.maven.api.di.Typed;
 import org.apache.maven.logging.ProjectBuildLogAppender;
 import org.codehaus.plexus.components.interactivity.AbstractInputHandler;
 import org.codehaus.plexus.components.interactivity.InputHandler;
 import org.codehaus.plexus.components.interactivity.OutputHandler;
 import org.codehaus.plexus.components.interactivity.Prompter;
 import org.codehaus.plexus.components.interactivity.PrompterException;
-import org.eclipse.sisu.Priority;
-import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.daemon.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Named
-@Priority(10)
+@Priority(20)
 @Typed({Prompter.class, InputHandler.class, OutputHandler.class})
 public class DaemonPrompter extends AbstractInputHandler implements Prompter, InputHandler, OutputHandler {
 

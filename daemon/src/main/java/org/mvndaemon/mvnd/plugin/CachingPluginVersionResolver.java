@@ -25,7 +25,9 @@ import java.util.stream.Stream;
 
 import org.apache.maven.api.di.Inject;
 import org.apache.maven.api.di.Named;
+import org.apache.maven.api.di.Priority;
 import org.apache.maven.api.di.Singleton;
+import org.apache.maven.api.di.Typed;
 import org.apache.maven.artifact.repository.metadata.io.MetadataReader;
 import org.apache.maven.plugin.MavenPluginManager;
 import org.apache.maven.plugin.version.PluginVersionRequest;
@@ -37,8 +39,6 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.SessionData;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.version.VersionScheme;
-import org.eclipse.sisu.Priority;
-import org.eclipse.sisu.Typed;
 
 @Named
 @Singleton

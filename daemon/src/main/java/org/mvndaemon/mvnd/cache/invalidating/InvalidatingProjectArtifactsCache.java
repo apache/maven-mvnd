@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.api.di.Inject;
 import org.apache.maven.api.di.Named;
+import org.apache.maven.api.di.Priority;
 import org.apache.maven.api.di.Singleton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
@@ -42,7 +43,6 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.WorkspaceRepository;
-import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 
