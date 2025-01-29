@@ -24,6 +24,7 @@ import org.apache.maven.api.di.Priority;
 import org.apache.maven.api.di.Singleton;
 import org.apache.maven.api.services.model.ModelCache;
 import org.apache.maven.api.services.model.ModelCacheFactory;
+import org.apache.maven.impl.model.DefaultModelCacheFactory;
 
 import static org.mvndaemon.mvnd.common.Environment.MVND_NO_MODEL_CACHE;
 
@@ -32,11 +33,11 @@ import static org.mvndaemon.mvnd.common.Environment.MVND_NO_MODEL_CACHE;
 @Priority(10)
 public class SnapshotModelCacheFactory implements ModelCacheFactory {
 
-    private final ModelCacheFactory factory;
+    private final DefaultModelCacheFactory factory;
     private final ModelCache globalCache;
 
     @Inject
-    public SnapshotModelCacheFactory(ModelCacheFactory factory) {
+    public SnapshotModelCacheFactory(DefaultModelCacheFactory factory) {
         this.factory = factory;
         this.globalCache = factory.newInstance();
     }

@@ -18,10 +18,9 @@
  */
 package org.apache.maven.cli;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 import org.apache.maven.api.annotations.Experimental;
+import org.apache.maven.api.di.Named;
+import org.apache.maven.api.di.Singleton;
 import org.apache.maven.jline.JLineMessageBuilderFactory;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.common.Environment;
