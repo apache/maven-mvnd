@@ -79,7 +79,7 @@
     <commons-compress.version>1.27.1</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
     <graalvm.version>24.1.1</graalvm.version>
-    <graalvm.plugin.version>0.10.4</graalvm.plugin.version>
+    <graalvm.plugin.version>0.10.5</graalvm.plugin.version>
     <groovy.version>4.0.24</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jline.version>3.28.0</jline.version>
