@@ -18,6 +18,10 @@
  */
 package org.mvndaemon.mvnd.cache.invalidating;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -42,10 +46,6 @@ import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Singleton
 @Named

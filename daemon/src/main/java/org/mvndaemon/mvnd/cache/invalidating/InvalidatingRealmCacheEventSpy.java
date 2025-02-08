@@ -18,6 +18,10 @@
  */
 package org.mvndaemon.mvnd.cache.invalidating;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystems;
@@ -36,10 +40,6 @@ import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Named
 @Singleton

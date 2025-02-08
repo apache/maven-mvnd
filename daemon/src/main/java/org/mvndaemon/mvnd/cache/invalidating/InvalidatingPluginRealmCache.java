@@ -18,6 +18,10 @@
  */
 package org.mvndaemon.mvnd.cache.invalidating;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
@@ -32,10 +36,6 @@ import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
 
 @Singleton
 @Named
