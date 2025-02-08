@@ -67,7 +67,7 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     @Override
     protected void doConfigureWithTerminal(MavenContext context, Terminal terminal) {
         super.doConfigureWithTerminal(context, terminal);
-        if (!context.invokerRequest.options().rawStreams().orElse(false)) {
+        if (context.invokerRequest.options().rawStreams().orElse(false)) {
             System.setOut(printStream(context.invokerRequest.stdOut().orElseThrow()));
             System.setErr(printStream(context.invokerRequest.stdErr().orElseThrow()));
         }
