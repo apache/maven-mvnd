@@ -31,21 +31,11 @@ import org.apache.maven.extension.internal.CoreExtensionEntry;
 import org.mvndaemon.mvnd.common.Environment;
 
 public class DaemonPlexusContainerCapsuleFactory extends PlexusContainerCapsuleFactory<MavenContext> {
-
-    @Override
-    protected Set<String> collectExportedArtifacts(
-            CoreExtensionEntry coreEntry, List<CoreExtensionEntry> extensionEntries) {
-        HashSet<String> result = new HashSet<>(super.collectExportedArtifacts(coreEntry, extensionEntries));
-        result.add("org.codehaus.plexus:plexus-interactivity-api");
-        return result;
-    }
-
     @Override
     protected Set<String> collectExportedPackages(
             CoreExtensionEntry coreEntry, List<CoreExtensionEntry> extensionEntries) {
         HashSet<String> result = new HashSet<>(super.collectExportedPackages(coreEntry, extensionEntries));
         result.add("org.mvndaemon.mvnd.interactivity");
-        result.add("org.codehaus.plexus.components.interactivity");
         return result;
     }
 
