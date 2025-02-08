@@ -25,9 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.apache.maven.api.cli.InvokerException;
 import org.apache.maven.api.cli.ParserRequest;
-import org.apache.maven.cling.invoker.ProtoLogger;
 import org.apache.maven.cling.invoker.ProtoLookup;
+import org.apache.maven.cling.invoker.logging.SystemLogger;
 import org.apache.maven.logging.BuildEventListener;
 import org.codehaus.plexus.classworlds.ClassWorld;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
@@ -72,17 +73,25 @@ public class DaemonMavenCling implements DaemonCli {
         EnvHelper.environment(workingDir, env);
         System.setProperty("maven.multiModuleProjectDirectory", projectDir);
 
-        return invoker.invoke(parser.parseInvocation(ParserRequest.builder(
-                        "mvnd", "Maven Daemon", args, new ProtoLogger(), new DaemonMessageBuilderFactory())
-                .cwd(Paths.get(workingDir))
-                .in(in)
-                .out(out)
-                .err(err)
-                .lookup(ProtoLookup.builder()
-                        .addMapping(Environment.class, () -> env)
-                        .addMapping(BuildEventListener.class, buildEventListener)
-                        .build())
-                .build()));
+        try {
+            return invoker.invoke(parser.parseInvocation(
+                    ParserRequest.builder("mvnd", "Maven Daemon", args, new DaemonMessageBuilderFactory())
+                            .cwd(Paths.get(workingDir))
+                            .stdIn(in)
+                            .stdOut(out)
+                            .stdErr(err)
+                            .lookup(ProtoLookup.builder()
+                                    .addMapping(Environment.class, () -> env)
+                                    .addMapping(BuildEventListener.class, buildEventListener)
+                                    .build())
+                            .build()));
+        } catch (InvokerException.ExitException e) {
+            return e.getExitCode();
+        } catch (Exception e) {
+            // last resort; as ideally we should get ExitException only
+            new SystemLogger(err).error(e.getMessage(), e);
+            return 1;
+        }
     }
 
     /**

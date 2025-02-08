@@ -37,13 +37,12 @@ package org.mvndaemon.mvnd.execution;
  * under the License.
  */
 
-import javax.inject.Named;
-import javax.inject.Singleton;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.maven.api.di.Named;
+import org.apache.maven.api.di.Singleton;
 import org.apache.maven.execution.BuildFailure;
 import org.apache.maven.execution.BuildSuccess;
 import org.apache.maven.execution.MavenExecutionResult;

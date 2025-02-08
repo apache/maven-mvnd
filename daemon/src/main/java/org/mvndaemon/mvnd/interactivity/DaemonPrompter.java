@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Named
-@Priority(10)
+@Priority(20)
 @Typed({Prompter.class, InputHandler.class, OutputHandler.class})
 public class DaemonPrompter extends AbstractInputHandler implements Prompter, InputHandler, OutputHandler {
 
