@@ -18,6 +18,10 @@
  */
 package org.mvndaemon.mvnd.cache.invalidating;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.FileSystems;
@@ -27,15 +31,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.maven.api.di.Inject;
-import org.apache.maven.api.di.Named;
-import org.apache.maven.api.di.Singleton;
-import org.apache.maven.api.di.Typed;
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.eventspy.EventSpy;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
+import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
