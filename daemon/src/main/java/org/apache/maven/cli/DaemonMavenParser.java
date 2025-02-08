@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.maven.api.cli.ParserException;
 import org.apache.maven.api.cli.extensions.CoreExtension;
 import org.apache.maven.api.cli.mvn.MavenOptions;
 import org.apache.maven.cling.internal.extension.io.CoreExtensionsStaxReader;
@@ -42,16 +41,12 @@ import org.mvndaemon.mvnd.common.Environment;
 
 public class DaemonMavenParser extends MavenParser {
     @Override
-    protected MavenOptions parseArgs(String source, List<String> args) throws ParserException {
-        try {
-            return CommonsCliDaemonMavenOptions.parse(source, args.toArray(new String[0]));
-        } catch (ParseException e) {
-            throw new ParserException("Failed to parse source " + source + ": " + e.getMessage(), e.getCause());
-        }
+    protected MavenOptions parseArgs(String source, List<String> args) throws ParseException {
+        return CommonsCliDaemonMavenOptions.parse(source, args.toArray(new String[0]));
     }
 
     @Override
-    protected Map<String, String> populateSystemProperties(LocalContext context) throws ParserException {
+    protected Map<String, String> populateSystemProperties(LocalContext context) {
         HashMap<String, String> systemProperties = new HashMap<>(super.populateSystemProperties(context));
         Map<String, String> env = context.parserRequest
                 .lookup()

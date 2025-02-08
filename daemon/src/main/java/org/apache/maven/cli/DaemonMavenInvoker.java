@@ -20,7 +20,6 @@ package org.apache.maven.cli;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.Optional;
 
 import org.apache.maven.api.cli.InvokerException;
 import org.apache.maven.api.cli.InvokerRequest;
@@ -48,8 +47,8 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
         MessageUtils.systemInstall(
                 builder -> {
                     builder.streams(
-                            context.invokerRequest.in().orElseThrow(),
-                            context.invokerRequest.out().orElseThrow());
+                            context.invokerRequest.stdIn().orElseThrow(),
+                            context.invokerRequest.stdOut().orElseThrow());
                     builder.systemOutput(TerminalBuilder.SystemOutput.ForcedSysOut);
                     builder.provider(TerminalBuilder.PROP_PROVIDER_EXEC);
                     if (context.coloredOutput != null) {
@@ -68,10 +67,9 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     @Override
     protected void doConfigureWithTerminal(MavenContext context, Terminal terminal) {
         super.doConfigureWithTerminal(context, terminal);
-        Optional<Boolean> rawStreams = context.invokerRequest.options().rawStreams();
-        if (rawStreams.orElse(false)) {
-            System.setOut(printStream(context.invokerRequest.out().orElseThrow()));
-            System.setErr(printStream(context.invokerRequest.err().orElseThrow()));
+        if (context.invokerRequest.options().rawStreams().orElse(false)) {
+            System.setOut(printStream(context.invokerRequest.stdOut().orElseThrow()));
+            System.setErr(printStream(context.invokerRequest.stdErr().orElseThrow()));
         }
     }
 

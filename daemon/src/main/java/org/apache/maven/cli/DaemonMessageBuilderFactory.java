@@ -27,7 +27,7 @@ import org.mvndaemon.mvnd.common.Environment;
 
 @Named
 @Singleton
-@Priority(10)
+@Priority(20)
 @Experimental
 public class DaemonMessageBuilderFactory extends JLineMessageBuilderFactory {
 
