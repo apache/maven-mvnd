@@ -28,7 +28,29 @@ import org.jline.terminal.Terminal;
 import org.mvndaemon.mvnd.common.Message;
 
 /**
- * Handles terminal input in a clean, thread-safe manner using a producer-consumer pattern
+ * Handles terminal input in a clean, thread-safe manner using a producer-consumer pattern.
+ *
+ * This class is responsible for:
+ * 1. Reading input from the terminal based on different types of requests:
+ *    - Project input: Reading raw input for a specific project
+ *    - Prompts: Handling interactive prompts with user feedback
+ *    - Control keys: Monitoring for special control keys in non-dumb terminals
+ *
+ * 2. Managing input state through InputRequest objects which specify:
+ *    - The type of input needed (project input, prompt, or control keys)
+ *    - The project requiring input
+ *    - How many bytes to read
+ *
+ * 3. Converting input to appropriate Message objects and sending them to either:
+ *    - daemonDispatch: for prompt responses
+ *    - daemonReceive: for project input and control keys
+ *
+ * The class detects end-of-stream conditions (EOF) and communicates them back through
+ * the message system, which is crucial for handling piped input (e.g., cat file | mvnd ...).
+ *
+ * Input handling differs based on terminal type:
+ * - Normal terminals: Handle all input types including control keys
+ * - Dumb terminals: Only handle project input and prompts, ignore control keys
  */
 public class TerminalInputHandler implements AutoCloseable {
     private final Terminal terminal;

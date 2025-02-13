@@ -28,6 +28,36 @@ import java.util.function.BiConsumer;
 
 import org.apache.maven.logging.ProjectBuildLogAppender;
 
+/**
+ * An InputStream implementation that manages input for Maven daemon processes.
+ *
+ * This class implements a buffered input stream that:
+ * 1. Tracks which project is currently reading input using ProjectBuildLogAppender
+ * 2. Requests input from the client when needed through a callback
+ * 3. Buffers received input data in memory
+ *
+ * Key behaviors:
+ * - Input is requested through startReadingFromProject callback whenever:
+ *   a) The reading project changes
+ *   b) The input buffer is empty and more data is needed
+ * - The callback receives both the project ID and the number of bytes requested
+ * - Data is added to the buffer through addInputData, which can be called from another thread
+ * - EOF is signaled by calling addInputData with null
+ *
+ * The stream coordinates between multiple threads:
+ * - Reader thread(s): Calling read() methods to get input
+ * - Writer thread: Calling addInputData to provide input data
+ *
+ * Synchronization:
+ * - All buffer access is synchronized on the datas collection
+ * - Readers wait when no data is available using datas.wait()
+ * - Writers notify readers when new data arrives using datas.notifyAll()
+ *
+ * This implementation is particularly important for:
+ * 1. Handling piped input (e.g., cat file | mvnd ...)
+ * 2. Supporting interactive input during builds
+ * 3. Managing input across multiple project builds
+ */
 class DaemonInputStream extends InputStream {
     private final BiConsumer<String, Integer> startReadingFromProject;
     private final LinkedList<byte[]> datas = new LinkedList<>();
