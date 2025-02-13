@@ -75,7 +75,7 @@ class DaemonInputStream extends InputStream {
     public int available() throws IOException {
         synchronized (datas) {
             String projectId = ProjectBuildLogAppender.getProjectId();
-            if (!Objects.equals(projectId, projectReading)) {
+            if (!eof && !Objects.equals(projectId, projectReading)) {
                 projectReading = projectId;
                 startReadingFromProject.accept(projectId, 1);
             }
@@ -106,6 +106,9 @@ class DaemonInputStream extends InputStream {
             int read = 0;
             while (read < len) {
                 if (datas.isEmpty()) {
+                    if (eof) {
+                        return read > 0 ? read : -1; // Exit properly on EOF
+                    }
                     if (read > 0) {
                         break;
                     }
