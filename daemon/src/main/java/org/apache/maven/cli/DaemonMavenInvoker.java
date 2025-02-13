@@ -54,14 +54,13 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
                     if (context.coloredOutput != null) {
                         builder.color(context.coloredOutput);
                     }
+                    // we do want to pause input
+                    builder.paused(true);
                 },
                 terminal -> doConfigureWithTerminal(context, terminal));
         context.terminal = MessageUtils.getTerminal();
         context.closeables.add(MessageUtils::systemUninstall);
         MessageUtils.registerShutdownHook();
-        if (context.coloredOutput != null) {
-            MessageUtils.setColorEnabled(context.coloredOutput);
-        }
     }
 
     @Override
