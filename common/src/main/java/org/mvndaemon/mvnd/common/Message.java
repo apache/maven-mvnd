@@ -1054,30 +1054,38 @@ public abstract class Message {
     public static class RequestInput extends Message {
 
         private String projectId;
+        private int bytesToRead;
 
         public static RequestInput read(DataInputStream input) throws IOException {
             String projectId = readUTF(input);
-            return new RequestInput(projectId);
+            int bytesToRead = input.readInt();
+            return new RequestInput(projectId, bytesToRead);
         }
 
-        public RequestInput(String projectId) {
+        public RequestInput(String projectId, int bytesToRead) {
             super(REQUEST_INPUT);
             this.projectId = projectId;
+            this.bytesToRead = bytesToRead;
         }
 
         public String getProjectId() {
             return projectId;
         }
 
+        public int getBytesToRead() {
+            return bytesToRead;
+        }
+
         @Override
         public String toString() {
-            return "RequestInput{" + "projectId='" + projectId + '\'' + '}';
+            return "RequestInput{" + "projectId='" + projectId + '\'' + ", bytesToRead=" + bytesToRead + '}';
         }
 
         @Override
         public void write(DataOutputStream output) throws IOException {
             super.write(output);
             writeUTF(output, projectId);
+            output.writeInt(bytesToRead);
         }
     }
 
@@ -1099,9 +1107,13 @@ public abstract class Message {
             return data;
         }
 
+        public boolean isEof() {
+            return data == null;
+        }
+
         @Override
         public String toString() {
-            return "InputResponse{" + "data='" + data + "\'" + '}';
+            return "InputResponse{" + (data == null ? "eof" : "data='" + data + "'") + '}';
         }
 
         @Override
@@ -1119,12 +1131,16 @@ public abstract class Message {
         return new StringMessage(BUILD_STATUS, payload);
     }
 
-    public static RequestInput requestInput(String projectId) {
-        return new RequestInput(projectId);
+    public static RequestInput requestInput(String projectId, int bytesToRead) {
+        return new RequestInput(projectId, bytesToRead);
     }
 
     public static InputData inputResponse(String data) {
         return new InputData(data);
+    }
+
+    public static InputData inputEof() {
+        return new InputData(null);
     }
 
     public static StringMessage out(String message) {
