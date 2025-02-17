@@ -615,8 +615,17 @@ public class Server implements AutoCloseable, Runnable {
                 });
                 LoggingOutputStream output = new LoggingOutputStream(s -> sendQueue.add(Message.out(s)));
                 LoggingOutputStream error = new LoggingOutputStream(s -> sendQueue.add(Message.err(s)));
+                // Process MAVEN_ARGS environment variable
+                List<String> args = buildRequest.getArgs();
+                String mavenArgsEnv = buildRequest.getEnv().get("MAVEN_ARGS");
+                if (mavenArgsEnv != null && !mavenArgsEnv.isEmpty()) {
+                    args = new ArrayList<>(args);
+                    Arrays.stream(mavenArgsEnv.split(" "))
+                            .filter(s -> !s.trim().isEmpty())
+                            .forEach(args::add);
+                }
                 int exitCode = cli.main(
-                        buildRequest.getArgs(),
+                        args,
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
                         buildRequest.getEnv(),
