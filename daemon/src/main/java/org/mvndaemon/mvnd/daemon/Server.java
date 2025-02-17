@@ -20,24 +20,20 @@ package org.mvndaemon.mvnd.daemon;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -49,7 +45,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -570,8 +565,9 @@ public class Server implements AutoCloseable, Runnable {
                             failedTests,
                             erroredTests));
         }
-        final DaemonInputStream daemonInputStream =
-                new DaemonInputStream(projectId -> sendQueue.add(Message.requestInput(projectId)));
+        final DaemonInputStream daemonInputStream = new DaemonInputStream(
+                (projectId, bytesToRead) -> sendQueue.add(Message.requestInput(projectId, bytesToRead)));
+        final InputStream in = System.in;
         try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(buildEventListener)) {
 
             LOGGER.info("Executing request");
@@ -704,6 +700,7 @@ public class Server implements AutoCloseable, Runnable {
             LOGGER.error("Error while building project", t);
         } finally {
             MvndTestProgress.setListener(null);
+            System.setIn(in);
             if (!noDaemon) {
                 LOGGER.info("Daemon back to idle");
                 updateState(DaemonState.Idle);
@@ -768,68 +765,5 @@ public class Server implements AutoCloseable, Runnable {
     @Override
     public String toString() {
         return info.toString();
-    }
-
-    static class DaemonInputStream extends InputStream {
-        private final Consumer<String> startReadingFromProject;
-        private final LinkedList<byte[]> datas = new LinkedList<>();
-        private int pos = -1;
-        private String projectReading = null;
-
-        DaemonInputStream(Consumer<String> startReadingFromProject) {
-            this.startReadingFromProject = startReadingFromProject;
-        }
-
-        @Override
-        public int available() throws IOException {
-            synchronized (datas) {
-                String projectId = ProjectBuildLogAppender.getProjectId();
-                if (!Objects.equals(projectId, projectReading)) {
-                    projectReading = projectId;
-                    startReadingFromProject.accept(projectId);
-                }
-                return datas.stream().mapToInt(a -> a.length).sum() - Math.max(pos, 0);
-            }
-        }
-
-        @Override
-        public int read() throws IOException {
-            synchronized (datas) {
-                String projectId = ProjectBuildLogAppender.getProjectId();
-                if (!Objects.equals(projectId, projectReading)) {
-                    projectReading = projectId;
-                    startReadingFromProject.accept(projectId);
-                    // TODO: start a 10ms timer to turn data off
-                }
-                for (; ; ) {
-                    if (datas.isEmpty()) {
-                        try {
-                            datas.wait();
-                        } catch (InterruptedException e) {
-                            throw new InterruptedIOException("Interrupted");
-                        }
-                        pos = -1;
-                        continue;
-                    }
-                    byte[] curData = datas.getFirst();
-                    if (pos >= curData.length) {
-                        datas.removeFirst();
-                        pos = -1;
-                        continue;
-                    }
-                    if (pos < 0) {
-                        pos = 0;
-                    }
-                    return curData[pos++];
-                }
-            }
-        }
-
-        public void addInputData(String data) {
-            synchronized (datas) {
-                datas.add(data.getBytes(Charset.forName(System.getProperty("file.encoding"))));
-                datas.notifyAll();
-            }
-        }
     }
 }
