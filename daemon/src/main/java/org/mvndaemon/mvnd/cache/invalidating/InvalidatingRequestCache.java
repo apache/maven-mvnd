@@ -33,9 +33,11 @@ import org.apache.maven.api.services.Request;
 import org.apache.maven.api.services.RequestTrace;
 import org.apache.maven.api.services.Result;
 import org.apache.maven.api.services.VersionParser;
+import org.apache.maven.api.services.model.ModelResolver;
 import org.apache.maven.impl.cache.AbstractRequestCache;
 import org.apache.maven.impl.cache.CachingSupplier;
 import org.apache.maven.impl.cache.WeakIdentityMap;
+import org.apache.maven.impl.model.DefaultModelBuilder;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 import org.mvndaemon.mvnd.cache.CacheRecord;
@@ -61,36 +63,30 @@ public class InvalidatingRequestCache extends AbstractRequestCache {
     protected <REQ extends Request<?>, REP extends Result<REQ>> CachingSupplier<REQ, REP> doCache(
             REQ req, Function<REQ, REP> supplier) {
 
-        // CacheRetention retention = Objects.requireNonNullElse(
-        //         req instanceof CacheMetadata metadata ? metadata.getCacheRetention() : null,
-        //         CacheRetention.SESSION_SCOPED);
-        // Function<REQ, Record<REQ, REP>> record;
-        // if (req instanceof DefaultModelBuilder.RgavCacheKey rgavCacheKey) {
-        //     retention = versionParser.isSnapshot(rgavCacheKey.version())
-        //                    ? CacheRetention.REQUEST_SCOPED
-        //                    : CacheRetention.PERSISTENT;
-        //     record = k -> new Record<>(supplier, List.of());
-        // } else if (req instanceof DefaultModelBuilder.SourceCacheKey sourceCacheKey) {
-        //     retention = CacheRetention.PERSISTENT;
-        //     Path path = sourceCacheKey.source().getPath();
-        // record = k -> new Record<>(supplier, path != null ? List.of(path) : List.of());
-        // } else if (req instanceof ModelResolver.ModelResolverRequest modelResolverRequest) {
-        //     retention = versionParser.isSnapshot(modelResolverRequest.version())
-        //                    ? CacheRetention.REQUEST_SCOPED
-        //                    : CacheRetention.PERSISTENT;
-        //     record = k -> new Record<>(supplier, List.of());
-        // } else {
-        //     retention = Objects.requireNonNullElse(
-        //                    req instanceof CacheMetadata metadata ? metadata.getCacheRetention() : null,
-        //                    CacheRetention.PERSISTENT);
-        //     record = k -> new Record<>(supplier, List.of());
-        // }
-
         CacheRetention retention = Objects.requireNonNullElse(
                 req instanceof CacheMetadata metadata ? metadata.getCacheRetention() : null,
                 CacheRetention.SESSION_SCOPED);
-        Function<REQ, Record<REQ, REP>> record = k -> new Record<>(supplier, List.of());
-
+        Function<REQ, Record<REQ, REP>> record;
+        if (req instanceof DefaultModelBuilder.RgavCacheKey rgavCacheKey) {
+            // retention = versionParser.isSnapshot(rgavCacheKey.version())
+            //                ? CacheRetention.REQUEST_SCOPED
+            //                : CacheRetention.PERSISTENT;
+            record = k -> new Record<>(supplier, List.of());
+        } else if (req instanceof DefaultModelBuilder.SourceCacheKey sourceCacheKey) {
+            retention = CacheRetention.PERSISTENT;
+            Path path = sourceCacheKey.source().getPath();
+            record = k -> new Record<>(supplier, path != null ? List.of(path) : List.of());
+        } else if (req instanceof ModelResolver.ModelResolverRequest modelResolverRequest) {
+            // retention = versionParser.isSnapshot(modelResolverRequest.version())
+            //                ? CacheRetention.REQUEST_SCOPED
+            //                : CacheRetention.PERSISTENT;
+            record = k -> new Record<>(supplier, List.of());
+        } else {
+            // retention = Objects.requireNonNullElse(
+            //                req instanceof CacheMetadata metadata ? metadata.getCacheRetention() : null,
+            //                CacheRetention.PERSISTENT);
+            record = k -> new Record<>(supplier, List.of());
+        }
         Cache<REQ, Record<REQ, REP>> cache;
         if ((retention == CacheRetention.REQUEST_SCOPED || retention == CacheRetention.SESSION_SCOPED)
                 && req.getSession() instanceof Session session) {
