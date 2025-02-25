@@ -63,28 +63,26 @@ public class InvalidatingRequestCache extends AbstractRequestCache {
     protected <REQ extends Request<?>, REP extends Result<REQ>> CachingSupplier<REQ, REP> doCache(
             REQ req, Function<REQ, REP> supplier) {
 
-        CacheRetention retention = Objects.requireNonNullElse(
-                req instanceof CacheMetadata metadata ? metadata.getCacheRetention() : null,
-                CacheRetention.SESSION_SCOPED);
+        CacheRetention retention;
         Function<REQ, Record<REQ, REP>> record;
         if (req instanceof DefaultModelBuilder.RgavCacheKey rgavCacheKey) {
-            // retention = versionParser.isSnapshot(rgavCacheKey.version())
-            //                ? CacheRetention.REQUEST_SCOPED
-            //                : CacheRetention.PERSISTENT;
+            retention = versionParser.isSnapshot(rgavCacheKey.version())
+                    ? CacheRetention.REQUEST_SCOPED
+                    : CacheRetention.PERSISTENT;
             record = k -> new Record<>(supplier, List.of());
         } else if (req instanceof DefaultModelBuilder.SourceCacheKey sourceCacheKey) {
             retention = CacheRetention.PERSISTENT;
             Path path = sourceCacheKey.source().getPath();
             record = k -> new Record<>(supplier, path != null ? List.of(path) : List.of());
         } else if (req instanceof ModelResolver.ModelResolverRequest modelResolverRequest) {
-            // retention = versionParser.isSnapshot(modelResolverRequest.version())
-            //                ? CacheRetention.REQUEST_SCOPED
-            //                : CacheRetention.PERSISTENT;
+            retention = versionParser.isSnapshot(modelResolverRequest.version())
+                    ? CacheRetention.REQUEST_SCOPED
+                    : CacheRetention.PERSISTENT;
             record = k -> new Record<>(supplier, List.of());
         } else {
-            // retention = Objects.requireNonNullElse(
-            //                req instanceof CacheMetadata metadata ? metadata.getCacheRetention() : null,
-            //                CacheRetention.PERSISTENT);
+            retention = Objects.requireNonNullElse(
+                    req instanceof CacheMetadata metadata ? metadata.getCacheRetention() : null,
+                    CacheRetention.PERSISTENT);
             record = k -> new Record<>(supplier, List.of());
         }
         Cache<REQ, Record<REQ, REP>> cache;
