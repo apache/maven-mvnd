@@ -26,6 +26,7 @@ import org.apache.maven.api.cache.RequestCache;
 import org.apache.maven.api.cache.RequestCacheFactory;
 import org.apache.maven.api.services.VersionParser;
 import org.eclipse.sisu.Typed;
+import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 
 @Named
@@ -35,15 +36,17 @@ public class InvalidatingRequestCacheFactory implements RequestCacheFactory {
 
     private final CacheFactory cacheFactory;
     private final VersionParser versionParser;
+    private final Cache<?, ?> forever;
 
     @Inject
     public InvalidatingRequestCacheFactory(CacheFactory cacheFactory, VersionParser versionParser) {
         this.cacheFactory = cacheFactory;
         this.versionParser = versionParser;
+        this.forever = cacheFactory.newWeakCache();
     }
 
     @Override
     public RequestCache createCache() {
-        return new InvalidatingRequestCache(cacheFactory, versionParser);
+        return new InvalidatingRequestCache(cacheFactory, versionParser, forever);
     }
 }

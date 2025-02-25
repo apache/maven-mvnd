@@ -48,15 +48,15 @@ public class InvalidatingRequestCache extends AbstractRequestCache {
             SessionData.key(WeakIdentityMap.class, CacheMetadata.class);
     protected static final Object ROOT = new Object();
 
-    protected final Cache<Object, Record<?, ?>> forever;
+    protected final Cache<?, ?> forever;
 
     protected final CacheFactory cacheFactory;
     protected final VersionParser versionParser;
 
-    public InvalidatingRequestCache(CacheFactory cacheFactory, VersionParser versionParser) {
+    public InvalidatingRequestCache(CacheFactory cacheFactory, VersionParser versionParser, Cache<?, ?> forever) {
         this.cacheFactory = cacheFactory;
         this.versionParser = versionParser;
-        this.forever = cacheFactory.newCache();
+        this.forever = forever;
     }
 
     @SuppressWarnings("unchecked")
@@ -85,19 +85,19 @@ public class InvalidatingRequestCache extends AbstractRequestCache {
                     CacheRetention.PERSISTENT);
             record = k -> new Record<>(supplier, List.of());
         }
-        Cache<REQ, Record<REQ, REP>> cache;
         if ((retention == CacheRetention.REQUEST_SCOPED || retention == CacheRetention.SESSION_SCOPED)
                 && req.getSession() instanceof Session session) {
             Object key = retention == CacheRetention.REQUEST_SCOPED ? doGetOuterRequest(req) : ROOT;
             WeakIdentityMap<Object, Cache<REQ, Record<REQ, REP>>> caches =
                     session.getData().computeIfAbsent(KEY, WeakIdentityMap::new);
-            cache = caches.computeIfAbsent(key, k -> cacheFactory.newCache());
+            Cache<REQ, Record<REQ, REP>> cache = caches.computeIfAbsent(key, k -> cacheFactory.newCache());
+            return cache.computeIfAbsent(req, record);
         } else if (retention == CacheRetention.PERSISTENT) {
-            cache = (Cache) forever;
+            Cache<REQ, Record<REQ, REP>> cache = (Cache) forever;
+            return cache.computeIfAbsent(req, record);
         } else {
             return record.apply(req);
         }
-        return cache.computeIfAbsent(req, record);
     }
 
     private <REQ extends Request<?>> Object doGetOuterRequest(REQ req) {
