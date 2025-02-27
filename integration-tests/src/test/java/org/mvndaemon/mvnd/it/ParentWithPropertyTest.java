@@ -56,9 +56,13 @@ class ParentWithPropertyTest {
         /* Wait, till the instance becomes idle */
         registry.awaitIdle(registry.getAll().get(0).getId());
 
+        Thread.sleep(100);
+
         /* Upgrade the parent  */
         final Path parentPomPath = parentDir.resolve("pom.xml");
         TestUtils.replace(parentPomPath, "<revision>1</revision>", "<revision>2</revision>");
+
+        Thread.sleep(100);
 
         /* Build */
         final TestClientOutput output2 = new TestClientOutput();
