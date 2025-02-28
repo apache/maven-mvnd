@@ -405,12 +405,6 @@ public class DaemonConnector {
                 address = host + ":" + iPort;
                 output.accept(Message.buildStatus("Daemon listening for debugger on address: " + address));
                 args.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + address);
-                if (Environment.MVND_KEEP_ALIVE.getCommandLineOption(args) == null) {
-                    System.setProperty(Environment.MVND_KEEP_ALIVE.getProperty(), "1h");
-                }
-                if (Environment.MVND_CONNECT_TIMEOUT.getCommandLineOption(args) == null) {
-                    System.setProperty(Environment.MVND_CONNECT_TIMEOUT.getProperty(), "1h");
-                }
             }
             // jvm args
             String jvmArgs = parameters.jvmArgs();

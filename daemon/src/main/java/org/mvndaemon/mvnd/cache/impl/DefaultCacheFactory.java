@@ -44,4 +44,9 @@ public class DefaultCacheFactory implements CacheFactory {
     public <K, V extends CacheRecord> Cache<K, V> newCache() {
         return delegate.newCache();
     }
+
+    @Override
+    public <K, V extends CacheRecord> Cache<K, V> newWeakCache() {
+        return delegate.newWeakCache();
+    }
 }
