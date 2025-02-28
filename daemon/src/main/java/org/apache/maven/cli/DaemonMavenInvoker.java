@@ -33,7 +33,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.jline.MessageUtils;
 import org.apache.maven.logging.BuildEventListener;
 import org.apache.maven.logging.LoggingOutputStream;
-import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.mvndaemon.mvnd.common.Environment;
 
@@ -43,33 +42,23 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     }
 
     @Override
-    protected void createTerminal(MavenContext context) {
-        MessageUtils.systemInstall(
-                builder -> {
-                    builder.streams(
-                            context.invokerRequest.stdIn().orElseThrow(),
-                            context.invokerRequest.stdOut().orElseThrow());
-                    builder.systemOutput(TerminalBuilder.SystemOutput.ForcedSysOut);
-                    builder.provider(TerminalBuilder.PROP_PROVIDER_EXEC);
-                    if (context.coloredOutput != null) {
-                        builder.color(context.coloredOutput);
-                    }
-                    // we do want to pause input
-                    builder.paused(true);
-                },
-                terminal -> doConfigureWithTerminal(context, terminal));
-        context.terminal = MessageUtils.getTerminal();
-        context.closeables.add(MessageUtils::systemUninstall);
-        MessageUtils.registerShutdownHook();
+    protected void doCreateTerminal(MavenContext context, TerminalBuilder builder) {
+        builder.streams(
+                context.invokerRequest.stdIn().orElseThrow(),
+                context.invokerRequest.stdOut().orElseThrow());
+        builder.systemOutput(TerminalBuilder.SystemOutput.ForcedSysOut);
+        builder.provider(TerminalBuilder.PROP_PROVIDER_EXEC);
+        if (context.coloredOutput != null) {
+            builder.color(context.coloredOutput);
+        }
+        // we do want to pause input
+        builder.paused(true);
     }
 
     @Override
-    protected void doConfigureWithTerminal(MavenContext context, Terminal terminal) {
-        super.doConfigureWithTerminal(context, terminal);
-        if (context.invokerRequest.options().rawStreams().orElse(false)) {
-            System.setOut(printStream(context.invokerRequest.stdOut().orElseThrow()));
-            System.setErr(printStream(context.invokerRequest.stdErr().orElseThrow()));
-        }
+    protected void doConfigureWithTerminalWithRawStreamsEnabled(MavenContext context) {
+        System.setOut(printStream(context.invokerRequest.stdOut().orElseThrow()));
+        System.setErr(printStream(context.invokerRequest.stdErr().orElseThrow()));
     }
 
     private PrintStream printStream(OutputStream outputStream) {
