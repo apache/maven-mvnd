@@ -25,6 +25,7 @@ import javax.inject.Singleton;
 import org.apache.maven.api.cache.RequestCache;
 import org.apache.maven.api.cache.RequestCacheFactory;
 import org.apache.maven.api.services.VersionParser;
+import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
@@ -32,6 +33,7 @@ import org.mvndaemon.mvnd.cache.CacheFactory;
 @Named
 @Singleton
 @Typed(RequestCacheFactory.class)
+@Priority(10)
 public class InvalidatingRequestCacheFactory implements RequestCacheFactory {
 
     private final CacheFactory cacheFactory;
