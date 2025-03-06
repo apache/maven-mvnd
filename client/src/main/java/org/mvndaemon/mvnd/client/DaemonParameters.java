@@ -450,12 +450,6 @@ public class DaemonParameters {
         if (env == Environment.MVND_EXT_CLASSPATH) {
             List<String> cp = parseExtClasspath(userHome());
             return String.join(",", cp);
-        } else if (env == Environment.MVND_CORE_EXTENSIONS_FILE_PATH) {
-            try {
-                return resolveCoreExtensionFilePath(multiModuleProjectDirectory());
-            } catch (IOException e) {
-                throw new RuntimeException("Unable to resolve core extension configuration file path", e);
-            }
         } else if (env == Environment.MVND_CORE_EXTENSIONS_EXCLUDE) {
             String exclusionsString = systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE)
                     .orDefault()

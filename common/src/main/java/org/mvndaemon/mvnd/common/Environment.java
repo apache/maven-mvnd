@@ -212,11 +212,6 @@ public enum Environment {
      */
     MVND_EXT_CLASSPATH("mvnd.extClasspath", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * Internal option to specify the maven extension configuration file path to register.
-     */
-    MVND_CORE_EXTENSIONS_FILE_PATH(
-            "mvnd.coreExtensionFilePath", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
-    /**
      * Internal option to specify comma separated list of maven extension G:As to exclude (to not load them from
      * .mvn/extensions.xml). This option makes possible for example that a project that with vanilla Maven would
      * use takari-smart-builder extension, remain buildable with mvnd (where use of this extension would cause issues).
