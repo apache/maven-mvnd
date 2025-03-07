@@ -56,9 +56,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.mimir/local
-          key: mimir-${{ runner.os }}-initial-${{ hashFiles('**/pom.xml') }}
+          key: mimir-${{ runner.os }}-default-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            mimir-${{ runner.os }}-initial-
+            mimir-${{ runner.os }}-default-
             mimir-${{ runner.os }}-
 
       - name: 'Run default (non-native) build'
@@ -125,9 +125,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.mimir/local
-          key: mimir-${{ runner.os }}-initial-${{ hashFiles('**/pom.xml') }}
+          key: mimir-${{ runner.os }}-native-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            mimir-${{ runner.os }}-initial-
+            mimir-${{ runner.os }}-native-
             mimir-${{ runner.os }}-
 
       - name: 'Maven clean'
