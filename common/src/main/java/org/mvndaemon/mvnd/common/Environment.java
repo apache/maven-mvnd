@@ -218,7 +218,7 @@ public enum Environment {
      * this option value should change as well. It should behave like a hash value calculated out of 3 file contents would.
      */
     MVND_CORE_EXTENSIONS_DISCRIMINATOR(
-            "mvnd.coreExtensionSeed", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
+            "mvnd.coreExtensionsDiscriminator", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
      * Internal option to specify comma separated list of maven extension G:As to exclude (to not load them from
      * .mvn/extensions.xml). This option makes possible for example that a project that with vanilla Maven would
