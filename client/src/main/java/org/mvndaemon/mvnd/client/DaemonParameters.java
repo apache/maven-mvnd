@@ -21,16 +21,20 @@ package org.mvndaemon.mvnd.client;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -450,15 +454,13 @@ public class DaemonParameters {
         if (env == Environment.MVND_EXT_CLASSPATH) {
             List<String> cp = parseExtClasspath(userHome());
             return String.join(",", cp);
+        } else if (env == Environment.MVND_CORE_EXTENSIONS_DISCRIMINATOR) {
+            return calculateCoreExtensionsDiscriminator(multiModuleProjectDirectory(), userHome(), mvndHome());
         } else if (env == Environment.MVND_CORE_EXTENSIONS_EXCLUDE) {
             String exclusionsString = systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE)
                     .orDefault()
                     .asString();
-            if (exclusionsString != null) {
-                return exclusionsString;
-            } else {
-                return "";
-            }
+            return Objects.requireNonNullElse(exclusionsString, "");
         } else {
             return env.getDefault();
         }
@@ -476,15 +478,43 @@ public class DaemonParameters {
         return jars;
     }
 
-    private static String resolveCoreExtensionFilePath(Path multiModuleProjectDirectory) throws IOException {
-        if (multiModuleProjectDirectory == null) {
-            return "";
+    private static String calculateCoreExtensionsDiscriminator(
+            Path multiModuleProjectDirectory, Path userHome, Path mvndHome) {
+        try {
+            Path projectExtensionsXml = multiModuleProjectDirectory
+                    .resolve(".mvn")
+                    .resolve("extensions.xml")
+                    .toAbsolutePath()
+                    .normalize();
+            Path userExtensionsXml = userHome.resolve(".m2")
+                    .resolve("extensions.xml")
+                    .toAbsolutePath()
+                    .normalize();
+            Path installationExtensionsXml = mvndHome.resolve("mvn")
+                    .resolve("conf")
+                    .resolve("extensions.xml")
+                    .toAbsolutePath()
+                    .normalize();
+
+            String blob = "";
+            if (Files.exists(projectExtensionsXml)) {
+                blob += projectExtensionsXml.toString();
+                blob += Files.readString(projectExtensionsXml);
+            }
+            if (Files.exists(userExtensionsXml)) {
+                blob += userExtensionsXml.toString();
+                blob += Files.readString(userExtensionsXml);
+            }
+            if (Files.exists(installationExtensionsXml)) {
+                blob += installationExtensionsXml.toString();
+                blob += Files.readString(installationExtensionsXml);
+            }
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            digest.update(blob.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot calculate core extensions discriminator", e);
         }
-        Path extensionsFile = multiModuleProjectDirectory.resolve(EXTENSIONS_FILENAME);
-        if (!Files.exists(extensionsFile)) {
-            return "";
-        }
-        return extensionsFile.toAbsolutePath().toString();
     }
 
     private static Properties loadProperties(Path path) {
