@@ -18,13 +18,7 @@
  */
 package org.apache.maven.cli;
 
-import javax.xml.stream.XMLStreamException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +29,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.ParseException;
 import org.apache.maven.api.cli.extensions.CoreExtension;
 import org.apache.maven.api.cli.mvn.MavenOptions;
-import org.apache.maven.cling.internal.extension.io.CoreExtensionsStaxReader;
 import org.apache.maven.cling.invoker.mvn.MavenParser;
 import org.mvndaemon.mvnd.common.Environment;
 
@@ -57,34 +50,14 @@ public class DaemonMavenParser extends MavenParser {
     }
 
     @Override
-    protected List<CoreExtension> readCoreExtensionsDescriptor(LocalContext context) {
-        String coreExtensionsFilePath = Environment.MVND_CORE_EXTENSIONS_FILE_PATH.asString();
-        if (!coreExtensionsFilePath.isEmpty()) {
-            try {
-                return readCoreExtensionsDescriptor(Path.of(coreExtensionsFilePath));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            return new ArrayList<>();
-        }
+    protected List<CoreExtension> readCoreExtensionsDescriptorFromFile(Path extensionsFile) {
+        return filterCoreExtensions(super.readCoreExtensionsDescriptorFromFile(extensionsFile));
     }
 
-    private List<CoreExtension> readCoreExtensionsDescriptor(Path extensionsFile)
-            throws IOException, XMLStreamException {
-
-        CoreExtensionsStaxReader parser = new CoreExtensionsStaxReader();
-        List<CoreExtension> extensions;
-        try (InputStream is = Files.newInputStream(extensionsFile)) {
-            extensions = parser.read(is).getExtensions();
-        }
-        return filterCoreExtensions(extensions);
-    }
-
-    private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
+    protected static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
         String exclusionsString = Environment.MVND_CORE_EXTENSIONS_EXCLUDE.asString();
         Set<String> exclusions = Arrays.stream(exclusionsString.split(","))
-                .filter(e -> e != null && !e.trim().isEmpty())
+                .filter(e -> !e.trim().isEmpty())
                 .collect(Collectors.toSet());
         if (!exclusions.isEmpty()) {
             return coreExtensions.stream()

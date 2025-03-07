@@ -212,10 +212,13 @@ public enum Environment {
      */
     MVND_EXT_CLASSPATH("mvnd.extClasspath", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * Internal option to specify the maven extension configuration file path to register.
+     * Internal option to hold the maven extension configuration files "discriminator" to discriminate among daemons.
+     * Value of this option is irrelevant and is unused on daemon side. The only purpose and requirement is that the value
+     * discriminate the daemon based on 3 extension file contents (project, user, installation), and if any file change,
+     * this option value should change as well. It should behave like a hash value calculated out of 3 file contents would.
      */
-    MVND_CORE_EXTENSIONS_FILE_PATH(
-            "mvnd.coreExtensionFilePath", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
+    MVND_CORE_EXTENSIONS_DISCRIMINATOR(
+            "mvnd.coreExtensionsDiscriminator", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
      * Internal option to specify comma separated list of maven extension G:As to exclude (to not load them from
      * .mvn/extensions.xml). This option makes possible for example that a project that with vanilla Maven would
