@@ -22,16 +22,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -116,7 +118,7 @@ public class DaemonRegistryTest {
         }
 
         long size = Files.size(temp);
-        assertTrue(size >= 128 * 1024);
+        assertTrue(size >= 64 * 1024);
         try (DaemonRegistry reg = new DaemonRegistry(temp)) {
             assertEquals(nbDaemons, reg.getAll().size());
         }
@@ -129,7 +131,7 @@ public class DaemonRegistryTest {
         }
 
         long size2 = Files.size(temp);
-        assertTrue(size2 < 128 * 1024);
+        assertTrue(size2 < 64 * 1024);
         try (DaemonRegistry reg = new DaemonRegistry(temp)) {
             assertEquals(nbDaemons / 2, reg.getAll().size());
         }
@@ -139,7 +141,7 @@ public class DaemonRegistryTest {
     public void testRecovery() throws IOException {
         Path temp = File.createTempFile("reg", ".data").toPath();
         temp.toFile().deleteOnExit();
-        try (TestDaemonRegistry reg1 = new TestDaemonRegistry(temp)) {
+        try (DaemonRegistry reg1 = new DaemonRegistry(temp)) {
             // first store daemon
             byte[] token = new byte[16];
             new Random().nextBytes(token);
@@ -156,35 +158,133 @@ public class DaemonRegistryTest {
                     System.currentTimeMillis(),
                     System.currentTimeMillis()));
             assertEquals(1, reg1.getAll().size());
-            // store an invalid event to trigger recovery
-            StringBuilder sb = new StringBuilder(1024);
-            for (int i = 0; i < 1024; i++) {
-                sb.append('…');
-            }
             reg1.storeStopEvent(new DaemonStopEvent(
-                    "11111", System.currentTimeMillis(), DaemonExpirationStatus.QUIET_EXPIRE, sb.toString()));
+                    "11111", System.currentTimeMillis(), DaemonExpirationStatus.QUIET_EXPIRE, "because"));
             assertEquals(1, reg1.doGetDaemonStopEvents().size());
+            Files.writeString(temp, "Foobar");
             // check if registry is reset
             assertEquals(0, reg1.getAll().size());
             assertEquals(0, reg1.doGetDaemonStopEvents().size());
         }
     }
 
-    static class TestDaemonRegistry extends DaemonRegistry {
-        public TestDaemonRegistry(Path registryFile) {
-            super(registryFile);
+    @Test
+    public void testThreadSafety() throws Exception {
+        int nbDaemons = 512;
+
+        Path temp = File.createTempFile("reg", ".data").toPath();
+        Random random = new Random();
+
+        CompletableFuture.allOf(IntStream.range(0, nbDaemons)
+                        .mapToObj(i -> CompletableFuture.runAsync(() -> {
+                            try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+                                byte[] token = new byte[16];
+                                random.nextBytes(token);
+                                reg.store(new DaemonInfo(
+                                        UUID.randomUUID().toString(),
+                                        "/java/home/",
+                                        "/data/reg/",
+                                        random.nextInt(),
+                                        "inet:/127.0.0.1:7502",
+                                        token,
+                                        Locale.getDefault().toLanguageTag(),
+                                        Collections.singletonList("-Xmx"),
+                                        DaemonState.Idle,
+                                        System.currentTimeMillis(),
+                                        System.currentTimeMillis()));
+                            }
+                        }))
+                        .toList()
+                        .toArray(new CompletableFuture[0]))
+                .get();
+
+        List<DaemonInfo> all;
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            all = reg.getAll();
+            assertEquals(nbDaemons, all.size());
         }
 
-        @Override
-        protected void writeString(String str) {
-            ByteBuffer buffer = buffer();
-            if (str == null) {
-                buffer.putShort((short) -1);
-            } else {
-                byte[] buf = str.getBytes(StandardCharsets.UTF_8);
-                buffer.putShort((short) buf.length);
-                buffer.put(buf);
-            }
+        Set<DaemonInfo> toRemove = new HashSet<>(all);
+        for (int i = 0; i < nbDaemons / 2; i++) {
+            toRemove.add(all.get(random.nextInt(all.size())));
+        }
+
+        CompletableFuture.allOf(toRemove.stream()
+                        .map(info -> CompletableFuture.runAsync(() -> {
+                            try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+                                reg.remove(info.getId());
+                            }
+                        }))
+                        .toList()
+                        .toArray(new CompletableFuture[0]))
+                .get();
+
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            assertEquals(nbDaemons - toRemove.size(), reg.getAll().size());
+        }
+    }
+
+    @Test
+    public void testMultiProcessSafety() throws Exception {
+        int nbDaemons = 64;
+
+        Path temp = File.createTempFile("reg", ".data").toPath();
+        Random random = new Random();
+
+        CompletableFuture.allOf(IntStream.range(0, nbDaemons)
+                        .mapToObj(i -> {
+                            try {
+                                return new ProcessBuilder(
+                                                "java",
+                                                "-cp",
+                                                System.getProperty("java.class.path"),
+                                                "org.mvndaemon.mvnd.common.RegistryMutator",
+                                                "add",
+                                                temp.toString())
+                                        .start()
+                                        .onExit();
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .toList()
+                        .toArray(new CompletableFuture[0]))
+                .get();
+
+        List<DaemonInfo> all;
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            all = reg.getAll();
+            assertEquals(nbDaemons, all.size());
+        }
+
+        Set<DaemonInfo> toRemove = new HashSet<>(all);
+        for (int i = 0; i < nbDaemons / 2; i++) {
+            toRemove.add(all.get(random.nextInt(all.size())));
+        }
+
+        CompletableFuture.allOf(toRemove.stream()
+                        .map(info -> {
+                            try {
+                                return new ProcessBuilder(
+                                                "java",
+                                                "-cp",
+                                                System.getProperty("java.class.path"),
+                                                "org.mvndaemon.mvnd.common.RegistryMutator",
+                                                "remove",
+                                                temp.toString(),
+                                                info.getId())
+                                        .start()
+                                        .onExit();
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        })
+                        .toList()
+                        .toArray(new CompletableFuture[0]))
+                .get();
+
+        try (DaemonRegistry reg = new DaemonRegistry(temp)) {
+            assertEquals(nbDaemons - toRemove.size(), reg.getAll().size());
         }
     }
 }
