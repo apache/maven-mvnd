@@ -187,3 +187,29 @@ jobs:
         with:
           name: mvnd-${{ env.OS }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
+
+  site-build:
+    name: 'Site build'
+    if: startsWith(github.event.head_commit.message, '[release] Release ') != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: 'Set up Maven'
+        shell: bash
+        run: mvn --errors --batch-mode --show-version org.apache.maven.plugins:maven-wrapper-plugin:3.3.2:wrapper "-Dmaven=4.0.0-rc-3"
+
+      - name: 'Run site build'
+        run: ./mvnw compile site -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
+
+      - name: 'Upload artifact'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mvnd-site
+          path: target/site
