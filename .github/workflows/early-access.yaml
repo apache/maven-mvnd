@@ -47,7 +47,7 @@ jobs:
           distribution: 'temurin'
 
       - name: 'Run default (non-native) build'
-        run: ./mvnw verify -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
+        run: ./mvnw verify site -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload daemon test logs'
         if: always()
