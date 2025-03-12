@@ -29,7 +29,7 @@
 
   <groupId>org.apache.maven.daemon</groupId>
   <artifactId>mvnd</artifactId>
-  <version>2.0.0-rc-3-SNAPSHOT</version>
+  <version>2.0.0-rc-4-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Maven Daemon - Parent</name>
@@ -69,7 +69,7 @@
     <maven.compiler.target>17</maven.compiler.target>
     <maven.compiler.release>17</maven.compiler.release>
     <maven-dist.required.jdk>17</maven-dist.required.jdk>
-    <project.build.outputTimestamp>2024-11-26T09:14:09Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-03-10T15:56:59Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
@@ -83,7 +83,7 @@
     <groovy.version>4.0.26</groovy.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.29.0</jline.version>
-    <maven.version>4.0.0-rc-3-SNAPSHOT</maven.version>
+    <maven.version>4.0.0-rc-3</maven.version>
     <required-maven.version>3.9.9</required-maven.version>
 
     <!-- Keep in sync with Maven -->
