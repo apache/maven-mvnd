@@ -20,9 +20,6 @@ name: Early Access
 # trigger on push to branches and PR
 on:
   push:
-    branches:
-      - master
-      - mvnd-1.x
   pull_request:
 
 env:
@@ -66,7 +63,7 @@ jobs:
         run: mvn --errors --batch-mode --show-version org.apache.maven.plugins:maven-wrapper-plugin:3.3.2:wrapper "-Dmaven=4.0.0-rc-3"
 
       - name: 'Run default (non-native) build'
-        run: ./mvnw verify -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
+        run: ./mvnw verify site -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload daemon test logs'
         if: always()
