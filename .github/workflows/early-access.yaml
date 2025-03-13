@@ -64,7 +64,13 @@ jobs:
       fail-fast: false
       matrix:
         # binaries wanted: linux amd64, mac M1, mac intel, windows x86
-        os: [ ubuntu-latest, macos-latest, macos-13, windows-latest ]
+        os: [ ubuntu-latest, macos-latest, macos-13, macos-14, windows-latest ]
+        arch: [ x64, arm64 ]
+        exclude:
+          - os: macos-13
+            arch: arm64
+          - os: windows-latest
+            arch: arm64
     runs-on: ${{ matrix.os }}
 
     steps:
