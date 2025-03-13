@@ -34,6 +34,8 @@ darwinArmZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-$
 darwinArmSha256="$(curl -L --silent "${darwinArmZipUrl}.sha256")"
 linuxZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-amd64.zip"
 linuxSha256="$(curl -L --silent "${linuxZipUrl}.sha256")"
+linuxArmZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-aarch64.zip"
+linuxArmSha256="$(curl -L --silent "${linuxArmZipUrl}.sha256")"
 
 echo "Updating Formula/mvnd.rb with"
 echo "version: ${VERSION}"
@@ -43,6 +45,8 @@ echo "darwin-arm-url: ${darwinArmZipUrl}"
 echo "darwin-arm-sha256: ${darwinArmSha256}"
 echo "linux-url: ${linuxZipUrl}"
 echo "linux-sha256: ${linuxSha256}"
+echo "linux-arm-url: ${linuxArmZipUrl}"
+echo "linux-arm-sha256: ${linuxArmSha256}"
 
 rm -Rf homebrew-mvnd
 git clone https://github.com/mvndaemon/homebrew-mvnd.git
