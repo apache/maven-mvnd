@@ -59,6 +59,7 @@ function publishRelease() {
 }
 
 publishRelease ${VERSION} LINUX_64 linux-amd64
+publishRelease ${VERSION} LINUX_ARM64 linux-aarch64
 publishRelease ${VERSION} MAC_OSX darwin-amd64
 publishRelease ${VERSION} MAC_ARM64 darwin-aarch64
 publishRelease ${VERSION} WINDOWS_64 windows-amd64
