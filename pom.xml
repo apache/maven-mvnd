@@ -95,6 +95,8 @@
     <version.plexus-xml>4.0.4</version.plexus-xml>
     <jakarta.inject.version>2.0.1</jakarta.inject.version>
 
+    <version.maven-fluido-skin>2.1.0</version.maven-fluido-skin>
+
     <!-- plugin versions a..z -->
     <buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
     <groovy-maven-plugin.version>4.1.1</groovy-maven-plugin.version>
