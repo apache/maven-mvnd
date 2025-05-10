@@ -59,10 +59,6 @@ jobs:
             mimir-${{ runner.os }}-default-
             mimir-${{ runner.os }}-
 
-      - name: 'Set up Maven'
-        shell: bash
-        run: mvn --errors --batch-mode --show-version org.apache.maven.plugins:maven-wrapper-plugin:3.3.2:wrapper "-Dmaven=4.0.0-rc-3"
-
       - name: 'Run default (non-native) build'
         run: ./mvnw verify -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
@@ -133,10 +129,6 @@ jobs:
             mimir-${{ runner.os }}-native-
             mimir-${{ runner.os }}-
 
-      - name: 'Set up Maven'
-        shell: bash
-        run: mvn --errors --batch-mode --show-version org.apache.maven.plugins:maven-wrapper-plugin:3.3.2:wrapper "-Dmaven=4.0.0-rc-3"
-
       - name: 'Maven clean'
         run: ./mvnw clean -Dmrm=false -V -B -ntp -e
 
@@ -199,10 +191,6 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-
-      - name: 'Set up Maven'
-        shell: bash
-        run: mvn --errors --batch-mode --show-version org.apache.maven.plugins:maven-wrapper-plugin:3.3.2:wrapper "-Dmaven=4.0.0-rc-3"
 
       - name: 'Run site build'
         run: ./mvnw compile site -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
