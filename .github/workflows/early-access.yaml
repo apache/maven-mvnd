@@ -43,11 +43,12 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
-      - name: 'Prepare Mimir'
+      - name: Prepare Mimir
         shell: bash
         run: |
-          mkdir -p ~/.m2
+          mkdir -p ~/.mimir
           cp .github/ci-extensions.xml ~/.m2/extensions.xml
+          cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
 
       - name: 'Handle Mimir caches'
         uses: actions/cache@v4
@@ -116,11 +117,12 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 'Prepare Mimir'
+      - name: Prepare Mimir
         shell: bash
         run: |
-          mkdir -p ~/.m2
+          mkdir -p ~/.mimir
           cp .github/ci-extensions.xml ~/.m2/extensions.xml
+          cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
 
       - name: 'Handle Mimir caches'
         uses: actions/cache@v4
