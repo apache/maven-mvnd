@@ -83,9 +83,9 @@
     <groovy.version>4.0.24</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jline.version>3.28.0</jline.version>
-    <maven.version>3.9.9</maven.version>
+    <maven.version>3.9.10</maven.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.22</maven.resolver.version>
+    <maven.resolver.version>1.9.23</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.9.0.M3</sisu.version>
 
