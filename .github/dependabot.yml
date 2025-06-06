@@ -34,3 +34,13 @@ updates:
     target-branch: "mvnd-1.x"
     labels:
       - "backport"
+      - "dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "mvnd-1.x"
+    labels:
+      - "backport"
+      - "dependencies"
