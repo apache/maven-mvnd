@@ -111,7 +111,7 @@
     <xstream.version>1.4.21</xstream.version>
 
     <!-- from parent -->
-    <versions.junit5>5.13.0</versions.junit5>
+    <versions.junit5>5.13.1</versions.junit5>
   </properties>
 
   <dependencyManagement>
