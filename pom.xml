@@ -567,6 +567,41 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>set-platform-properties</id>
+            <goals>
+              <goal>execute</goal>
+            </goals>
+            <phase>generate-sources</phase>
+            <configuration>
+              <scripts>
+                <script>// Naming conventions coined by GraalVM
+                  // https://github.com/graalvm/graalvm-ce-builds/releases/
+                  String osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+                  if (osName.startsWith('windows')) {
+                  project.properties['os.detected.name'] = 'windows'
+                  } else if (osName.startsWith('linux')) {
+                  project.properties['os.detected.name'] = 'linux'
+                  } else if (osName.startsWith('osx') || osName.startsWith('mac os x')) {
+                  project.properties['os.detected.name'] = 'darwin'
+                  } else {
+                  project.properties['os.detected.name'] = osName
+                  }
+                  String osArch = System.getProperty('os.arch').toLowerCase(Locale.ROOT)
+                  if (osArch.equals('amd64') || osArch.equals('x86_64')) {
+                  project.properties['os.detected.arch'] = 'amd64'
+                  } else {
+                  project.properties['os.detected.arch'] = osArch
+                  }</script>
+              </scripts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
