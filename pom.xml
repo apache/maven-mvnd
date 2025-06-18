@@ -83,7 +83,7 @@
     <groovy.version>4.0.27</groovy.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.30.4</jline.version>
-    <maven.version>4.0.0-rc-4-SNAPSHOT</maven.version>
+    <maven.version>4.0.0-rc-4</maven.version>
     <required-maven.version>3.9.10</required-maven.version>
 
     <!-- Keep in sync with Maven -->
@@ -396,6 +396,19 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>maven-2301</id>
+      <url>https://repository.apache.org/content/repositories/maven-2301/</url>
+    </repository>
+  </repositories>
 
   <build>
     <pluginManagement>
