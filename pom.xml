@@ -107,7 +107,7 @@
     <plexus-interactivity-api.version>1.4</plexus-interactivity-api.version>
     <roaster.version>2.30.1.Final</roaster.version>
     <takari-smart-builder.version>1.1.0</takari-smart-builder.version>
-    <testcontainers.version>1.21.1</testcontainers.version>
+    <testcontainers.version>1.21.2</testcontainers.version>
     <xstream.version>1.4.21</xstream.version>
   </properties>
 
