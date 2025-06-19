@@ -20,11 +20,13 @@ package org.apache.maven.cli;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.function.Consumer;
 
+import org.apache.maven.api.annotations.Nullable;
 import org.apache.maven.api.cli.InvokerException;
 import org.apache.maven.api.cli.InvokerRequest;
-import org.apache.maven.api.cli.Options;
 import org.apache.maven.cling.invoker.ContainerCapsuleFactory;
+import org.apache.maven.cling.invoker.LookupContext;
 import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.MavenContext;
 import org.apache.maven.cling.invoker.mvn.resident.ResidentMavenInvoker;
@@ -37,8 +39,8 @@ import org.jline.terminal.TerminalBuilder;
 import org.mvndaemon.mvnd.common.Environment;
 
 public class DaemonMavenInvoker extends ResidentMavenInvoker {
-    public DaemonMavenInvoker(ProtoLookup protoLookup) {
-        super(protoLookup);
+    public DaemonMavenInvoker(ProtoLookup protoLookup, @Nullable Consumer<LookupContext> contextConsumer) {
+        super(protoLookup, contextConsumer);
     }
 
     @Override
@@ -81,12 +83,12 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
         InvokerRequest invokerRequest = context.invokerRequest;
         BuildEventListener buildEventListener =
                 context.invokerRequest.parserRequest().lookup().lookup(BuildEventListener.class);
-        if (invokerRequest.options().help().isPresent()) {
-            context.invokerRequest.options().displayHelp(invokerRequest.parserRequest(), buildEventListener::log);
+        if (context.options().help().isPresent()) {
+            context.options().displayHelp(invokerRequest.parserRequest(), buildEventListener::log);
             throw new InvokerException.ExitException(0);
         }
-        if (invokerRequest.options().showVersionAndExit().isPresent()) {
-            if (invokerRequest.options().quiet().orElse(false)) {
+        if (context.options().showVersionAndExit().isPresent()) {
+            if (context.options().quiet().orElse(false)) {
                 buildEventListener.log(CLIReportingUtils.showVersionMinimal());
             } else {
                 buildEventListener.log(CLIReportingUtils.showVersion());
@@ -97,8 +99,8 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
 
     @Override
     protected void preCommands(MavenContext context) throws Exception {
-        Options mavenOptions = context.invokerRequest.options();
-        if (mavenOptions.verbose().orElse(false) || mavenOptions.showVersion().orElse(false)) {
+        if (context.options().verbose().orElse(false)
+                || context.options().showVersion().orElse(false)) {
             context.invokerRequest
                     .parserRequest()
                     .lookup()
