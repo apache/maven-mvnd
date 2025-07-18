@@ -178,7 +178,7 @@ public class TerminalInputHandler implements AutoCloseable {
                 break;
             } else if (c == '\n' || c == '\r') {
                 terminal.writer().println();
-                terminal.writer().flush();
+                terminal.flush();
                 daemonDispatch.accept(prompt.response(sb.toString()));
                 break;
             } else if (c == 127) { // Backspace
