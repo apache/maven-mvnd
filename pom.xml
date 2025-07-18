@@ -80,7 +80,7 @@
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
     <graalvm.version>24.2.1</graalvm.version>
     <graalvm.plugin.version>0.10.6</graalvm.plugin.version>
-    <groovy.version>4.0.25</groovy.version>
+    <groovy.version>4.0.27</groovy.version>
     <jakarta.inject.version>1.0</jakarta.inject.version>
     <jline.version>3.28.0</jline.version>
     <maven.version>3.9.11</maven.version>
