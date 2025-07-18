@@ -397,19 +397,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <repositories>
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>maven-2301</id>
-      <url>https://repository.apache.org/content/repositories/maven-2301/</url>
-    </repository>
-  </repositories>
-
   <build>
     <pluginManagement>
       <plugins>
