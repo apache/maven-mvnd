@@ -83,16 +83,16 @@
     <groovy.version>4.0.27</groovy.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.30.4</jline.version>
-    <maven.version>4.0.0-rc-3</maven.version>
-    <required-maven.version>3.9.9</required-maven.version>
+    <maven.version>4.0.0-rc-4</maven.version>
+    <required-maven.version>3.9.10</required-maven.version>
 
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>2.0.10</maven.resolver.version>
-    <slf4j.version>2.0.16</slf4j.version>
+    <slf4j.version>2.0.17</slf4j.version>
     <sisu.version>0.9.0.M4</sisu.version>
     <maven.plugin-tools.version>3.15.1</maven.plugin-tools.version>
     <version.plexus-utils>4.0.2</version.plexus-utils>
-    <version.plexus-xml>4.0.4</version.plexus-xml>
+    <version.plexus-xml>4.1.0</version.plexus-xml>
     <jakarta.inject.version>2.0.1</jakarta.inject.version>
 
     <version.maven-fluido-skin>2.1.0</version.maven-fluido-skin>
@@ -109,6 +109,9 @@
     <takari-smart-builder.version>1.1.0</takari-smart-builder.version>
     <testcontainers.version>1.21.3</testcontainers.version>
     <xstream.version>1.4.21</xstream.version>
+
+    <!-- from parent -->
+    <versions.junit5>5.13.1</versions.junit5>
   </properties>
 
   <dependencyManagement>
