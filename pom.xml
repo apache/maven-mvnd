@@ -96,7 +96,7 @@
     <junit-platform-launcher.version>1.10.3</junit-platform-launcher.version>
     <takari-provisio.version>1.1.1</takari-provisio.version>
 
-    <picocli.version>4.7.6</picocli.version>
+    <picocli.version>4.7.7</picocli.version>
     <!-- 2.29+ is Java 17+ -->
     <roaster.version>2.28.0.Final</roaster.version>
     <maven.plugin-tools.version>3.15.1</maven.plugin-tools.version>
