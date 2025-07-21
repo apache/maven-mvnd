@@ -79,7 +79,7 @@
     <assertj.version>3.27.3</assertj.version>
     <commons-compress.version>1.27.1</commons-compress.version>
     <graalvm.version>24.2.2</graalvm.version>
-    <graalvm.plugin.version>0.10.6</graalvm.plugin.version>
+    <graalvm.plugin.version>0.11.0</graalvm.plugin.version>
     <groovy.version>4.0.27</groovy.version>
     <jansi.version>2.4.1</jansi.version>
     <jline.version>3.30.4</jline.version>
