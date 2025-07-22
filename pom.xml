@@ -85,7 +85,7 @@
     <jline.version>3.30.4</jline.version>
     <maven.version>3.9.11</maven.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.23</maven.resolver.version>
+    <maven.resolver.version>1.9.24</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>0.9.0.M4</sisu.version>
 
