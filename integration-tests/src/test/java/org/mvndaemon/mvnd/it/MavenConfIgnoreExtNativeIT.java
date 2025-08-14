@@ -28,7 +28,7 @@ class MavenConfIgnoreExtNativeIT extends MavenConfNativeIT {
     @Override
     protected List<String> mvndParams(String expression) {
         ArrayList<String> result = new ArrayList<>(super.mvndParams(expression));
-        result.add("-Dmvnd.coreExtensionsExclude=foo:bar");
+        result.add("-Dmvnd.coreExtensionsExclude=foo:bar,io.takari.maven:takari-smart-builder");
         return result;
     }
 }

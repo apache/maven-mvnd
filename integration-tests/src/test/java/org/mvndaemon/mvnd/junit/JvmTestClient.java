@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.DaemonParameters;
@@ -44,16 +45,26 @@ public class JvmTestClient extends DefaultClient {
     @Override
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
         setMultiModuleProjectDirectory(argv);
-        setSystemPropertiesFromCommandLine(argv);
-        argv = new ArrayList<>(argv);
-        if (parameters instanceof TestParameters && ((TestParameters) parameters).isNoTransferProgress()) {
-            argv.add("-ntp");
+        Map<String, String> prevState = setSystemPropertiesFromCommandLine(argv);
+        try {
+            argv = new ArrayList<>(argv);
+            if (parameters instanceof TestParameters && ((TestParameters) parameters).isNoTransferProgress()) {
+                argv.add("-ntp");
+            }
+            final ExecutionResult delegate = super.execute(output, augmentArgs(argv));
+            if (output instanceof TestClientOutput) {
+                return new JvmTestResult(delegate, ((TestClientOutput) output).messagesToString());
+            }
+            return delegate;
+        } finally {
+            prevState.entrySet().forEach(entry -> {
+                if (entry.getValue() == null) {
+                    System.clearProperty(entry.getKey());
+                } else {
+                    System.setProperty(entry.getKey(), entry.getValue());
+                }
+            });
         }
-        final ExecutionResult delegate = super.execute(output, augmentArgs(argv));
-        if (output instanceof TestClientOutput) {
-            return new JvmTestResult(delegate, ((TestClientOutput) output).messagesToString());
-        }
-        return delegate;
     }
 
     private void setMultiModuleProjectDirectory(List<String> args) {

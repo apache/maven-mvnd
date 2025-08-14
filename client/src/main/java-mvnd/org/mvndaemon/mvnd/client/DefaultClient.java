@@ -34,8 +34,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -178,7 +180,8 @@ public class DefaultClient implements Client {
         System.exit(exitCode);
     }
 
-    public static void setSystemPropertiesFromCommandLine(List<String> args) {
+    public static Map<String, String> setSystemPropertiesFromCommandLine(List<String> args) {
+        final HashMap<String, String> prevState = new HashMap<>();
         final Iterator<String> iterator = args.iterator();
         boolean defineIsEmpty = false;
         while (iterator.hasNext()) {
@@ -205,14 +208,17 @@ public class DefaultClient implements Client {
                 if (eqPos >= 0) {
                     String k = val.substring(0, eqPos);
                     String v = val.substring(eqPos + 1);
-                    System.setProperty(k, v);
+                    String old = System.setProperty(k, v);
+                    prevState.put(k, old);
                     LOGGER.trace("Setting system property {} to {}", k, v);
                 } else {
-                    System.setProperty(val, "");
+                    String old = System.setProperty(val, "");
+                    prevState.put(val, old);
                     LOGGER.trace("Setting system property {}", val);
                 }
             }
         }
+        return prevState;
     }
 
     private static boolean maybeDefineCommandLineOption(String arg) {

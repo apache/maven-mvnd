@@ -48,10 +48,13 @@ public class DaemonMavenCling implements DaemonCli {
 
     public DaemonMavenCling() {
         this.parser = new DaemonMavenParser();
-        this.invoker = new DaemonMavenInvoker(ProtoLookup.builder()
-                .addMapping(
-                        ClassWorld.class, ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld())
-                .build());
+        this.invoker = new DaemonMavenInvoker(
+                ProtoLookup.builder()
+                        .addMapping(
+                                ClassWorld.class,
+                                ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld())
+                        .build(),
+                null);
     }
 
     @Override
