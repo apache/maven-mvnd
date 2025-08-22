@@ -92,7 +92,7 @@
     <!-- plugin versions a..z -->
     <buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
     <groovy-maven-plugin.version>4.2.1</groovy-maven-plugin.version>
-    <mrm.version>1.6.0</mrm.version>
+    <mrm.version>1.7.0</mrm.version>
     <junit-platform-launcher.version>1.10.3</junit-platform-launcher.version>
     <takari-provisio.version>1.1.1</takari-provisio.version>
 
