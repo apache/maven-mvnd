@@ -328,10 +328,6 @@ public class TerminalOutput implements ClientOutput {
             }
             case Message.PROMPT: {
                 Message.Prompt prompt = (Message.Prompt) entry;
-                if (dumb) {
-                    terminal.writer().println("");
-                    break;
-                }
                 clearDisplay();
                 inputHandler.requestPrompt(prompt);
                 break;
