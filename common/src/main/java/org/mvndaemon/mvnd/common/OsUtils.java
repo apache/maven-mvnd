@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -37,6 +39,9 @@ public class OsUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(OsUtils.class);
     private static final long KB = 1024;
     private static final String UNITS = "Bkmgt";
+
+    // Pattern for parsing tasklist CSV output memory column (handles "1,234 K" format)
+    private static final Pattern MEMORY_PATTERN = Pattern.compile("([\\d,]+)\\s*K?");
 
     private OsUtils() {}
 
@@ -63,44 +68,152 @@ public class OsUtils {
     public static long findProcessRssInKb(long pid) {
         final Os os = Os.current();
         if (os.isUnixLike()) {
-            String[] cmd = {"ps", "-o", "rss=", "-p", String.valueOf(pid)};
-            final List<String> output = new ArrayList<>(1);
-            exec(cmd, output);
-            if (output.size() == 1) {
-                try {
-                    return Long.parseLong(output.get(0).trim());
-                } catch (NumberFormatException e) {
-                    LOGGER.warn(
-                            "Could not parse the output of {} as a long:\n{}",
-                            String.join(" ", cmd),
-                            String.join("\n", output));
-                }
-            } else {
-                LOGGER.warn("Unexpected output of {}:\n{}", String.join(" ", cmd), String.join("\n", output));
-            }
-            return -1;
+            return findProcessRssUnix(pid);
         } else if (os == Os.WINDOWS) {
-            String[] cmd = {"wmic", "process", "where", "processid=" + pid, "get", "WorkingSetSize"};
-            final List<String> output = new ArrayList<>(1);
-            exec(cmd, output);
-            final List<String> nonEmptyLines =
-                    output.stream().filter(l -> !l.isEmpty()).collect(Collectors.toList());
-            if (nonEmptyLines.size() >= 2) {
-                try {
-                    return Long.parseLong(nonEmptyLines.get(1).trim()) / KB;
-                } catch (NumberFormatException e) {
-                    LOGGER.warn(
-                            "Could not parse the second line of {} output as a long:\n{}",
-                            String.join(" ", cmd),
-                            String.join("\n", nonEmptyLines));
-                }
-            } else {
-                LOGGER.warn("Unexpected output of {}:\n{}", String.join(" ", cmd), String.join("\n", output));
-            }
-            return -1;
+            return findProcessRssWindows(pid);
         } else {
             return -1;
         }
+    }
+
+    private static long findProcessRssUnix(long pid) {
+        String[] cmd = {"ps", "-o", "rss=", "-p", String.valueOf(pid)};
+        final List<String> output = new ArrayList<>(1);
+        exec(cmd, output);
+        if (output.size() == 1) {
+            try {
+                return Long.parseLong(output.get(0).trim());
+            } catch (NumberFormatException e) {
+                LOGGER.warn(
+                        "Could not parse the output of {} as a long:\n{}",
+                        String.join(" ", cmd),
+                        String.join("\n", output));
+            }
+        } else {
+            LOGGER.warn("Unexpected output of {}:\n{}", String.join(" ", cmd), String.join("\n", output));
+        }
+        return -1;
+    }
+
+    private static long findProcessRssWindows(long pid) {
+        // Try modern PowerShell approach first (Windows 7+ with PowerShell 2.0+)
+        long result = tryPowerShellMemory(pid);
+        if (result > 0) {
+            return result;
+        }
+
+        // Fallback to wmic for older systems or if PowerShell fails
+        result = tryWmicMemory(pid);
+        if (result > 0) {
+            return result;
+        }
+
+        // Final fallback to tasklist (most compatible, works from Windows XP to Windows 11)
+        return tryTasklistMemory(pid);
+    }
+
+    private static long tryPowerShellMemory(long pid) {
+        // Use PowerShell with error handling to get WorkingSet64
+        String[] cmd = {
+            "powershell",
+            "-Command",
+            "try { " + "(Get-Process -Id "
+                    + pid + " -ErrorAction Stop).WorkingSet64 " + "} catch { "
+                    + "Write-Output 'ERROR' "
+                    + "}"
+        };
+
+        final List<String> output = new ArrayList<>(1);
+        exec(cmd, output);
+
+        if (!output.isEmpty()) {
+            String result = output.get(0).trim();
+            if (!result.isEmpty() && !result.equals("ERROR") && !result.contains("Get-Process")) {
+                try {
+                    return Long.parseLong(result) / KB;
+                } catch (NumberFormatException e) {
+                    LOGGER.debug("Could not parse PowerShell output as a long: {}", result);
+                }
+            }
+        }
+        return -1;
+    }
+
+    private static long tryWmicMemory(long pid) {
+        String[] cmd = {"wmic", "process", "where", "processid=" + pid, "get", "WorkingSetSize"};
+        final List<String> output = new ArrayList<>(1);
+        exec(cmd, output);
+        final List<String> nonEmptyLines =
+                output.stream().filter(l -> !l.isEmpty()).collect(Collectors.toList());
+        if (nonEmptyLines.size() >= 2) {
+            try {
+                return Long.parseLong(nonEmptyLines.get(1).trim()) / KB;
+            } catch (NumberFormatException e) {
+                LOGGER.debug(
+                        "Could not parse wmic output as a long: {}",
+                        nonEmptyLines.get(1).trim());
+            }
+        }
+        return -1;
+    }
+
+    private static long tryTasklistMemory(long pid) {
+        // Use tasklist with CSV format for easier parsing
+        String[] cmd = {"tasklist", "/fi", "PID eq " + pid, "/fo", "csv"};
+        final List<String> output = new ArrayList<>();
+        exec(cmd, output);
+
+        if (output.size() >= 2) { // Header + data row
+            try {
+                // Parse CSV line - memory is typically in the 5th column (index 4)
+                String dataLine = output.get(1);
+                String[] fields = parseCsvLine(dataLine);
+
+                if (fields.length >= 5) {
+                    String memoryField = fields[4].trim();
+                    // Remove quotes if present and parse memory value
+                    memoryField = memoryField.replaceAll("\"", "");
+
+                    Matcher matcher = MEMORY_PATTERN.matcher(memoryField);
+                    if (matcher.find()) {
+                        String memoryStr = matcher.group(1).replaceAll(",", "");
+                        return Long.parseLong(memoryStr);
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.debug("Could not parse tasklist output: {}", e.getMessage());
+            }
+        } else if (output.size() == 1 && output.get(0).contains("No tasks")) {
+            // Process not found
+            LOGGER.debug("Process {} not found", pid);
+        } else {
+            LOGGER.debug("Unexpected tasklist output for PID {}: {}", pid, String.join("\n", output));
+        }
+        return -1;
+    }
+
+    /**
+     * Simple CSV line parser that handles quoted fields
+     */
+    private static String[] parseCsvLine(String line) {
+        List<String> fields = new ArrayList<>();
+        boolean inQuotes = false;
+        StringBuilder currentField = new StringBuilder();
+
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                fields.add(currentField.toString());
+                currentField = new StringBuilder();
+            } else {
+                currentField.append(c);
+            }
+        }
+        fields.add(currentField.toString());
+
+        return fields.toArray(new String[0]);
     }
 
     /**
@@ -127,13 +240,32 @@ public class OsUtils {
         try (CommandProcess ps = new CommandProcess(builder.start(), output::add)) {
             final int exitCode = ps.waitFor(1000);
             if (exitCode != 0) {
-                LOGGER.warn("{} exited with {}:\n{}", String.join(" ", cmd), exitCode, String.join("\n", output));
+                // Only log as debug for memory queries to avoid spam in logs
+                if (isMemoryQuery(cmd)) {
+                    LOGGER.debug(
+                            "{} exited with {}: {}",
+                            String.join(" ", cmd),
+                            exitCode,
+                            output.isEmpty() ? "no output" : output.get(0));
+                } else {
+                    LOGGER.warn("{} exited with {}:\n{}", String.join(" ", cmd), exitCode, String.join("\n", output));
+                }
             }
         } catch (IOException e) {
-            LOGGER.warn("Could not execute {}", String.join(" ", cmd));
+            if (isMemoryQuery(cmd)) {
+                LOGGER.debug("Could not execute {}: {}", String.join(" ", cmd), e.getMessage());
+            } else {
+                LOGGER.warn("Could not execute {}", String.join(" ", cmd));
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private static boolean isMemoryQuery(String[] cmd) {
+        if (cmd.length == 0) return false;
+        String firstCmd = cmd[0].toLowerCase();
+        return firstCmd.contains("powershell") || firstCmd.contains("wmic") || firstCmd.contains("tasklist");
     }
 
     /**
