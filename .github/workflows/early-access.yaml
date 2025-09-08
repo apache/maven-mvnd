@@ -20,6 +20,9 @@ name: Early Access
 # trigger on push to branches and PR
 on:
   push:
+    branches:
+      - master
+      - mvnd-1.x
   pull_request:
 
 env:
