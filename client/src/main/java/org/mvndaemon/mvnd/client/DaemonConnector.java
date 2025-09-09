@@ -143,6 +143,8 @@ public class DaemonConnector {
                 parameters.daemonStorage().toString());
         properties.put(
                 Environment.MVND_REGISTRY.getProperty(), parameters.registry().toString());
+        properties.put(
+                Environment.MVND_JAVA_HOME.getProperty(), parameters.javaHome().toString());
         properties.putAll(parameters.getDaemonOptsMap());
         Environment.setProperties(properties);
         AtomicReference<Throwable> throwable = new AtomicReference<>();
