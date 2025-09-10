@@ -156,8 +156,6 @@ public class DaemonMavenCli implements DaemonCli {
     private static final String UNABLE_TO_FIND_ROOT_PROJECT_MESSAGE = "Unable to find the root directory. Create a "
             + DOT_MVN + " directory in the project root directory to identify it.";
 
-    private static final String EXTENSIONS_FILENAME = DOT_MVN + "/extensions.xml";
-
     private static final String MVN_MAVEN_CONFIG = DOT_MVN + "/maven.config";
 
     public static final String STYLE_COLOR_PROPERTY = "style.color";
@@ -174,23 +172,16 @@ public class DaemonMavenCli implements DaemonCli {
 
     private final ClassWorld classWorld;
 
-    private final DefaultPlexusContainer container;
-
-    private final EventSpyDispatcher eventSpyDispatcher;
-
-    private final ModelProcessor modelProcessor;
-
-    private final Maven maven;
-
-    private final MavenExecutionRequestPopulator executionRequestPopulator;
-
-    private final ToolchainsBuilder toolchainsBuilder;
-
-    private final DefaultSecDispatcher dispatcher;
-
-    private final Map<String, ConfigurationProcessor> configurationProcessors;
-
-    private final LoggingExecutionListener executionListener;
+    // lazily created
+    private DefaultPlexusContainer container;
+    private EventSpyDispatcher eventSpyDispatcher;
+    private ModelProcessor modelProcessor;
+    private Maven maven;
+    private MavenExecutionRequestPopulator executionRequestPopulator;
+    private ToolchainsBuilder toolchainsBuilder;
+    private DefaultSecDispatcher dispatcher;
+    private Map<String, ConfigurationProcessor> configurationProcessors;
+    private LoggingExecutionListener executionListener;
 
     /** Non-volatile, assuming that it is accessed only from the main thread */
     private BuildEventListener buildEventListener = BuildEventListener.dummy();
@@ -201,17 +192,6 @@ public class DaemonMavenCli implements DaemonCli {
         plexusLoggerManager = new Slf4jLoggerManager();
 
         this.classWorld = ((ClassRealm) Thread.currentThread().getContextClassLoader()).getWorld();
-
-        container = container();
-
-        eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
-        maven = container.lookup(Maven.class);
-        executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
-        modelProcessor = createModelProcessor(container);
-        configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
-        toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
-        dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
-        executionListener = container.lookup(LoggingExecutionListener.class);
     }
 
     public int main(
@@ -237,7 +217,9 @@ public class DaemonMavenCli implements DaemonCli {
         Properties props = (Properties) System.getProperties().clone();
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
-            Thread.currentThread().setContextClassLoader(container.getContainerRealm());
+            if (container != null) {
+                Thread.currentThread().setContextClassLoader(container.getContainerRealm());
+            }
             initialize(cliRequest);
             environment(cliRequest.workingDirectory, clientEnv);
             cli(cliRequest);
@@ -245,7 +227,7 @@ public class DaemonMavenCli implements DaemonCli {
             logging(cliRequest);
             informativeCommands(cliRequest);
             version(cliRequest);
-            container(cliRequest);
+            container(cliRequest); // we have here all
             configure(cliRequest, eventSpyDispatcher, configurationProcessors);
             toolchains(cliRequest);
             populateRequest(cliRequest);
@@ -257,7 +239,9 @@ public class DaemonMavenCli implements DaemonCli {
             // pure user error, suppress stack trace
             return 1;
         } finally {
-            eventSpyDispatcher.close();
+            if (eventSpyDispatcher != null) {
+                eventSpyDispatcher.close();
+            }
             System.setProperties(props);
             Thread.currentThread().setContextClassLoader(tccl);
         }
@@ -628,17 +612,30 @@ public class DaemonMavenCli implements DaemonCli {
         return interpolator;
     }
 
-    void container(CliRequest cliRequest) {
+    void container(CliRequest cliRequest) throws Exception {
+        if (this.container == null) {
+            this.container = doCreateContainer(cliRequest);
+
+            this.eventSpyDispatcher = container.lookup(EventSpyDispatcher.class);
+            this.maven = container.lookup(Maven.class);
+            this.executionRequestPopulator = container.lookup(MavenExecutionRequestPopulator.class);
+            this.modelProcessor = createModelProcessor(container);
+            this.configurationProcessors = container.lookupMap(ConfigurationProcessor.class);
+            this.toolchainsBuilder = container.lookup(ToolchainsBuilder.class);
+            this.dispatcher = (DefaultSecDispatcher) container.lookup(SecDispatcher.class, "maven");
+            this.executionListener = container.lookup(LoggingExecutionListener.class);
+        }
+
         Map<String, Object> data = new HashMap<>();
         data.put("plexus", container);
         data.put("workingDirectory", cliRequest.workingDirectory);
         data.put("systemProperties", cliRequest.systemProperties);
         data.put("userProperties", cliRequest.userProperties);
         data.put("versionProperties", CLIReportingUtils.getBuildProperties());
-        eventSpyDispatcher.init(() -> data);
+        this.eventSpyDispatcher.init(() -> data);
     }
 
-    DefaultPlexusContainer container() throws Exception {
+    DefaultPlexusContainer doCreateContainer(CliRequest cliRequest) throws Exception {
         ClassRealm coreRealm = classWorld.getClassRealm("plexus.core");
         if (coreRealm == null) {
             coreRealm = classWorld.getRealms().iterator().next();
@@ -665,7 +662,7 @@ public class DaemonMavenCli implements DaemonCli {
                 })
                 .collect(Collectors.toList());
         List<CoreExtensionEntry> extensionsEntries =
-                loadCoreExtensions(extensions, coreRealm, coreEntry.getExportedArtifacts());
+                loadCoreExtensions(cliRequest, extensions, coreRealm, coreEntry.getExportedArtifacts());
         ClassRealm containerRealm = setupContainerRealm(classWorld, coreRealm, extClassPath, extensionsEntries);
 
         ContainerConfiguration cc = new DefaultContainerConfiguration()
@@ -717,7 +714,11 @@ public class DaemonMavenCli implements DaemonCli {
     }
 
     private List<CoreExtensionEntry> loadCoreExtensions(
-            List<CoreExtension> extensions, ClassRealm containerRealm, Set<String> providedArtifacts) throws Exception {
+            CliRequest cliRequest,
+            List<CoreExtension> extensions,
+            ClassRealm containerRealm,
+            Set<String> providedArtifacts)
+            throws Exception {
         if (extensions.isEmpty()) {
             return Collections.emptyList();
         }
@@ -737,8 +738,6 @@ public class DaemonMavenCli implements DaemonCli {
         });
         MavenExecutionRequestPopulator executionRequestPopulator = null;
         try {
-            CliRequest cliRequest = new CliRequest(new String[0], classWorld);
-            cliRequest.commandLine = new CommandLine.Builder().build();
             container.setLookupRealm(null);
             container.setLoggerManager(plexusLoggerManager);
             container.getLoggerManager().setThresholds(cliRequest.request.getLoggingLevel());
