@@ -178,14 +178,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
+          name: daemon-test-logs-${{ runner.os }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
           include-hidden-files: 'true'
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v4
         with:
-          name: mvnd-${{ env.OS }}-${{ env.ARCH }}
+          name: mvnd-${{ runner.os }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
 
   site-build:
