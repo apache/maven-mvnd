@@ -164,10 +164,10 @@ jobs:
           mkdir -p client/target/graalvm-libs-for-glibc-2.12
 
           : patch common libraries
-          ( find "$GRAALVM_HOME/lib/static/linux-arm64/glibc" -name '*.a'
+          ( find "$GRAALVM_HOME/lib/static/linux-aarch64/glibc" -name '*.a'
             ls -1 /lib/aarch64-linux-gnu/libz.a
-            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-arm64/libjvm.a"
-            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-arm64/liblibchelper.a"
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-aarch64/libjvm.a"
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-aarch64/liblibchelper.a"
           ) | while IFS= read -r input; do
                 output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
                 objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef -- "$input" "$output" 2>/dev/null
