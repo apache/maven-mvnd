@@ -18,15 +18,15 @@
  */
 package org.mvndaemon.mvnd.common;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.nio.BufferOverflowException;
-import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,7 +48,7 @@ import static org.mvndaemon.mvnd.common.DaemonState.Idle;
 
 /**
  * Access to daemon registry files. Useful also for testing.
- *
+ * <p>
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonRegistry.java
  * https://github.com/OpenHFT/Java-Lang/blob/master/lang/src/main/java/net/openhft/lang/io/AbstractBytes.java
@@ -56,15 +56,12 @@ import static org.mvndaemon.mvnd.common.DaemonState.Idle;
 public class DaemonRegistry implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonRegistry.class);
-    private static final int MAX_LENGTH = 32768;
 
     private static final long LOCK_TIMEOUT_MS = 1000 * 20;
-    private final Path registryFile;
     private static final Map<Path, Object> locks = new ConcurrentHashMap<>();
+    private final Path registryFile;
     private final Object lck;
     private final FileChannel channel;
-    private MappedByteBuffer buffer;
-    private long size;
 
     private final Map<String, DaemonInfo> infosMap = new HashMap<>();
     private final List<DaemonStopEvent> stopEvents = new ArrayList<>();
@@ -74,26 +71,12 @@ public class DaemonRegistry implements AutoCloseable {
         this.lck = locks.computeIfAbsent(absPath, p -> new Object());
         this.registryFile = absPath;
         try {
-            if (!Files.isRegularFile(absPath)) {
-                if (!Files.isDirectory(absPath.getParent())) {
-                    Files.createDirectories(absPath.getParent());
-                }
-            }
+            Files.createDirectories(absPath.getParent());
             channel = FileChannel.open(
                     absPath, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
-            size = nextPowerOf2(channel.size(), MAX_LENGTH);
-            buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
         } catch (IOException e) {
             throw new DaemonException(e);
         }
-    }
-
-    private long nextPowerOf2(long a, long min) {
-        long b = min;
-        while (b < a) {
-            b = b << 1;
-        }
-        return b;
     }
 
     public void close() {
@@ -185,130 +168,101 @@ public class DaemonRegistry implements AutoCloseable {
         }
 
         synchronized (lck) {
-            final long deadline = System.currentTimeMillis() + LOCK_TIMEOUT_MS;
-            while (System.currentTimeMillis() < deadline) {
-                try (FileLock l = tryLock()) {
-                    BufferCaster.cast(buffer).position(0);
-                    infosMap.clear();
-                    int nb = buffer.getInt();
-                    for (int i = 0; i < nb; i++) {
-                        String daemonId = readString();
-                        String javaHome = readString();
-                        String mavenHome = readString();
-                        int pid = buffer.getInt();
-                        String address = readString();
+            try (FileLock l = tryLock()) {
+                channel.position(0);
+                DataInputStream is = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel)));
+                infosMap.clear();
+                int nb = is.available() < 4 ? 0 : is.readInt();
+                for (int i = 0; i < nb; i++) {
+                    String daemonId = is.readUTF();
+                    String javaHome = is.readUTF();
+                    String mavenHome = is.readUTF();
+                    int pid = is.readInt();
+                    String address = is.readUTF();
 
-                        byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
-                        buffer.get(token);
+                    byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
+                    is.read(token);
 
-                        String locale = readString();
-                        List<String> opts = new ArrayList<>();
-                        int nbOpts = buffer.getInt();
-                        for (int j = 0; j < nbOpts; j++) {
-                            opts.add(readString());
-                        }
-                        DaemonState state = DaemonState.values()[buffer.get()];
-                        long lastIdle = buffer.getLong();
-                        long lastBusy = buffer.getLong();
-                        DaemonInfo di = new DaemonInfo(
-                                daemonId, javaHome, mavenHome, pid, address, token, locale, opts, state, lastIdle,
-                                lastBusy);
-                        infosMap.putIfAbsent(di.getId(), di);
+                    String locale = is.readUTF();
+                    List<String> opts = new ArrayList<>();
+                    int nbOpts = is.readInt();
+                    for (int j = 0; j < nbOpts; j++) {
+                        opts.add(is.readUTF());
                     }
-                    stopEvents.clear();
-                    nb = buffer.getInt();
-                    for (int i = 0; i < nb; i++) {
-                        String daemonId = readString();
-                        long date = buffer.getLong();
-                        int ord = buffer.get();
-                        DaemonExpirationStatus des = ord >= 0 ? DaemonExpirationStatus.values()[ord] : null;
-                        String reason = readString();
-                        DaemonStopEvent se = new DaemonStopEvent(daemonId, date, des, reason);
-                        stopEvents.add(se);
-                    }
-
-                    if (updater != null) {
-                        updater.run();
-                        BufferCaster.cast(buffer).position((int) 0);
-                        buffer.putInt(infosMap.size());
-                        for (DaemonInfo di : infosMap.values()) {
-                            writeString(di.getId());
-                            writeString(di.getJavaHome());
-                            writeString(di.getMvndHome());
-                            buffer.putInt(di.getPid());
-                            writeString(di.getAddress());
-                            buffer.put(di.getToken());
-                            writeString(di.getLocale());
-                            buffer.putInt(di.getOptions().size());
-                            for (String opt : di.getOptions()) {
-                                writeString(opt);
-                            }
-                            buffer.put((byte) di.getState().ordinal());
-                            buffer.putLong(di.getLastIdle());
-                            buffer.putLong(di.getLastBusy());
-                        }
-                        buffer.putInt(stopEvents.size());
-                        for (DaemonStopEvent dse : stopEvents) {
-                            writeString(dse.getDaemonId());
-                            buffer.putLong(dse.getTimestamp());
-                            buffer.put((byte)
-                                    (dse.getStatus() == null
-                                            ? -1
-                                            : dse.getStatus().ordinal()));
-                            writeString(dse.getReason());
-                        }
-                    }
-                    if (buffer.remaining() >= buffer.position() * 2) {
-                        long ns = nextPowerOf2(buffer.position(), MAX_LENGTH);
-                        if (ns != size) {
-                            size = ns;
-                            LOGGER.info("Resizing registry to {} kb due to buffer underflow", (size / 1024));
-                            l.release();
-                            BufferHelper.closeDirectByteBuffer(buffer, LOGGER::debug);
-                            // let the garbage collector invalidate the mapped byte buffer
-                            // because it could be still valid when trying to truncate the file
-                            buffer = null;
-                            System.gc();
-                            channel.truncate(size);
-                            try {
-                                buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
-                            } catch (IOException ex) {
-                                throw new DaemonException("Could not resize registry " + registryFile, ex);
-                            }
-                        }
-                    }
-                    return;
-                } catch (BufferOverflowException e) {
-                    size <<= 1;
-                    LOGGER.info("Resizing registry to {} kb due to buffer overflow", (size / 1024));
-                    try {
-                        buffer = channel.map(FileChannel.MapMode.READ_WRITE, 0, size);
-                    } catch (IOException ex) {
-                        ex.addSuppressed(e);
-                        throw new DaemonException("Could not resize registry " + registryFile, ex);
-                    }
-                } catch (IOException e) {
-                    throw new DaemonException(
-                            "Exception while " + (updater != null ? "updating " : "reading ") + registryFile, e);
-                } catch (IllegalStateException | ArrayIndexOutOfBoundsException | BufferUnderflowException e) {
-                    String absPath = registryFile.toAbsolutePath().normalize().toString();
-                    LOGGER.warn(
-                            "Invalid daemon registry info, trying to recover from this issue. "
-                                    + "If you keep getting this warning, try deleting the `registry.bin` file at [{}]",
-                            absPath,
-                            e);
-                    this.reset();
-                    return;
+                    DaemonState state = DaemonState.values()[is.readByte()];
+                    long lastIdle = is.readLong();
+                    long lastBusy = is.readLong();
+                    DaemonInfo di = new DaemonInfo(
+                            daemonId, javaHome, mavenHome, pid, address, token, locale, opts, state, lastIdle,
+                            lastBusy);
+                    infosMap.putIfAbsent(di.getId(), di);
                 }
+                stopEvents.clear();
+                nb = is.available() < 4 ? 0 : is.readInt();
+                for (int i = 0; i < nb; i++) {
+                    String daemonId = is.readUTF();
+                    long date = is.readLong();
+                    int ord = is.readByte();
+                    DaemonExpirationStatus des = ord >= 0 ? DaemonExpirationStatus.values()[ord] : null;
+                    String reason = is.readUTF();
+                    DaemonStopEvent se = new DaemonStopEvent(daemonId, date, des, reason);
+                    stopEvents.add(se);
+                }
+
+                if (updater != null) {
+                    updater.run();
+                    channel.truncate(0);
+                    DataOutputStream os =
+                            new DataOutputStream(new BufferedOutputStream(Channels.newOutputStream(channel)));
+                    os.writeInt(infosMap.size());
+                    for (DaemonInfo di : infosMap.values()) {
+                        String id = di.getId();
+                        os.writeUTF(id);
+                        os.writeUTF(di.getJavaHome());
+                        os.writeUTF(di.getMvndHome());
+                        os.writeInt(di.getPid());
+                        os.writeUTF(di.getAddress());
+                        os.write(di.getToken());
+                        os.writeUTF(di.getLocale());
+                        os.writeInt(di.getOptions().size());
+                        for (String opt : di.getOptions()) {
+                            os.writeUTF(opt);
+                        }
+                        os.writeByte((byte) di.getState().ordinal());
+                        os.writeLong(di.getLastIdle());
+                        os.writeLong(di.getLastBusy());
+                    }
+                    os.writeInt(stopEvents.size());
+                    for (DaemonStopEvent dse : stopEvents) {
+                        os.writeUTF(dse.getDaemonId());
+                        os.writeLong(dse.getTimestamp());
+                        os.writeByte((byte)
+                                (dse.getStatus() == null ? -1 : dse.getStatus().ordinal()));
+                        os.writeUTF(dse.getReason());
+                    }
+                    os.flush();
+                }
+            } catch (DaemonException e) {
+                throw e;
+            } catch (Exception e) {
+                LOGGER.warn("Invalid daemon registry info at [{}], trying to recover.", registryFile, e);
+                this.reset();
             }
-            throw new RuntimeException("Could not lock " + registryFile + " within " + LOCK_TIMEOUT_MS + " ms");
         }
     }
 
     private FileLock tryLock() {
         try {
-            return channel.tryLock(0, size, false);
-        } catch (IOException e) {
+            final long deadline = System.currentTimeMillis() + LOCK_TIMEOUT_MS;
+            while (System.currentTimeMillis() < deadline) {
+                FileLock fileLock = channel.tryLock(0, Long.MAX_VALUE, false);
+                if (fileLock != null) {
+                    return fileLock;
+                }
+                Thread.sleep(100);
+            }
+            throw new DaemonException("Could not lock " + registryFile + " within " + LOCK_TIMEOUT_MS + " ms");
+        } catch (IOException | InterruptedException e) {
             throw new DaemonException("Could not lock " + registryFile, e);
         }
     }
@@ -316,9 +270,11 @@ public class DaemonRegistry implements AutoCloseable {
     private void reset() {
         infosMap.clear();
         stopEvents.clear();
-        BufferCaster.cast(buffer).clear();
-        buffer.putInt(0); // reset daemon count
-        buffer.putInt(0); // reset stop event count
+        try {
+            channel.truncate(0);
+        } catch (IOException e) {
+            LOGGER.error("Could not truncate [{}], please delete this file and try again.", registryFile, e);
+        }
     }
 
     private static final int PROCESS_ID = getProcessId0();
@@ -354,41 +310,6 @@ public class DaemonRegistry implements AutoCloseable {
             LOGGER.warn("Unable to determine PID from malformed VM name `{}`, picked a random number={}", vmname, rpid);
             return rpid;
         }
-    }
-
-    protected String readString() {
-        int sz = buffer.getShort();
-        if (sz == -1) {
-            return null;
-        }
-        if (sz < -1 || sz > 1024) {
-            throw new IllegalStateException("Bad string size: " + sz);
-        }
-        byte[] buf = new byte[sz];
-        buffer.get(buf);
-        return new String(buf, StandardCharsets.UTF_8);
-    }
-
-    protected void writeString(String str) {
-        if (str == null) {
-            buffer.putShort((short) -1);
-            return;
-        }
-        byte[] buf = str.getBytes(StandardCharsets.UTF_8);
-        if (buf.length > 1024) {
-            LOGGER.warn("Attempting to write string longer than 1024 bytes: '{}'. Please raise an issue.", str);
-            str = str.substring(0, 1033);
-            while (buf.length > 1024) {
-                str = str.substring(0, str.length() - 12) + "…";
-                buf = str.getBytes(StandardCharsets.UTF_8);
-            }
-        }
-        buffer.putShort((short) buf.length);
-        buffer.put(buf);
-    }
-
-    protected ByteBuffer buffer() {
-        return buffer;
     }
 
     public String toString() {
