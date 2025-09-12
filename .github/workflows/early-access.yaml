@@ -80,7 +80,8 @@ jobs:
       fail-fast: false
       matrix:
         # binaries wanted: linux amd64, linux arm64, mac arm64, mac amd64, windows amd64
-        os: [ ubuntu-latest, ubuntu-latest-arm, macos-latest, macos-13, windows-latest ]
+        # note: do not use "latest" but explicit versions instead
+        os: [ ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-13, windows-2025 ]
     runs-on: ${{ matrix.os }}
 
     steps:
