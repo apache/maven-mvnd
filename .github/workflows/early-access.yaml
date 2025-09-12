@@ -79,8 +79,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # binaries wanted: linux amd64, mac M1, mac intel, windows x86
-        os: [ ubuntu-latest, macos-latest, macos-13, windows-latest ]
+        # binaries wanted: linux amd64, linux arm64, mac arm64, mac amd64, windows amd64
+        os: [ ubuntu-latest, ubuntu-latest-arm, macos-latest, macos-13, windows-latest ]
     runs-on: ${{ matrix.os }}
 
     steps:
