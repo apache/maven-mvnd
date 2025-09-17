@@ -19,14 +19,14 @@
 package org.mvndaemon.mvnd.cache;
 
 /**
- * A factory for cache objects
+ * A factory for cache objects.
  */
 public interface CacheFactory {
 
     /**
-     * @param  <K> the type of {@link Cache} keys
-     * @param  <V> the type of {@link Cache} values
-     * @return     a new {@link Cache}
+     * @param <K> the type of {@link Cache} keys
+     * @param <V> the type of {@link Cache} values
+     * @return  a new {@link Cache}
      */
     <K, V extends CacheRecord> Cache<K, V> newCache();
 }

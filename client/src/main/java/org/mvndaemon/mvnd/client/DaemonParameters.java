@@ -55,7 +55,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Hold all daemon configuration
+ * Hold all daemon configuration.
  */
 public class DaemonParameters {
 
@@ -289,7 +289,7 @@ public class DaemonParameters {
 
     /**
      * @return the number of threads (same syntax as Maven's {@code -T}/{@code --threads} option) to pass to the daemon
-     * unless the user passes his own `-T` or `--threads`.
+     * unless the user passes his own `-T` or `--threads`
      */
     public String threads() {
         return property(Environment.MVND_THREADS)
@@ -326,7 +326,7 @@ public class DaemonParameters {
     }
 
     /**
-     * @return <code>true</code> if maven should be executed within this process instead of spawning a daemon.
+     * @return <code>true</code> if maven should be executed within this process instead of spawning a daemon
      */
     public boolean noDaemon() {
         return value(Environment.MVND_NO_DAEMON)
@@ -337,7 +337,7 @@ public class DaemonParameters {
     }
 
     /**
-     * @return <code>true</code> if maven should be executed in debug mode.
+     * @return <code>true</code> if maven should be executed in debug mode
      */
     public boolean debug() {
         return value(Environment.MVND_DEBUG).orSystemProperty().orDefault().asBoolean();
@@ -570,7 +570,7 @@ public class DaemonParameters {
         }
 
         /**
-         * Mostly for debugging
+         * Mostly for debugging.
          */
         @Override
         public String toString() {

@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * File origin:
- * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DaemonClientConnection.java
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DaemonClientConnection.java.
  */
 public class DaemonClientConnection implements Closeable {
 
@@ -176,7 +176,7 @@ public class DaemonClientConnection implements Closeable {
 
     public interface StaleAddressDetector {
         /**
-         * @return true if the failure should be considered due to a stale address.
+         * @return true if the failure should be considered due to a stale address
          */
         boolean maybeStaleAddress(Exception failure);
     }

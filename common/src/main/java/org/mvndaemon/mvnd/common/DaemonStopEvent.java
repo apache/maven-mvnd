@@ -27,7 +27,7 @@ import java.util.Objects;
  * Information regarding when and why a daemon was stopped.
  *
  * File origin:
- * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonStopEvent.java
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonStopEvent.java.
  */
 public class DaemonStopEvent implements Serializable {
 

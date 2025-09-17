@@ -25,7 +25,7 @@ import static org.mvndaemon.mvnd.common.DaemonState.Idle;
 
 /**
  * File origin:
- * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonInfo.java
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonInfo.java.
  */
 public class DaemonInfo {
 

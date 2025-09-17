@@ -33,15 +33,15 @@ import java.util.function.Function;
 public interface Cache<K, V extends CacheRecord> {
 
     /**
-     * Check if the cache contains the given key
+     * Check if the cache contains the given key.
      */
     boolean contains(K key);
 
     /**
-     * Get the cached record for the key
+     * Get the cached record for the key.
      *
-     * @param  key the key to search for
-     * @return     the {@link CacheRecord} associated with the given {@code key}
+     * @param key the key to search for
+     * @return  the {@link CacheRecord} associated with the given {@code key}
      */
     V get(K key);
 
@@ -54,22 +54,22 @@ public interface Cache<K, V extends CacheRecord> {
     void put(K key, V value);
 
     /**
-     * Remove all cached records
+     * Remove all cached records.
      */
     void clear();
 
     /**
-     * Remove all records satisfying the given predicate
+     * Remove all records satisfying the given predicate.
      */
     void removeIf(BiPredicate<K, V> predicate);
 
     /**
      * Get or compute the cached value if absent and return it.
      *
-     * @param  key             the key to search for
-     * @param  mappingFunction the function to use for the computation of the new {@link CacheRecord} if the key is not
+     * @param key             the key to search for
+     * @param mappingFunction the function to use for the computation of the new {@link CacheRecord} if the key is not
      *                         available in this {@link Cache} yet
-     * @return                 the existing or newly computed {@link CacheRecord}
+     * @return  the existing or newly computed {@link CacheRecord}
      */
     V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction);
 }

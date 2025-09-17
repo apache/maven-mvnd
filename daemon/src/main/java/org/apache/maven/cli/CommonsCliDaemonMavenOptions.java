@@ -187,8 +187,8 @@ public class CommonsCliDaemonMavenOptions extends CommonsCliMavenOptions {
         /**
          * Append {@code count} spaces to the given {@code stringBuilder}
          *
-         * @param  stringBuilder the {@link StringBuilder} to append to
-         * @param  count         the number of spaces to append
+         * @param stringBuilder the {@link StringBuilder} to append to
+         * @param count         the number of spaces to append
          */
         static void spaces(StringBuilder stringBuilder, int count) {
             stringBuilder.append(" ".repeat(Math.max(0, count)));

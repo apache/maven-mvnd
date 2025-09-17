@@ -55,13 +55,13 @@ public enum Environment {
      * Delete log files under the <code>mvnd.registry</code> directory that are older than <code>mvnd.logPurgePeriod</code>
      */
     PURGE(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--purge"),
-    /** Prints the status of daemon instances registered in the registry specified by <code>mvnd.registry</code> */
+    /** Prints the status of daemon instances registered in the registry specified by <code>mvnd.registry</code>. */
     STATUS(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--status"),
-    /** Stop all daemon instances registered in the registry specified by <code>mvnd.registry</code> */
+    /** Stop all daemon instances registered in the registry specified by <code>mvnd.registry</code>. */
     STOP(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--stop"),
-    /** Terminal diagnosis */
+    /** Terminal diagnosis. */
     DIAG(null, null, null, OptionType.VOID, Flags.OPTIONAL, "mvnd:--diag"),
-    /** Use one thread, no log buffering and the default project builder to behave like a standard maven */
+    /** Use one thread, no log buffering and the default project builder to behave like a standard maven. */
     SERIAL("mvnd.serial", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:-1", "mvnd:--serial"),
 
     //
@@ -71,22 +71,22 @@ public enum Environment {
     JAVA_HOME("java.home", "JAVA_HOME", null, OptionType.PATH, Flags.DOCUMENTED_AS_DISCRIMINATING),
     /**
      * The daemon installation directory. The client normally sets this according to where its <code>mvnd</code>
-     * executable is located
+     * executable is located.
      */
     MVND_HOME("mvnd.home", "MVND_HOME", null, OptionType.PATH, Flags.DISCRIMINATING),
-    /** The user home directory */
+    /** The user home directory. */
     USER_HOME("user.home", null, null, OptionType.PATH, Flags.NONE),
-    /** The current working directory */
+    /** The current working directory. */
     USER_DIR("user.dir", null, null, OptionType.PATH, Flags.NONE),
-    /** The JDK_JAVA_OPTIONS option */
+    /** The JDK_JAVA_OPTIONS option. */
     JDK_JAVA_OPTIONS("jdk.java.options", "JDK_JAVA_OPTIONS", "", OptionType.STRING, Flags.DISCRIMINATING),
 
     //
     // Maven properties
     //
-    /** The path to the Maven local repository */
+    /** The path to the Maven local repository. */
     MAVEN_REPO_LOCAL("maven.repo.local", null, null, OptionType.PATH, Flags.DISCRIMINATING | Flags.OPTIONAL),
-    /** The location of the maven settings file */
+    /** The location of the maven settings file. */
     MAVEN_SETTINGS(
             "maven.settings",
             null,
@@ -95,23 +95,23 @@ public enum Environment {
             Flags.DISCRIMINATING | Flags.OPTIONAL,
             "mvn:-s",
             "mvn:--settings"),
-    /** The pom or directory to build */
+    /** The pom or directory to build. */
     MAVEN_FILE(null, null, null, OptionType.PATH, Flags.NONE, "mvn:-f", "mvn:--file"),
-    /** The root directory of the current multi module Maven project */
+    /** The root directory of the current multi module Maven project. */
     MAVEN_MULTIMODULE_PROJECT_DIRECTORY("maven.multiModuleProjectDirectory", null, null, OptionType.PATH, Flags.NONE),
-    /** Log file */
+    /** Log file. */
     MAVEN_LOG_FILE(null, null, null, OptionType.PATH, Flags.INTERNAL, "mvn:-l", "mvn:--log-file"),
-    /** Batch mode */
+    /** Batch mode. */
     MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-B", "mvn:--batch-mode"),
-    /** Verbose */
+    /** Verbose. */
     MAVEN_VERBOSE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--verbose"),
-    /** Version */
+    /** Version. */
     MAVEN_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-v", "mvn:-version", "mvn:--version"),
-    /** Show version */
+    /** Show version. */
     MAVEN_SHOW_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-V", "mvn:--show-version"),
-    /** Define */
+    /** Define. */
     MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "mvn:-D", "mvn:--define"),
-    /** Whether the output should be styled using ANSI color codes; possible values: auto, always, never */
+    /** Whether the output should be styled using ANSI color codes; possible values: auto, always, never. */
     MAVEN_COLOR("maven.style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
 
     //
@@ -271,7 +271,7 @@ public enum Environment {
     MVND_DUPLICATE_DAEMON_GRACE_PERIOD(
             "mvnd.duplicateDaemonGracePeriod", null, "10 seconds", OptionType.DURATION, Flags.DISCRIMINATING),
     /**
-     * Internal property to tell the daemon the width of the terminal
+     * Internal property to tell the daemon the width of the terminal.
      */
     MVND_TERMINAL_WIDTH("mvnd.terminalWidth", null, 0, OptionType.INTEGER, Flags.INTERNAL),
     /**
@@ -284,7 +284,7 @@ public enum Environment {
      */
     MVND_BUILD_TIME("mvnd.buildTime", null, null, OptionType.BOOLEAN, Flags.NONE),
     /**
-     * Socket family to use
+     * Socket family to use.
      */
     MVND_SOCKET_FAMILY("mvnd.socketFamily", null, "inet", OptionType.STRING, Flags.DISCRIMINATING),
     /**
@@ -632,7 +632,9 @@ public enum Environment {
 
         private static final int INTERNAL = 0b10;
         private static final int OPTIONAL = 0b100;
-        /** Set automatically for entries having {@link #DISCRIMINATING} */
+        /**
+         * Set automatically for entries having {@link #DISCRIMINATING}
+         */
         private static final int DOCUMENTED_AS_DISCRIMINATING = 0b1000;
     }
 }

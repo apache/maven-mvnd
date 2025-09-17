@@ -63,11 +63,13 @@ public class DocMojo extends AbstractMojo {
     @Parameter(readonly = true, defaultValue = "${project.basedir}")
     File baseDir;
 
-    /** A list of fully qualified enum names to process */
+    /** A list of fully qualified enum names to process. */
     @Parameter(defaultValue = "org.mvndaemon.mvnd.common.Environment,org.mvndaemon.mvnd.common.OptionType")
     String[] enums;
 
-    /** If {@code true} the execution of this mojo will be skipped altogether; otherwise this mojo will be executed. */
+    /**
+     * If {@code true} the execution of this mojo will be skipped altogether; otherwise this mojo will be executed.
+     */
     @Parameter(defaultValue = "false", property = "mvnd.build.doc.skip")
     boolean skip;
 

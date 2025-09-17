@@ -46,18 +46,18 @@ public enum OptionType {
             return TimeUtils.printDuration(TimeUtils.toMilliSeconds(value));
         }
     },
-    /** A whole number */
+    /** A whole number. */
     INTEGER,
     /**
      * An amount of memory as accepted by the <code>-Xm*</code> family of HotSpot JVM options. Examples:
      * <code>1024m</code>, <code>2g</code>, <code>5G</code>
      */
     MEMORY_SIZE,
-    /** A local file system path */
+    /** A local file system path. */
     PATH,
-    /** A string */
+    /** A string. */
     STRING,
-    /** No value */
+    /** No value. */
     VOID;
 
     public String normalize(String value) {

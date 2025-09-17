@@ -24,7 +24,7 @@ package org.mvndaemon.mvnd.nativ;
  * as <code>jansi</code> library.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
- * @see    MvndNativeLoader
+ * @see  MvndNativeLoader
  */
 @SuppressWarnings("unused")
 public class CLibrary {

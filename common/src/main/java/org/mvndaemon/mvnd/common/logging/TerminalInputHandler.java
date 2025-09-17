@@ -50,7 +50,7 @@ import org.mvndaemon.mvnd.common.Message;
  *
  * Input handling differs based on terminal type:
  * - Normal terminals: Handle all input types including control keys
- * - Dumb terminals: Only handle project input and prompts, ignore control keys
+ * - Dumb terminals: Only handle project input and prompts, ignore control keys.
  */
 public class TerminalInputHandler implements AutoCloseable {
     private final Terminal terminal;

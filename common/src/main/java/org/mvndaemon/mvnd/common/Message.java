@@ -37,9 +37,13 @@ public abstract class Message {
     public static final int BUILD_REQUEST = 1;
     public static final int BUILD_STARTED = 2;
     public static final int BUILD_FINISHED = 3;
-    /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just started */
+    /**
+     * A {@link StringMessage} bearing the {@code artifactId} of the project whose build just started.
+     */
     public static final int PROJECT_STARTED = 4;
-    /** A {@link StringMessage} bearing the {@code artifactId} of the project whose build just finished */
+    /**
+     * A {@link StringMessage} bearing the {@code artifactId} of the project whose build just finished.
+     */
     public static final int PROJECT_STOPPED = 5;
 
     public static final int MOJO_STARTED = 6;

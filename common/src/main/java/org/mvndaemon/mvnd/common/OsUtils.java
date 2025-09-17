@@ -193,7 +193,7 @@ public class OsUtils {
     }
 
     /**
-     * Simple CSV line parser that handles quoted fields
+     * Simple CSV line parser that handles quoted fields.
      */
     private static String[] parseCsvLine(String line) {
         List<String> fields = new ArrayList<>();
@@ -220,9 +220,9 @@ public class OsUtils {
      * Executes the given {@code javaExecutable} with {@code -XshowSettings:properties -version} parameters and extracts
      * the value of {@code java.home} from the output.
      *
-     * @param  javaExecutable pass {@code "java"} to get {@code java} binary available in {@code PATH} environment
+     * @param javaExecutable pass {@code "java"} to get {@code java} binary available in {@code PATH} environment
      *                        variable or pass an absolute path to a {@code "java"} executable
-     * @return                a {@code java.home} value or null
+     * @return  a {@code java.home} value or null
      */
     public static String findJavaHomeFromJavaExecutable(String javaExecutable) {
         String[] cmd = {javaExecutable, "-XshowSettings:properties", "-version"};

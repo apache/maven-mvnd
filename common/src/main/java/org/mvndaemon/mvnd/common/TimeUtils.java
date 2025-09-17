@@ -61,10 +61,10 @@ public final class TimeUtils {
      * 500 -> 500ms
      * 1300 -> 1s300ms
      * 310300 -> 5m10s300ms
-     * 6600000 -> 1h50m
+     * 6600000 -> 1h50m.
      *
-     * @param  millis time in milliseconds
-     * @return        time in string
+     * @param millis time in milliseconds
+     * @return  time in string
      */
     public static String printDuration(long millis) {
         if (millis < 0) {

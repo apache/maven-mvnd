@@ -53,7 +53,7 @@ import static org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult.
 
 /**
  * File origin:
- * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/server/MasterExpirationStrategy.java
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/server/MasterExpirationStrategy.java.
  */
 public class DaemonExpiration {
 

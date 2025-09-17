@@ -104,9 +104,9 @@ public class TerminalOutput implements ClientOutput {
     private final boolean dumb;
     private final TerminalInputHandler inputHandler;
 
-    /** A sink for sending messages back to the daemon */
+    /** A sink for sending messages back to the daemon. */
     private volatile Consumer<Message> daemonDispatch;
-    /** A sink for queuing messages to the main queue */
+    /** A sink for queuing messages to the main queue. */
     private volatile Consumer<Message> daemonReceive;
 
     /*
@@ -119,12 +119,14 @@ public class TerminalOutput implements ClientOutput {
     private String name;
     private String daemonId;
     private int totalProjects;
-    /** String format for formatting the number of projects done with padding based on {@link #totalProjects} */
+    /**
+     * String format for formatting the number of projects done with padding based on {@link #totalProjects}
+     */
     private String projectsDoneFomat;
 
     private int maxThreads;
     private String artifactIdFormat;
-    /** String format for formatting the actual/hidden/max thread counts */
+    /** String format for formatting the actual/hidden/max thread counts. */
     private String threadsFormat;
 
     private int linesPerProject = 0;

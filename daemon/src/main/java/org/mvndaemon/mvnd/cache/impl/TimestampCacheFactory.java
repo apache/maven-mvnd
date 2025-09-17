@@ -98,7 +98,9 @@ public class TimestampCacheFactory implements CacheFactory {
     static class Record<V extends CacheRecord> {
         final V record;
 
-        /** {@link Set} of {@link FileState}s at the creation time of this {@link Record} */
+        /**
+         * {@link Set} of {@link FileState}s at the creation time of this {@link Record}
+         */
         final Set<FileState> fileStates;
 
         public Record(V record) {

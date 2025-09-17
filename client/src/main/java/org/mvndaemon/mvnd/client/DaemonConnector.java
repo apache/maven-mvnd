@@ -64,7 +64,7 @@ import static org.mvndaemon.mvnd.common.DaemonState.Canceled;
 
 /**
  * File origin:
- * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DefaultDaemonConnector.java
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/client/DefaultDaemonConnector.java.
  */
 public class DaemonConnector {
 

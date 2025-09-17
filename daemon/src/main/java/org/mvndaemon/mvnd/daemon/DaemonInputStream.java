@@ -56,7 +56,7 @@ import org.apache.maven.logging.ProjectBuildLogAppender;
  * This implementation is particularly important for:
  * 1. Handling piped input (e.g., cat file | mvnd ...)
  * 2. Supporting interactive input during builds
- * 3. Managing input across multiple project builds
+ * 3. Managing input across multiple project builds.
  */
 class DaemonInputStream extends InputStream {
     private final BiConsumer<String, Integer> startReadingFromProject;

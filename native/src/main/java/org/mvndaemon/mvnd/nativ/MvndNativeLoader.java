@@ -51,8 +51,8 @@ public class MvndNativeLoader {
     /**
      * Loads mvndnative native library.
      *
-     * @return True if mvndnative native library is successfully loaded; false
-     *         otherwise.
+     * @return true if mvndnative native library is successfully loaded; false
+     *         otherwise
      */
     public static synchronized boolean initialize() {
         // only cleanup before the first extract
@@ -151,11 +151,11 @@ public class MvndNativeLoader {
     }
 
     /**
-     * Extracts and loads the specified library file to the target folder
+     * Extracts and loads the specified library file to the target folder.
      *
-     * @param  libFolderForCurrentOS Library path.
-     * @param  libraryFileName       Library name.
-     * @param  targetFolder          Target folder.
+     * @param libFolderForCurrentOS Library path
+     * @param libraryFileName       Library name
+     * @param targetFolder          Target folder
      * @return
      */
     private static boolean extractAndLoadLibraryFile(
@@ -229,8 +229,8 @@ public class MvndNativeLoader {
     /**
      * Loads native library using the given path and name of the library.
      *
-     * @param  libPath Path of the native library.
-     * @return         True for successfully loading; false otherwise.
+     * @param libPath Path of the native library
+     * @return True for successfully loading; false otherwise
      */
     private static boolean loadNativeLibrary(File libPath) {
         if (libPath.exists()) {
@@ -333,7 +333,7 @@ public class MvndNativeLoader {
     }
 
     /**
-     * @return The major version of the mvndnative library.
+     * @return the major version of the mvndnative library
      */
     public static int getMajorVersion() {
         String[] c = getVersion().split("\\.");
@@ -341,7 +341,7 @@ public class MvndNativeLoader {
     }
 
     /**
-     * @return The minor version of the mvndnative library.
+     * @return the minor version of the mvndnative library
      */
     public static int getMinorVersion() {
         String[] c = getVersion().split("\\.");
@@ -349,7 +349,7 @@ public class MvndNativeLoader {
     }
 
     /**
-     * @return The version of the mvndnative library.
+     * @return the version of the mvndnative library
      */
     public static String getVersion() {
 

@@ -40,7 +40,7 @@ public class InterpolationHelper {
     private static final String MARKER = "$__";
 
     /**
-     * Callback for substitution
+     * Callback for substitution.
      */
     @FunctionalInterface
     public interface SubstitutionCallback {
@@ -49,11 +49,11 @@ public class InterpolationHelper {
     }
 
     /**
-     * Perform substitution on a property set
+     * Perform substitution on a property set.
      *
      * @param properties            the property set to perform substitution on
      * @param callback              the callback to obtain substitution values
-     * @param substituteFromConfig  If substitute from configuration
+     * @param substituteFromConfig  if substitute from configuration
      * @param defaultsToEmptyString sets an empty string if a replacement value is not found, leaves intact
      *                              otherwise
      */
@@ -84,19 +84,19 @@ public class InterpolationHelper {
      * properties override system properties.
      * </p>
      *
-     * @param  val                      The string on which to perform property substitution.
-     * @param  currentKey               The key of the property being evaluated used to
-     *                                  detect cycles.
-     * @param  cycleMap                 Map of variable references used to detect nested cycles.
-     * @param  configProps              Set of configuration properties.
-     * @param  callback                 the callback to obtain substitution values
-     * @param  substituteFromConfig     If substitute from configuration
-     * @param  defaultsToEmptyString    sets an empty string if a replacement value is not found, leaves intact
+     * @param val                      The string on which to perform property substitution
+     * @param currentKey               The key of the property being evaluated used to
+     *                                  detect cycles
+     * @param cycleMap                 Map of variable references used to detect nested cycles
+     * @param configProps              Set of configuration properties
+     * @param callback                 the callback to obtain substitution values
+     * @param substituteFromConfig     If substitute from configuration
+     * @param defaultsToEmptyString    sets an empty string if a replacement value is not found, leaves intact
      *                                  otherwise
-     * @return                          The value of the specified string after system property substitution.
-     * @throws IllegalArgumentException If there was a syntax error in the
-     *                                  property placeholder syntax or a recursive variable reference.
-     **/
+     * @return The value of the specified string after system property substitution
+     * @throws IllegalArgumentException if there was a syntax error in the
+     *                                  property placeholder syntax or a recursive variable reference
+     */
     public static String substVars(
             String val,
             String currentKey,

@@ -26,7 +26,7 @@ import java.util.Map;
 import org.apache.maven.logging.BuildEventListener;
 
 /**
- * Simple interface to bridge maven 3.9.x and 4.0.x CLI
+ * Simple interface to bridge maven 3.9.x and 4.0.x CLI.
  */
 public interface DaemonCli extends AutoCloseable {
     int main(

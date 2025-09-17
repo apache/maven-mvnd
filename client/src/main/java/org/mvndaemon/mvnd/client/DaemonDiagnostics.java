@@ -31,7 +31,7 @@ import java.util.stream.Collector;
 
 /**
  * File origin:
- * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/diagnostics/DaemonDiagnostics.java
+ * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/diagnostics/DaemonDiagnostics.java.
  */
 public class DaemonDiagnostics {
 
@@ -82,8 +82,8 @@ public class DaemonDiagnostics {
     }
 
     /**
-     * @param  path        to read from tail
-     * @return             tail content
+     * @param path        to read from tail
+     * @return  tail content
      * @throws IOException when reading failed
      */
     static String tail(Path path) throws IOException {

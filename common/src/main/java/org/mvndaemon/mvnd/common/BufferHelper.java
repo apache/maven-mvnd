@@ -50,8 +50,8 @@ public class BufferHelper {
     /**
      * Attempts to clean a direct {@link ByteBuffer}, releasing its underlying memory.
      *
-     * @param byteBuffer The direct ByteBuffer to clean.
-     * @return {@code true} if the cleaner was successfully invoked, {@code false} otherwise.
+     * @param byteBuffer the direct ByteBuffer to clean
+     * @return {@code true} if the cleaner was successfully invoked, {@code false} otherwise
      */
     public static boolean closeDirectByteBuffer(ByteBuffer byteBuffer) {
         return closeDirectByteBuffer(byteBuffer, null);
@@ -61,9 +61,9 @@ public class BufferHelper {
      * Attempts to clean a direct {@link ByteBuffer}, releasing its underlying memory.
      * Logs any errors via the provided logger.
      *
-     * @param byteBuffer The direct ByteBuffer to clean.
-     * @param log        A consumer to log any potential errors, may be {@code null}.
-     * @return {@code true} if the cleaner was successfully invoked, {@code false} otherwise.
+     * @param byteBuffer the direct ByteBuffer to clean
+     * @param log        a consumer to log any potential errors, may be {@code null}
+     * @return {@code true} if the cleaner was successfully invoked, {@code false} otherwise
      */
     public static boolean closeDirectByteBuffer(ByteBuffer byteBuffer, Consumer<String> log) {
         if (byteBuffer != null && byteBuffer.isDirect()) {

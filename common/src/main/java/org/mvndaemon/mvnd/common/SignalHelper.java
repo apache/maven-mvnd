@@ -21,7 +21,7 @@ package org.mvndaemon.mvnd.common;
 public class SignalHelper {
 
     /**
-     * Ignore signals to that stopping the mvnd client won't stop the daemon
+     * Ignore signals to that stopping the mvnd client won't stop the daemon.
      */
     public static void ignoreStopSignals() throws Exception {
         sun.misc.Signal.handle(new sun.misc.Signal("INT"), sun.misc.SignalHandler.SIG_IGN);

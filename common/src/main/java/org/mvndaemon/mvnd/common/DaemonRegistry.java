@@ -51,7 +51,7 @@ import static org.mvndaemon.mvnd.common.DaemonState.Idle;
  * <p>
  * File origin:
  * https://github.com/gradle/gradle/blob/v5.6.2/subprojects/launcher/src/main/java/org/gradle/launcher/daemon/registry/DaemonRegistry.java
- * https://github.com/OpenHFT/Java-Lang/blob/master/lang/src/main/java/net/openhft/lang/io/AbstractBytes.java
+ * https://github.com/OpenHFT/Java-Lang/blob/master/lang/src/main/java/net/openhft/lang/io/AbstractBytes.java.
  */
 public class DaemonRegistry implements AutoCloseable {
 
