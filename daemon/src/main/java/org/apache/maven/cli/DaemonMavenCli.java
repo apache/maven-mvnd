@@ -101,6 +101,7 @@ import org.codehaus.plexus.component.repository.exception.ComponentLookupExcepti
 import org.codehaus.plexus.interpolation.AbstractValueSource;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
@@ -839,6 +840,7 @@ public class DaemonMavenCli implements DaemonCli {
         commands(cliRequest);
 
         MavenExecutionRequest request = executionRequestPopulator.populateDefaults(cliRequest.request);
+        request.setRepositoryCache(new DefaultRepositoryCache()); // reset caches
 
         eventSpyDispatcher.onEvent(request);
 
