@@ -29,7 +29,7 @@
 
   <groupId>org.apache.maven.daemon</groupId>
   <artifactId>mvnd</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.4-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Maven Daemon - Parent</name>
@@ -68,7 +68,7 @@
     <maven.compiler.target>8</maven.compiler.target>
     <maven.compiler.source>8</maven.compiler.source>
     <maven-dist.required.jdk>8</maven-dist.required.jdk>
-    <project.build.outputTimestamp>2025-09-17T13:29:37Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-09-17T13:29:54Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
