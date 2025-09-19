@@ -76,7 +76,7 @@
 
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
-    <assertj.version>3.27.4</assertj.version>
+    <assertj.version>3.27.5</assertj.version>
     <commons-compress.version>1.28.0</commons-compress.version>
     <graalvm.version>24.2.2</graalvm.version>
     <graalvm.plugin.version>0.11.0</graalvm.plugin.version>
