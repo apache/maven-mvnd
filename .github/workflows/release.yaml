@@ -108,7 +108,7 @@ jobs:
           (( err == 1 ))
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: mvnd-${{ env.OS }}-${{ env.ARCH }}
           path: |
@@ -155,7 +155,7 @@ jobs:
         run: ./mvnw clean verify -Psource-distribution -N -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: mvnd-sources
           path: |
