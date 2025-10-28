@@ -99,7 +99,7 @@
     <picocli.version>4.7.7</picocli.version>
     <!-- 2.29+ is Java 17+ -->
     <roaster.version>2.28.3.Final</roaster.version>
-    <maven.plugin-tools.version>3.15.1</maven.plugin-tools.version>
+    <maven.plugin-tools.version>3.15.2</maven.plugin-tools.version>
     <javassist.version>3.30.2-GA</javassist.version>
     <xstream.version>1.4.21</xstream.version>
     <plexus-interactivity-api.version>1.4</plexus-interactivity-api.version>
