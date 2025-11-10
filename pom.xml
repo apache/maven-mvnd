@@ -102,7 +102,7 @@
     <maven.plugin-tools.version>3.15.2</maven.plugin-tools.version>
     <javassist.version>3.30.2-GA</javassist.version>
     <xstream.version>1.4.21</xstream.version>
-    <plexus-interactivity-api.version>1.4</plexus-interactivity-api.version>
+    <plexus-interactivity-api.version>1.5.1</plexus-interactivity-api.version>
     <takari-smart-builder.version>1.1.0</takari-smart-builder.version>
     <testcontainers.version>1.21.3</testcontainers.version>
   </properties>
