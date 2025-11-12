@@ -79,8 +79,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # binaries wanted: linux amd64, mac M1, mac intel, windows x86
-        os: [ ubuntu-latest, macos-latest, macos-13, windows-latest ]
+        # binaries wanted: linux amd64, linux arm64, mac arm64, mac amd64, windows amd64
+        # note: do not use "latest" but explicit versions instead
+        os: [ ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-13, windows-2025 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -135,8 +136,8 @@ jobs:
       - name: 'Maven clean'
         run: ./mvnw clean -Dmrm=false -V -B -ntp -e
 
-      - name: 'Patch GraalVM libs for only requiring glibc 2.12'
-        if: ${{ env.OS == 'linux' }}
+      - name: '(amd64) Patch GraalVM libs for only requiring glibc 2.12'
+        if: ${{ env.OS == 'linux' && env.ARCH == 'amd64' }}
         shell: bash
         run: |
           mkdir -p client/target/graalvm-libs-for-glibc-2.12
@@ -154,6 +155,27 @@ jobs:
           : patch gcc startfile
           gcc -O3 -Os -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
           ld -r /lib/x86_64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.12/Scrt1.o
+          objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
+
+      - name: '(arm64) Patch GraalVM libs for only requiring glibc 2.12'
+        if: ${{ env.OS == 'linux' && env.ARCH == 'aarch64' }}
+        shell: bash
+        run: |
+          mkdir -p client/target/graalvm-libs-for-glibc-2.12
+
+          : patch common libraries
+          ( find "$GRAALVM_HOME/lib/static/linux-aarch64/glibc" -name '*.a'
+            ls -1 /lib/aarch64-linux-gnu/libz.a
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-aarch64/libjvm.a"
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-aarch64/liblibchelper.a"
+          ) | while IFS= read -r input; do
+                output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
+                objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef -- "$input" "$output" 2>/dev/null
+              done
+
+          : patch gcc startfile
+          gcc -O3 -Os -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
+          ld -r /lib/aarch64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.12/Scrt1.o
           objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
 
       - name: 'Build native distribution'
