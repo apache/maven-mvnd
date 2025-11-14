@@ -50,8 +50,8 @@ public class DaemonMavenParser extends MavenParser {
     }
 
     @Override
-    protected List<CoreExtension> readCoreExtensionsDescriptorFromFile(Path extensionsFile) {
-        return filterCoreExtensions(super.readCoreExtensionsDescriptorFromFile(extensionsFile));
+    protected List<CoreExtension> readCoreExtensionsDescriptorFromFile(Path extensionsFile, boolean allowMetaVersions) {
+        return filterCoreExtensions(super.readCoreExtensionsDescriptorFromFile(extensionsFile, allowMetaVersions));
     }
 
     protected static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
