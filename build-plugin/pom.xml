@@ -44,6 +44,10 @@
 
     <dependency>
       <groupId>org.jboss.forge.roaster</groupId>
+      <artifactId>roaster-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge.roaster</groupId>
       <artifactId>roaster-jdt</artifactId>
     </dependency>
   </dependencies>
