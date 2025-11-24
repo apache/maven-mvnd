@@ -93,6 +93,17 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>run-inherit-io</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.mvndaemon.mvnd.test.HelloWorld</mainClass>
+                            <inheritIo>true</inheritIo>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
