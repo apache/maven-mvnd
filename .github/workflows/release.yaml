@@ -38,9 +38,9 @@ jobs:
         os: [ ubuntu-latest, macos-latest, macos-15-intel, windows-latest ]
         arch: [ x64, arm64 ]
         exclude:
-          - os: [ macos-latest ]
+          - os: macos-latest
             arch: x64
-          - os: [ macos-15-intel ]
+          - os: macos-15-intel
             arch: arm64
           - os: windows-latest
             arch: arm64
