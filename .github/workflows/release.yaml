@@ -53,7 +53,7 @@ jobs:
       - name: 'Set vars'
         shell: bash
         run: |
-          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          ARCH=$(echo '${{ matrix.arch }}' | awk '{print tolower($0)}')
           if [[ $ARCH == 'x64' ]]
           then
             echo "ARCH=amd64" >> $GITHUB_ENV
