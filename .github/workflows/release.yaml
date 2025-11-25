@@ -70,7 +70,7 @@ jobs:
           else
             echo "OS=$OS" >> $GITHUB_ENV
           fi
-          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --raw-streams)" >> $GITHUB_ENV
 
       - name: 'Set up GraalVM'
         uses: graalvm/setup-graalvm@v1
@@ -201,7 +201,7 @@ jobs:
 
       - name: Set environment
         run: |
-          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout | grep -v '^\[' | tail -1)" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release
