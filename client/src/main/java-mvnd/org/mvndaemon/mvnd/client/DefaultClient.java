@@ -355,6 +355,15 @@ public class DefaultClient implements Client {
                     });
             Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, width);
 
+            if (parameters.property(Environment.MVND_DEBUG).asBoolean()) {
+                if (Environment.MVND_KEEP_ALIVE.getCommandLineOption(args) == null) {
+                    System.setProperty(Environment.MVND_KEEP_ALIVE.getProperty(), "1h");
+                }
+                if (Environment.MVND_CONNECT_TIMEOUT.getCommandLineOption(args) == null) {
+                    System.setProperty(Environment.MVND_CONNECT_TIMEOUT.getProperty(), "1h");
+                }
+            }
+
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
                 output.setDaemonId(daemon.getDaemon().getId());
