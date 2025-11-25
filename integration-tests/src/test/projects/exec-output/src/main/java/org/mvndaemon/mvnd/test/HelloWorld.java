@@ -15,13 +15,11 @@
  */
 package org.mvndaemon.mvnd.test;
 
-import org.junit.jupiter.api.Test;
+public class HelloWorld {
 
-class GreetingTest {
-
-    @Test
-    void run() {
+    public static void main(String[] args) {
         System.out.println("From test");
     }
 
 }
+
