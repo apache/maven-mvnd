@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2019 the original author or authors.
+# Copyright 2019-2025 the original author or authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ darwinAmdZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-$
 darwinAmdSha256="$(curl -L --silent "${darwinAmdZipUrl}.sha256")"
 darwinArmZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-darwin-aarch64.zip"
 darwinArmSha256="$(curl -L --silent "${darwinArmZipUrl}.sha256")"
-linuxZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-amd64.zip"
-linuxSha256="$(curl -L --silent "${linuxZipUrl}.sha256")"
+linuxAmdZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-amd64.zip"
+linuxAmdSha256="$(curl -L --silent "${linuxAmdZipUrl}.sha256")"
+linuxArmZipUrl="https://downloads.apache.org/maven/mvnd/${VERSION}/maven-mvnd-${VERSION}-linux-aarch64.zip"
+linuxArmSha256="$(curl -L --silent "${linuxArmZipUrl}.sha256")"
 
 echo "Updating Formula/mvnd.rb with"
 echo "version: ${VERSION}"
@@ -41,8 +43,10 @@ echo "darwin-amd-url: ${darwinAmdZipUrl}"
 echo "darwin-amd-sha256: ${darwinAmdSha256}"
 echo "darwin-arm-url: ${darwinArmZipUrl}"
 echo "darwin-arm-sha256: ${darwinArmSha256}"
-echo "linux-url: ${linuxZipUrl}"
-echo "linux-sha256: ${linuxSha256}"
+echo "linux-url: ${linuxAmdZipUrl}"
+echo "linux-sha256: ${linuxAmdSha256}"
+echo "linux-arm-url: ${linuxArmZipUrl}"
+echo "linux-arm-sha256: ${linuxArmSha256}"
 
 rm -Rf homebrew-mvnd
 git clone https://github.com/mvndaemon/homebrew-mvnd.git
@@ -50,7 +54,8 @@ cd homebrew-mvnd
 
 perl -i -0pe 's|(on_macos do[\s\S\n]+on_intel do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinAmdZipUrl}'\"$3\"'${darwinAmdSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(on_macos do[\s\S\n]+on_arm do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${darwinArmZipUrl}'\"$3\"'${darwinArmSha256}'\"|g' Formula/mvnd.rb
-perl -i -0pe 's|(on_linux do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${linuxZipUrl}'\"$3\"'${linuxSha256}'\"|g' Formula/mvnd.rb
+perl -i -0pe 's|(on_linux do[\s\S\n]+on_intel do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${linuxAmdZipUrl}'\"$3\"'${linuxAmdSha256}'\"|g' Formula/mvnd.rb
+perl -i -0pe 's|(on_linux do[\s\S\n]+on_arm do\n\s+url )\"([^\"]+)\"(\n\s+sha256 )\"([^\"]+)\"|$1\"'${linuxArmZipUrl}'\"$3\"'${linuxArmSha256}'\"|g' Formula/mvnd.rb
 perl -i -0pe 's|(version )"([^\"]+)"|$1\"'${VERSION}'\"|g' Formula/mvnd.rb
 
 if [ -n "$(git status --porcelain)" ]; then

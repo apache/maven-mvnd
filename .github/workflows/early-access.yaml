@@ -74,13 +74,21 @@ jobs:
           include-hidden-files: 'true'
 
   native-build:
-    name: 'Build with GraalVM on ${{ matrix.os }}'
+    name: 'Build with GraalVM on ${{ matrix.os }}-${{ matrix.arch }}'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
     strategy:
       fail-fast: false
       matrix:
         # binaries wanted: linux amd64, mac M1, mac intel, windows x86
-        os: [ ubuntu-latest, macos-latest, macos-13, windows-latest ]
+        os: [ ubuntu-latest, macos-latest, macos-15-intel, windows-latest ]
+        arch: [ x64, arm64 ]
+        exclude:
+          - os: macos-latest
+            arch: x64
+          - os: macos-15-intel
+            arch: arm64
+          - os: windows-latest
+            arch: arm64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -90,7 +98,7 @@ jobs:
       - name: 'Set vars'
         shell: bash
         run: |
-          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          ARCH=$(echo '${{ matrix.arch }}' | awk '{print tolower($0)}')
           if [[ $ARCH == 'x64' ]]
           then
             echo "ARCH=amd64" >> $GITHUB_ENV
@@ -172,14 +180,14 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
+          name: daemon-test-logs-${{ matrix.os }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
           include-hidden-files: 'true'
 
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v5
         with:
-          name: mvnd-${{ env.OS }}-${{ env.ARCH }}
+          name: mvnd-${{ matrix.os }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
 
   site-build:

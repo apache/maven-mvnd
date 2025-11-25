@@ -30,12 +30,20 @@ env:
 
 jobs:
   build:
-    name: 'Build with GraalVM on ${{ matrix.os }}'
+    name: 'Build with GraalVM on ${{ matrix.os }}-${{ matrix.arch }}'
     strategy:
       fail-fast: true
       matrix:
-        # binaries wanted: linux amd64, mac intel, mac M1, windows x86
-        os: [ ubuntu-latest, macos-13, macos-14, windows-latest ]
+        # binaries wanted
+        os: [ ubuntu-latest, macos-latest, macos-15-intel, windows-latest ]
+        arch: [ x64, arm64 ]
+        exclude:
+          - os: macos-latest
+            arch: x64
+          - os: macos-15-intel
+            arch: arm64
+          - os: windows-latest
+            arch: arm64
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -45,7 +53,7 @@ jobs:
       - name: 'Set vars'
         shell: bash
         run: |
-          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          ARCH=$(echo '${{ matrix.arch }}' | awk '{print tolower($0)}')
           if [[ $ARCH == 'x64' ]]
           then
             echo "ARCH=amd64" >> $GITHUB_ENV
@@ -62,7 +70,7 @@ jobs:
           else
             echo "OS=$OS" >> $GITHUB_ENV
           fi
-          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --raw-streams)" >> $GITHUB_ENV
 
       - name: 'Set up GraalVM'
         uses: graalvm/setup-graalvm@v1
@@ -193,7 +201,7 @@ jobs:
 
       - name: Set environment
         run: |
-          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout | grep -v '^\[' | tail -1)" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release
