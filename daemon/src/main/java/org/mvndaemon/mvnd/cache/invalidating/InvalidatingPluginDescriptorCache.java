@@ -29,7 +29,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.apache.maven.model.Plugin;
-import org.apache.maven.plugin.*;
+import org.apache.maven.plugin.DefaultPluginDescriptorCache;
+import org.apache.maven.plugin.InvalidPluginDescriptorException;
+import org.apache.maven.plugin.PluginDescriptorParsingException;
+import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;

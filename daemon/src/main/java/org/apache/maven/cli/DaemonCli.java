@@ -18,20 +18,25 @@
  */
 package org.apache.maven.cli;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
+import org.apache.maven.logging.BuildEventListener;
 
 /**
  * Simple interface to bridge maven 3.9.x and 4.0.x CLI
  */
-public interface DaemonCli {
+public interface DaemonCli extends AutoCloseable {
     int main(
             List<String> args,
             String workingDir,
             String projectDir,
             Map<String, String> env,
-            BuildEventListener buildEventListener)
+            BuildEventListener buildEventListener,
+            InputStream in,
+            OutputStream out,
+            OutputStream err)
             throws Exception;
 }

@@ -26,79 +26,56 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.codehaus.plexus.components.interactivity.AbstractInputHandler;
-import org.codehaus.plexus.components.interactivity.InputHandler;
-import org.codehaus.plexus.components.interactivity.OutputHandler;
-import org.codehaus.plexus.components.interactivity.Prompter;
-import org.codehaus.plexus.components.interactivity.PrompterException;
+import org.apache.maven.api.services.Prompter;
+import org.apache.maven.api.services.PrompterException;
+import org.apache.maven.logging.ProjectBuildLogAppender;
 import org.eclipse.sisu.Priority;
 import org.eclipse.sisu.Typed;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.daemon.Connection;
-import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Named
-@Priority(10)
-@Typed({Prompter.class, InputHandler.class, OutputHandler.class})
-public class DaemonPrompter extends AbstractInputHandler implements Prompter, InputHandler, OutputHandler {
+@Priority(20)
+@Typed({Prompter.class})
+public class DaemonPrompter implements Prompter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonPrompter.class);
 
     @Override
-    public String prompt(String message) throws PrompterException {
+    public String prompt(String message) {
         return prompt(message, null, null);
     }
 
     @Override
-    public String prompt(String message, String defaultReply) throws PrompterException {
+    public String prompt(String message, String defaultReply) {
         return prompt(message, null, defaultReply);
     }
 
     @Override
-    public String prompt(String message, List possibleValues) throws PrompterException {
+    public String prompt(String message, List possibleValues) {
         return prompt(message, possibleValues, null);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public String prompt(String message, List possibleValues, String defaultReply) throws PrompterException {
+    public String prompt(String message, List possibleValues, String defaultReply) {
         return doPrompt(message, possibleValues, defaultReply, false);
     }
 
     @Override
-    public String promptForPassword(String message) throws PrompterException {
+    public String promptForPassword(String message) {
         return doPrompt(message, null, null, true);
     }
 
     @Override
-    public void showMessage(String message) throws PrompterException {
+    public void showMessage(String message) {
         try {
             doDisplay(message);
         } catch (IOException e) {
             throw new PrompterException("Failed to present prompt", e);
         }
-    }
-
-    @Override
-    public String readLine() throws IOException {
-        return doPrompt(null, false);
-    }
-
-    @Override
-    public String readPassword() throws IOException {
-        return doPrompt(null, true);
-    }
-
-    @Override
-    public void write(String line) throws IOException {
-        doDisplay(line);
-    }
-
-    @Override
-    public void writeLine(String line) throws IOException {
-        doDisplay(line + "\n");
     }
 
     String doPrompt(String message, List<Object> possibleValues, String defaultReply, boolean password)

@@ -20,22 +20,18 @@ package org.mvndaemon.mvnd.daemon;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -46,12 +42,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import io.takari.maven.builder.smart.SmartBuilder;
 import org.apache.maven.cli.DaemonCli;
+import org.apache.maven.logging.BuildEventListener;
+import org.apache.maven.logging.LoggingOutputStream;
+import org.apache.maven.logging.ProjectBuildLogAppender;
 import org.mvndaemon.mvnd.common.DaemonConnection;
 import org.mvndaemon.mvnd.common.DaemonException;
 import org.mvndaemon.mvnd.common.DaemonExpirationStatus;
@@ -67,9 +65,6 @@ import org.mvndaemon.mvnd.common.SignalHelper;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
-import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
-import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
-import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,7 +126,7 @@ public class Server implements AutoCloseable, Runnable {
         try {
             cli = (DaemonCli) getClass()
                     .getClassLoader()
-                    .loadClass("org.apache.maven.cli.DaemonMavenCli")
+                    .loadClass("org.apache.maven.cli.DaemonMavenCling")
                     .getDeclaredConstructor()
                     .newInstance();
             registry = new DaemonRegistry(Environment.MVND_REGISTRY.asPath());
@@ -187,7 +182,11 @@ public class Server implements AutoCloseable, Runnable {
                     try {
                         registry.close();
                     } finally {
-                        socket.close();
+                        try {
+                            socket.close();
+                        } finally {
+                            cli.close();
+                        }
                     }
                 }
             }
@@ -283,9 +282,15 @@ public class Server implements AutoCloseable, Runnable {
                 updateState(DaemonState.Idle);
                 return;
             }
-            LOGGER.info("Request received: {}", message);
-            if (message instanceof BuildRequest) {
-                handle(connection, (BuildRequest) message);
+            if (message instanceof BuildRequest buildRequest) {
+                LOGGER.info("Request received: {}", message);
+                if (Boolean.getBoolean("mvnd.dump.client.env")) {
+                    // Environment can contain passwords or tokens, so do not dump, unless specifically asked for
+                    LOGGER.trace("Client environment dump: {}", buildRequest.getEnv());
+                }
+                handle(connection, buildRequest);
+            } else {
+                LOGGER.info("Ignoring message: {}", message);
             }
         } catch (Throwable t) {
             LOGGER.error("Error reading request", t);
@@ -503,9 +508,11 @@ public class Server implements AutoCloseable, Runnable {
         final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64, Message.getMessageComparator());
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
         final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
-        final DaemonInputStream daemonInputStream =
-                new DaemonInputStream(projectId -> sendQueue.add(Message.requestInput(projectId)));
-        try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(buildEventListener)) {
+        final DaemonInputStream daemonInputStream = new DaemonInputStream(
+                (projectId, bytesToRead) -> sendQueue.add(Message.requestInput(projectId, bytesToRead)));
+        InputStream in = System.in;
+        try {
+            System.setIn(daemonInputStream);
 
             LOGGER.info("Executing request");
 
@@ -606,15 +613,26 @@ public class Server implements AutoCloseable, Runnable {
                         }
                     }
                 });
-                System.setIn(daemonInputStream);
-                System.setOut(new LoggingOutputStream(s -> sendQueue.add(Message.out(s))).printStream());
-                System.setErr(new LoggingOutputStream(s -> sendQueue.add(Message.err(s))).printStream());
+                LoggingOutputStream output = new LoggingOutputStream(s -> sendQueue.add(Message.out(s)));
+                LoggingOutputStream error = new LoggingOutputStream(s -> sendQueue.add(Message.err(s)));
+                // Process MAVEN_ARGS environment variable
+                List<String> args = buildRequest.getArgs();
+                String mavenArgsEnv = buildRequest.getEnv().get("MAVEN_ARGS");
+                if (mavenArgsEnv != null && !mavenArgsEnv.isEmpty()) {
+                    args = new ArrayList<>(args);
+                    Arrays.stream(mavenArgsEnv.split(" "))
+                            .filter(s -> !s.trim().isEmpty())
+                            .forEach(args::add);
+                }
                 int exitCode = cli.main(
-                        buildRequest.getArgs(),
+                        args,
                         buildRequest.getWorkingDir(),
                         buildRequest.getProjectDir(),
                         buildRequest.getEnv(),
-                        buildEventListener);
+                        buildEventListener,
+                        daemonInputStream,
+                        output,
+                        error);
                 LOGGER.info("Build finished, finishing message dispatch");
                 buildEventListener.finish(exitCode);
             } catch (Throwable t) {
@@ -627,6 +645,7 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);
         } finally {
+            System.setIn(in);
             if (!noDaemon) {
                 LOGGER.info("Daemon back to idle");
                 updateState(DaemonState.Idle);
@@ -675,68 +694,5 @@ public class Server implements AutoCloseable, Runnable {
     @Override
     public String toString() {
         return info.toString();
-    }
-
-    static class DaemonInputStream extends InputStream {
-        private final Consumer<String> startReadingFromProject;
-        private final LinkedList<byte[]> datas = new LinkedList<>();
-        private int pos = -1;
-        private String projectReading = null;
-
-        DaemonInputStream(Consumer<String> startReadingFromProject) {
-            this.startReadingFromProject = startReadingFromProject;
-        }
-
-        @Override
-        public int available() throws IOException {
-            synchronized (datas) {
-                String projectId = ProjectBuildLogAppender.getProjectId();
-                if (!Objects.equals(projectId, projectReading)) {
-                    projectReading = projectId;
-                    startReadingFromProject.accept(projectId);
-                }
-                return datas.stream().mapToInt(a -> a.length).sum() - Math.max(pos, 0);
-            }
-        }
-
-        @Override
-        public int read() throws IOException {
-            synchronized (datas) {
-                String projectId = ProjectBuildLogAppender.getProjectId();
-                if (!Objects.equals(projectId, projectReading)) {
-                    projectReading = projectId;
-                    startReadingFromProject.accept(projectId);
-                    // TODO: start a 10ms timer to turn data off
-                }
-                for (; ; ) {
-                    if (datas.isEmpty()) {
-                        try {
-                            datas.wait();
-                        } catch (InterruptedException e) {
-                            throw new InterruptedIOException("Interrupted");
-                        }
-                        pos = -1;
-                        continue;
-                    }
-                    byte[] curData = datas.getFirst();
-                    if (pos >= curData.length) {
-                        datas.removeFirst();
-                        pos = -1;
-                        continue;
-                    }
-                    if (pos < 0) {
-                        pos = 0;
-                    }
-                    return curData[pos++];
-                }
-            }
-        }
-
-        public void addInputData(String data) {
-            synchronized (datas) {
-                datas.add(data.getBytes(Charset.forName(System.getProperty("file.encoding"))));
-                datas.notifyAll();
-            }
-        }
     }
 }

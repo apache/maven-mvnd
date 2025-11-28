@@ -18,23 +18,19 @@
  */
 package org.mvndaemon.mvnd.logging.slf4j;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 
+import org.apache.maven.slf4j.MavenBaseLogger;
 import org.slf4j.Marker;
 import org.slf4j.event.Level;
 import org.slf4j.helpers.MessageFormatter;
 
-public class MvndDaemonLogger extends MvndBaseLogger {
+public class MvndDaemonLogger extends MavenBaseLogger {
 
     final DateTimeFormatter dateTimeFormatter =
             new DateTimeFormatterBuilder().appendPattern("HH:mm:ss.SSS").toFormatter();
-
-    PrintStream printStream;
 
     public MvndDaemonLogger(String name) {
         super(name);
@@ -60,19 +56,13 @@ public class MvndDaemonLogger extends MvndBaseLogger {
     @Override
     protected void handleNormalizedLoggingCall(
             Level level, Marker marker, String messagePattern, Object[] arguments, Throwable throwable) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        pw.append(dateTimeFormatter.format(LocalTime.now()));
-        pw.append(" ");
-        pw.append(renderLevel(level.toInt()));
-        pw.append(" ");
+        StringBuilder buf = new StringBuilder(32);
+        buf.append(dateTimeFormatter.format(LocalTime.now()));
+        buf.append(" ");
+        buf.append(renderLevel(level.toInt()));
+        buf.append(" ");
         String message = MessageFormatter.basicArrayFormat(messagePattern, arguments);
-        pw.append(message);
-        if (throwable != null) {
-            throwable.printStackTrace(pw);
-        }
-        PrintStream printStream = MvndSimpleLogger.CONFIG_PARAMS.outputChoice.getTargetPrintStream();
-        printStream.println(sw);
-        printStream.flush();
+        buf.append(message);
+        write(buf, throwable);
     }
 }

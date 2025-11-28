@@ -34,8 +34,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -68,8 +70,6 @@ import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 public class DefaultClient implements Client {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
-
-    private final DaemonParameters parameters;
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
@@ -180,7 +180,8 @@ public class DefaultClient implements Client {
         System.exit(exitCode);
     }
 
-    public static void setSystemPropertiesFromCommandLine(List<String> args) {
+    public static Map<String, String> setSystemPropertiesFromCommandLine(List<String> args) {
+        final HashMap<String, String> prevState = new HashMap<>();
         final Iterator<String> iterator = args.iterator();
         boolean defineIsEmpty = false;
         while (iterator.hasNext()) {
@@ -207,14 +208,17 @@ public class DefaultClient implements Client {
                 if (eqPos >= 0) {
                     String k = val.substring(0, eqPos);
                     String v = val.substring(eqPos + 1);
-                    System.setProperty(k, v);
+                    String old = System.setProperty(k, v);
+                    prevState.put(k, old);
                     LOGGER.trace("Setting system property {} to {}", k, v);
                 } else {
-                    System.setProperty(val, "");
+                    String old = System.setProperty(val, "");
+                    prevState.put(val, old);
                     LOGGER.trace("Setting system property {}", val);
                 }
             }
         }
+        return prevState;
     }
 
     private static boolean maybeDefineCommandLineOption(String arg) {
@@ -224,12 +228,15 @@ public class DefaultClient implements Client {
                 .noneMatch(e -> e.hasCommandLineOption(Collections.singletonList(arg)));
     }
 
+    private final DaemonParameters parameters;
+
     public DefaultClient(DaemonParameters parameters) {
         // Those options are needed in order to be able to set the environment correctly
         this.parameters = parameters.withJdkJavaOpts(
                 "--add-opens java.base/java.io=ALL-UNNAMED "
                         + "--add-opens java.base/java.lang=ALL-UNNAMED "
                         + "--add-opens java.base/java.util=ALL-UNNAMED "
+                        + "--add-opens java.base/jdk.internal.misc=ALL-UNNAMED "
                         + "--add-opens java.base/sun.net.www.protocol.jar=ALL-UNNAMED "
                         + "--add-opens java.base/sun.nio.fs=ALL-UNNAMED",
                 true);
@@ -248,10 +255,10 @@ public class DefaultClient implements Client {
 
         boolean version = Environment.MAVEN_VERSION.hasCommandLineOption(args);
         boolean showVersion = Environment.MAVEN_SHOW_VERSION.hasCommandLineOption(args);
-        boolean debug = Environment.MAVEN_DEBUG.hasCommandLineOption(args);
+        boolean verbose = Environment.MAVEN_VERBOSE.hasCommandLineOption(args);
 
         // Print version if needed
-        if (version || showVersion || debug) {
+        if (version || showVersion || verbose) {
             // Print mvnd version
             BuildProperties buildProperties = BuildProperties.getInstance();
             final String mvndVersionString = "Apache Maven Daemon (mvnd) " + buildProperties.getVersion() + " "
@@ -323,11 +330,6 @@ public class DefaultClient implements Client {
                 return DefaultResult.success(argv);
             }
 
-            // Raw streams
-            if (Environment.MVND_RAW_STREAMS.removeCommandLineOption(args) != null) {
-                args.add("-D" + Environment.MVND_RAW_STREAMS.getProperty());
-            }
-
             Optional<String> threads = Optional.ofNullable(Environment.MVND_THREADS.removeCommandLineOption(args));
             Environment.MVND_THREADS.addCommandLineOption(args, threads.orElseGet(parameters::threads));
 
@@ -342,12 +344,25 @@ public class DefaultClient implements Client {
                     .or(() -> Optional.ofNullable(parameters.mavenRepoLocal()).map(Path::toString));
             repo.ifPresent(r -> Environment.MAVEN_REPO_LOCAL.addCommandLineOption(args, r));
 
+            if (Environment.MVND_DEBUG.removeCommandLineOption(args) != null) {
+                System.setProperty(Environment.MVND_DEBUG.getProperty(), "true");
+            }
+
             String width = Optional.ofNullable(Environment.MVND_TERMINAL_WIDTH.removeCommandLineOption(args))
                     .orElseGet(() -> {
                         int w = output.getTerminalWidth();
                         return Integer.toString(w > 0 ? Math.max(w, 80) : 120);
                     });
             Environment.MVND_TERMINAL_WIDTH.addCommandLineOption(args, width);
+
+            if (parameters.property(Environment.MVND_DEBUG).asBoolean()) {
+                if (Environment.MVND_KEEP_ALIVE.getCommandLineOption(args) == null) {
+                    System.setProperty(Environment.MVND_KEEP_ALIVE.getProperty(), "1h");
+                }
+                if (Environment.MVND_CONNECT_TIMEOUT.getCommandLineOption(args) == null) {
+                    System.setProperty(Environment.MVND_CONNECT_TIMEOUT.getProperty(), "1h");
+                }
+            }
 
             final DaemonConnector connector = new DaemonConnector(parameters, registry);
             try (DaemonClientConnection daemon = connector.connect(output)) {
@@ -489,7 +504,6 @@ public class DefaultClient implements Client {
         }
 
         private DefaultResult(List<String> args, Exception exception, int exitCode) {
-            super();
             this.args = args;
             this.exception = exception;
             this.exitCode = exitCode;

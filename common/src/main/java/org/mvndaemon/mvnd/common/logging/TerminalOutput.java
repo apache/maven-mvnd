@@ -19,7 +19,6 @@
 package org.mvndaemon.mvnd.common.logging;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -32,9 +31,6 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -102,19 +98,16 @@ public class TerminalOutput implements ClientOutput {
     private final ArrayList<ExecutionFailureEvent> failures = new ArrayList<>();
     private final LinkedHashMap<String, Project> projects = new LinkedHashMap<>();
     private final ClientLog log;
-    private final Thread reader;
     private volatile Exception exception;
     private volatile boolean closing;
     private final long start;
-    private final ReadWriteLock readInput = new ReentrantReadWriteLock();
     private final boolean dumb;
+    private final TerminalInputHandler inputHandler;
 
     /** A sink for sending messages back to the daemon */
     private volatile Consumer<Message> daemonDispatch;
     /** A sink for queuing messages to the main queue */
     private volatile Consumer<Message> daemonReceive;
-    /** The project id which is trying to read the input stream */
-    private volatile String projectReadingInput;
 
     /*
      * The following non-final fields are read/written from the main thread only.
@@ -173,14 +166,7 @@ public class TerminalOutput implements ClientOutput {
                 Terminal.Signal.INT, sig -> daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON));
         this.display = new Display(terminal, false);
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
-        if (!dumb) {
-            final Thread r = new Thread(this::readInputLoop);
-            r.setDaemon(true);
-            r.start();
-            this.reader = r;
-        } else {
-            this.reader = null;
-        }
+        this.inputHandler = new TerminalInputHandler(terminal, this.dumb);
     }
 
     @Override
@@ -191,11 +177,13 @@ public class TerminalOutput implements ClientOutput {
     @Override
     public void setDaemonDispatch(Consumer<Message> daemonDispatch) {
         this.daemonDispatch = daemonDispatch;
+        this.inputHandler.setDaemonDispatch(daemonDispatch);
     }
 
     @Override
     public void setDaemonReceive(Consumer<Message> daemonReceive) {
         this.daemonReceive = daemonReceive;
+        this.inputHandler.setDaemonReceive(daemonReceive);
     }
 
     @Override
@@ -226,6 +214,7 @@ public class TerminalOutput implements ClientOutput {
                 final int totalProjectsDigits = (int) (Math.log10(totalProjects) + 1);
                 this.projectsDoneFomat = "%" + totalProjectsDigits + "d";
                 this.maxThreads = bs.getMaxThreads();
+                this.inputHandler.setMaxThreads(maxThreads);
                 this.artifactIdFormat = "%-" + bs.getArtifactIdDisplayLength() + "s ";
                 final int maxThreadsDigits = (int) (Math.log10(maxThreads) + 1);
                 this.threadsFormat = "%" + (maxThreadsDigits * 3 + 2) + "s";
@@ -339,46 +328,8 @@ public class TerminalOutput implements ClientOutput {
             }
             case Message.PROMPT: {
                 Message.Prompt prompt = (Message.Prompt) entry;
-                if (dumb) {
-                    terminal.writer().println("");
-                    break;
-                }
-                readInput.writeLock().lock();
-                try {
-                    clearDisplay();
-                    if (prompt.getMessage() != null) {
-                        String msg = (maxThreads > 1)
-                                ? String.format("[%s] %s", prompt.getProjectId(), prompt.getMessage())
-                                : prompt.getMessage();
-                        terminal.writer().print(msg);
-                    }
-                    terminal.flush();
-                    StringBuilder sb = new StringBuilder();
-                    while (true) {
-                        int c = terminal.reader().read();
-                        if (c < 0) {
-                            break;
-                        } else if (c == '\n' || c == '\r') {
-                            terminal.writer().println();
-                            daemonDispatch.accept(prompt.response(sb.toString()));
-                            break;
-                        } else if (c == 127) {
-                            if (sb.length() > 0) {
-                                sb.setLength(sb.length() - 1);
-                                terminal.writer().write("\b \b");
-                                terminal.writer().flush();
-                            }
-                        } else {
-                            terminal.writer().print((char) c);
-                            terminal.writer().flush();
-                            sb.append((char) c);
-                        }
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } finally {
-                    readInput.writeLock().unlock();
-                }
+                clearDisplay();
+                inputHandler.requestPrompt(prompt);
                 break;
             }
             case Message.BUILD_LOG_MESSAGE: {
@@ -456,7 +407,7 @@ public class TerminalOutput implements ClientOutput {
             }
             case Message.REQUEST_INPUT: {
                 RequestInput ri = (RequestInput) entry;
-                projectReadingInput = ri.getProjectId();
+                inputHandler.requestProjectInput(ri.getProjectId(), ri.getBytesToRead());
                 break;
             }
             case Message.INPUT_DATA: {
@@ -502,45 +453,6 @@ public class TerminalOutput implements ClientOutput {
         return terminal;
     }
 
-    void readInputLoop() {
-        try {
-            while (!closing) {
-                if (readInput.readLock().tryLock(10, TimeUnit.MILLISECONDS)) {
-                    if (projectReadingInput != null) {
-                        char[] buf = new char[256];
-                        int idx = 0;
-                        while (idx < buf.length) {
-                            int c = terminal.reader().read(idx > 0 ? 1 : 10);
-                            if (c < 0) {
-                                break;
-                            }
-                            buf[idx++] = (char) c;
-                        }
-                        if (idx > 0) {
-                            String data = String.valueOf(buf, 0, idx);
-                            daemonReceive.accept(Message.inputResponse(data));
-                        }
-                    } else {
-                        int c = terminal.reader().read(10);
-                        if (c == -1) {
-                            break;
-                        }
-                        if (c == KEY_PLUS || c == KEY_MINUS || c == KEY_CTRL_L || c == KEY_CTRL_M || c == KEY_CTRL_B) {
-                            daemonReceive.accept(Message.keyboardInput((char) c));
-                        }
-                    }
-                    readInput.readLock().unlock();
-                }
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        } catch (InterruptedIOException e) {
-            Thread.currentThread().interrupt();
-        } catch (IOException e) {
-            this.exception = e;
-        }
-    }
-
     private void clearDisplay() {
         if (!noBuffering && !dumb) {
             display.update(Collections.emptyList(), 0);
@@ -560,9 +472,7 @@ public class TerminalOutput implements ClientOutput {
     @Override
     public void close() throws Exception {
         closing = true;
-        if (reader != null) {
-            reader.interrupt();
-        }
+        inputHandler.close();
         log.close();
         terminal.handle(Terminal.Signal.INT, previousIntHandler);
         terminal.close();
@@ -781,13 +691,11 @@ public class TerminalOutput implements ClientOutput {
                         .style(AttributedStyle.BOLD)
                         .append(String.format(
                                 threadsFormat,
-                                new StringBuilder(threadsFormat.length())
-                                        .append(projectsCount)
-                                        .append('/')
-                                        .append(Math.max(0, projectsCount - dispLines))
-                                        .append('/')
-                                        .append(maxThreads)
-                                        .toString()))
+                                String.valueOf(projectsCount)
+                                        + '/'
+                                        + Math.max(0, projectsCount - dispLines)
+                                        + '/'
+                                        + maxThreads))
                         .style(AttributedStyle.DEFAULT);
 
                 /* Progress */
@@ -801,7 +709,7 @@ public class TerminalOutput implements ClientOutput {
                         .append('%')
                         .style(AttributedStyle.DEFAULT);
 
-            } else if (buildStatus != null) {
+            } else {
                 asb.style(AttributedStyle.BOLD).append(buildStatus).style(AttributedStyle.DEFAULT);
             }
 

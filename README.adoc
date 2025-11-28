@@ -52,7 +52,7 @@ If SDKMAN! supports your operating system, it is as easy as
 
 [source,shell]
 ----
-$ sdk install mvnd
+sdk install mvnd
 ----
 
 If you used the manual install in the past, please make sure that the settings in `~/.m2/mvnd.properties` still make
@@ -63,7 +63,7 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 
 [source,shell]
 ----
-$ brew install mvndaemon/homebrew-mvnd/mvnd
+brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
 Note: There are two formulae: the `mvnd` that install latest, and `mvnd@1` that installs 1.x line.
@@ -72,7 +72,7 @@ Note: There are two formulae: the `mvnd` that install latest, and `mvnd@1` that 
 
 [source,shell]
 ----
-$ sudo port install mvnd
+sudo port install mvnd
 ----
 
 === Install using https://aquaproj.github.io/[aqua]
@@ -185,7 +185,7 @@ A few special properties do not follow the above mechanism:
 * `mvnd.daemonStorage`: this property defines the location where mvnd stores its files (registry and daemon logs).  This property can only be defined as a system property on the command line
 * `mvnd.id`: this property is used internally to identify the daemon being created
 * `mvnd.extClasspath`: internal option to specify the maven extension classpath
-* `mvnd.coreExtensions`: internal option to specify the list of maven extension to register
+* `mvnd.coreExtensionFilePath`: internal option to specify the maven extension configuration file path
 
 For a full list of available properties please see 
 https://github.com/apache/maven-mvnd/blob/master/dist/src/main/distro/conf/mvnd.properties[/dist/src/main/distro/conf/mvnd.properties].

@@ -23,13 +23,13 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>43</version>
+    <version>45</version>
     <relativePath />
   </parent>
 
   <groupId>org.apache.maven.daemon</groupId>
   <artifactId>mvnd</artifactId>
-  <version>2.0.0-beta-2-SNAPSHOT</version>
+  <version>2.0.0-rc-4-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Maven Daemon - Parent</name>
@@ -69,43 +69,48 @@
     <maven.compiler.target>17</maven.compiler.target>
     <maven.compiler.release>17</maven.compiler.release>
     <maven-dist.required.jdk>17</maven-dist.required.jdk>
-    <project.build.outputTimestamp>2024-06-20T16:09:45Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-03-10T15:56:59Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
 
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
-    <assertj.version>3.26.3</assertj.version>
-    <commons-compress.version>1.26.2</commons-compress.version>
-    <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
-    <graalvm.version>23.1.3</graalvm.version>
-    <graalvm.plugin.version>0.10.2</graalvm.plugin.version>
-    <groovy.version>4.0.22</groovy.version>
-    <jakarta.inject.version>1.0</jakarta.inject.version>
+    <assertj.version>3.27.6</assertj.version>
+    <commons-compress.version>1.28.0</commons-compress.version>
+    <graalvm.version>25.0.1</graalvm.version>
+    <graalvm.plugin.version>0.11.3</graalvm.plugin.version>
+    <groovy.version>5.0.2</groovy.version>
     <jansi.version>2.4.1</jansi.version>
-    <jline.version>3.26.3</jline.version>
-    <maven.version>4.0.0-beta-3</maven.version>
+    <jline.version>3.30.6</jline.version>
+    <maven.version>4.0.0-rc-5</maven.version>
+    <required-maven.version>3.9.10</required-maven.version>
+
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>2.0.0</maven.resolver.version>
-    <slf4j.version>2.0.11</slf4j.version>
-    <sisu.version>0.9.0.M3</sisu.version>
-    <maven.plugin-tools.version>3.13.1</maven.plugin-tools.version>
+    <maven.resolver.version>2.0.13</maven.resolver.version>
+    <slf4j.version>2.0.17</slf4j.version>
+    <sisu.version>0.9.0.M4</sisu.version>
+    <maven.plugin-tools.version>3.15.2</maven.plugin-tools.version>
+    <version.plexus-utils>4.0.2</version.plexus-utils>
+    <jakarta.inject.version>2.0.1</jakarta.inject.version>
+
+    <version.maven-fluido-skin>2.1.0</version.maven-fluido-skin>
 
     <!-- plugin versions a..z -->
-    <buildnumber-maven-plugin.version>3.2.0</buildnumber-maven-plugin.version>
-    <groovy-maven-plugin.version>3.0.2</groovy-maven-plugin.version>
-    <mrm.version>1.6.0</mrm.version>
+    <groovy-maven-plugin.version>4.2.1</groovy-maven-plugin.version>
     <junit-platform-launcher.version>1.3.2</junit-platform-launcher.version>
-    <takari-provisio.version>1.0.25</takari-provisio.version>
+    <takari-provisio.version>1.1.1</takari-provisio.version>
 
     <javassist.version>3.30.2-GA</javassist.version>
-    <picocli.version>4.7.6</picocli.version>
-    <plexus-interactivity-api.version>1.3</plexus-interactivity-api.version>
-    <roaster.version>2.29.0.Final</roaster.version>
-    <takari-smart-builder.version>1.0.0</takari-smart-builder.version>
-    <testcontainers.version>1.20.0</testcontainers.version>
-    <xstream.version>1.4.20</xstream.version>
+    <picocli.version>4.7.7</picocli.version>
+    <plexus-interactivity-api.version>1.5.1</plexus-interactivity-api.version>
+    <roaster.version>2.30.3.Final</roaster.version>
+    <takari-smart-builder.version>1.1.0</takari-smart-builder.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
+    <xstream.version>1.4.21</xstream.version>
+
+    <!-- from parent -->
+    <versions.junit5>5.13.1</versions.junit5>
   </properties>
 
   <dependencyManagement>
@@ -163,12 +168,32 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
+        <artifactId>maven-resolver-provider</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-embedder</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
+        <artifactId>maven-cli</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-api-di</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-jline</artifactId>
+        <version>${maven.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-logging</artifactId>
         <version>${maven.version}</version>
       </dependency>
       <dependency>
@@ -290,11 +315,12 @@
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
         <version>6.0.0</version>
+        <classifier>classes</classifier>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.2.1-jre</version>
+        <version>33.5.0-jre</version>
         <scope>provided</scope>
       </dependency>
 
@@ -342,6 +368,11 @@
       </dependency>
       <dependency>
         <groupId>org.jboss.forge.roaster</groupId>
+        <artifactId>roaster-api</artifactId>
+        <version>${roaster.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.forge.roaster</groupId>
         <artifactId>roaster-jdt</artifactId>
         <version>${roaster.version}</version>
       </dependency>
@@ -355,12 +386,6 @@
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-interactivity-api</artifactId>
         <version>${plexus-interactivity-api.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <dependency>
@@ -447,16 +472,6 @@
           </dependencies>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>mrm-maven-plugin</artifactId>
-          <version>${mrm.version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>buildnumber-maven-plugin</artifactId>
-          <version>${buildnumber-maven-plugin.version}</version>
-        </plugin>
-        <plugin>
           <groupId>org.graalvm.buildtools</groupId>
           <artifactId>native-maven-plugin</artifactId>
           <version>${graalvm.plugin.version}</version>
@@ -465,12 +480,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.7.1</version>
+          <version>3.9.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
-          <version>3.8.0</version>
+          <version>3.12.0</version>
           <configuration>
             <release>${maven-dist.required.jdk}</release>
             <detectJavaApiLink>false</detectJavaApiLink>
@@ -493,23 +508,23 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
-          <version>3.12.1</version>
+          <version>3.21.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-wrapper-plugin</artifactId>
-          <version>3.3.2</version>
+          <version>3.3.4</version>
         </plugin>
 
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>3.6.0</version>
+          <version>3.6.1</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
-          <version>3.3.0</version>
+          <version>3.6.2</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -546,6 +561,8 @@
                   <maxJdkVersion>${maven-dist.required.jdk}</maxJdkVersion>
                   <ignoredScopes>
                     <ignoredScope>test</ignoredScope>
+                    <!-- GraalVM SVM and deps are 17+, but are provided and used only for Native -->
+                    <ignoredScopes>provided</ignoredScopes>
                   </ignoredScopes>
                   <excludes>
                     <exclude>org.jline:jline</exclude>
@@ -570,23 +587,23 @@
             <configuration>
               <scripts>
                 <script>// Naming conventions coined by GraalVM
-                        // https://github.com/graalvm/graalvm-ce-builds/releases/
-                        String osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
-                        if (osName.startsWith('windows')) {
-                            project.properties['os.detected.name'] = 'windows'
-                        } else if (osName.startsWith('linux')) {
-                            project.properties['os.detected.name'] = 'linux'
-                        } else if (osName.startsWith('osx') || osName.startsWith('mac os x')) {
-                            project.properties['os.detected.name'] = 'darwin'
-                        } else {
-                            project.properties['os.detected.name'] = osName
-                        }
-                        String osArch = System.getProperty('os.arch').toLowerCase(Locale.ROOT)
-                        if (osArch.equals('amd64') || osArch.equals('x86_64')) {
-                            project.properties['os.detected.arch'] = 'amd64'
-                        } else {
-                            project.properties['os.detected.arch'] = osArch
-                        }</script>
+                  // https://github.com/graalvm/graalvm-ce-builds/releases/
+                  String osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+                  if (osName.startsWith('windows')) {
+                  project.properties['os.detected.name'] = 'windows'
+                  } else if (osName.startsWith('linux')) {
+                  project.properties['os.detected.name'] = 'linux'
+                  } else if (osName.startsWith('osx') || osName.startsWith('mac os x')) {
+                  project.properties['os.detected.name'] = 'darwin'
+                  } else {
+                  project.properties['os.detected.name'] = osName
+                  }
+                  String osArch = System.getProperty('os.arch').toLowerCase(Locale.ROOT)
+                  if (osArch.equals('amd64') || osArch.equals('x86_64')) {
+                  project.properties['os.detected.arch'] = 'amd64'
+                  } else {
+                  project.properties['os.detected.arch'] = osArch
+                  }</script>
               </scripts>
             </configuration>
           </execution>

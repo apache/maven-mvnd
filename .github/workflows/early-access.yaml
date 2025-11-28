@@ -39,41 +39,66 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
+
+      - name: Prepare Mimir
+        shell: bash
+        run: |
+          mkdir -p ~/.mimir
+          cp .github/ci-extensions.xml ~/.m2/extensions.xml
+          cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
+
+      - name: 'Handle Mimir caches'
+        uses: actions/cache@v4
+        with:
+          path: ~/.mimir/local
+          key: mimir-${{ runner.os }}-default-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            mimir-${{ runner.os }}-default-
+            mimir-${{ runner.os }}-
 
       - name: 'Run default (non-native) build'
         run: ./mvnw verify -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
+          include-hidden-files: 'true'
 
   native-build:
-    name: 'Build with GraalVM on ${{ matrix.os }}'
+    name: 'Build with GraalVM on ${{ matrix.os }}-${{ matrix.arch }}'
     if: startsWith(github.event.head_commit.message, '[release] Release ') != true
     strategy:
       fail-fast: false
       matrix:
-        # binaries wanted: linux amd64, mac intel, mac M1, windows x86
-        os: [ ubuntu-latest, macos-13, macos-14, windows-latest ]
+        # binaries wanted: linux amd64, mac M1, mac intel, windows x86
+        os: [ ubuntu-latest, macos-latest, macos-15-intel, windows-latest ]
+        arch: [ x64, arm64 ]
+        exclude:
+          - os: macos-latest
+            arch: x64
+          - os: macos-15-intel
+            arch: arm64
+          - os: windows-latest
+            arch: arm64
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: 'Checkout'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 'Set vars'
         shell: bash
         run: |
-          ARCH=$(echo '${{ runner.arch }}' | awk '{print tolower($0)}')
+          ARCH=$(echo '${{ matrix.arch }}' | awk '{print tolower($0)}')
           if [[ $ARCH == 'x64' ]]
           then
             echo "ARCH=amd64" >> $GITHUB_ENV
@@ -98,6 +123,22 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare Mimir
+        shell: bash
+        run: |
+          mkdir -p ~/.mimir
+          cp .github/ci-extensions.xml ~/.m2/extensions.xml
+          cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
+
+      - name: 'Handle Mimir caches'
+        uses: actions/cache@v4
+        with:
+          path: ~/.mimir/local
+          key: mimir-${{ runner.os }}-native-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            mimir-${{ runner.os }}-native-
+            mimir-${{ runner.os }}-
 
       - name: 'Maven clean'
         run: ./mvnw clean -Dmrm=false -V -B -ntp -e
@@ -137,13 +178,36 @@ jobs:
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
+          name: daemon-test-logs-${{ matrix.os }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
+          include-hidden-files: 'true'
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: mvnd-${{ env.OS }}-${{ env.ARCH }}
+          name: mvnd-${{ matrix.os }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
+
+  site-build:
+    name: 'Site build'
+    if: startsWith(github.event.head_commit.message, '[release] Release ') != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout'
+        uses: actions/checkout@v6
+
+      - uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: 'Run site build'
+        run: ./mvnw compile site -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
+
+      - name: 'Upload artifact'
+        uses: actions/upload-artifact@v5
+        with:
+          name: mvnd-site
+          path: target/site

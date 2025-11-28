@@ -21,7 +21,6 @@ package org.mvndaemon.mvnd.junit;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,7 +28,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.apache.log4j.Logger;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -40,13 +38,15 @@ import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.TimeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.mvndaemon.mvnd.junit.TestParameters.TEST_MIN_THREADS;
 import static org.mvndaemon.mvnd.junit.TestUtils.deleteDir;
 
 public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback, AfterAllCallback {
 
-    private static final Logger LOG = Logger.getLogger(MvndTestExtension.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MvndTestExtension.class);
 
     /** A placeholder to replace with a temporary directory outside of the current source tree */
     public static final String TEMP_EXTERNAL = "${temp.external}";
@@ -225,19 +225,6 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final Path mvndPropertiesPath = testDir.resolve("mvnd.properties");
 
             final Path localMavenRepository = deleteDir(testDir.resolve("local-maven-repo"));
-            String mrmRepoUrl = System.getProperty("mrm.repository.url");
-            if ("".equals(mrmRepoUrl)) {
-                mrmRepoUrl = null;
-            }
-            final Path settingsPath;
-            if (mrmRepoUrl == null) {
-                LOG.info("Building without mrm-maven-plugin");
-                settingsPath = null;
-                prefillLocalRepo(localMavenRepository);
-            } else {
-                LOG.info("Building with mrm-maven-plugin");
-                settingsPath = createSettings(testDir.resolve("settings.xml"), mrmRepoUrl);
-            }
             final Path home = deleteDir(testDir.resolve("home"));
             final TestParameters parameters = new TestParameters(
                     testDir,
@@ -248,7 +235,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository,
-                    settingsPath,
+                    null,
                     TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
                     keepAlive != null && !keepAlive.isEmpty()
                             ? TimeUtils.toDuration(keepAlive)
@@ -289,22 +276,6 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     }
                 }
             });
-        }
-
-        static Path createSettings(Path settingsPath, String mrmRepoUrl) {
-            final Path settingsTemplatePath = Paths.get("src/test/resources/settings-template.xml");
-            try {
-                final String template = Files.readString(settingsTemplatePath);
-                final String content = template.replaceAll("@mrm.repository.url@", mrmRepoUrl);
-                try {
-                    Files.write(settingsPath, content.getBytes(StandardCharsets.UTF_8));
-                } catch (Exception e) {
-                    throw new RuntimeException("Could not write " + settingsPath);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Could not read " + settingsTemplatePath);
-            }
-            return settingsPath;
         }
 
         public MvndResource(TestParameters parameters, TestRegistry registry, boolean isNative, long timeoutMs) {

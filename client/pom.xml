@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.apache.maven.daemon</groupId>
     <artifactId>mvnd</artifactId>
-    <version>2.0.0-beta-2-SNAPSHOT</version>
+    <version>2.0.0-rc-4-SNAPSHOT</version>
   </parent>
 
   <artifactId>mvnd-client</artifactId>
@@ -31,12 +31,14 @@
   <name>Maven Daemon - Client</name>
 
   <properties>
-    <graalvm-native-static-opt />
-    <graalvm-native-glibc-opt />
     <patchelf.skip>true</patchelf.skip>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-embedder</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>
       <artifactId>mvnd-common</artifactId>
@@ -44,10 +46,6 @@
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>
       <artifactId>mvnd-logging</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-embedder</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -79,21 +77,6 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
-        <configuration>
-          <locale>en_US</locale>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>create</goal>
-            </goals>
-            <phase>validate</phase>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -161,9 +144,19 @@
           <family>!mac</family>
         </os>
       </activation>
-      <properties>
-        <graalvm-native-static-opt>-H:+StaticExecutableWithDynamicLibC</graalvm-native-static-opt>
-      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <configuration>
+              <buildArgs combine.children="append">
+                <buildArg>-H:+StaticExecutableWithDynamicLibC</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <profile>
@@ -177,11 +170,23 @@
         </file>
       </activation>
       <properties>
-        <graalvm-native-glibc-opt>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc
-                                  -H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.12
-                                  -H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</graalvm-native-glibc-opt>
         <patchelf.skip>false</patchelf.skip>
       </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <configuration>
+              <buildArgs combine.children="append">
+                <buildArg>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc</buildArg>
+                <buildArg>-H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
+                <buildArg>-H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
 
     <profile>
@@ -195,17 +200,17 @@
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
-              <buildArgs>--no-fallback
-                         -march=compatibility
-                         -H:+UnlockExperimentalVMOptions
-                         ${graalvm-native-static-opt}
-                         ${graalvm-native-glibc-opt}
-                         -H:IncludeResources=org/mvndaemon/mvnd/.*
-                         -H:IncludeResources=mvnd-bash-completion.bash
-                         -H:-ParseRuntimeOptions
-                         -H:+AddAllCharsets
-                         -H:+ReportExceptionStackTraces
-                         -ea</buildArgs>
+              <buildArgs combine.children="append">
+                <buildArg>--no-fallback</buildArg>
+                <buildArg>-march=compatibility</buildArg>
+                <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                <buildArg>-H:IncludeResources=org/mvndaemon/mvnd/.*</buildArg>
+                <buildArg>-H:IncludeResources=mvnd-bash-completion.bash</buildArg>
+                <buildArg>-H:-ParseRuntimeOptions</buildArg>
+                <buildArg>-H:+AddAllCharsets</buildArg>
+                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>-ea</buildArg>
+              </buildArgs>
             </configuration>
             <executions>
               <execution>

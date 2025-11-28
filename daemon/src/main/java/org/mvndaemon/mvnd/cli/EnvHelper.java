@@ -94,7 +94,7 @@ public class EnvHelper {
         }
     }
 
-    static String toCygwin(String path) {
+    public static String toCygwin(String path) {
         if (path.length() >= 3 && ":\\".equals(path.substring(1, 3))) {
             try {
                 String p = path.endsWith("\\") ? path.substring(0, path.length() - 1) : path;

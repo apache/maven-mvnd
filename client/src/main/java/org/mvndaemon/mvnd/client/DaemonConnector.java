@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import org.apache.maven.api.Constants;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec;
 import org.mvndaemon.mvnd.common.DaemonCompatibilitySpec.Result;
 import org.mvndaemon.mvnd.common.DaemonConnection;
@@ -55,7 +56,6 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
-import org.mvndaemon.mvnd.logging.slf4j.MvndBaseLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -143,6 +143,8 @@ public class DaemonConnector {
                 parameters.daemonStorage().toString());
         properties.put(
                 Environment.MVND_REGISTRY.getProperty(), parameters.registry().toString());
+        properties.put(
+                Environment.MVND_JAVA_HOME.getProperty(), parameters.javaHome().toString());
         properties.putAll(parameters.getDaemonOptsMap());
         Environment.setProperties(properties);
         AtomicReference<Throwable> throwable = new AtomicReference<>();
@@ -434,7 +436,7 @@ public class DaemonConnector {
             args.add("-Dmaven.conf=" + mvndHome.resolve("mvn").resolve("conf"));
             args.add("-Dclassworlds.conf=" + mvndHome.resolve("bin").resolve("mvnd-daemon.conf"));
 
-            args.add("-D" + MvndBaseLogger.LOG_FILE_KEY + "="
+            args.add("-D" + Constants.MAVEN_LOGGER_LOG_FILE + "="
                     + parameters.daemonStorage().resolve("daemon-" + daemonId + ".log"));
 
             Environment.MVND_JAVA_HOME.addSystemProperty(

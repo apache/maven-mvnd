@@ -19,7 +19,7 @@
 package org.mvndaemon.mvnd.it;
 
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
@@ -31,7 +31,7 @@ import org.mvndaemon.mvnd.junit.MvndTest;
 @MvndTest(projectDir = "src/test/projects/single-module")
 class SingleModuleTest extends SingleModuleNativeIT {
 
-    protected void assertJVM(TestClientOutput o, Properties props) {
+    protected void assertJVM(TestClientOutput o, Map<String, String> props) {
         final List<String> filteredMessages = o.getMessages().stream()
                 .filter(m -> m.getType() == Message.MOJO_STARTED)
                 .map(Object::toString)
@@ -48,14 +48,14 @@ class SingleModuleTest extends SingleModuleNativeIT {
                         mojoStarted(props, "maven-install-plugin", "install", "default-install")));
     }
 
-    String mojoStarted(Properties props, String pluginArtifactId, String mojo, String executionId) {
+    String mojoStarted(Map<String, String> props, String pluginArtifactId, String mojo, String executionId) {
         return "\\Q"
                 + Message.mojoStarted(
                                 "single-module",
                                 "org.apache.maven.plugins",
                                 pluginArtifactId,
                                 pluginArtifactId.replace("maven-", "").replace("-plugin", ""),
-                                props.getProperty(pluginArtifactId + ".version"),
+                                props.get(pluginArtifactId + ".version"),
                                 mojo,
                                 executionId)
                         .toString()

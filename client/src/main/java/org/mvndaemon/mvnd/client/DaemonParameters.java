@@ -18,25 +18,25 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import javax.xml.stream.XMLStreamException;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -45,8 +45,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.maven.cli.internal.extension.io.CoreExtensionsStaxReader;
-import org.apache.maven.cli.internal.extension.model.CoreExtension;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.InterpolationHelper;
 import org.mvndaemon.mvnd.common.Os;
@@ -291,7 +289,7 @@ public class DaemonParameters {
 
     /**
      * @return the number of threads (same syntax as Maven's {@code -T}/{@code --threads} option) to pass to the daemon
-     *         unless the user passes his own `-T` or `--threads`.
+     * unless the user passes his own `-T` or `--threads`.
      */
     public String threads() {
         return property(Environment.MVND_THREADS)
@@ -321,7 +319,7 @@ public class DaemonParameters {
 
     /**
      * @return absolute normalized path to local Maven repository or {@code null} if the server is supposed to use the
-     *         default
+     * default
      */
     public Path mavenRepoLocal() {
         return property(Environment.MAVEN_REPO_LOCAL).asPath();
@@ -339,7 +337,13 @@ public class DaemonParameters {
     }
 
     /**
-     *
+     * @return <code>true</code> if maven should be executed in debug mode.
+     */
+    public boolean debug() {
+        return value(Environment.MVND_DEBUG).orSystemProperty().orDefault().asBoolean();
+    }
+
+    /**
      * @return if mvnd should behave as maven
      */
     public boolean serial() {
@@ -347,11 +351,15 @@ public class DaemonParameters {
     }
 
     /**
-     * @param  newUserDir where to change the current directory to
-     * @return            a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
+     * @param newUserDir where to change the current directory to
+     * @return a new {@link DaemonParameters} with {@code userDir} set to the given {@code newUserDir}
      */
     public DaemonParameters cd(Path newUserDir) {
         return derive(b -> b.put(Environment.USER_DIR, newUserDir));
+    }
+
+    public DaemonParameters debug(boolean debug) {
+        return derive(b -> b.put(Environment.MVND_DEBUG, debug));
     }
 
     public DaemonParameters withJdkJavaOpts(String opts, boolean before) {
@@ -446,15 +454,13 @@ public class DaemonParameters {
         if (env == Environment.MVND_EXT_CLASSPATH) {
             List<String> cp = parseExtClasspath(userHome());
             return String.join(",", cp);
-        } else if (env == Environment.MVND_CORE_EXTENSIONS) {
-            try {
-                List<String> extensions = readCoreExtensionsDescriptor(multiModuleProjectDirectory()).stream()
-                        .map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
-                        .collect(Collectors.toList());
-                return String.join(";", extensions);
-            } catch (IOException | XMLStreamException e) {
-                throw new RuntimeException("Unable to parse core extensions", e);
-            }
+        } else if (env == Environment.MVND_CORE_EXTENSIONS_DISCRIMINATOR) {
+            return calculateCoreExtensionsDiscriminator(multiModuleProjectDirectory(), userHome(), mvndHome());
+        } else if (env == Environment.MVND_CORE_EXTENSIONS_EXCLUDE) {
+            String exclusionsString = systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE)
+                    .orDefault()
+                    .asString();
+            return Objects.requireNonNullElse(exclusionsString, "");
         } else {
             return env.getDefault();
         }
@@ -472,39 +478,42 @@ public class DaemonParameters {
         return jars;
     }
 
-    private static List<CoreExtension> readCoreExtensionsDescriptor(Path multiModuleProjectDirectory)
-            throws IOException, XMLStreamException {
-        if (multiModuleProjectDirectory == null) {
-            return Collections.emptyList();
-        }
-        Path extensionsFile = multiModuleProjectDirectory.resolve(EXTENSIONS_FILENAME);
-        if (!Files.exists(extensionsFile)) {
-            return Collections.emptyList();
-        }
-        CoreExtensionsStaxReader parser = new CoreExtensionsStaxReader();
-        List<CoreExtension> extensions;
-        try (InputStream is = Files.newInputStream(extensionsFile)) {
-            extensions = parser.read(is).getExtensions();
-        }
-        return filterCoreExtensions(extensions);
-    }
+    private static String calculateCoreExtensionsDiscriminator(
+            Path multiModuleProjectDirectory, Path userHome, Path mvndHome) {
+        try {
+            Path projectExtensionsXml = multiModuleProjectDirectory
+                    .resolve(".mvn")
+                    .resolve("extensions.xml")
+                    .toAbsolutePath()
+                    .normalize();
+            Path userExtensionsXml = userHome.resolve(".m2")
+                    .resolve("extensions.xml")
+                    .toAbsolutePath()
+                    .normalize();
+            Path installationExtensionsXml = mvndHome.resolve("mvn")
+                    .resolve("conf")
+                    .resolve("extensions.xml")
+                    .toAbsolutePath()
+                    .normalize();
 
-    private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
-        Set<String> exclusions = new HashSet<>();
-        String exclusionsString = systemProperty(Environment.MVND_CORE_EXTENSIONS_EXCLUDE)
-                .orDefault()
-                .asString();
-        if (exclusionsString != null) {
-            exclusions.addAll(Arrays.stream(exclusionsString.split(","))
-                    .filter(e -> e != null && !e.trim().isEmpty())
-                    .collect(Collectors.toList()));
-        }
-        if (!exclusions.isEmpty()) {
-            return coreExtensions.stream()
-                    .filter(e -> !exclusions.contains(e.getGroupId() + ":" + e.getArtifactId()))
-                    .collect(Collectors.toList());
-        } else {
-            return coreExtensions;
+            String blob = "";
+            if (Files.exists(projectExtensionsXml)) {
+                blob += projectExtensionsXml.toString();
+                blob += Files.readString(projectExtensionsXml);
+            }
+            if (Files.exists(userExtensionsXml)) {
+                blob += userExtensionsXml.toString();
+                blob += Files.readString(userExtensionsXml);
+            }
+            if (Files.exists(installationExtensionsXml)) {
+                blob += installationExtensionsXml.toString();
+                blob += Files.readString(installationExtensionsXml);
+            }
+            MessageDigest digest = MessageDigest.getInstance("SHA-1");
+            digest.update(blob.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot calculate core extensions discriminator", e);
         }
     }
 
@@ -560,7 +569,9 @@ public class DaemonParameters {
             this.valueSupplier = valueSupplier;
         }
 
-        /** Mostly for debugging */
+        /**
+         * Mostly for debugging
+         */
         @Override
         public String toString() {
             return descriptionFunction.apply(new StringBuilder()).toString();

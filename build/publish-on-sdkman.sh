@@ -59,28 +59,30 @@ function publishRelease() {
 }
 
 publishRelease ${VERSION} LINUX_64 linux-amd64
+publishRelease ${VERSION} LINUX_ARM64 linux-aarch64
 publishRelease ${VERSION} MAC_OSX darwin-amd64
 publishRelease ${VERSION} MAC_ARM64 darwin-aarch64
 publishRelease ${VERSION} WINDOWS_64 windows-amd64
 
-echo "Setting ${VERSION} as a default"
-RESPONSE="$(curl -s -X PUT \
-    -H "Consumer-Key: ${SDKMAN_CONSUMER_KEY}" \
-    -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
-    -H "Content-Type: application/json" \
-    -H "Accept: application/json" \
-    -d '{"candidate": "mvnd", "version": "'${VERSION}'"}' \
-    https://vendors.sdkman.io/default)"
-
-node -pe "
-    var json = JSON.parse(process.argv[1]);
-    if (json.status == 202) {
-        json.status + ' as expected from /default';
-    } else {
-        console.log('Unexpected status from /default: ' + process.argv[1]);
-        process.exit(1);
-    }
-" "${RESPONSE}"
+# master produces "betas" still, that must NOT be set as default
+# echo "Setting ${VERSION} as a default"
+# RESPONSE="$(curl -s -X PUT \
+#    -H "Consumer-Key: ${SDKMAN_CONSUMER_KEY}" \
+#    -H "Consumer-Token: ${SDKMAN_CONSUMER_TOKEN}" \
+#    -H "Content-Type: application/json" \
+#    -H "Accept: application/json" \
+#    -d '{"candidate": "mvnd", "version": "'${VERSION}'"}' \
+#    https://vendors.sdkman.io/default)"
+#
+# node -pe "
+#    var json = JSON.parse(process.argv[1]);
+#    if (json.status == 202) {
+#        json.status + ' as expected from /default';
+#    } else {
+#        console.log('Unexpected status from /default: ' + process.argv[1]);
+#        process.exit(1);
+#    }
+# " "${RESPONSE}"
 
 RELEASE_URL="https://downloads.apache.org/maven/mvnd/${VERSION}"
 echo "RELEASE_URL = $RELEASE_URL"

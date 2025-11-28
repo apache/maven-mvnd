@@ -103,8 +103,8 @@ public enum Environment {
     MAVEN_LOG_FILE(null, null, null, OptionType.PATH, Flags.INTERNAL, "mvn:-l", "mvn:--log-file"),
     /** Batch mode */
     MAVEN_BATCH_MODE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-B", "mvn:--batch-mode"),
-    /** Debug */
-    MAVEN_DEBUG(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--debug"),
+    /** Verbose */
+    MAVEN_VERBOSE(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-X", "mvn:--verbose"),
     /** Version */
     MAVEN_VERSION(null, null, null, OptionType.BOOLEAN, Flags.INTERNAL, "mvn:-v", "mvn:-version", "mvn:--version"),
     /** Show version */
@@ -112,7 +112,7 @@ public enum Environment {
     /** Define */
     MAVEN_DEFINE(null, null, null, OptionType.STRING, Flags.INTERNAL, "mvn:-D", "mvn:--define"),
     /** Whether the output should be styled using ANSI color codes; possible values: auto, always, never */
-    MAVEN_COLOR("style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
+    MAVEN_COLOR("maven.style.color", null, "auto", OptionType.STRING, Flags.OPTIONAL, "mvnd:--color"),
 
     //
     // mvnd properties
@@ -166,7 +166,7 @@ public enum Environment {
      * <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000</code>; otherwise the debug argument is
      * not passed to the daemon.
      */
-    MVND_DEBUG("mvnd.debug", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.DISCRIMINATING),
+    MVND_DEBUG("mvnd.debug", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.DISCRIMINATING, "mvn:--debug"),
     /**
      * The tcp address used to launch the debug mode. Defaults to <code>8000</code>, which is similar to
      * <code>localhost:8000</code>.  In order to remote debug from a different computer, you need to allow
@@ -212,9 +212,13 @@ public enum Environment {
      */
     MVND_EXT_CLASSPATH("mvnd.extClasspath", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
-     * Internal option to specify the list of maven extension to register.
+     * Internal option to hold the maven extension configuration files "discriminator" to discriminate among daemons.
+     * Value of this option is irrelevant and is unused on daemon side. The only purpose and requirement is that the value
+     * discriminate the daemon based on 3 extension file contents (project, user, installation), and if any file change,
+     * this option value should change as well. It should behave like a hash value calculated out of 3 file contents would.
      */
-    MVND_CORE_EXTENSIONS("mvnd.coreExtensions", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
+    MVND_CORE_EXTENSIONS_DISCRIMINATOR(
+            "mvnd.coreExtensionsDiscriminator", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.INTERNAL),
     /**
      * Internal option to specify comma separated list of maven extension G:As to exclude (to not load them from
      * .mvn/extensions.xml). This option makes possible for example that a project that with vanilla Maven would
@@ -226,7 +230,7 @@ public enum Environment {
             null,
             "io.takari.maven:takari-smart-builder",
             OptionType.STRING,
-            Flags.OPTIONAL),
+            Flags.OPTIONAL | Flags.DISCRIMINATING),
     /**
      * The <code>-Xms</code> value to pass to the daemon.
      * This option takes precedence over options specified in <code>-Dmvnd.jvmArgs</code>.
@@ -296,10 +300,6 @@ public enum Environment {
      * start with <code>'glob:**&#47;'</code> to support any location of the local repository.
      */
     MVND_PLUGIN_REALM_EVICT_PATTERN("mvnd.pluginRealmEvictPattern", null, "", OptionType.STRING, Flags.OPTIONAL),
-    /**
-     * Whether or not decorate output and error streams
-     **/
-    MVND_RAW_STREAMS("mvnd.rawStreams", null, Boolean.FALSE, OptionType.VOID, Flags.OPTIONAL, "mvnd:--raw-streams"),
     /**
      * Overall timeout to connect to a daemon.
      */
@@ -588,7 +588,18 @@ public enum Environment {
         auto;
 
         public static Optional<Color> of(String color) {
-            return color == null ? Optional.empty() : Optional.of(Color.valueOf(color));
+            if (color == null) {
+                return Optional.empty();
+            } else if ("always".equals(color) || "yes".equals(color) || "force".equals(color)) {
+                return Optional.of(Color.always);
+            } else if ("never".equals(color) || "no".equals(color) || "none".equals(color)) {
+                return Optional.of(Color.never);
+            } else if ("auto".equals(color) || "tty".equals(color) || "if-tty".equals(color)) {
+                return Optional.of(Color.auto);
+            } else {
+                throw new IllegalArgumentException(
+                        "Invalid color configuration value '" + color + "'. Supported are 'auto', 'always', 'never'.");
+            }
         }
     }
 

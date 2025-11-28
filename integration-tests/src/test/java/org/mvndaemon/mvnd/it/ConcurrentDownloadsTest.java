@@ -22,6 +22,7 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
@@ -32,6 +33,7 @@ import org.mvndaemon.mvnd.junit.TestParameters;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Disabled("Due use of Mimir in ITs this test does not download but gets from Mimir cache instead")
 @MvndTest(projectDir = "src/test/projects/concurrent-downloads")
 class ConcurrentDownloadsTest {
 

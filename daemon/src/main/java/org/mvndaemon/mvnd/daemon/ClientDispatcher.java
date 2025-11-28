@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import io.takari.maven.builder.smart.DependencyGraph;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.logging.BuildEventListener;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.aether.transfer.TransferEvent;
@@ -37,12 +38,11 @@ import org.eclipse.aether.transfer.TransferEvent.RequestType;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildStarted;
-import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 
 /**
  * Sends events back to the client.
  */
-public class ClientDispatcher extends BuildEventListener {
+public class ClientDispatcher implements BuildEventListener {
     private final Collection<Message> queue;
     private static final Pattern TRAILING_EOLS_PATTERN = Pattern.compile("[\r\n]+$");
 
