@@ -80,13 +80,6 @@ https://community.chocolatey.org/packages/mvndaemon/[Chocolatey], https://scoop.
 https://github.com/joschi/asdf-mvnd#install[asdf].  If you fancy helping us...
 
 ////
-=== Install using https://www.macports.org[MacPorts]
-
-[source,shell]
-----
-$ sudo port install mvnd
-----
-
 === Install using https://community.chocolatey.org/packages/mvndaemon/[Chocolatey]
 
 [source,shell]
