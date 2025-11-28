@@ -66,7 +66,7 @@ sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at
 brew install mvndaemon/homebrew-mvnd/mvnd
 ----
 
-Note: There are two formulae. The `mvnd` installs the preview 2.x version (embedding Maven 4.0.x), and `mvnd@1` installs the stable 1.x version (embedding Maven 3.9.x).
+Note: There are two formulae: `mvnd` installs the preview 2.x version (embedding Maven 4.0.x), and `mvnd@1` installs the stable 1.x version (embedding Maven 3.9.x).
 
 === Install using https://www.macports.org[MacPorts]
 
