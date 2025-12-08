@@ -106,7 +106,7 @@
     <plexus-interactivity-api.version>1.5.1</plexus-interactivity-api.version>
     <roaster.version>2.30.3.Final</roaster.version>
     <takari-smart-builder.version>1.1.0</takari-smart-builder.version>
-    <testcontainers.version>1.21.3</testcontainers.version>
+    <testcontainers.version>2.0.2</testcontainers.version>
     <xstream.version>1.4.21</xstream.version>
 
     <!-- from parent -->
@@ -395,7 +395,7 @@
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>junit-jupiter</artifactId>
+        <artifactId>testcontainers-junit-jupiter</artifactId>
         <version>${testcontainers.version}</version>
       </dependency>
     </dependencies>
