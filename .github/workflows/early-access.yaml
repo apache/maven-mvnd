@@ -67,7 +67,7 @@ jobs:
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
@@ -178,14 +178,14 @@ jobs:
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: daemon-test-logs-${{ matrix.os }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
           include-hidden-files: 'true'
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: mvnd-${{ matrix.os }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
@@ -207,7 +207,7 @@ jobs:
         run: ./mvnw compile site -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: mvnd-site
           path: target/site
