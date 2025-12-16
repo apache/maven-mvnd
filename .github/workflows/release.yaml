@@ -181,7 +181,7 @@ jobs:
           fetch-depth: 0
 
       - name: 'Download all build artifacts'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
 
       - name: 'Set up Java'
         uses: actions/setup-java@v5
