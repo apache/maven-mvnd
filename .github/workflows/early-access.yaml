@@ -51,7 +51,7 @@ jobs:
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
@@ -137,13 +137,13 @@ jobs:
 
       - name: 'Upload daemon test logs'
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: daemon-test-logs-${{ env.OS }}-${{ env.ARCH }}
           path: integration-tests/target/mvnd-tests/**/daemon*.log
 
       - name: 'Upload artifact'
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: mvnd-${{ env.OS }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
