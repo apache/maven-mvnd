@@ -1,0 +1,129 @@
+# Changes from Bash to Zsh Completion Script
+
+This document outlines the changes made to adapt `mvnd-bash-completion.bash` for zsh compatibility in `mvnd-bash+zsh-completion.sh`. These changes enable the same completion script to work in both bash and zsh shells.
+
+## Overview
+
+The zsh version of the completion script maintains backward compatibility with bash while adding zsh-specific enhancements. The script auto-detects the shell type and applies the appropriate behavior.
+
+## Key Changes
+
+### 1. Shell Detection
+
+A new shell detection mechanism was added at the beginning of the script:
+
+```shell
+if [ -n "$ZSH_VERSION" ]; then
+    __MVND_SHELL="zsh"
+elif [ -n "$BASH_VERSION" ]; then
+    __MVND_SHELL="bash"
+else
+    __MVND_SHELL="unknown"
+fi
+```
+
+This allows the script to conditionally execute shell-specific code paths.
+
+### 2. Zsh Completion System Initialization
+
+A new block initializes the zsh completion system and enables bash compatibility mode:
+
+```shell
+if __is_zsh; then
+    # Enable bash compatibility
+    autoload -Uz compinit
+    compinit -u 2>/dev/null
+
+    # Load bashcompinit for bash-style completions
+    autoload -Uz bashcompinit
+    bashcompinit
+
+    # Set options for better compatibility
+    setopt NO_BEEP
+    setopt COMPLETE_IN_WORD
+    setopt ALWAYS_TO_END
+
+    # Define COMP_WORDBREAKS if not set (bash compatibility)
+    [[ -z "$COMP_WORDBREAKS" ]] && COMP_WORDBREAKS=$' \t\n"\'><=;|&(:'
+fi
+
+# Check if the current shell is zsh
+__is_zsh()
+{
+    [ "$__MVND_SHELL" = "zsh" ]
+}
+```
+
+Key components:
+
+* `compinit` - Initializes zsh's completion system
+* `bashcompinit` - Enables bash-style completion functions (`complete`, `compgen`, `COMPREPLY`)
+* `setopt` - Sets zsh options for improved completion behavior
+* `COMP_WORDBREAKS` - Defines word break characters (bash sets this automatically)
+
+### 3. Function Existence Check
+
+The `function_exists` function was modified to handle both shells:
+
+| Bash | Zsh |
+|------|-----|
+| `declare -F $1 > /dev/null` | `typeset -f $1 > /dev/null 2>&1` |
+
+Zsh uses `typeset` instead of `declare` for function introspection. The `2>&1` redirect suppresses potential error messages.
+
+### 4. Variable Listing for Plugin Discovery
+
+The `common_plugins` variable discovery was updated:
+
+| Bash | Zsh |
+|------|-----|
+| `compgen -v \| grep "^plugin_goals_.*"` | `typeset + \| grep "^plugin_goals_"` |
+
+* Bash uses `compgen -v` to list all variable names
+* Zsh uses `typeset +` to list variable names (the `+` modifier shows only names)
+
+### 5. Indirect Variable Expansion
+
+When accessing plugin goals dynamically by variable name, different syntax is required:
+
+| Bash | Zsh |
+|------|-----|
+| `${!var_name}` | `${(P)var_name}` |
+
+* Bash uses `${!var_name}` for indirect expansion (dereference)
+* Zsh uses `${(P)var_name}` - the `(P)` flag enables parameter name expansion
+
+The updated code:
+
+```shell
+local var_value
+if [ "$__MVND_SHELL" = "zsh" ]; then
+    var_value="${(P)var_name}"
+else
+    var_value="${!var_name}"
+fi
+COMPREPLY=( $(compgen -W "${var_value}" -S ' ' -- ${cur}) )
+```
+
+## Summary of Shell Differences
+
+| Feature | Bash | Zsh |
+|---------|------|-----|
+| Function existence check | `declare -F name` | `typeset -f name` |
+| List variables | `compgen -v` | `typeset +` |
+| Indirect variable expansion | `${!varname}` | `${(P)varname}` |
+| Completion system init | Built-in | `autoload -Uz compinit && compinit` |
+| Bash compatibility | N/A | `autoload -Uz bashcompinit && bashcompinit` |
+| Word break characters | Auto-set in `COMP_WORDBREAKS` | Must be manually defined |
+
+## Usage
+
+The script works automatically in both shells. Simply source it in your shell configuration:
+
+```shell
+# In ~/.bashrc or ~/.zshrc
+source /path/to/mvnd-bash+zsh-completion.sh
+```
+
+Or use the provided `mvnd --completion` command to generate and source the completion script.
+

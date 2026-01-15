@@ -26,8 +26,14 @@ else
     __MVND_SHELL="unknown"
 fi
 
+# Check if the current shell is zsh
+__is_zsh()
+{
+    [ "$__MVND_SHELL" = "zsh" ]
+}
+
 # ZSH-specific setup
-if [ "$__MVND_SHELL" = "zsh" ]; then
+if __is_zsh; then
     # Enable bash compatibility
     autoload -Uz compinit
     compinit -u 2>/dev/null
@@ -47,7 +53,7 @@ fi
 
 function_exists()
 {
-    if [ "$__MVND_SHELL" = "zsh" ]; then
+    if __is_zsh; then
         # zsh uses 'typeset -f' or 'whence -f' to check function existence
         typeset -f $1 > /dev/null 2>&1
         return $?
@@ -323,7 +329,7 @@ _mvnd()
 
     ## some plugin (like jboss-as) has '-' which is not allowed in shell var name, to use '_' then replace
     local common_plugins
-    if [ "$__MVND_SHELL" = "zsh" ]; then
+    if __is_zsh; then
         # zsh uses typeset or set to list variables
         common_plugins=$(typeset + | grep "^plugin_goals_" | sed 's/plugin_goals_//g' | tr '_' '-' | tr '\n' '|')
     else
@@ -376,7 +382,7 @@ _mvnd()
             ## note that here is an 'unreplace', see the comment at common_plugins
             local var_name="plugin_goals_${plugin//-/_}"
             local var_value
-            if [ "$__MVND_SHELL" = "zsh" ]; then
+            if __is_zsh; then
                 var_value="${(P)var_name}"
             else
                 var_value="${!var_name}"
