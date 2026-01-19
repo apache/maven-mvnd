@@ -90,7 +90,7 @@
     <sisu.version>0.9.0.M4</sisu.version>
 
     <!-- plugin versions a..z -->
-    <buildnumber-maven-plugin.version>3.2.1</buildnumber-maven-plugin.version>
+    <buildnumber-maven-plugin.version>3.3.0</buildnumber-maven-plugin.version>
     <groovy-maven-plugin.version>4.2.1</groovy-maven-plugin.version>
     <mrm.version>1.7.0</mrm.version>
     <versions.junit5>5.14.1</versions.junit5>
