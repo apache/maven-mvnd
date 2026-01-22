@@ -78,7 +78,7 @@
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
     <assertj.version>3.27.6</assertj.version>
     <commons-compress.version>1.28.0</commons-compress.version>
-    <graalvm.version>25.0.1</graalvm.version>
+    <graalvm.version>25.0.2</graalvm.version>
     <graalvm.plugin.version>0.11.3</graalvm.plugin.version>
     <groovy.version>5.0.3</groovy.version>
     <jansi.version>2.4.1</jansi.version>
