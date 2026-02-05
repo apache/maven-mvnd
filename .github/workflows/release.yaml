@@ -34,8 +34,8 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # binaries wanted: linux amd64, mac intel, mac M1, windows x86
-        os: [ ubuntu-24.04, macos-15-intel, macos-15, windows-2025 ]
+        # binaries wanted: linux amd64, linux arm64, mac intel, mac M1, windows x86
+        os: [ ubuntu-24.04, ubuntu-22.04-arm, macos-15-intel, macos-15, windows-2025 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -74,11 +74,11 @@ jobs:
       - name: 'Maven clean'
         run: ./mvnw clean -Dmrm=false -B -ntp -e
 
-      - name: 'Patch GraalVM libs for only requiring glibc 2.12'
-        if: ${{ env.OS == 'linux' }}
+      - name: 'Patch AMD64 GraalVM libs for only requiring glibc 2.28'
+        if: runner.os == 'linux' && runner.arch == 'X64'
         shell: bash
         run: |
-          mkdir -p client/target/graalvm-libs-for-glibc-2.12
+          mkdir -p client/target/graalvm-libs-for-glibc-2.28
 
           : patch common libraries
           ( find "$GRAALVM_HOME/lib/static/linux-amd64/glibc" -name '*.a'
@@ -86,19 +86,39 @@ jobs:
             ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-amd64/libjvm.a"
             ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-amd64/liblibchelper.a"
           ) | while IFS= read -r input; do
-                output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
+                output="client/target/graalvm-libs-for-glibc-2.28/$(basename -- "$input")"
                 objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef -- "$input" "$output" 2>/dev/null
               done
 
           : patch gcc startfile
           gcc -O3 -Os -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
-          ld -r /lib/x86_64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.12/Scrt1.o
-          objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.12/Scrt1.o 2>/dev/null
+          ld -r /lib/x86_64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.28/Scrt1.o
+          objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.28/Scrt1.o 2>/dev/null
 
+      - name: 'Patch ARM64 GraalVM libs for only requiring glibc 2.28'
+        if: runner.os == 'linux' && runner.arch == 'ARM64'
+        shell: bash
+        run: |
+          mkdir -p client/target/graalvm-libs-for-glibc-2.28
+
+          : patch common libraries
+          ( find "$GRAALVM_HOME/lib/static/linux-aarch64/glibc" -name '*.a'
+            ls -1 /lib/aarch64-linux-gnu/libz.a
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-aarch64/libjvm.a"
+            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-aarch64/liblibchelper.a"
+          ) | while IFS= read -r input; do
+                output="client/target/graalvm-libs-for-glibc-2.28/$(basename -- "$input")"
+                objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef -- "$input" "$output" 2>/dev/null
+              done
+
+          : patch gcc startfile
+          gcc -O3 -Os -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
+          ld -r /lib/aarch64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.28/Scrt1.o
+          objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef client/target/graalvm-libs-for-glibc-2.28/Scrt1.o 2>/dev/null
       - name: 'Build native distribution'
         run: ./mvnw verify -Pnative -Dmrm=false -B -ntp -e -DskipTests -s .mvn/release-settings.xml
 
-      - name: 'Verify native binary for only requiring glibc 2.12'
+      - name: 'Verify native binary for only requiring glibc 2.28'
         if: ${{ env.OS == 'linux' }}
         shell: bash
         run: |
