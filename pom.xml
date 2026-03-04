@@ -75,12 +75,6 @@
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
 
-    <!-- parent version updates -->
-    <surefire.version>3.5.5</surefire.version>
-    <version.plexus-xml>3.0.2</version.plexus-xml>
-    <version.maven-compiler-plugin>3.15.0</version.maven-compiler-plugin>
-    <version.spotless-maven-plugin>3.3.0</version.spotless-maven-plugin>
-
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
     <assertj.version>3.27.7</assertj.version>
