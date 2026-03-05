@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.maven</groupId>
     <artifactId>maven-parent</artifactId>
-    <version>45</version>
+    <version>47</version>
     <relativePath />
   </parent>
 
@@ -67,6 +67,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>8</maven.compiler.target>
     <maven.compiler.source>8</maven.compiler.source>
+    <!-- parent profile defines this; undefine -->
+    <maven.compiler.release />
     <maven-dist.required.jdk>8</maven-dist.required.jdk>
     <project.build.outputTimestamp>2025-09-17T13:29:54Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
@@ -79,13 +81,13 @@
     <commons-compress.version>1.28.0</commons-compress.version>
     <!-- cannot upgrade graalvm to 23.0.0 which requires JDK >= 20 -->
     <graalvm.version>25.0.2</graalvm.version>
-    <graalvm.plugin.version>0.11.4</graalvm.plugin.version>
+    <graalvm.plugin.version>0.11.5</graalvm.plugin.version>
     <groovy.version>5.0.4</groovy.version>
     <jakarta.inject.version>1.0.5</jakarta.inject.version>
-    <jline.version>3.30.6</jline.version>
-    <maven.version>3.9.12</maven.version>
+    <jline.version>3.30.7</jline.version>
+    <maven.version>3.9.13</maven.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.25</maven.resolver.version>
+    <maven.resolver.version>1.9.27</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
     <sisu.version>1.0.0</sisu.version>
 
@@ -93,7 +95,7 @@
     <buildnumber-maven-plugin.version>3.3.0</buildnumber-maven-plugin.version>
     <groovy-maven-plugin.version>4.3.1</groovy-maven-plugin.version>
     <mrm.version>1.7.1</mrm.version>
-    <versions.junit5>5.14.1</versions.junit5>
+    <versions.junit5>5.14.3</versions.junit5>
     <junit-platform-launcher.version>1.14.1</junit-platform-launcher.version>
     <takari-provisio.version>1.1.1</takari-provisio.version>
 
@@ -534,14 +536,16 @@
             </goals>
             <configuration>
               <rules>
-                <enforceBytecodeVersion>
+                <!-- https://github.com/apache/maven-parent/issues/544 -->
+                <enforceBytecodeVersion combine.self="override">
                   <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
                   <excludes>
                     <exclude>org.jline:jline-terminal-ffm</exclude>
                   </excludes>
                   <ignoredScopes>
                     <!-- GraalVM SVM and deps are 17+, but are provided and used only for Native -->
-                    <ignoredScopes>provided</ignoredScopes>
+                    <ignoredScope>provided</ignoredScope>
+                    <ignoredScope>test</ignoredScope>
                   </ignoredScopes>
                 </enforceBytecodeVersion>
               </rules>

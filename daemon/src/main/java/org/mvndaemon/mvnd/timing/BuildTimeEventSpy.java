@@ -100,7 +100,7 @@ public class BuildTimeEventSpy extends AbstractEventSpy {
                 break;
 
             default:
-                // Ignore other events
+            // Ignore other events
         }
     }
 
