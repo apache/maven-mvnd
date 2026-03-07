@@ -207,7 +207,7 @@
       <id>linux-am64-image-only-require-glibc-2.12</id>
       <activation>
         <os>
-          <family>linux</family>
+          <name>linux</name>
           <arch>amd64</arch>
         </os>
         <file>
@@ -237,7 +237,7 @@
       <id>linux-arm64-image-only-require-glibc-2.28</id>
       <activation>
         <os>
-          <family>linux</family>
+          <name>linux</name>
           <arch>aarch64</arch>
         </os>
         <file>
