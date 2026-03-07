@@ -207,8 +207,7 @@
       <id>linux-am64-image-only-require-glibc-2.12</id>
       <activation>
         <os>
-          <name>Linux</name>
-          <arch>amd64</arch>
+          <family>linux</family>
         </os>
         <file>
           <exists>target/graalvm-libs-for-glibc-2.12</exists>
@@ -227,36 +226,6 @@
                 <buildArg>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc</buildArg>
                 <buildArg>-H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
                 <buildArg>-H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.12</buildArg>
-              </buildArgs>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>linux-arm64-image-only-require-glibc-2.28</id>
-      <activation>
-        <os>
-          <name>Linux</name>
-          <arch>aarch64</arch>
-        </os>
-        <file>
-          <exists>target/graalvm-libs-for-glibc-2.28</exists>
-        </file>
-      </activation>
-      <properties>
-        <patchelf.skip>false</patchelf.skip>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.graalvm.buildtools</groupId>
-            <artifactId>native-maven-plugin</artifactId>
-            <configuration>
-              <buildArgs combine.children="append">
-                <buildArg>-H:CCompilerPath=${basedir}/src/main/resources/glibc/gcc</buildArg>
-                <buildArg>-H:CCompilerOption=-B${project.build.directory}/graalvm-libs-for-glibc-2.28</buildArg>
-                <buildArg>-H:CLibraryPath=${project.build.directory}/graalvm-libs-for-glibc-2.28</buildArg>
               </buildArgs>
             </configuration>
           </plugin>

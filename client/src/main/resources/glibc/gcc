@@ -22,7 +22,7 @@ set -euf
 base=$(dirname -- "$0")
 redefine_syms="$base/glibc.redef"
 
-# aarch64 starts with GLIBC_2.17 and cannot consume x86-era GLIBC_2.2.5 map.
+# aarch64 starts with GLIBC_2.17 and cannot consume x86-era GLIBC_2.2.5.
 if [ "$(uname -m)" = "aarch64" ] && [ -f "$base/glibc.redef.aarch64" ]; then
 	redefine_syms="$base/glibc.redef.aarch64"
 fi

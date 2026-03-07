@@ -27,7 +27,6 @@
 #include <dlfcn.h>
 #include <stdint.h>
 
-/* Symbol version floors are architecture-specific in glibc. */
 #if defined(__aarch64__)
 __asm__(".symver dlsym,dlsym@GLIBC_2.28");
 __asm__(".symver dlvsym,dlvsym@GLIBC_2.28");
