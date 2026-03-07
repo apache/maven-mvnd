@@ -27,8 +27,14 @@
 #include <dlfcn.h>
 #include <stdint.h>
 
+/* Symbol version floors are architecture-specific in glibc. */
+#if defined(__aarch64__)
+__asm__(".symver dlsym,dlsym@GLIBC_2.28");
+__asm__(".symver dlvsym,dlvsym@GLIBC_2.28");
+#else
 __asm__(".symver dlsym,dlsym@GLIBC_2.2.5");
 __asm__(".symver dlvsym,dlvsym@GLIBC_2.2.5");
+#endif
 
 /* __libc_csu_init is statically linked into each program, and passed to __libc_start_main
  * when the program is running with an old glibc (<2.34).
