@@ -35,7 +35,7 @@ jobs:
       fail-fast: true
       matrix:
         # binaries wanted: linux amd64, linux arm64, mac intel, mac M1, windows x86
-        os: [ ubuntu-24.04, ubuntu-22.04-arm, macos-15-intel, macos-15, windows-2025 ]
+        os: [ ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-15, windows-2025 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -134,7 +134,7 @@ jobs:
         run: |
           (( 4 == "$(ldd client/target/mvnd | awk '{print $1}' | sort -u | grep -c 'lib\(c\|dl\|rt\|pthread\)\.so\.[0-9]')" )) || ( ldd client/target/mvnd && false )
           err=0
-          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[0-9]\|2\.2[012345678]\)[^0-9]' || err=$?
+          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.2[012345678]\)[^0-9]' || err=$?
           (( err == 1 ))
 
       - name: 'Upload artifact'
