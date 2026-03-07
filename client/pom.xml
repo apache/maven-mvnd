@@ -204,7 +204,7 @@
     </profile>
 
     <profile>
-      <id>linux-image-only-require-glibc-2.12</id>
+      <id>linux-am64-image-only-require-glibc-2.12</id>
       <activation>
         <os>
           <family>linux</family>
