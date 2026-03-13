@@ -20,8 +20,14 @@
 set -euf
 
 base=$(dirname -- "$0")
+redefine_syms="$base/glibc.redef"
+
+# aarch64 starts with GLIBC_2.17 and cannot consume x86-era GLIBC_2.2.5.
+if [ "$(uname -m)" = "aarch64" ] && [ -f "$base/glibc.redef.aarch64" ]; then
+	redefine_syms="$base/glibc.redef.aarch64"
+fi
 
 # fix glibc api version on the fly
-find . -name '*.o' -print0 | xargs -0rn 1 objcopy --redefine-syms="$base/glibc.redef"
+find . -name '*.o' -print0 | xargs -0rn 1 objcopy --redefine-syms="$redefine_syms"
 
 exec gcc "$@"
