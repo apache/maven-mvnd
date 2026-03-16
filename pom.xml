@@ -650,6 +650,7 @@
                 <phase>package</phase>
                 <configuration>
                   <finalName>maven-mvnd-${project.version}</finalName>
+                  <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
                   <descriptors>
                     <descriptor>src/main/assembly/src.xml</descriptor>
                   </descriptors>
