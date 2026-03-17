@@ -641,6 +641,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
+            <inherited>false</inherited>
             <executions>
               <execution>
                 <id>create-source-distribution</id>
@@ -650,7 +651,6 @@
                 <phase>package</phase>
                 <configuration>
                   <finalName>maven-mvnd-${project.version}</finalName>
-                  <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
                   <descriptors>
                     <descriptor>src/main/assembly/src.xml</descriptor>
                   </descriptors>
