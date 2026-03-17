@@ -134,7 +134,7 @@ jobs:
         run: |
           (( 4 == "$(ldd client/target/mvnd | awk '{print $1}' | sort -u | grep -c 'lib\(c\|dl\|rt\|pthread\)\.so\.[0-9]')" )) || ( ldd client/target/mvnd && false )
           err=0
-          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.2[012345678]\)[^0-9]' || err=$?
+          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[017]\)[^0-9]' || err=$?
           (( err == 1 ))
 
       - name: 'Upload artifact'
