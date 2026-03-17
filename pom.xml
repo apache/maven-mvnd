@@ -636,6 +636,7 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-assembly-plugin</artifactId>
+            <inherited>false</inherited>
             <executions>
               <execution>
                 <id>create-source-distribution</id>
