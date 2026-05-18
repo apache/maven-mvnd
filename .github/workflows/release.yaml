@@ -26,7 +26,7 @@ on:
       - '*'
 
 env:
-  JAVA_VERSION: '22'
+  JAVA_VERSION: '25'
 
 jobs:
   build:
@@ -73,7 +73,7 @@ jobs:
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --raw-streams)" >> $GITHUB_ENV
 
       - name: 'Set up GraalVM'
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f # v1.5.3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'graalvm'
@@ -153,10 +153,10 @@ jobs:
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up GraalVM'
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f # v1.5.3
         with:
-          version: ${{ env.GRAALVM_VERSION }}
           java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Build source distribution'
