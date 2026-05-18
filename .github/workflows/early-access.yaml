@@ -150,7 +150,7 @@ jobs:
                 objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef -- "$input" "$output" 2>/dev/null
               done
 
-          : compile stat() backward-compat shim (stat was a macro before glibc 2.33)
+          : compile stat backward-compat shim for glibc before 2.33
           gcc -O3 -Os -Wall -Wextra -Werror -c -o client/target/stat-compat.o client/src/main/resources/glibc/stat-compat.c
 
           : patch gcc startfile
