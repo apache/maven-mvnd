@@ -272,7 +272,7 @@
             <artifactId>native-maven-plugin</artifactId>
             <configuration>
               <metadataRepository>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
               </metadataRepository>
               <skip>false</skip>
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
