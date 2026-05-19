@@ -75,6 +75,13 @@ Note: There are two formulae: `mvnd` installs the preview 2.x version (embedding
 sudo port install mvnd
 ----
 
+=== Install using https://aquaproj.github.io/[aqua]
+
+[source,shell]
+----
+$ aqua g -i apache/maven-mvnd
+----
+
 === Other installers
 
 We're looking for contribution to support https://community.chocolatey.org/packages/mvndaemon/[Chocolatey], https://scoop.sh/[Scoop] or
