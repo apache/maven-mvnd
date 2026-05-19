@@ -27,12 +27,13 @@ import java.nio.file.Path;
 public class Completion {
 
     public static String getCompletion(String shell, DaemonParameters daemonParameters) {
-        if (!"bash".equals(shell)) {
-            throw new IllegalArgumentException("Unexpected --completion value: '" + shell + "'; expected: 'bash'");
+        if (!"bash".equals(shell) && !"zsh".equals(shell)) {
+            throw new IllegalArgumentException(
+                    "Unexpected --completion value: '" + shell + "'; expected: 'bash' or 'zsh'");
         }
         final Path bashCompletionPath = daemonParameters.mvndHome().resolve("bin/mvnd-bash-completion.bash");
         if (!Files.isRegularFile(bashCompletionPath)) {
-            throw new IllegalStateException("Bash completion file does not exist: " + bashCompletionPath);
+            throw new IllegalStateException("Completion file does not exist: " + bashCompletionPath);
         }
         try {
             return new String(Files.readAllBytes(bashCompletionPath), StandardCharsets.UTF_8);

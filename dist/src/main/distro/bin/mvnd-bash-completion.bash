@@ -17,10 +17,26 @@
 # Adapted from https://github.com/juven/maven-bash-completion/blob/master/bash_completion.bash by Juven Xu and others
 # under Apache License Version 2.0
 
+# Detect shell type and set up zsh compatibility if needed
+if [ -n "$ZSH_VERSION" ]; then
+    __MVND_SHELL="zsh"
+    # Load bashcompinit for bash-style completions in zsh
+    autoload -Uz bashcompinit 2>/dev/null && bashcompinit
+    # Define COMP_WORDBREAKS if not set (bash sets this automatically)
+    [[ -z "$COMP_WORDBREAKS" ]] && COMP_WORDBREAKS=$' \t\n"\'><=;|&(:'
+else
+    __MVND_SHELL="bash"
+fi
+
 function_exists()
 {
-    declare -F $1 > /dev/null
-    return $?
+    if [ "$__MVND_SHELL" = "zsh" ]; then
+        typeset -f $1 > /dev/null 2>&1
+        return $?
+    else
+        declare -F $1 > /dev/null
+        return $?
+    fi
 }
 
 # This function can be used to access a tokenized list of words
@@ -288,7 +304,12 @@ _mvnd()
     local plugin_goals_formatter="formatter:format|formatter:help|formatter:validate"
 
     ## some plugin (like jboss-as) has '-' which is not allowed in shell var name, to use '_' then replace
-    local common_plugins=`compgen -v | grep "^plugin_goals_.*" | sed 's/plugin_goals_//g' | tr '_' '-' | tr '\n' '|'`
+    local common_plugins
+    if [ "$__MVND_SHELL" = "zsh" ]; then
+        common_plugins=$(typeset + | grep "^plugin_goals_" | sed 's/plugin_goals_//g' | tr '_' '-' | tr '\n' '|')
+    else
+        common_plugins=`compgen -v | grep "^plugin_goals_.*" | sed 's/plugin_goals_//g' | tr '_' '-' | tr '\n' '|'`
+    fi
 
     local options="-Dmaven.test.skip=true|-DskipTests|-DskipITs|-Dtest|-Dit.test|-DfailIfNoTests|-Dmaven.surefire.debug|-DenableCiProfile|-Dpmd.skip=true|-Dcheckstyle.skip=true|-Dtycho.mode=maven|-Dmaven.javadoc.skip=true|-Dgwt.compiler.skip|-Dcobertura.skip=true|-Dfindbugs.skip=true||-DperformRelease=true|-Dgpg.skip=true|-DforkCount|${mvnd_properties}"
 
@@ -334,8 +355,14 @@ _mvnd()
         for plugin in $common_plugins; do
           if [[ ${cur} == ${plugin}:* ]]; then
             ## note that here is an 'unreplace', see the comment at common_plugins
-            var_name="plugin_goals_${plugin//-/_}"
-            COMPREPLY=( $(compgen -W "${!var_name}" -S ' ' -- ${cur}) )
+            local var_name="plugin_goals_${plugin//-/_}"
+            local var_value
+            if [ "$__MVND_SHELL" = "zsh" ]; then
+                var_value="${(P)var_name}"
+            else
+                var_value="${!var_name}"
+            fi
+            COMPREPLY=( $(compgen -W "${var_value}" -S ' ' -- ${cur}) )
           fi
         done
 
