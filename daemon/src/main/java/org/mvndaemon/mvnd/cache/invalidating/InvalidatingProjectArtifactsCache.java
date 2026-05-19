@@ -186,9 +186,6 @@ public class InvalidatingProjectArtifactsCache extends DefaultProjectArtifactsCa
                     .filter(Objects::nonNull)
                     .map(File::toPath);
         }
-
-        @Override
-        public void invalidate() {}
     }
 
     final Cache<Key, Record> cache;
