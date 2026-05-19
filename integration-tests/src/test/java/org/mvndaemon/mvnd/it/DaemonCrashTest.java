@@ -63,8 +63,9 @@ class DaemonCrashTest {
         Stream.of(installedJars).forEach(jar -> Assertions.assertThat(jar).doesNotExist());
 
         final TestClientOutput output = new TestClientOutput();
-        assertThrows(DaemonException.StaleAddressException.class, () -> client.execute(
-                        output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG")
-                .assertFailure());
+        assertThrows(
+                DaemonException.StaleAddressException.class,
+                () -> client.execute(output, "clean", "install", "-e", "-Dmvnd.log.level=DEBUG")
+                        .assertFailure());
     }
 }

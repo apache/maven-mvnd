@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         # binaries wanted: linux amd64, mac M1, mac intel, windows x86
-        os: [ ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2025 ]
+        os: [ ubuntu-24.04, ubuntu-24.04-arm, macos-15, macos-15-intel, windows-2022 ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -93,7 +93,7 @@ jobs:
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up GraalVM'
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f # v1.5.3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'graalvm'
