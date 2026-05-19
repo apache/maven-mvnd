@@ -26,7 +26,7 @@ on:
       - '*'
 
 env:
-  JAVA_VERSION: '22'
+  JAVA_VERSION: '25'
 
 jobs:
   build:
@@ -34,15 +34,13 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        # binaries wanted
-        os: [ ubuntu-24.04, macos-15, macos-15-intel, windows-2025 ]
+        # binaries wanted: linux amd64, linux arm64, mac M1, windows x86
+        os: [ ubuntu-24.04, macos-15, windows-2025 ]
         arch: [ x64, arm64 ]
         exclude:
-          - os: macos-latest
+          - os: macos-15
             arch: x64
-          - os: macos-15-intel
-            arch: arm64
-          - os: windows-latest
+          - os: windows-2025
             arch: arm64
     runs-on: ${{ matrix.os }}
 
@@ -73,7 +71,7 @@ jobs:
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout --raw-streams)" >> $GITHUB_ENV
 
       - name: 'Set up GraalVM'
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f # v1.5.3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'graalvm'
@@ -89,10 +87,9 @@ jobs:
           mkdir -p client/target/graalvm-libs-for-glibc-2.12
 
           : patch common libraries
-          ( find "$GRAALVM_HOME/lib/static/linux-amd64/glibc" -name '*.a'
-            ls -1 /lib/x86_64-linux-gnu/libz.a
-            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-amd64/libjvm.a"
-            ls -1 "$GRAALVM_HOME/lib/svm/clibraries/linux-amd64/liblibchelper.a"
+          ( find "$GRAALVM_HOME/lib/static/linux-amd64/glibc" -name '*.a' 2>/dev/null
+            find "$GRAALVM_HOME/lib/svm/clibraries/linux-amd64" -name '*.a' 2>/dev/null
+            ls -1 /lib/x86_64-linux-gnu/libz.a 2>/dev/null
           ) | while IFS= read -r input; do
                 output="client/target/graalvm-libs-for-glibc-2.12/$(basename -- "$input")"
                 objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef -- "$input" "$output" 2>/dev/null
@@ -153,10 +150,10 @@ jobs:
           echo "VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       - name: 'Set up GraalVM'
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@bef4b0e916c7dd079bf60fb95d49139f67e32c5f # v1.5.3
         with:
-          version: ${{ env.GRAALVM_VERSION }}
           java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'Build source distribution'
@@ -252,26 +249,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: mvnd-linux-amd64/maven-mvnd-${{ env.VERSION }}-linux-amd64.tar.gz
           asset_name: maven-mvnd-${{ env.VERSION }}-linux-amd64.tar.gz
-          asset_content_type: application/x-gzip
-
-      - name: Deploy maven-mvnd-darwin-amd64.zip
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-darwin-amd64/maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
-          asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.zip
-          asset_content_type: application/zip
-
-      - name: Deploy maven-mvnd-darwin-amd64.tar.gz
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: mvnd-darwin-amd64/maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
-          asset_name: maven-mvnd-${{ env.VERSION }}-darwin-amd64.tar.gz
           asset_content_type: application/x-gzip
 
       - name: Deploy maven-mvnd-darwin-aarch64.zip
