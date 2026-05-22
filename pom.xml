@@ -84,7 +84,7 @@
     <graalvm.plugin.version>1.1.0</graalvm.plugin.version>
     <groovy.version>5.0.6</groovy.version>
     <jakarta.inject.version>1.0.5</jakarta.inject.version>
-    <jline.version>3.30.13</jline.version>
+    <jline.version>4.1.1</jline.version>
     <maven.version>3.9.16</maven.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.27</maven.resolver.version>
