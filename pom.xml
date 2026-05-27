@@ -29,7 +29,7 @@
 
   <groupId>org.apache.maven.daemon</groupId>
   <artifactId>mvnd</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Maven Daemon - Parent</name>
@@ -70,7 +70,7 @@
     <!-- parent profile defines this; undefine -->
     <maven.compiler.release />
     <maven-dist.required.jdk>8</maven-dist.required.jdk>
-    <project.build.outputTimestamp>2026-05-27T20:12:40Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-05-27T20:12:56Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
     <project.github.repository>apache/maven-mvnd</project.github.repository>
     <repository.url>github.com:${project.github.repository}</repository.url>
