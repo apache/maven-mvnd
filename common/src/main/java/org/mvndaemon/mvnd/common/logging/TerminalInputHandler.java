@@ -151,8 +151,13 @@ public class TerminalInputHandler implements AutoCloseable {
             int c = terminal.reader().read(timeout);
             if (c < 0) {
                 // End of stream reached
+                if (idx > 0) {
+                    String data = String.valueOf(buf, 0, idx);
+                    daemonReceive.accept(Message.inputResponse(data));
+                }
+
                 daemonReceive.accept(Message.inputEof());
-                break;
+                return;
             }
             buf[idx++] = (char) c;
             timeout = idx > 0 ? 1 : 10; // Shorter timeout after first char
@@ -213,10 +218,10 @@ public class TerminalInputHandler implements AutoCloseable {
     }
 
     private void handleAvailableLength() throws IOException {
-        // terminal.reader().available() 
+        // terminal.reader().available() will attempt to return the number of available characters using some math, but
+        // this method powers System.in.available() when called from a mojo, which needs to return the number of
+        // available bytes.
         int available = System.in.available();
-        System.err.println("GOT AVAILABLE " + available + " from reader "
-                + terminal.reader().getClass().getName());
         daemonReceive.accept(Message.inputAvailableData(available));
     }
 
