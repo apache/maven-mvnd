@@ -24,7 +24,12 @@ import java.io.InterruptedIOException;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import org.apache.maven.logging.ProjectBuildLogAppender;
 
@@ -45,13 +50,13 @@ import org.apache.maven.logging.ProjectBuildLogAppender;
  * - EOF is signaled by calling addInputData with null
  *
  * The stream coordinates between multiple threads:
- * - Reader thread(s): Calling read() methods to get input
- * - Writer thread: Calling addInputData to provide input data
+ * - Reader thread(s): Calling methods to get input
+ * - Writer thread: Calling addInputData to provide input data, addInputAvailableData to provide the number of bytes available
  *
  * Synchronization:
- * - All buffer access is synchronized on the datas collection
- * - Readers wait when no data is available using datas.wait()
- * - Writers notify readers when new data arrives using datas.notifyAll()
+ * - A lock controls access to datas / available as well as internal state
+ * - Readers wait when no data is available using datasReadyCondition.await() / availableReadyCondition.await()
+ * - Writers notify readers when new data arrives datasReadyCondition.signalAll() / availableReadyCondition.signalAll()
  *
  * This implementation is particularly important for:
  * 1. Handling piped input (e.g., cat file | mvnd ...)
@@ -60,26 +65,57 @@ import org.apache.maven.logging.ProjectBuildLogAppender;
  */
 class DaemonInputStream extends InputStream {
     private final BiConsumer<String, Integer> startReadingFromProject;
+    private final Consumer<String> requestAvailable;
+
+    private final Lock lock = new ReentrantLock();
+    private final Condition datasReadyCondition = lock.newCondition();
+    private final Condition availableReadyCondition = lock.newCondition();
+
     private final LinkedList<byte[]> datas = new LinkedList<>();
+    private Optional<Integer> available = Optional.empty();
+
     private final Charset charset;
     private int pos = -1;
     private String projectReading = null;
     private volatile boolean eof = false;
 
-    DaemonInputStream(BiConsumer<String, Integer> startReadingFromProject) {
+    DaemonInputStream(BiConsumer<String, Integer> startReadingFromProject, Consumer<String> requestAvailable) {
         this.startReadingFromProject = startReadingFromProject;
+        this.requestAvailable = requestAvailable;
         this.charset = Charset.forName(System.getProperty("file.encoding"));
     }
 
     @Override
     public int available() throws IOException {
-        synchronized (datas) {
-            String projectId = ProjectBuildLogAppender.getProjectId();
-            if (!eof && !Objects.equals(projectId, projectReading)) {
-                projectReading = projectId;
-                startReadingFromProject.accept(projectId, 1);
+        lock.lock();
+        try {
+            int buffered = datas.stream().mapToInt(a -> a.length).sum() - Math.max(pos, 0);
+
+            if (eof) {
+                return buffered;
             }
-            return datas.stream().mapToInt(a -> a.length).sum() - Math.max(pos, 0);
+
+            String projectId = ProjectBuildLogAppender.getProjectId();
+
+            if (!Objects.equals(projectId, projectReading)) {
+                projectReading = projectId;
+            }
+
+            requestAvailable.accept(projectId);
+
+            available = Optional.empty();
+
+            try {
+                while (available.isEmpty()) {
+                    availableReadyCondition.await();
+                }
+            } catch (InterruptedException e) {
+                throw new InterruptedIOException("Interrupted");
+            }
+
+            return buffered + available.orElse(0);
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -95,7 +131,8 @@ class DaemonInputStream extends InputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        synchronized (datas) {
+        lock.lock();
+        try {
             if (eof && datas.isEmpty()) {
                 return -1; // Return EOF if we've reached the end and no more data
             }
@@ -115,7 +152,7 @@ class DaemonInputStream extends InputStream {
                     // Always notify we need input when waiting for data
                     startReadingFromProject.accept(projectReading, len - read);
                     try {
-                        datas.wait();
+                        datasReadyCondition.await();
                     } catch (InterruptedException e) {
                         throw new InterruptedIOException("Interrupted");
                     }
@@ -134,17 +171,32 @@ class DaemonInputStream extends InputStream {
                 b[off + read++] = curData[pos++];
             }
             return read;
+        } finally {
+            lock.unlock();
         }
     }
 
     public void addInputData(String data) {
-        synchronized (datas) {
+        lock.lock();
+        try {
             if (data == null) {
                 eof = true;
             } else {
                 datas.add(data.getBytes(charset));
             }
-            datas.notifyAll();
+            datasReadyCondition.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void addInputAvailableData(int bytesAvailable) {
+        lock.lock();
+        try {
+            available = Optional.of(bytesAvailable);
+            availableReadyCondition.signalAll();
+        } finally {
+            lock.unlock();
         }
     }
 }

@@ -61,4 +61,37 @@ class InputStreamNativeIT {
 
         client.execute(output, "org.mvndaemon.mvnd.test.input-stream:echo-maven-plugin:echo");
     }
+
+    @Test
+    void installPluginAndCount() throws IOException, InterruptedException {
+        final TestClientOutput output = new TestClientOutput() {
+            boolean sentInput = false;
+            String data = "0123456789";
+
+            @Override
+            public void accept(Message message) {
+                if (message instanceof Message.RequestInput) {
+                    if (!sentInput) {
+                        daemonDispatch.accept(Message.inputResponse(data));
+                        sentInput = true;
+                    } else {
+                        daemonDispatch.accept(Message.inputEof());
+                    }
+                } else if (message instanceof Message.RequestInputAvailable) {
+                    daemonDispatch.accept(Message.inputAvailableData(data.length()));
+                }
+
+                if (!(message instanceof Message.TransferEvent)) {
+                    super.accept(message);
+                }
+            }
+        };
+        client.execute(output, "install").assertSuccess();
+
+        client.execute(output, "org.mvndaemon.mvnd.test.input-stream:echo-maven-plugin:countbytes")
+                .assertSuccess();
+
+        output.assertContainsMatchingSubsequence(
+                "Saw 10 bytes available from stdin. Actually read 10 bytes from stdin.");
+    }
 }

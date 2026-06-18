@@ -67,25 +67,36 @@ public class TerminalInputHandler implements AutoCloseable {
         final String projectId; // null for control keys
         final Message.Prompt prompt; // non-null only for prompt requests
         final boolean isControlKey; // true for control key listening
+        final boolean isAvailableLength; // true for requesting number of available bytes
         final int bytesToRead; // max number of bytes to read
 
-        private InputRequest(String projectId, Message.Prompt prompt, boolean isControlKey, int bytesToRead) {
+        private InputRequest(
+                String projectId,
+                Message.Prompt prompt,
+                boolean isControlKey,
+                boolean isAvailableLength,
+                int bytesToRead) {
             this.projectId = projectId;
             this.prompt = prompt;
             this.isControlKey = isControlKey;
+            this.isAvailableLength = isAvailableLength;
             this.bytesToRead = bytesToRead;
         }
 
         static InputRequest forProject(String projectId, int bytesToRead) {
-            return new InputRequest(projectId, null, false, bytesToRead);
+            return new InputRequest(projectId, null, false, false, bytesToRead);
         }
 
         static InputRequest forPrompt(Message.Prompt prompt) {
-            return new InputRequest(prompt.getProjectId(), prompt, false, 0);
+            return new InputRequest(prompt.getProjectId(), prompt, false, false, 0);
         }
 
         static InputRequest forControlKeys() {
-            return new InputRequest(null, null, true, 0);
+            return new InputRequest(null, null, true, false, 0);
+        }
+
+        static InputRequest forAvailable(String projectId) {
+            return new InputRequest(projectId, null, false, true, 0);
         }
     }
 
@@ -108,6 +119,8 @@ public class TerminalInputHandler implements AutoCloseable {
                     } else if (request.prompt != null) {
                         // Always handle prompts
                         handlePrompt(request.prompt);
+                    } else if (request.isAvailableLength) {
+                        handleAvailableLength();
                     } else if (request.projectId != null) {
                         // Always handle project input
                         handleProjectInput(request.projectId, request.bytesToRead);
@@ -199,6 +212,14 @@ public class TerminalInputHandler implements AutoCloseable {
         }
     }
 
+    private void handleAvailableLength() throws IOException {
+        // terminal.reader().available() 
+        int available = System.in.available();
+        System.err.println("GOT AVAILABLE " + available + " from reader "
+                + terminal.reader().getClass().getName());
+        daemonReceive.accept(Message.inputAvailableData(available));
+    }
+
     private boolean isControlKey(int c) {
         return c == TerminalOutput.KEY_PLUS
                 || c == TerminalOutput.KEY_MINUS
@@ -228,6 +249,11 @@ public class TerminalInputHandler implements AutoCloseable {
     public void requestProjectInput(String projectId, int bytesToRead) {
         inputRequests.clear(); // Clear any pending requests
         inputRequests.offer(InputRequest.forProject(projectId, bytesToRead));
+    }
+
+    public void requestProjectInputAvailable(String projectId) {
+        inputRequests.clear();
+        inputRequests.offer(InputRequest.forAvailable(projectId));
     }
 
     public void requestPrompt(Message.Prompt prompt) {

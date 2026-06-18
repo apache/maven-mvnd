@@ -65,6 +65,8 @@ public abstract class Message {
     public static final int PRINT_ERR = 26;
     public static final int REQUEST_INPUT = 27;
     public static final int INPUT_DATA = 28;
+    public static final int REQUEST_INPUT_AVAILABLE = 29;
+    public static final int INPUT_AVAILABLE_DATA = 30;
 
     final int type;
 
@@ -122,6 +124,10 @@ public abstract class Message {
                 return RequestInput.read(input);
             case INPUT_DATA:
                 return InputData.read(input);
+            case REQUEST_INPUT_AVAILABLE:
+                return RequestInputAvailable.read(input);
+            case INPUT_AVAILABLE_DATA:
+                return InputAvailableData.read(input);
         }
         throw new IllegalStateException("Unexpected message type: " + type);
     }
@@ -1123,6 +1129,66 @@ public abstract class Message {
         }
     }
 
+    public static class RequestInputAvailable extends Message {
+
+        private final String projectId;
+
+        public static RequestInputAvailable read(DataInputStream input) throws IOException {
+            String projectId = readUTF(input);
+            return new RequestInputAvailable(projectId);
+        }
+
+        RequestInputAvailable(String projectId) {
+            super(REQUEST_INPUT_AVAILABLE);
+            this.projectId = projectId;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        @Override
+        public String toString() {
+            return "RequestInputAvailable{" + "projectId='" + projectId + "'}";
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, projectId);
+        }
+    }
+
+    public static class InputAvailableData extends Message {
+
+        private final int bytesAvailable;
+
+        public static InputAvailableData read(DataInputStream input) throws IOException {
+            int bytesAvailable = input.readInt();
+            return new InputAvailableData(bytesAvailable);
+        }
+
+        InputAvailableData(int bytesAvailable) {
+            super(INPUT_AVAILABLE_DATA);
+            this.bytesAvailable = bytesAvailable;
+        }
+
+        public int getBytesAvailable() {
+            return bytesAvailable;
+        }
+
+        @Override
+        public String toString() {
+            return "InputAvailableData{" + "bytesAvailable='" + bytesAvailable + "'}";
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            output.writeInt(bytesAvailable);
+        }
+    }
+
     public int getType() {
         return type;
     }
@@ -1141,6 +1207,14 @@ public abstract class Message {
 
     public static InputData inputEof() {
         return new InputData(null);
+    }
+
+    public static RequestInputAvailable requestInputAvailable(String projectId) {
+        return new RequestInputAvailable(projectId);
+    }
+
+    public static InputAvailableData inputAvailableData(int bytesAvailable) {
+        return new InputAvailableData(bytesAvailable);
     }
 
     public static StringMessage out(String message) {
