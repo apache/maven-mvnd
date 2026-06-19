@@ -51,6 +51,8 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
     private final InvalidatingPluginRealmCache pluginCache;
     private final InvalidatingExtensionRealmCache extensionCache;
     private final InvalidatingProjectArtifactsCache projectArtifactsCache;
+    private final InvalidatingPluginDescriptorCache pluginDescriptorCache;
+    private final InvalidatingPluginArtifactsCache pluginArtifactsCache;
     private Path multiModuleProjectDirectory;
     private String pattern;
     private PathMatcher matcher;
@@ -59,10 +61,14 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
     public InvalidatingRealmCacheEventSpy(
             InvalidatingPluginRealmCache cache,
             InvalidatingExtensionRealmCache extensionCache,
-            InvalidatingProjectArtifactsCache projectArtifactsCache) {
+            InvalidatingProjectArtifactsCache projectArtifactsCache,
+            InvalidatingPluginDescriptorCache pluginDescriptorCache,
+            InvalidatingPluginArtifactsCache pluginArtifactsCache) {
         this.pluginCache = cache;
         this.extensionCache = extensionCache;
         this.projectArtifactsCache = projectArtifactsCache;
+        this.pluginDescriptorCache = pluginDescriptorCache;
+        this.pluginArtifactsCache = pluginArtifactsCache;
     }
 
     @Override
@@ -110,6 +116,8 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
                 /* Evict the entries referring to jars under multiModuleProjectDirectory */
                 pluginCache.cache.removeIf(this::shouldEvict);
                 extensionCache.cache.removeIf(this::shouldEvict);
+                pluginDescriptorCache.cache.removeIf((k, v) -> k.toString().contains("-SNAPSHOT"));
+                pluginArtifactsCache.cache.removeIf((k, v) -> k.toString().contains("-SNAPSHOT"));
                 MavenExecutionResult mer = (MavenExecutionResult) event;
                 List<MavenProject> projects = mer.getTopologicallySortedProjects();
                 projectArtifactsCache.cache.removeIf(
@@ -128,6 +136,10 @@ public class InvalidatingRealmCacheEventSpy extends AbstractEventSpy {
     }
 
     private boolean shouldEvict(InvalidatingPluginRealmCache.Key k, InvalidatingPluginRealmCache.Record v) {
+        if (k.toString().contains("-SNAPSHOT")) {
+            LOG.debug("Removing PluginRealmCache entry {} because it is a SNAPSHOT plugin", k);
+            return true;
+        }
         try {
             for (URL url : v.record.getRealm().getURLs()) {
                 if (url.getProtocol().equals("file")) {
