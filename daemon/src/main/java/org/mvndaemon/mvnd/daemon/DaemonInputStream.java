@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -106,8 +107,9 @@ class DaemonInputStream extends InputStream {
             available = Optional.empty();
 
             try {
-                while (available.isEmpty()) {
-                    availableReadyCondition.await();
+                long remaining = TimeUnit.SECONDS.toNanos(1);
+                while (available.isEmpty() && remaining > 0) {
+                    remaining = availableReadyCondition.awaitNanos(remaining);
                 }
             } catch (InterruptedException e) {
                 throw new InterruptedIOException("Interrupted");
