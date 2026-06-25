@@ -89,7 +89,7 @@
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.27</maven.resolver.version>
     <slf4j.version>1.7.36</slf4j.version>
-    <sisu.version>1.0.0</sisu.version>
+    <sisu.version>1.0.1</sisu.version>
 
     <!-- plugin versions a..z -->
     <buildnumber-maven-plugin.version>3.3.0</buildnumber-maven-plugin.version>
