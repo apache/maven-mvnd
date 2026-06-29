@@ -153,7 +153,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         }
     }
 
-    static class MvndResource implements ExtensionContext.Store.CloseableResource {
+    static class MvndResource implements AutoCloseable {
 
         private final TestParameters parameters;
         private final TestRegistry registry;
