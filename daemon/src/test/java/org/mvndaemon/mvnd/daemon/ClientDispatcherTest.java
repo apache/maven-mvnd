@@ -40,14 +40,23 @@ public class ClientDispatcherTest {
     }
 
     @Test
-    void maxArtifactIdLength() {
-        // The display column must be sized to the longest artifactId so that the goal column
-        // stays aligned; a single long name widens the column for every project.
-        Assertions.assertEquals(0, ClientDispatcher.maxArtifactIdLength(Collections.emptyList()));
-        Assertions.assertEquals(3, ClientDispatcher.maxArtifactIdLength(projects("foo")));
-        Assertions.assertEquals(
-                "a-very-long-artifact-id".length(),
-                ClientDispatcher.maxArtifactIdLength(projects("short", "a-very-long-artifact-id", "mid")));
+    void artifactIdDisplayLength() {
+        // The display column is sized to the longest artifactId so the goal column stays aligned;
+        // a single long name widens the column for every project.
+
+        // Below the floor: the column never shrinks past MIN_ARTIFACT_ID_DISPLAY_LENGTH (20),
+        // including the empty reactor.
+        Assertions.assertEquals(20, ClientDispatcher.artifactIdDisplayLength(Collections.emptyList()));
+        Assertions.assertEquals(20, ClientDispatcher.artifactIdDisplayLength(projects("foo")));
+        Assertions.assertEquals(20, ClientDispatcher.artifactIdDisplayLength(projects("a".repeat(20))));
+
+        // Above the floor: round up to the next multiple of 5 strictly greater than the longest name,
+        // so an exact multiple still steps up and always leaves a gap before the goal.
+        Assertions.assertEquals(25, ClientDispatcher.artifactIdDisplayLength(projects("a".repeat(21))));
+        Assertions.assertEquals(25, ClientDispatcher.artifactIdDisplayLength(projects("a".repeat(24))));
+        Assertions.assertEquals(30, ClientDispatcher.artifactIdDisplayLength(projects("a".repeat(25))));
+        Assertions.assertEquals(30, ClientDispatcher.artifactIdDisplayLength(projects("short", "a".repeat(26), "mid")));
+        Assertions.assertEquals(35, ClientDispatcher.artifactIdDisplayLength(projects("a".repeat(30))));
     }
 
     private static List<MavenProject> projects(String... artifactIds) {

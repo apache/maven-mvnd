@@ -56,17 +56,26 @@ public class ClientDispatcher implements BuildEventListener {
         final int maxThreads =
                 degreeOfConcurrency == 1 ? 1 : dependencyGraph.computeMaxWidth(degreeOfConcurrency, 1000);
         final List<MavenProject> projects = session.getProjects();
-        final int maxArtifactIdLength = maxArtifactIdLength(projects);
+        final int artifactIdDisplayLength = artifactIdDisplayLength(projects);
         queue.add(new BuildStarted(
-                getCurrentProject(session).getArtifactId(), projects.size(), maxThreads, maxArtifactIdLength));
+                getCurrentProject(session).getArtifactId(), projects.size(), maxThreads, artifactIdDisplayLength));
     }
 
-    static int maxArtifactIdLength(List<MavenProject> projects) {
-        return projects.stream()
+    /** Minimum width of the artifactId column, so the goal column keeps a stable position. */
+    static final int MIN_ARTIFACT_ID_DISPLAY_LENGTH = 20;
+
+    static int artifactIdDisplayLength(List<MavenProject> projects) {
+        final int maxArtifactIdLength = projects.stream()
                 .map(MavenProject::getArtifactId)
                 .mapToInt(String::length)
                 .max()
                 .orElse(0);
+        if (maxArtifactIdLength <= MIN_ARTIFACT_ID_DISPLAY_LENGTH) {
+            return MIN_ARTIFACT_ID_DISPLAY_LENGTH;
+        }
+        // Round up to the next multiple of 5 strictly greater than the longest name,
+        // so the column grows in stable steps and always leaves a gap before the goal.
+        return (maxArtifactIdLength / 5 + 1) * 5;
     }
 
     private final Map<String, Boolean> projects = new ConcurrentHashMap<>();
