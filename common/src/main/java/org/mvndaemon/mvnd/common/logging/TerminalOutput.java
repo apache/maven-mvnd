@@ -91,6 +91,8 @@ public class TerminalOutput implements ClientOutput {
 
     private static final AttributedStyle GREEN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.GREEN);
     private static final AttributedStyle CYAN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.CYAN);
+    private static final AttributedStyle BOLD_GREEN_FOREGROUND =
+            new AttributedStyle().bold().foreground(AttributedStyle.GREEN);
 
     private final Terminal terminal;
     private final Terminal.SignalHandler previousIntHandler;
@@ -141,6 +143,7 @@ public class TerminalOutput implements ClientOutput {
     static class Project {
         final String id;
         MojoStartedEvent runningExecution;
+        Message.ProjectTestProgressEvent testProgress;
         final List<String> log = new ArrayList<>();
 
         public Project(String id) {
@@ -269,6 +272,7 @@ public class TerminalOutput implements ClientOutput {
                 final MojoStartedEvent execution = (MojoStartedEvent) entry;
                 final Project prj = projects.computeIfAbsent(execution.getArtifactId(), Project::new);
                 prj.runningExecution = execution;
+                prj.testProgress = null;
                 break;
             }
             case Message.PROJECT_STOPPED: {
@@ -424,6 +428,14 @@ public class TerminalOutput implements ClientOutput {
                 daemonDispatch.accept(entry);
                 break;
             }
+            case Message.PROJECT_TEST_PROGRESS: {
+                final Message.ProjectTestProgressEvent e = (Message.ProjectTestProgressEvent) entry;
+                final Project prj = projects.get(e.getProjectId());
+                if (prj != null) {
+                    prj.testProgress = e;
+                }
+                break;
+            }
             default:
                 throw new IllegalStateException("Unexpected message " + entry);
         }
@@ -546,8 +558,16 @@ public class TerminalOutput implements ClientOutput {
                 lines.addAll(logs);
                 remLogLines -= logs.size();
             }
-            while (remLogLines-- > 0 && lines.size() <= maxThreads + 1) {
-                lines.add(AttributedString.EMPTY);
+            final AttributedString idleLine = new AttributedStringBuilder()
+                    .style(BOLD_GREEN_FOREGROUND)
+                    .append("> ")
+                    .style(AttributedStyle.DEFAULT.faint())
+                    .append("IDLE")
+                    .style(AttributedStyle.DEFAULT)
+                    .toAttributedString();
+            int idleSlots = maxThreads - projectsCount;
+            while (idleSlots-- > 0 && remLogLines-- > 0 && lines.size() <= maxThreads + 1) {
+                lines.add(idleLine);
             }
         } else {
             int skipProjects = projectsCount - dispLines;
@@ -681,10 +701,41 @@ public class TerminalOutput implements ClientOutput {
         return location;
     }
 
+    static String renderBar(int percent) {
+        final int width = 20;
+        int filled = (int) Math.round(percent / 100.0 * width);
+        StringBuilder sb = new StringBuilder(width + 2);
+        sb.append('[');
+        if (filled >= width) {
+            for (int i = 0; i < width; i++) {
+                sb.append('=');
+            }
+        } else if (filled > 0) {
+            for (int i = 0; i < filled - 1; i++) {
+                sb.append('=');
+            }
+            sb.append('>');
+            for (int i = 0; i < width - filled; i++) {
+                sb.append(' ');
+            }
+        } else {
+            for (int i = 0; i < width; i++) {
+                sb.append(' ');
+            }
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
     private void addStatusLine(final List<AttributedString> lines, int dispLines, final int projectsCount) {
         if (name != null || buildStatus != null) {
             AttributedStringBuilder asb = new AttributedStringBuilder();
             if (name != null) {
+                int percent = doneProjects * 100 / totalProjects;
+                asb.append(renderBar(percent))
+                        .append(' ')
+                        .append(String.format("%3d", percent))
+                        .append("% ");
                 asb.append("Building ");
                 asb.style(AttributedStyle.BOLD);
                 asb.append(name);
@@ -714,9 +765,6 @@ public class TerminalOutput implements ClientOutput {
                         .append(String.format(projectsDoneFomat, doneProjects))
                         .append('/')
                         .append(String.valueOf(totalProjects))
-                        .append(' ')
-                        .append(String.format("%3d", doneProjects * 100 / totalProjects))
-                        .append('%')
                         .style(AttributedStyle.DEFAULT);
 
             } else {
@@ -737,36 +785,64 @@ public class TerminalOutput implements ClientOutput {
     private void addProjectLine(final List<AttributedString> lines, Project prj) {
         final MojoStartedEvent execution = prj.runningExecution;
         final AttributedStringBuilder asb = new AttributedStringBuilder();
+        asb.style(BOLD_GREEN_FOREGROUND).append("> ").style(AttributedStyle.DEFAULT);
         AttributedString transfer = formatTransfers(prj.id);
         if (transfer != null) {
-            asb.append(':')
-                    .style(CYAN_FOREGROUND)
+            asb.style(CYAN_FOREGROUND)
+                    .append(':')
                     .append(String.format(artifactIdFormat, prj.id))
                     .style(AttributedStyle.DEFAULT)
                     .append(transfer);
         } else if (execution == null) {
-            asb.append(':').style(CYAN_FOREGROUND).append(prj.id);
+            asb.style(CYAN_FOREGROUND).append(':').append(prj.id).style(AttributedStyle.DEFAULT);
         } else {
-            asb.append(':')
-                    .style(CYAN_FOREGROUND)
+            asb.style(CYAN_FOREGROUND)
+                    .append(':')
                     .append(String.format(artifactIdFormat, prj.id))
                     .style(GREEN_FOREGROUND);
             if (execution.getPluginGoalPrefix().isEmpty()) {
-                asb.append(execution.getPluginGroupId()).append(':').append(execution.getPluginArtifactId());
+                asb.append(execution.getPluginArtifactId());
             } else {
                 asb.append(execution.getPluginGoalPrefix());
             }
             asb.append(':')
-                    .append(execution.getPluginVersion())
-                    .append(':')
                     .append(execution.getMojo())
                     .append(' ')
                     .style(AttributedStyle.DEFAULT)
                     .append('(')
                     .append(execution.getExecutionId())
                     .append(')');
+            final Message.ProjectTestProgressEvent tp = prj.testProgress;
+            if (tp != null) {
+                appendTestProgress(asb, tp);
+            }
         }
         lines.add(asb.toAttributedString());
+    }
+
+    static void appendTestProgress(AttributedStringBuilder asb, Message.ProjectTestProgressEvent tp) {
+        final AttributedStyle faint = AttributedStyle.DEFAULT.faint();
+        final AttributedStyle red = AttributedStyle.DEFAULT.foreground(AttributedStyle.RED);
+        asb.append(' ').style(faint).append("[Tests: ").append(String.valueOf(tp.getCompleted()));
+        if (tp.getFailures() > 0) {
+            asb.style(faint).append(", Failures: ").style(red).append(String.valueOf(tp.getFailures()));
+        }
+        if (tp.getErrors() > 0) {
+            asb.style(faint).append(", Errors: ").style(red).append(String.valueOf(tp.getErrors()));
+        }
+        if (tp.getSkipped() > 0) {
+            asb.style(faint).append(", Skipped: ").append(String.valueOf(tp.getSkipped()));
+        }
+        asb.style(faint).append("]");
+        final String testClass = tp.getTestClass();
+        if (testClass != null) {
+            final String simple = testClass.substring(testClass.lastIndexOf('.') + 1);
+            asb.append(' ').append(simple);
+            if (tp.getTestMethod() != null) {
+                asb.append('#').append(tp.getTestMethod());
+            }
+        }
+        asb.style(AttributedStyle.DEFAULT);
     }
 
     private static <T> List<T> lastN(List<T> list, int n) {
