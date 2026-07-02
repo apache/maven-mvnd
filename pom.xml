@@ -49,6 +49,7 @@
     <module>agent</module>
     <module>helper</module>
     <module>common</module>
+    <module>surefire-progress</module>
     <module>client</module>
     <module>logging</module>
     <module>daemon</module>
