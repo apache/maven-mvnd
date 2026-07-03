@@ -16,18 +16,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.mvndaemon.mvnd.testprogress;
+package org.mvndaemon.mvnd.forknode;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mvndaemon.mvnd.testprogress.TestProgressAccumulator.Type.TESTSET_STARTING;
-import static org.mvndaemon.mvnd.testprogress.TestProgressAccumulator.Type.TEST_ERROR;
-import static org.mvndaemon.mvnd.testprogress.TestProgressAccumulator.Type.TEST_FAILED;
-import static org.mvndaemon.mvnd.testprogress.TestProgressAccumulator.Type.TEST_SKIPPED;
-import static org.mvndaemon.mvnd.testprogress.TestProgressAccumulator.Type.TEST_STARTING;
-import static org.mvndaemon.mvnd.testprogress.TestProgressAccumulator.Type.TEST_SUCCEEDED;
+import static org.mvndaemon.mvnd.forknode.TestProgressAccumulator.Type.TESTSET_STARTING;
+import static org.mvndaemon.mvnd.forknode.TestProgressAccumulator.Type.TEST_ERROR;
+import static org.mvndaemon.mvnd.forknode.TestProgressAccumulator.Type.TEST_FAILED;
+import static org.mvndaemon.mvnd.forknode.TestProgressAccumulator.Type.TEST_SKIPPED;
+import static org.mvndaemon.mvnd.forknode.TestProgressAccumulator.Type.TEST_STARTING;
+import static org.mvndaemon.mvnd.forknode.TestProgressAccumulator.Type.TEST_SUCCEEDED;
 
 class TestProgressAccumulatorTest {
 

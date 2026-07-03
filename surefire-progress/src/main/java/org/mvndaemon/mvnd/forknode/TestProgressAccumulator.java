@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.mvndaemon.mvnd.testprogress;
+package org.mvndaemon.mvnd.forknode;
 
 /**
  * Accumulates per-fork test counts and the currently executing class/method. Not thread-safe: Surefire delivers
