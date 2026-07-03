@@ -682,6 +682,7 @@ public class DaemonMavenCli implements DaemonCli {
         }
         exportedPackages.add("org.codehaus.plexus.components.interactivity");
         exportedPackages.add("org.mvndaemon.mvnd.interactivity");
+        exportedPackages.add("org.mvndaemon.mvnd.testprogress");
         exportedArtifacts.add("org.codehaus.plexus:plexus-interactivity-api");
 
         final CoreExports exports = new CoreExports(containerRealm, exportedArtifacts, exportedPackages);
