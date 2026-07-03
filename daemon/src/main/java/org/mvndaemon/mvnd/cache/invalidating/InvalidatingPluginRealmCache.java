@@ -22,6 +22,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
@@ -36,6 +37,7 @@ import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
+import org.mvndaemon.mvnd.testprogress.MvndSurefireProgressLocator;
 
 @Singleton
 @Named
@@ -86,7 +88,9 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
         try {
             Record r = cache.computeIfAbsent(key, k -> {
                 try {
-                    return new Record(supplier.load());
+                    CacheRecord loaded = supplier.load();
+                    addTestProgressJarIfSurefire(loaded.getRealm());
+                    return new Record(loaded);
                 } catch (PluginResolutionException | PluginContainerException e) {
                     throw new RuntimeException(e);
                 }
@@ -100,6 +104,29 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
                 throw (PluginContainerException) e.getCause();
             }
             throw e;
+        }
+    }
+
+    /**
+     * Puts the {@code mvnd-surefire-progress} jar on the surefire/failsafe plugin realm so Surefire can load
+     * {@code MvndForkNodeFactory} when it parses the injected {@code <forkNode>} configuration. No-op for any other
+     * plugin realm, and never fails plugin-realm creation because of the progress feature.
+     */
+    private static void addTestProgressJarIfSurefire(ClassRealm realm) {
+        String id = realm != null ? realm.getId() : null;
+        if (id == null || (!id.contains("maven-surefire-plugin") && !id.contains("maven-failsafe-plugin"))) {
+            return;
+        }
+        try {
+            URL jar = MvndSurefireProgressLocator.class
+                    .getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation();
+            if (jar != null) {
+                realm.addURL(jar);
+            }
+        } catch (RuntimeException e) {
+            // ignore: the test-progress feature must never break plugin realm creation
         }
     }
 
