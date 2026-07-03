@@ -48,6 +48,10 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>
+      <artifactId>mvnd-surefire-progress</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.daemon</groupId>
       <artifactId>mvnd-native</artifactId>
     </dependency>
     <dependency>
