@@ -130,6 +130,17 @@ public class ClientDispatcher implements BuildEventListener {
                 execution.getExecutionId()));
     }
 
+    public void testProgress(
+            String projectId,
+            String testClass,
+            String testMethod,
+            int completed,
+            int failures,
+            int errors,
+            int skipped) {
+        queue.add(Message.projectTestProgress(projectId, testClass, testMethod, completed, failures, errors, skipped));
+    }
+
     public void finish(int exitCode) throws Exception {
         queue.add(new Message.BuildFinished(exitCode));
         queue.add(Message.BareMessage.STOP_SINGLETON);
