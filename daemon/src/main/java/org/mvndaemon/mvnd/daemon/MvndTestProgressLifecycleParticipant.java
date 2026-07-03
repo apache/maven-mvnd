@@ -41,7 +41,7 @@ import org.mvndaemon.mvnd.common.Environment;
 @Singleton
 public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycleParticipant {
 
-    private static final String FORK_NODE_IMPL = "org.mvndaemon.mvnd.testprogress.MvndForkNodeFactory";
+    private static final String FORK_NODE_IMPL = "org.mvndaemon.mvnd.forknode.MvndForkNodeFactory";
     private static final String SUREFIRE_KEY = "org.apache.maven.plugins:maven-surefire-plugin";
     private static final String FAILSAFE_KEY = "org.apache.maven.plugins:maven-failsafe-plugin";
 
@@ -62,6 +62,10 @@ public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycle
         }
         Plugin plugin = project.getBuild().getPluginsAsMap().get(pluginKey);
         if (plugin == null) {
+            return;
+        }
+        if (!supportsForkNode(plugin.getVersion())) {
+            // Never inject into a Surefire/Failsafe that cannot load the fork-node SPI; it would fail the build.
             return;
         }
         String projectId = project.getArtifactId();
@@ -92,5 +96,27 @@ public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycle
                 .asOptional()
                 .map(Boolean::parseBoolean)
                 .orElse(Boolean.TRUE);
+    }
+
+    /**
+     * The {@code forkNode} extension SPI ({@code ForkNodeFactory} / {@code SurefireForkNodeFactory}) exists only in
+     * Surefire {@code >= 3.0.0-M5}. Injecting {@code <forkNode>} into anything older makes the build fail hard
+     * ("unknown parameter forkNode" or a missing implementation class), so guard on the resolved plugin version.
+     */
+    static boolean supportsForkNode(String version) {
+        if (version == null) {
+            return false;
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(?:-M(\\d+))?")
+                .matcher(version);
+        if (!m.find()) {
+            return false;
+        }
+        int major = Integer.parseInt(m.group(1));
+        if (major != 3) {
+            return major > 3;
+        }
+        String milestone = m.group(4);
+        return milestone == null || Integer.parseInt(milestone) >= 5;
     }
 }

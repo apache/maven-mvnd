@@ -37,7 +37,7 @@ import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
-import org.mvndaemon.mvnd.testprogress.MvndSurefireProgressLocator;
+import org.mvndaemon.mvnd.forknode.MvndSurefireProgressLocator;
 
 @Singleton
 @Named
@@ -118,10 +118,9 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
             return;
         }
         try {
-            URL jar = MvndSurefireProgressLocator.class
-                    .getProtectionDomain()
-                    .getCodeSource()
-                    .getLocation();
+            java.security.CodeSource cs =
+                    MvndSurefireProgressLocator.class.getProtectionDomain().getCodeSource();
+            URL jar = cs != null ? cs.getLocation() : null;
             if (jar != null) {
                 realm.addURL(jar);
             }

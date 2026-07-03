@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.mvndaemon.mvnd.testprogress;
+package org.mvndaemon.mvnd.forknode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,7 @@ import org.apache.maven.surefire.api.event.Event;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.mvndaemon.mvnd.testprogress.MvndTestProgress;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

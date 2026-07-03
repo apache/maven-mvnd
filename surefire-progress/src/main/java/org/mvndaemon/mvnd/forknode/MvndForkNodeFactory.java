@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.mvndaemon.mvnd.testprogress;
+package org.mvndaemon.mvnd.forknode;
 
 import java.io.IOException;
 import java.nio.channels.ReadableByteChannel;
@@ -37,6 +37,7 @@ import org.apache.maven.surefire.extensions.CommandReader;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
 import org.apache.maven.surefire.extensions.util.CountdownCloseable;
+import org.mvndaemon.mvnd.testprogress.MvndTestProgress;
 
 /**
  * A {@link org.apache.maven.surefire.extensions.ForkNodeFactory} that delegates channel creation to Surefire's
