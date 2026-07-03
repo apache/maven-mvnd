@@ -65,6 +65,7 @@ import org.mvndaemon.mvnd.common.SignalHelper;
 import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationResult;
 import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
+import org.mvndaemon.mvnd.testprogress.MvndTestProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -508,6 +509,16 @@ public class Server implements AutoCloseable, Runnable {
         final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64, Message.getMessageComparator());
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
         final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
+        final boolean testProgressEnabled = Environment.MVND_TEST_PROGRESS
+                .asOptional()
+                .map(Boolean::parseBoolean)
+                .orElse(Boolean.TRUE);
+        if (testProgressEnabled) {
+            final ClientDispatcher clientDispatcher = (ClientDispatcher) buildEventListener;
+            MvndTestProgress.setListener((projectId, testClass, testMethod, completed, failures, errors, skipped) ->
+                    clientDispatcher.testProgress(
+                            projectId, testClass, testMethod, completed, failures, errors, skipped));
+        }
         final DaemonInputStream daemonInputStream = new DaemonInputStream(
                 (projectId, bytesToRead) -> sendQueue.add(Message.requestInput(projectId, bytesToRead)),
                 (projectId) -> sendQueue.add(Message.requestInputAvailable(projectId)));
@@ -649,6 +660,7 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);
         } finally {
+            MvndTestProgress.setListener(null);
             System.setIn(in);
             if (!noDaemon) {
                 LOGGER.info("Daemon back to idle");
