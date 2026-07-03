@@ -253,6 +253,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.daemon</groupId>
+        <artifactId>mvnd-surefire-progress</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.daemon</groupId>
         <artifactId>mvnd-dist</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
