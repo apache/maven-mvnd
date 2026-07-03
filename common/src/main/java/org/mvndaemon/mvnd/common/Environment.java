@@ -162,6 +162,13 @@ public enum Environment {
     MVND_NO_MODEL_CACHE("mvnd.noModelCache", null, Boolean.FALSE, OptionType.BOOLEAN, Flags.OPTIONAL),
 
     /**
+     * If <code>true</code> (default), mvnd shows live per-test progress on each project's worker line while
+     * Surefire/Failsafe run tests. Set to <code>false</code> to disable the feature entirely (nothing is injected
+     * into the surefire/failsafe configuration and no listener is registered).
+     */
+    MVND_TEST_PROGRESS("mvnd.testProgress", null, Boolean.TRUE, OptionType.BOOLEAN, Flags.OPTIONAL),
+
+    /**
      * If <code>true</code>, the daemon will be launched in debug mode with the following JVM argument:
      * <code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8000</code>; otherwise the debug argument is
      * not passed to the daemon.
