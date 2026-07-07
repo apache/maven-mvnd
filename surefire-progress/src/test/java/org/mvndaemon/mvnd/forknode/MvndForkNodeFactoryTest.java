@@ -43,12 +43,12 @@ class MvndForkNodeFactoryTest {
         EventHandler<Event> real = delegated::add;
 
         // A listener that always blows up must not prevent delegation to the real handler.
-        MvndTestProgress.setListener((p, c, m, comp, f, e, s) -> {
+        MvndTestProgress.setListener((p, fork, c, m, comp, f, e, s, r, fl, flakyTests, failedTests, erroredTests) -> {
             throw new RuntimeException("boom");
         });
 
         EventHandler<Event> wrapper =
-                new MvndForkNodeFactory.ProgressEventHandler("proj", real, new TestProgressAccumulator());
+                new MvndForkNodeFactory.ProgressEventHandler("proj", 7, real, new TestProgressAccumulator());
 
         wrapper.handleEvent(new ControlByeEvent());
 
@@ -61,7 +61,7 @@ class MvndForkNodeFactoryTest {
         EventHandler<Event> real = delegated::add;
 
         EventHandler<Event> wrapper =
-                new MvndForkNodeFactory.ProgressEventHandler("proj", real, new TestProgressAccumulator());
+                new MvndForkNodeFactory.ProgressEventHandler("proj", 7, real, new TestProgressAccumulator());
 
         wrapper.handleEvent(new ControlByeEvent());
 
