@@ -18,6 +18,10 @@
  */
 package org.mvndaemon.mvnd.common.logging;
 
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -25,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Message;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TerminalOutputTest {
 
@@ -48,7 +53,7 @@ class TerminalOutputTest {
     void suffixAllPassing() {
         AttributedStringBuilder asb = new AttributedStringBuilder();
         TerminalOutput.appendTestProgress(
-                asb, Message.projectTestProgress("app", "com.acme.FooTest", "shouldWork", 12, 0, 0, 0));
+                asb, Message.projectTestProgress("app", 1, "com.acme.FooTest", "shouldWork", 12, 0, 0, 0));
         assertEquals(" [Tests: 12] FooTest#shouldWork", asb.toAttributedString().toString());
     }
 
@@ -56,7 +61,7 @@ class TerminalOutputTest {
     void suffixFailuresRenderRed() {
         AttributedStringBuilder asb = new AttributedStringBuilder();
         TerminalOutput.appendTestProgress(
-                asb, Message.projectTestProgress("app", "com.acme.FooTest", "shouldWork", 12, 1, 0, 0));
+                asb, Message.projectTestProgress("app", 1, "com.acme.FooTest", "shouldWork", 12, 1, 0, 0));
         AttributedString s = asb.toAttributedString();
         assertEquals(" [Tests: 12, Failures: 1] FooTest#shouldWork", s.toString());
         int failureDigit = s.toString().indexOf("Failures: ") + "Failures: ".length();
@@ -69,17 +74,210 @@ class TerminalOutputTest {
     void suffixErrorsAndSkips() {
         AttributedStringBuilder asb = new AttributedStringBuilder();
         TerminalOutput.appendTestProgress(
-                asb, Message.projectTestProgress("app", "com.acme.FooTest", "shouldWork", 5, 0, 2, 1));
+                asb, Message.projectTestProgress("app", 1, "com.acme.FooTest", "shouldWork", 5, 0, 2, 1));
         assertEquals(
                 " [Tests: 5, Errors: 2, Skipped: 1] FooTest#shouldWork",
                 asb.toAttributedString().toString());
     }
 
     @Test
+    void suffixRetryingAndFlakyTests() {
+        AttributedStringBuilder asb = new AttributedStringBuilder();
+        TerminalOutput.appendTestProgress(
+                asb,
+                Message.projectTestProgress(
+                        "app",
+                        1,
+                        "com.acme.FooTest",
+                        "shouldWork",
+                        4,
+                        0,
+                        0,
+                        0,
+                        1,
+                        2,
+                        java.util.List.of("FooTest#shouldWork", "FooTest#other"),
+                        java.util.List.of(),
+                        java.util.List.of()));
+        AttributedString s = asb.toAttributedString();
+        assertEquals(" [Tests: 4, Retrying: 1, Flaky: 2] FooTest#shouldWork", s.toString());
+        int flakyDigit = s.toString().indexOf("Flaky: ") + "Flaky: ".length();
+        assertEquals(AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW), s.styleAt(flakyDigit));
+    }
+
+    @Test
     void suffixClassOnly() {
         AttributedStringBuilder asb = new AttributedStringBuilder();
         TerminalOutput.appendTestProgress(
-                asb, Message.projectTestProgress("app", "com.acme.FooTest", null, 3, 0, 0, 0));
+                asb, Message.projectTestProgress("app", 1, "com.acme.FooTest", null, 3, 0, 0, 0));
         assertEquals(" [Tests: 3] FooTest", asb.toAttributedString().toString());
+    }
+
+    @Test
+    void aggregateTestProgressSumsForkSnapshots() {
+        Message.ProjectTestProgressEvent failed =
+                Message.projectTestProgress("app", 1, "com.acme.FooTest", "failedTest", 3, 1, 0, 0);
+        Message.ProjectTestProgressEvent skipped =
+                Message.projectTestProgress("app", 2, "com.acme.FooTest", "skippedTest", 2, 0, 0, 1);
+
+        Message.ProjectTestProgressEvent aggregated =
+                TerminalOutput.aggregateTestProgress(java.util.List.of(failed, skipped));
+
+        assertEquals(5, aggregated.getCompleted());
+        assertEquals(1, aggregated.getFailures());
+        assertEquals(0, aggregated.getErrors());
+        assertEquals(1, aggregated.getSkipped());
+        assertEquals("com.acme.FooTest", aggregated.getTestClass());
+        assertEquals("skippedTest", aggregated.getTestMethod());
+    }
+
+    @Test
+    void formatFlakySummaryListsRecoveredTests() {
+        Map<String, java.util.Set<String>> flakyTests = new LinkedHashMap<>();
+        flakyTests.put("app", new LinkedHashSet<>(java.util.List.of("FooTest#shouldWork", "FooTest#other")));
+        flakyTests.put("lib", new LinkedHashSet<>(java.util.List.of("BarTest#retries")));
+
+        assertEquals(
+                "Flaky tests: app [FooTest#shouldWork, FooTest#other]; lib [BarTest#retries]",
+                TerminalOutput.formatFlakySummary(flakyTests));
+    }
+
+    @Test
+    void hidesProjectDetailsForLargeFailingReactors() {
+        assertEquals(false, TerminalOutput.shouldShowProjectDetails(20, 10, 1));
+        assertEquals(true, TerminalOutput.shouldShowProjectDetails(20, 10, 0));
+        assertEquals(true, TerminalOutput.shouldShowProjectDetails(5, 10, 1));
+    }
+
+    @Test
+    void stripDecorationRemovesLevelPrefixAndAnsi() {
+        assertEquals("BUILD FAILURE", TerminalOutput.stripDecoration("[INFO] BUILD FAILURE"));
+        assertEquals("BUILD FAILURE", TerminalOutput.stripDecoration("[INFO] [1mBUILD FAILURE[m"));
+        assertEquals(
+                "This project has been banned from the build due to previous failures.",
+                TerminalOutput.stripDecoration(
+                        "[INFO] This project has been banned from the build due to previous failures."));
+    }
+
+    @Test
+    void emitCategoryPrefixesEachTestWithProjectId() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        Map<String, java.util.Set<String>> failed = new LinkedHashMap<>();
+        failed.put("camel-jms", new LinkedHashSet<>(java.util.List.of("FooTest#bar: expected <5> but was <4>")));
+        failed.put("camel-nats", new LinkedHashSet<>(java.util.List.of("NatsIT#connects: refused")));
+
+        TerminalOutput.emitCategory(out::add, "Failed tests:", failed);
+
+        assertEquals(
+                java.util.List.of(
+                        "Failed tests:",
+                        "  camel-jms FooTest#bar: expected <5> but was <4>",
+                        "  camel-nats NatsIT#connects: refused"),
+                out);
+    }
+
+    @Test
+    void emitCategoryEmitsNothingWhenEmpty() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        TerminalOutput.emitCategory(out::add, "Failed tests:", new LinkedHashMap<>());
+        assertEquals(java.util.List.of(), out);
+    }
+
+    @Test
+    void bannedSkipFilterDropsBannedBlockButKeepsOtherLines() {
+        TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
+        java.util.List<String> out = new java.util.ArrayList<>();
+        String sep = "[INFO] ------------------------------------------------------------------------";
+        String[] lines = {
+            "[INFO] Reactor Summary:",
+            "[INFO] ",
+            sep,
+            "[INFO] Skipping Camel :: YAML DSL",
+            "[INFO] This project has been banned from the build due to previous failures.",
+            sep,
+            "[INFO] camel-core ......... SKIPPED",
+        };
+        for (String l : lines) {
+            filter.accept(l, TerminalOutput.stripDecoration(l), out::add);
+        }
+        filter.flush(out::add);
+
+        assertEquals(java.util.List.of("[INFO] Reactor Summary:", "[INFO] camel-core ......... SKIPPED"), out);
+    }
+
+    @Test
+    void reactorSummaryIsInjectedRightBeforeBuildFailureBannerAndBannedBlockIsDropped() {
+        Map<String, java.util.Set<String>> failed = new LinkedHashMap<>();
+        failed.put("camel-jms", new LinkedHashSet<>(java.util.List.of("FooTest#bar: expected <5> but was <4>")));
+        Map<String, java.util.Set<String>> errored = new LinkedHashMap<>();
+        errored.put("camel-nats", new LinkedHashSet<>(java.util.List.of("NatsIT#connects: refused")));
+
+        String sep = "[INFO] ------------------------------------------------------------------------";
+        String[] lines = {
+            sep,
+            "[INFO] Skipping Camel :: YAML DSL",
+            "[INFO] This project has been banned from the build due to previous failures.",
+            sep,
+            "[INFO] Reactor Summary:",
+            "[INFO] camel-core ......... SKIPPED",
+            sep,
+            "[INFO] BUILD FAILURE",
+            sep,
+            "[INFO] Total time:  1.2 s",
+        };
+
+        java.util.List<String> out = new java.util.ArrayList<>();
+        TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
+        boolean emitted = false;
+        for (String l : lines) {
+            emitted = TerminalOutput.acceptReactorLine(l, true, failed, errored, emitted, filter, out::add);
+        }
+        filter.flush(out::add);
+
+        // Summary appears immediately above the BUILD FAILURE banner text.
+        int failedHeader = out.indexOf("Failed tests:");
+        int banner = out.indexOf("[INFO] BUILD FAILURE");
+        assertEquals(banner - 4, failedHeader, "summary block must sit directly above the BUILD FAILURE banner");
+        assertEquals(
+                java.util.List.of(
+                        "Failed tests:",
+                        "  camel-jms FooTest#bar: expected <5> but was <4>",
+                        "Errored tests:",
+                        "  camel-nats NatsIT#connects: refused",
+                        "[INFO] BUILD FAILURE"),
+                out.subList(failedHeader, banner + 1));
+        // The banned "Skipping / banned from the build" block is gone, but the reactor SKIPPED row stays.
+        assertTrue(out.stream().noneMatch(s -> s.contains("banned from the build")), "banned block must be dropped");
+        assertTrue(out.stream().noneMatch(s -> s.contains("Skipping Camel")), "skipping line must be dropped");
+        assertTrue(
+                out.contains("[INFO] camel-core ......... SKIPPED"), "reactor summary SKIPPED row must be preserved");
+    }
+
+    @Test
+    void reactorLineIsPassedThroughUnchangedWhenSuppressionDisabled() {
+        java.util.List<String> out = new java.util.ArrayList<>();
+        TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
+        TerminalOutput.acceptReactorLine(
+                "[INFO] This project has been banned from the build due to previous failures.",
+                false,
+                new LinkedHashMap<>(),
+                new LinkedHashMap<>(),
+                false,
+                filter,
+                out::add);
+        assertEquals(
+                java.util.List.of("[INFO] This project has been banned from the build due to previous failures."), out);
+    }
+
+    @Test
+    void bannedSkipFilterKeepsUnbannedSkippingLine() {
+        TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
+        java.util.List<String> out = new java.util.ArrayList<>();
+        filter.accept(
+                "[INFO] Skipping bad plugin", TerminalOutput.stripDecoration("[INFO] Skipping bad plugin"), out::add);
+        filter.accept("[INFO] Building foo", TerminalOutput.stripDecoration("[INFO] Building foo"), out::add);
+        filter.flush(out::add);
+
+        assertEquals(java.util.List.of("[INFO] Skipping bad plugin", "[INFO] Building foo"), out);
     }
 }

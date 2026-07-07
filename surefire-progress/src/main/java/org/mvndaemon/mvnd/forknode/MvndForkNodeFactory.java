@@ -33,6 +33,8 @@ import org.apache.maven.surefire.api.event.TestsetCompletedEvent;
 import org.apache.maven.surefire.api.event.TestsetStartingEvent;
 import org.apache.maven.surefire.api.fork.ForkNodeArguments;
 import org.apache.maven.surefire.api.report.ReportEntry;
+import org.apache.maven.surefire.api.report.SafeThrowable;
+import org.apache.maven.surefire.api.report.StackTraceWriter;
 import org.apache.maven.surefire.extensions.CommandReader;
 import org.apache.maven.surefire.extensions.EventHandler;
 import org.apache.maven.surefire.extensions.ForkChannel;
@@ -68,11 +70,13 @@ public class MvndForkNodeFactory extends SurefireForkNodeFactory {
     static final class WrappingForkChannel extends ForkChannel {
         private final ForkChannel delegate;
         private final String projectId;
+        private final int forkChannelId;
 
         WrappingForkChannel(ForkNodeArguments arguments, ForkChannel delegate, String projectId) {
             super(arguments);
             this.delegate = delegate;
             this.projectId = projectId;
+            this.forkChannelId = arguments.getForkChannelId();
         }
 
         @Override
@@ -101,7 +105,7 @@ public class MvndForkNodeFactory extends SurefireForkNodeFactory {
                 EventHandler<Event> eventHandler, CountdownCloseable countdown, ReadableByteChannel stdOut)
                 throws IOException, InterruptedException {
             delegate.bindEventHandler(
-                    new ProgressEventHandler(projectId, eventHandler, new TestProgressAccumulator()),
+                    new ProgressEventHandler(projectId, forkChannelId, eventHandler, new TestProgressAccumulator()),
                     countdown,
                     stdOut);
         }
@@ -120,11 +124,14 @@ public class MvndForkNodeFactory extends SurefireForkNodeFactory {
     /** Observes each event, updates the accumulator, pushes through the bridge, then always delegates. */
     static final class ProgressEventHandler implements EventHandler<Event> {
         private final String projectId;
+        private final int forkChannelId;
         private final EventHandler<Event> delegate;
         private final TestProgressAccumulator acc;
 
-        ProgressEventHandler(String projectId, EventHandler<Event> delegate, TestProgressAccumulator acc) {
+        ProgressEventHandler(
+                String projectId, int forkChannelId, EventHandler<Event> delegate, TestProgressAccumulator acc) {
             this.projectId = projectId;
+            this.forkChannelId = forkChannelId;
             this.delegate = delegate;
             this.acc = acc;
         }
@@ -167,19 +174,43 @@ public class MvndForkNodeFactory extends SurefireForkNodeFactory {
                 return; // not a test lifecycle event
             }
 
-            acc.record(type, re.getSourceName(), re.getName());
+            final String failureMessage = (type == TestProgressAccumulator.Type.TEST_FAILED
+                            || type == TestProgressAccumulator.Type.TEST_ERROR)
+                    ? extractFailureMessage(re)
+                    : null;
+            acc.record(type, re.getSourceName(), re.getName(), re.getRunMode(), re.getTestRunId(), failureMessage);
 
             MvndTestProgress listener = MvndTestProgress.getListener();
             if (listener != null) {
                 listener.update(
                         projectId,
+                        forkChannelId,
                         acc.getTestClass(),
                         acc.getTestMethod(),
                         acc.getCompleted(),
                         acc.getFailures(),
                         acc.getErrors(),
-                        acc.getSkipped());
+                        acc.getSkipped(),
+                        acc.getRetrying(),
+                        acc.getFlaky(),
+                        acc.getFlakyTests(),
+                        acc.getFailedTests(),
+                        acc.getErroredTests());
             }
+        }
+
+        /** Best-effort compact failure message; never throws (caller already guards, but keep it defensive). */
+        private static String extractFailureMessage(ReportEntry re) {
+            StackTraceWriter stw = re.getStackTraceWriter();
+            if (stw == null) {
+                return null;
+            }
+            String smart = stw.smartTrimmedStackTrace();
+            if (smart != null && !smart.isEmpty()) {
+                return smart;
+            }
+            SafeThrowable throwable = stw.getThrowable();
+            return throwable != null ? throwable.getMessage() : null;
         }
     }
 }

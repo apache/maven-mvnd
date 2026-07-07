@@ -132,13 +132,32 @@ public class ClientDispatcher extends BuildEventListener {
 
     public void testProgress(
             String projectId,
+            int forkChannelId,
             String testClass,
             String testMethod,
             int completed,
             int failures,
             int errors,
-            int skipped) {
-        queue.add(Message.projectTestProgress(projectId, testClass, testMethod, completed, failures, errors, skipped));
+            int skipped,
+            int retrying,
+            int flaky,
+            List<String> flakyTests,
+            List<String> failedTests,
+            List<String> erroredTests) {
+        queue.add(Message.projectTestProgress(
+                projectId,
+                forkChannelId,
+                testClass,
+                testMethod,
+                completed,
+                failures,
+                errors,
+                skipped,
+                retrying,
+                flaky,
+                flakyTests,
+                failedTests,
+                erroredTests));
     }
 
     public void finish(int exitCode) throws Exception {
