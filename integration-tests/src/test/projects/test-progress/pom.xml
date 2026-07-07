@@ -48,6 +48,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <rerunFailingTestsCount>1</rerunFailingTestsCount>
+                </configuration>
             </plugin>
         </plugins>
     </build>

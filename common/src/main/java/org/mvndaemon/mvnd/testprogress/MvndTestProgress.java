@@ -18,6 +18,7 @@
  */
 package org.mvndaemon.mvnd.testprogress;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -33,12 +34,18 @@ public interface MvndTestProgress {
      */
     void update(
             String projectId,
+            int forkChannelId,
             String testClass,
             String testMethod,
             int completed,
             int failures,
             int errors,
-            int skipped);
+            int skipped,
+            int retrying,
+            int flaky,
+            List<String> flakyTests,
+            List<String> failedTests,
+            List<String> erroredTests);
 
     AtomicReference<MvndTestProgress> LISTENER = new AtomicReference<>();
 

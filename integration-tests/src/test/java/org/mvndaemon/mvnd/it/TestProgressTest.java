@@ -58,6 +58,23 @@ class TestProgressTest {
     }
 
     @Test
+    void emitsFlakyTestProgress() throws InterruptedException {
+        final TestClientOutput output = new TestClientOutput();
+        client.execute(output, "clean", "test", "-B").assertSuccess();
+
+        List<Message.ProjectTestProgressEvent> events = testProgressEvents(output);
+
+        assertTrue(
+                events.stream().anyMatch(e -> e.getRetrying() > 0),
+                "expected a retrying snapshot while the flaky test was being rerun");
+        assertTrue(
+                events.stream().anyMatch(e -> e.getFlaky() > 0), "expected a flaky snapshot after the rerun succeeded");
+        assertTrue(
+                events.stream().anyMatch(e -> e.getFlakyTests().contains("FlakyServiceTest#succeedsOnRetry")),
+                "expected the recovered test to be reported in the flaky test list");
+    }
+
+    @Test
     void disabledEmitsNoTestProgress() throws InterruptedException {
         final TestClientOutput output = new TestClientOutput();
         client.execute(output, "clean", "test", "-B", "-Dmvnd.testProgress=false")
