@@ -18,6 +18,13 @@
  */
 package org.mvndaemon.mvnd.forknode;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.maven.surefire.api.report.RunMode;
+
 /**
  * Accumulates per-fork test counts and the currently executing class/method. Not thread-safe: Surefire delivers
  * fork-reader events on a single thread per fork channel.
@@ -38,10 +45,22 @@ public class TestProgressAccumulator {
     private int failures;
     private int errors;
     private int skipped;
+    private int retrying;
+    private int flaky;
     private String testClass;
     private String testMethod;
+    private final Map<String, TestState> tests = new LinkedHashMap<>();
 
     public void record(Type type, String testClass, String testMethod) {
+        record(type, testClass, testMethod, RunMode.NORMAL_RUN, null, null);
+    }
+
+    public void record(Type type, String testClass, String testMethod, RunMode runMode, Long testRunId) {
+        record(type, testClass, testMethod, runMode, testRunId, null);
+    }
+
+    public void record(
+            Type type, String testClass, String testMethod, RunMode runMode, Long testRunId, String failureMessage) {
         switch (type) {
             case TESTSET_STARTING:
                 this.testClass = testClass;
@@ -50,25 +69,25 @@ public class TestProgressAccumulator {
             case TEST_STARTING:
                 this.testClass = testClass;
                 this.testMethod = testMethod;
+                state(testClass, testMethod, testRunId).starting(runMode);
                 break;
             case TEST_SUCCEEDED:
-                completed++;
+                state(testClass, testMethod, testRunId).succeeded();
                 break;
             case TEST_FAILED:
-                completed++;
-                failures++;
+                state(testClass, testMethod, testRunId).failed(runMode, sanitize(failureMessage));
                 break;
             case TEST_ERROR:
-                completed++;
-                errors++;
+                state(testClass, testMethod, testRunId).errored(runMode, sanitize(failureMessage));
                 break;
             case TEST_SKIPPED:
-                completed++;
-                skipped++;
+                state(testClass, testMethod, testRunId).skipped();
                 break;
             case TESTSET_COMPLETED:
+                finalizeRetrying();
                 break;
         }
+        recompute();
     }
 
     public int getCompleted() {
@@ -87,11 +106,192 @@ public class TestProgressAccumulator {
         return skipped;
     }
 
+    public int getRetrying() {
+        return retrying;
+    }
+
+    public int getFlaky() {
+        return flaky;
+    }
+
     public String getTestClass() {
         return testClass;
     }
 
     public String getTestMethod() {
         return testMethod;
+    }
+
+    public List<String> getFlakyTests() {
+        List<String> result = new ArrayList<>();
+        for (TestState state : tests.values()) {
+            if (state.isFlaky()) {
+                result.add(state.displayName());
+            }
+        }
+        return result;
+    }
+
+    public List<String> getFailedTests() {
+        List<String> result = new ArrayList<>();
+        for (TestState state : tests.values()) {
+            if (state.isFailed()) {
+                result.add(state.failureLine());
+            }
+        }
+        return result;
+    }
+
+    public List<String> getErroredTests() {
+        List<String> result = new ArrayList<>();
+        for (TestState state : tests.values()) {
+            if (state.isErrored()) {
+                result.add(state.failureLine());
+            }
+        }
+        return result;
+    }
+
+    private static String sanitize(String message) {
+        if (message == null) {
+            return null;
+        }
+        String flattened = message.replaceAll("\\s+", " ").trim();
+        return flattened.isEmpty() ? null : flattened;
+    }
+
+    private TestState state(String testClass, String testMethod, Long testRunId) {
+        String key = testRunId != null ? String.valueOf(testRunId) : testClass + "#" + testMethod;
+        TestState state = tests.get(key);
+        if (state == null) {
+            state = new TestState(testClass, testMethod);
+            tests.put(key, state);
+        } else {
+            state.updateName(testClass, testMethod);
+        }
+        return state;
+    }
+
+    private void finalizeRetrying() {
+        for (TestState state : tests.values()) {
+            state.finalizeRetrying();
+        }
+    }
+
+    private void recompute() {
+        completed = 0;
+        failures = 0;
+        errors = 0;
+        skipped = 0;
+        retrying = 0;
+        flaky = 0;
+
+        for (TestState state : tests.values()) {
+            if (state.skipped) {
+                completed++;
+                skipped++;
+            } else if (state.success) {
+                completed++;
+                if (state.failure || state.error) {
+                    flaky++;
+                }
+            } else if (state.retrying) {
+                retrying++;
+            } else if (state.error) {
+                completed++;
+                errors++;
+            } else if (state.failure) {
+                completed++;
+                failures++;
+            }
+        }
+    }
+
+    private static final class TestState {
+        private String testClass;
+        private String testMethod;
+        private boolean failure;
+        private boolean error;
+        private boolean success;
+        private boolean skipped;
+        private boolean retrying;
+        private String message;
+
+        private TestState(String testClass, String testMethod) {
+            this.testClass = testClass;
+            this.testMethod = testMethod;
+        }
+
+        private void updateName(String testClass, String testMethod) {
+            if (testClass != null) {
+                this.testClass = testClass;
+            }
+            if (testMethod != null) {
+                this.testMethod = testMethod;
+            }
+        }
+
+        private void starting(RunMode runMode) {
+            if (runMode == RunMode.RERUN_TEST_AFTER_FAILURE) {
+                retrying = true;
+            }
+        }
+
+        private void succeeded() {
+            success = true;
+            retrying = false;
+        }
+
+        private void failed(RunMode runMode, String failureMessage) {
+            failure = true;
+            if (message == null) {
+                message = failureMessage;
+            }
+            if (runMode == RunMode.RERUN_TEST_AFTER_FAILURE) {
+                retrying = true;
+            }
+        }
+
+        private void errored(RunMode runMode, String failureMessage) {
+            error = true;
+            if (message == null) {
+                message = failureMessage;
+            }
+            if (runMode == RunMode.RERUN_TEST_AFTER_FAILURE) {
+                retrying = true;
+            }
+        }
+
+        private void skipped() {
+            skipped = true;
+        }
+
+        private void finalizeRetrying() {
+            retrying = false;
+        }
+
+        private boolean isFlaky() {
+            return success && (failure || error);
+        }
+
+        private boolean isErrored() {
+            return !skipped && !success && !retrying && error;
+        }
+
+        private boolean isFailed() {
+            return !skipped && !success && !retrying && !error && failure;
+        }
+
+        private String displayName() {
+            if (testClass == null) {
+                return testMethod;
+            }
+            String simpleClass = testClass.substring(testClass.lastIndexOf('.') + 1);
+            return testMethod != null ? simpleClass + "#" + testMethod : simpleClass;
+        }
+
+        private String failureLine() {
+            return message != null ? displayName() + ": " + message : displayName();
+        }
     }
 }

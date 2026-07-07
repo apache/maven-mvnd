@@ -635,44 +635,85 @@ public abstract class Message {
 
     public static class ProjectTestProgressEvent extends Message {
         final String projectId;
+        final int forkChannelId;
         final String testClass;
         final String testMethod;
         final int completed;
         final int failures;
         final int errors;
         final int skipped;
+        final int retrying;
+        final int flaky;
+        final List<String> flakyTests;
+        final List<String> failedTests;
+        final List<String> erroredTests;
 
         public static ProjectTestProgressEvent read(DataInputStream input) throws IOException {
             final String projectId = readUTF(input);
+            final int forkChannelId = input.readInt();
             final String testClass = readUTF(input);
             final String testMethod = readUTF(input);
             final int completed = input.readInt();
             final int failures = input.readInt();
             final int errors = input.readInt();
             final int skipped = input.readInt();
-            return new ProjectTestProgressEvent(projectId, testClass, testMethod, completed, failures, errors, skipped);
+            final int retrying = input.readInt();
+            final int flaky = input.readInt();
+            final List<String> flakyTests = readStringList(input);
+            final List<String> failedTests = readStringList(input);
+            final List<String> erroredTests = readStringList(input);
+            return new ProjectTestProgressEvent(
+                    projectId,
+                    forkChannelId,
+                    testClass,
+                    testMethod,
+                    completed,
+                    failures,
+                    errors,
+                    skipped,
+                    retrying,
+                    flaky,
+                    flakyTests,
+                    failedTests,
+                    erroredTests);
         }
 
         public ProjectTestProgressEvent(
                 String projectId,
+                int forkChannelId,
                 String testClass,
                 String testMethod,
                 int completed,
                 int failures,
                 int errors,
-                int skipped) {
+                int skipped,
+                int retrying,
+                int flaky,
+                List<String> flakyTests,
+                List<String> failedTests,
+                List<String> erroredTests) {
             super(PROJECT_TEST_PROGRESS);
             this.projectId = Objects.requireNonNull(projectId, "projectId cannot be null");
+            this.forkChannelId = forkChannelId;
             this.testClass = testClass;
             this.testMethod = testMethod;
             this.completed = completed;
             this.failures = failures;
             this.errors = errors;
             this.skipped = skipped;
+            this.retrying = retrying;
+            this.flaky = flaky;
+            this.flakyTests = flakyTests == null ? new ArrayList<>() : new ArrayList<>(flakyTests);
+            this.failedTests = failedTests == null ? new ArrayList<>() : new ArrayList<>(failedTests);
+            this.erroredTests = erroredTests == null ? new ArrayList<>() : new ArrayList<>(erroredTests);
         }
 
         public String getProjectId() {
             return projectId;
+        }
+
+        public int getForkChannelId() {
+            return forkChannelId;
         }
 
         public String getTestClass() {
@@ -699,24 +740,107 @@ public abstract class Message {
             return skipped;
         }
 
+        public int getRetrying() {
+            return retrying;
+        }
+
+        public int getFlaky() {
+            return flaky;
+        }
+
+        public List<String> getFlakyTests() {
+            return flakyTests;
+        }
+
+        public List<String> getFailedTests() {
+            return failedTests;
+        }
+
+        public List<String> getErroredTests() {
+            return erroredTests;
+        }
+
         @Override
         public void write(DataOutputStream output) throws IOException {
             super.write(output);
             writeUTF(output, projectId);
+            output.writeInt(forkChannelId);
             writeUTF(output, testClass);
             writeUTF(output, testMethod);
             output.writeInt(completed);
             output.writeInt(failures);
             output.writeInt(errors);
             output.writeInt(skipped);
+            output.writeInt(retrying);
+            output.writeInt(flaky);
+            writeStringList(output, flakyTests);
+            writeStringList(output, failedTests);
+            writeStringList(output, erroredTests);
         }
 
         @Override
         public String toString() {
-            return "ProjectTestProgress{projectId='" + projectId + "', testClass='" + testClass + "', testMethod='"
-                    + testMethod + "', completed=" + completed + ", failures=" + failures + ", errors=" + errors
-                    + ", skipped=" + skipped + "}";
+            return "ProjectTestProgress{projectId='" + projectId + "', forkChannelId=" + forkChannelId
+                    + ", testClass='" + testClass + "', testMethod='" + testMethod + "', completed=" + completed
+                    + ", failures=" + failures + ", errors=" + errors + ", skipped=" + skipped
+                    + ", retrying=" + retrying + ", flaky=" + flaky + ", flakyTests=" + flakyTests
+                    + ", failedTests=" + failedTests + ", erroredTests=" + erroredTests + "}";
         }
+    }
+
+    public static ProjectTestProgressEvent projectTestProgress(
+            String projectId,
+            int forkChannelId,
+            String testClass,
+            String testMethod,
+            int completed,
+            int failures,
+            int errors,
+            int skipped) {
+        return projectTestProgress(
+                projectId,
+                forkChannelId,
+                testClass,
+                testMethod,
+                completed,
+                failures,
+                errors,
+                skipped,
+                0,
+                0,
+                null,
+                null,
+                null);
+    }
+
+    public static ProjectTestProgressEvent projectTestProgress(
+            String projectId,
+            int forkChannelId,
+            String testClass,
+            String testMethod,
+            int completed,
+            int failures,
+            int errors,
+            int skipped,
+            int retrying,
+            int flaky,
+            List<String> flakyTests,
+            List<String> failedTests,
+            List<String> erroredTests) {
+        return new ProjectTestProgressEvent(
+                projectId,
+                forkChannelId,
+                testClass,
+                testMethod,
+                completed,
+                failures,
+                errors,
+                skipped,
+                retrying,
+                flaky,
+                flakyTests,
+                failedTests,
+                erroredTests);
     }
 
     public static ProjectTestProgressEvent projectTestProgress(
@@ -727,7 +851,36 @@ public abstract class Message {
             int failures,
             int errors,
             int skipped) {
-        return new ProjectTestProgressEvent(projectId, testClass, testMethod, completed, failures, errors, skipped);
+        return projectTestProgress(projectId, -1, testClass, testMethod, completed, failures, errors, skipped);
+    }
+
+    public static ProjectTestProgressEvent projectTestProgress(
+            String projectId,
+            String testClass,
+            String testMethod,
+            int completed,
+            int failures,
+            int errors,
+            int skipped,
+            int retrying,
+            int flaky,
+            List<String> flakyTests,
+            List<String> failedTests,
+            List<String> erroredTests) {
+        return projectTestProgress(
+                projectId,
+                -1,
+                testClass,
+                testMethod,
+                completed,
+                failures,
+                errors,
+                skipped,
+                retrying,
+                flaky,
+                flakyTests,
+                failedTests,
+                erroredTests);
     }
 
     public static class BuildStarted extends Message {

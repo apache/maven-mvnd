@@ -19,8 +19,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.mvndaemon.mvnd.test.test-progress</groupId>
-    <artifactId>test-progress</artifactId>
+    <groupId>org.mvndaemon.mvnd.test.test-progress-failure</groupId>
+    <artifactId>test-progress-failure</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -49,7 +49,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <rerunFailingTestsCount>1</rerunFailingTestsCount>
+                    <!-- Do not swallow the failures: we want a real FAILED and a real ERROR. -->
+                    <testFailureIgnore>false</testFailureIgnore>
                 </configuration>
             </plugin>
         </plugins>
