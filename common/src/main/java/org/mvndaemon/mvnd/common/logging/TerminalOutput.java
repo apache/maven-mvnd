@@ -30,12 +30,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -141,6 +144,16 @@ public class TerminalOutput implements ClientOutput {
     private String buildStatus;
     private boolean displayDone = false;
     private boolean noBuffering;
+    private final Map<String, Message.ProjectTestProgressEvent> failureProgress = new LinkedHashMap<>();
+    private final Map<String, Set<String>> flakyTests = new LinkedHashMap<>();
+    private final Map<String, Set<String>> failedTests = new LinkedHashMap<>();
+    private final Map<String, Set<String>> erroredTests = new LinkedHashMap<>();
+    /** Guards against emitting the aggregated failed/errored summary more than once. */
+    private boolean failureSummaryEmitted;
+    /** When {@code true}, "Skipping X / banned from the build" reactor blocks are dropped from the console. */
+    private final boolean hideBannedProjectSkips;
+
+    private final BannedSkipFilter bannedSkipFilter = new BannedSkipFilter();
 
     /**
      * {@link Project} is owned by the display loop thread and is accessed only from there. Therefore it does not need
@@ -149,7 +162,7 @@ public class TerminalOutput implements ClientOutput {
     static class Project {
         final String id;
         MojoStartedEvent runningExecution;
-        Message.ProjectTestProgressEvent testProgress;
+        final Map<Integer, Message.ProjectTestProgressEvent> testProgress = new LinkedHashMap<>();
         final List<String> log = new ArrayList<>();
 
         public Project(String id) {
@@ -158,12 +171,18 @@ public class TerminalOutput implements ClientOutput {
     }
 
     public TerminalOutput(boolean noBuffering, int rollingWindowSize, Path logFile) throws IOException {
+        this(noBuffering, true, rollingWindowSize, logFile);
+    }
+
+    public TerminalOutput(boolean noBuffering, boolean hideBannedProjectSkips, int rollingWindowSize, Path logFile)
+            throws IOException {
         this.start = System.currentTimeMillis();
         TerminalBuilder builder = TerminalBuilder.builder();
         builder.systemOutput(TerminalBuilder.SystemOutput.SysErr);
         this.terminal = builder.build();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
+        this.hideBannedProjectSkips = hideBannedProjectSkips;
         this.linesPerProject = rollingWindowSize;
         terminal.enterRawMode();
         Thread mainThread = Thread.currentThread();
@@ -282,7 +301,7 @@ public class TerminalOutput implements ClientOutput {
                 final MojoStartedEvent execution = (MojoStartedEvent) entry;
                 final Project prj = projects.computeIfAbsent(execution.getArtifactId(), Project::new);
                 prj.runningExecution = execution;
-                prj.testProgress = null;
+                prj.testProgress.clear();
                 break;
             }
             case Message.PROJECT_STOPPED: {
@@ -301,8 +320,21 @@ public class TerminalOutput implements ClientOutput {
                 break;
             }
             case Message.BUILD_FINISHED: {
+                if (hideBannedProjectSkips) {
+                    bannedSkipFilter.flush(log::accept);
+                }
                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                clearDisplay();
+                if (!failureSummaryEmitted) {
+                    emitFailedTestsSummary(log::accept, failedTests, erroredTests);
+                    failureSummaryEmitted = true;
+                }
+                String flakySummary = formatFlakySummary(flakyTests);
+                if (flakySummary != null) {
+                    log.accept(flakySummary);
+                }
+                if (failures.isEmpty()) {
+                    clearDisplay();
+                }
                 try {
                     log.close();
                 } catch (IOException e) {
@@ -387,14 +419,14 @@ public class TerminalOutput implements ClientOutput {
             }
             case Message.BUILD_LOG_MESSAGE: {
                 StringMessage sm = (StringMessage) entry;
-                log.accept(sm.getMessage());
+                acceptReactorLine(sm.getMessage());
                 break;
             }
             case Message.PROJECT_LOG_MESSAGE: {
                 final ProjectEvent bm = (ProjectEvent) entry;
                 final Project prj = projects.get(bm.getProjectId());
                 if (prj == null) {
-                    log.accept(bm.getMessage());
+                    acceptReactorLine(bm.getMessage());
                 } else if (noBuffering || dumb) {
                     String msg;
                     if (maxThreads > 1) {
@@ -456,6 +488,13 @@ public class TerminalOutput implements ClientOutput {
             case Message.EXECUTION_FAILURE: {
                 final ExecutionFailureEvent efe = (ExecutionFailureEvent) entry;
                 failures.add(efe);
+                final Project prj = projects.get(efe.getProjectId());
+                if (prj != null) {
+                    Message.ProjectTestProgressEvent tp = aggregateTestProgress(prj.testProgress.values());
+                    if (tp != null) {
+                        failureProgress.put(efe.getProjectId(), tp);
+                    }
+                }
                 break;
             }
             case Message.REQUEST_INPUT: {
@@ -471,7 +510,22 @@ public class TerminalOutput implements ClientOutput {
                 final Message.ProjectTestProgressEvent e = (Message.ProjectTestProgressEvent) entry;
                 final Project prj = projects.get(e.getProjectId());
                 if (prj != null) {
-                    prj.testProgress = e;
+                    prj.testProgress.put(e.getForkChannelId(), e);
+                }
+                if (!e.getFlakyTests().isEmpty()) {
+                    flakyTests
+                            .computeIfAbsent(e.getProjectId(), k -> new LinkedHashSet<>())
+                            .addAll(e.getFlakyTests());
+                }
+                if (!e.getFailedTests().isEmpty()) {
+                    failedTests
+                            .computeIfAbsent(e.getProjectId(), k -> new LinkedHashSet<>())
+                            .addAll(e.getFailedTests());
+                }
+                if (!e.getErroredTests().isEmpty()) {
+                    erroredTests
+                            .computeIfAbsent(e.getProjectId(), k -> new LinkedHashSet<>())
+                            .addAll(e.getErroredTests());
                 }
                 break;
             }
@@ -625,39 +679,43 @@ public class TerminalOutput implements ClientOutput {
             dispLines--;
         }
 
-        if (projectsCount <= dispLines) {
-            int remLogLines = dispLines - projectsCount;
-            for (Project prj : projects.values()) {
-                addProjectLine(lines, prj);
-                // get the last lines of the project log, taking multi-line logs into account
-                int nb = Math.min(remLogLines, linesPerProject);
-                List<AttributedString> logs = lastN(prj.log, nb).stream()
-                        .flatMap(s -> AttributedString.fromAnsi(s).columnSplitLength(Integer.MAX_VALUE).stream())
-                        .map(s -> concat("   ", s))
-                        .collect(lastN(nb));
-                lines.addAll(logs);
-                remLogLines -= logs.size();
-            }
-            final AttributedString idleLine = new AttributedStringBuilder()
-                    .style(BOLD_GREEN_FOREGROUND)
-                    .append("> ")
-                    .style(AttributedStyle.DEFAULT.faint())
-                    .append("IDLE")
-                    .style(AttributedStyle.DEFAULT)
-                    .toAttributedString();
-            int idleSlots = maxThreads - projectsCount;
-            while (idleSlots-- > 0 && remLogLines-- > 0 && lines.size() <= maxThreads + 1) {
-                lines.add(idleLine);
-            }
-        } else {
-            int skipProjects = projectsCount - dispLines;
-            for (Project prj : projects.values()) {
-                if (skipProjects == 0) {
+        if (shouldShowProjectDetails(projectsCount, dispLines, failures.size())) {
+            if (projectsCount <= dispLines) {
+                int remLogLines = dispLines - projectsCount;
+                for (Project prj : projects.values()) {
                     addProjectLine(lines, prj);
-                } else {
-                    skipProjects--;
+                    // get the last lines of the project log, taking multi-line logs into account
+                    int nb = Math.min(remLogLines, linesPerProject);
+                    List<AttributedString> logs = lastN(prj.log, nb).stream()
+                            .flatMap(s -> AttributedString.fromAnsi(s).columnSplitLength(Integer.MAX_VALUE).stream())
+                            .map(s -> concat("   ", s))
+                            .collect(lastN(nb));
+                    lines.addAll(logs);
+                    remLogLines -= logs.size();
+                }
+                final AttributedString idleLine = new AttributedStringBuilder()
+                        .style(BOLD_GREEN_FOREGROUND)
+                        .append("> ")
+                        .style(AttributedStyle.DEFAULT.faint())
+                        .append("IDLE")
+                        .style(AttributedStyle.DEFAULT)
+                        .toAttributedString();
+                int idleSlots = maxThreads - projectsCount;
+                while (idleSlots-- > 0 && remLogLines-- > 0 && lines.size() <= maxThreads + 1) {
+                    lines.add(idleLine);
+                }
+            } else {
+                int skipProjects = projectsCount - dispLines;
+                for (Project prj : projects.values()) {
+                    if (skipProjects == 0) {
+                        addProjectLine(lines, prj);
+                    } else {
+                        skipProjects--;
+                    }
                 }
             }
+        } else {
+            // On large failing reactors, keep the summary visible and stop churning project lines.
         }
         List<AttributedString> trimmed =
                 lines.stream().map(s -> s.columnSubSequence(0, cols)).collect(Collectors.toList());
@@ -685,6 +743,10 @@ public class TerminalOutput implements ClientOutput {
                             exception.substring("org.apache.maven.lifecycle.LifecycleExecutionException: ".length());
                 }
                 asb.append(": ").append(exception);
+            }
+            Message.ProjectTestProgressEvent tp = failureProgress.get(efe.getProjectId());
+            if (tp != null) {
+                appendTestProgress(asb, tp);
             }
         } else {
             asb.append(String.valueOf(failures.size())).append(" projects failed: ");
@@ -888,7 +950,7 @@ public class TerminalOutput implements ClientOutput {
                     .append('(')
                     .append(execution.getExecutionId())
                     .append(')');
-            final Message.ProjectTestProgressEvent tp = prj.testProgress;
+            final Message.ProjectTestProgressEvent tp = aggregateTestProgress(prj.testProgress.values());
             if (tp != null) {
                 appendTestProgress(asb, tp);
             }
@@ -896,9 +958,221 @@ public class TerminalOutput implements ClientOutput {
         lines.add(asb.toAttributedString());
     }
 
+    static String formatFlakySummary(Map<String, Set<String>> flakyTests) {
+        if (flakyTests.isEmpty()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("Flaky tests: ");
+        boolean firstProject = true;
+        for (Map.Entry<String, Set<String>> entry : flakyTests.entrySet()) {
+            if (!firstProject) {
+                sb.append("; ");
+            }
+            firstProject = false;
+            sb.append(entry.getKey()).append(" [");
+            boolean firstTest = true;
+            for (String test : entry.getValue()) {
+                if (!firstTest) {
+                    sb.append(", ");
+                }
+                firstTest = false;
+                sb.append(test);
+            }
+            sb.append(']');
+        }
+        return sb.toString();
+    }
+
+    /** Matches SGR (color) escape sequences emitted by the daemon-side log renderer. */
+    private static final Pattern ANSI = Pattern.compile("\\[[0-9;]*m");
+    /** Matches a leading {@code [LEVEL] } prefix such as {@code [INFO] } or {@code [ERROR] }. */
+    private static final Pattern LEVEL_PREFIX = Pattern.compile("^\\[[A-Z]+\\]\\s?");
+
+    private static final String BANNED_MARKER = "This project has been banned from the build due to previous failures.";
+
+    /** Strips ANSI color and the {@code [LEVEL] } prefix so reactor lines can be matched by their bare text. */
+    static String stripDecoration(String line) {
+        if (line == null) {
+            return "";
+        }
+        String s = ANSI.matcher(line).replaceAll("");
+        s = LEVEL_PREFIX.matcher(s).replaceFirst("");
+        return s.trim();
+    }
+
+    private static boolean isSeparator(String stripped) {
+        if (stripped.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < stripped.length(); i++) {
+            if (stripped.charAt(i) != '-') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Handles a reactor-level (project-less) Maven log line: injects the aggregated failed/errored summary directly
+     * above the {@code BUILD FAILURE} banner, and drops "banned from the build" skip blocks when enabled.
+     */
+    private void acceptReactorLine(String line) {
+        failureSummaryEmitted = acceptReactorLine(
+                line,
+                hideBannedProjectSkips,
+                failedTests,
+                erroredTests,
+                failureSummaryEmitted,
+                bannedSkipFilter,
+                log::accept);
+    }
+
+    /**
+     * Processes one reactor line: injects the aggregated failed/errored summary immediately above the
+     * {@code BUILD FAILURE} banner (once), and drops "banned from the build" blocks when {@code hideBannedProjectSkips}
+     * is set. Returns the updated {@code failureSummaryEmitted} flag. Static and side-effect free apart from
+     * {@code out}/{@code filter} so the ordering can be unit-tested without a terminal.
+     */
+    static boolean acceptReactorLine(
+            String line,
+            boolean hideBannedProjectSkips,
+            Map<String, Set<String>> failedTests,
+            Map<String, Set<String>> erroredTests,
+            boolean failureSummaryEmitted,
+            BannedSkipFilter filter,
+            Consumer<String> out) {
+        final String stripped = stripDecoration(line);
+        if (!failureSummaryEmitted
+                && stripped.equals("BUILD FAILURE")
+                && (!failedTests.isEmpty() || !erroredTests.isEmpty())) {
+            if (hideBannedProjectSkips) {
+                filter.flush(out);
+            }
+            emitFailedTestsSummary(out, failedTests, erroredTests);
+            failureSummaryEmitted = true;
+        }
+        if (hideBannedProjectSkips) {
+            filter.accept(line, stripped, out);
+        } else {
+            out.accept(line);
+        }
+        return failureSummaryEmitted;
+    }
+
+    /** Emits the aggregated failed/errored test blocks (nothing when both are empty). */
+    static void emitFailedTestsSummary(
+            Consumer<String> out, Map<String, Set<String>> failedTests, Map<String, Set<String>> erroredTests) {
+        emitCategory(out, "Failed tests:", failedTests);
+        emitCategory(out, "Errored tests:", erroredTests);
+    }
+
+    static void emitCategory(Consumer<String> out, String header, Map<String, Set<String>> byProject) {
+        if (byProject.isEmpty()) {
+            return;
+        }
+        out.accept(header);
+        for (Map.Entry<String, Set<String>> entry : byProject.entrySet()) {
+            for (String test : entry.getValue()) {
+                out.accept("  " + entry.getKey() + " " + test);
+            }
+        }
+    }
+
+    /**
+     * Drops the five-line reactor block Maven logs for a banned project (blank, separator, {@code Skipping X},
+     * {@code This project has been banned...}, separator) while leaving every other line, including the final
+     * reactor-summary {@code ... SKIPPED} rows, untouched. Blank/separator/{@code Skipping} lines are buffered so the
+     * preamble can be discarded retroactively once the banned marker confirms the block; buffered lines are flushed
+     * ahead of any real content line (order preserved) and by {@link #flush(Consumer)} at build end.
+     */
+    static final class BannedSkipFilter {
+        private final List<String> pending = new ArrayList<>();
+        private boolean swallowNextSeparator;
+
+        void accept(String line, String stripped, Consumer<String> out) {
+            if (stripped.equals(BANNED_MARKER)) {
+                pending.clear(); // drop the buffered blank + separator + "Skipping X" preamble and this marker
+                swallowNextSeparator = true;
+                return;
+            }
+            if (swallowNextSeparator) {
+                swallowNextSeparator = false;
+                if (isSeparator(stripped)) {
+                    return; // drop the block's closing separator
+                }
+            }
+            if (stripped.isEmpty() || isSeparator(stripped) || stripped.startsWith("Skipping ")) {
+                pending.add(line); // structural or candidate line: hold until the next real line resolves it
+                return;
+            }
+            flush(out);
+            out.accept(line);
+        }
+
+        void flush(Consumer<String> out) {
+            for (String held : pending) {
+                out.accept(held);
+            }
+            pending.clear();
+        }
+    }
+
+    static Message.ProjectTestProgressEvent aggregateTestProgress(
+            Collection<Message.ProjectTestProgressEvent> snapshots) {
+        if (snapshots.isEmpty()) {
+            return null;
+        }
+        int completed = 0;
+        int failures = 0;
+        int errors = 0;
+        int skipped = 0;
+        int retrying = 0;
+        int flaky = 0;
+        Set<String> flakyTests = new LinkedHashSet<>();
+        Set<String> failedTests = new LinkedHashSet<>();
+        Set<String> erroredTests = new LinkedHashSet<>();
+        Message.ProjectTestProgressEvent latest = null;
+        long latestSeq = Long.MIN_VALUE;
+        for (Message.ProjectTestProgressEvent tp : snapshots) {
+            completed += tp.getCompleted();
+            failures += tp.getFailures();
+            errors += tp.getErrors();
+            skipped += tp.getSkipped();
+            retrying += tp.getRetrying();
+            flaky += tp.getFlaky();
+            flakyTests.addAll(tp.getFlakyTests());
+            failedTests.addAll(tp.getFailedTests());
+            erroredTests.addAll(tp.getErroredTests());
+            if (tp.seq() > latestSeq) {
+                latestSeq = tp.seq();
+                latest = tp;
+            }
+        }
+        return Message.projectTestProgress(
+                latest.getProjectId(),
+                latest.getForkChannelId(),
+                latest.getTestClass(),
+                latest.getTestMethod(),
+                completed,
+                failures,
+                errors,
+                skipped,
+                retrying,
+                flaky,
+                new ArrayList<>(flakyTests),
+                new ArrayList<>(failedTests),
+                new ArrayList<>(erroredTests));
+    }
+
+    static boolean shouldShowProjectDetails(int projectsCount, int dispLines, int failuresCount) {
+        return failuresCount == 0 || projectsCount <= dispLines;
+    }
+
     static void appendTestProgress(AttributedStringBuilder asb, Message.ProjectTestProgressEvent tp) {
         final AttributedStyle faint = AttributedStyle.DEFAULT.faint();
         final AttributedStyle red = AttributedStyle.DEFAULT.foreground(AttributedStyle.RED);
+        final AttributedStyle yellow = AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW);
         asb.append(' ').style(faint).append("[Tests: ").append(String.valueOf(tp.getCompleted()));
         if (tp.getFailures() > 0) {
             asb.style(faint).append(", Failures: ").style(red).append(String.valueOf(tp.getFailures()));
@@ -908,6 +1182,12 @@ public class TerminalOutput implements ClientOutput {
         }
         if (tp.getSkipped() > 0) {
             asb.style(faint).append(", Skipped: ").append(String.valueOf(tp.getSkipped()));
+        }
+        if (tp.getRetrying() > 0) {
+            asb.style(faint).append(", Retrying: ").append(String.valueOf(tp.getRetrying()));
+        }
+        if (tp.getFlaky() > 0) {
+            asb.style(faint).append(", Flaky: ").style(yellow).append(String.valueOf(tp.getFlaky()));
         }
         asb.style(faint).append("]");
         final String testClass = tp.getTestClass();

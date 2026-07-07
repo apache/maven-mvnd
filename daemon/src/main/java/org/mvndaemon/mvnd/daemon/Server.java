@@ -517,9 +517,33 @@ public class Server implements AutoCloseable, Runnable {
                 .orElse(Boolean.TRUE);
         if (testProgressEnabled) {
             final ClientDispatcher clientDispatcher = (ClientDispatcher) buildEventListener;
-            MvndTestProgress.setListener((projectId, testClass, testMethod, completed, failures, errors, skipped) ->
-                    clientDispatcher.testProgress(
-                            projectId, testClass, testMethod, completed, failures, errors, skipped));
+            MvndTestProgress.setListener(
+                    (projectId,
+                            forkChannelId,
+                            testClass,
+                            testMethod,
+                            completed,
+                            failures,
+                            errors,
+                            skipped,
+                            retrying,
+                            flaky,
+                            flakyTests,
+                            failedTests,
+                            erroredTests) -> clientDispatcher.testProgress(
+                            projectId,
+                            forkChannelId,
+                            testClass,
+                            testMethod,
+                            completed,
+                            failures,
+                            errors,
+                            skipped,
+                            retrying,
+                            flaky,
+                            flakyTests,
+                            failedTests,
+                            erroredTests));
         }
         final DaemonInputStream daemonInputStream =
                 new DaemonInputStream(projectId -> sendQueue.add(Message.requestInput(projectId)));
