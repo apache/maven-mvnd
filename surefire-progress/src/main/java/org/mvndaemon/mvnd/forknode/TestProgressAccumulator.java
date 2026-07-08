@@ -126,7 +126,7 @@ public class TestProgressAccumulator {
         List<String> result = new ArrayList<>();
         for (TestState state : tests.values()) {
             if (state.isFlaky()) {
-                result.add(state.displayName());
+                result.add(state.flakyDetail());
             }
         }
         return result;
@@ -216,6 +216,7 @@ public class TestProgressAccumulator {
         private boolean skipped;
         private boolean retrying;
         private String message;
+        private final List<Run> runs = new ArrayList<>();
 
         private TestState(String testClass, String testMethod) {
             this.testClass = testClass;
@@ -240,6 +241,7 @@ public class TestProgressAccumulator {
         private void succeeded() {
             success = true;
             retrying = false;
+            runs.add(Run.pass());
         }
 
         private void failed(RunMode runMode, String failureMessage) {
@@ -247,6 +249,7 @@ public class TestProgressAccumulator {
             if (message == null) {
                 message = failureMessage;
             }
+            runs.add(Run.fail(failureMessage));
             if (runMode == RunMode.RERUN_TEST_AFTER_FAILURE) {
                 retrying = true;
             }
@@ -257,6 +260,7 @@ public class TestProgressAccumulator {
             if (message == null) {
                 message = failureMessage;
             }
+            runs.add(Run.error(failureMessage));
             if (runMode == RunMode.RERUN_TEST_AFTER_FAILURE) {
                 retrying = true;
             }
@@ -292,6 +296,56 @@ public class TestProgressAccumulator {
 
         private String failureLine() {
             return message != null ? displayName() + ": " + message : displayName();
+        }
+
+        private String flakyDetail() {
+            StringBuilder sb = new StringBuilder(displayName());
+            for (int i = 0; i < runs.size(); i++) {
+                sb.append('\n')
+                        .append("  Run ")
+                        .append(i + 1)
+                        .append(": ")
+                        .append(runs.get(i).describe());
+            }
+            return sb.toString();
+        }
+
+        private static final class Run {
+            private final Outcome outcome;
+            private final String message;
+
+            private Run(Outcome outcome, String message) {
+                this.outcome = outcome;
+                this.message = message;
+            }
+
+            private static Run pass() {
+                return new Run(Outcome.PASS, null);
+            }
+
+            private static Run fail(String message) {
+                return new Run(Outcome.FAIL, message);
+            }
+
+            private static Run error(String message) {
+                return new Run(Outcome.ERROR, message);
+            }
+
+            private String describe() {
+                if (outcome == Outcome.PASS) {
+                    return "PASS";
+                }
+                if (message != null) {
+                    return message;
+                }
+                return outcome == Outcome.ERROR ? "ERROR" : "FAIL";
+            }
+
+            private enum Outcome {
+                PASS,
+                FAIL,
+                ERROR
+            }
         }
     }
 }
