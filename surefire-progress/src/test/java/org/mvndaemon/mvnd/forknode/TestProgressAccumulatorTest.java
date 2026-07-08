@@ -100,7 +100,7 @@ class TestProgressAccumulatorTest {
 
         assertTrue(acc.getFailedTests().isEmpty(), "a recovered test must not be listed as failed");
         assertTrue(acc.getErroredTests().isEmpty(), "a recovered test must not be listed as errored");
-        assertTrue(acc.getFlakyTests().contains("T#a"));
+        assertEquals(java.util.List.of("T#a\n  Run 1: boom\n  Run 2: PASS"), acc.getFlakyTests());
     }
 
     @Test
@@ -129,7 +129,31 @@ class TestProgressAccumulatorTest {
         assertEquals(0, acc.getFailures());
         assertEquals(0, acc.getRetrying());
         assertEquals(1, acc.getFlaky());
-        assertTrue(acc.getFlakyTests().contains("MyServiceTest#shouldWork"));
+        assertEquals(java.util.List.of("MyServiceTest#shouldWork\n  Run 1: FAIL\n  Run 2: PASS"), acc.getFlakyTests());
+    }
+
+    @Test
+    void flakyTestDetailListsEachRunWithMessage() {
+        TestProgressAccumulator acc = new TestProgressAccumulator();
+        acc.record(TEST_STARTING, "org.example.FlakyTest", "retries", RunMode.NORMAL_RUN, 7L);
+        acc.record(TEST_FAILED, "org.example.FlakyTest", "retries", RunMode.NORMAL_RUN, 7L, "expected <5> but was <0>");
+        acc.record(TEST_STARTING, "org.example.FlakyTest", "retries", RunMode.RERUN_TEST_AFTER_FAILURE, 7L);
+        acc.record(
+                TEST_ERROR,
+                "org.example.FlakyTest",
+                "retries",
+                RunMode.RERUN_TEST_AFTER_FAILURE,
+                7L,
+                "NullPointerException");
+        acc.record(TEST_STARTING, "org.example.FlakyTest", "retries", RunMode.RERUN_TEST_AFTER_FAILURE, 7L);
+        acc.record(TEST_SUCCEEDED, "org.example.FlakyTest", "retries", RunMode.RERUN_TEST_AFTER_FAILURE, 7L);
+
+        assertEquals(
+                java.util.List.of("FlakyTest#retries\n"
+                        + "  Run 1: expected <5> but was <0>\n"
+                        + "  Run 2: NullPointerException\n"
+                        + "  Run 3: PASS"),
+                acc.getFlakyTests());
     }
 
     @Test

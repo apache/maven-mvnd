@@ -18,10 +18,6 @@
  */
 package org.mvndaemon.mvnd.common.logging;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -29,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Message;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TerminalOutputTest {
 
@@ -132,17 +127,6 @@ class TerminalOutputTest {
     }
 
     @Test
-    void formatFlakySummaryListsRecoveredTests() {
-        Map<String, java.util.Set<String>> flakyTests = new LinkedHashMap<>();
-        flakyTests.put("app", new LinkedHashSet<>(java.util.List.of("FooTest#shouldWork", "FooTest#other")));
-        flakyTests.put("lib", new LinkedHashSet<>(java.util.List.of("BarTest#retries")));
-
-        assertEquals(
-                "Flaky tests: app [FooTest#shouldWork, FooTest#other]; lib [BarTest#retries]",
-                TerminalOutput.formatFlakySummary(flakyTests));
-    }
-
-    @Test
     void hidesProjectDetailsForLargeFailingReactors() {
         assertEquals(false, TerminalOutput.shouldShowProjectDetails(20, 10, 1));
         assertEquals(true, TerminalOutput.shouldShowProjectDetails(20, 10, 0));
@@ -157,30 +141,6 @@ class TerminalOutputTest {
                 "This project has been banned from the build due to previous failures.",
                 TerminalOutput.stripDecoration(
                         "[INFO] This project has been banned from the build due to previous failures."));
-    }
-
-    @Test
-    void emitCategoryPrefixesEachTestWithProjectId() {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        Map<String, java.util.Set<String>> failed = new LinkedHashMap<>();
-        failed.put("camel-jms", new LinkedHashSet<>(java.util.List.of("FooTest#bar: expected <5> but was <4>")));
-        failed.put("camel-nats", new LinkedHashSet<>(java.util.List.of("NatsIT#connects: refused")));
-
-        TerminalOutput.emitCategory(out::add, "Failed tests:", failed);
-
-        assertEquals(
-                java.util.List.of(
-                        "Failed tests:",
-                        "  camel-jms FooTest#bar: expected <5> but was <4>",
-                        "  camel-nats NatsIT#connects: refused"),
-                out);
-    }
-
-    @Test
-    void emitCategoryEmitsNothingWhenEmpty() {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        TerminalOutput.emitCategory(out::add, "Failed tests:", new LinkedHashMap<>());
-        assertEquals(java.util.List.of(), out);
     }
 
     @Test
@@ -206,12 +166,7 @@ class TerminalOutputTest {
     }
 
     @Test
-    void reactorSummaryIsInjectedRightBeforeBuildFailureBannerAndBannedBlockIsDropped() {
-        Map<String, java.util.Set<String>> failed = new LinkedHashMap<>();
-        failed.put("camel-jms", new LinkedHashSet<>(java.util.List.of("FooTest#bar: expected <5> but was <4>")));
-        Map<String, java.util.Set<String>> errored = new LinkedHashMap<>();
-        errored.put("camel-nats", new LinkedHashSet<>(java.util.List.of("NatsIT#connects: refused")));
-
+    void acceptReactorLineDropsBannedBlockWhenSuppressionEnabled() {
         String sep = "[INFO] ------------------------------------------------------------------------";
         String[] lines = {
             sep,
@@ -220,37 +175,16 @@ class TerminalOutputTest {
             sep,
             "[INFO] Reactor Summary:",
             "[INFO] camel-core ......... SKIPPED",
-            sep,
-            "[INFO] BUILD FAILURE",
-            sep,
-            "[INFO] Total time:  1.2 s",
         };
 
         java.util.List<String> out = new java.util.ArrayList<>();
         TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
-        boolean emitted = false;
         for (String l : lines) {
-            emitted = TerminalOutput.acceptReactorLine(l, true, failed, errored, emitted, filter, out::add);
+            TerminalOutput.acceptReactorLine(l, true, filter, out::add);
         }
         filter.flush(out::add);
 
-        // Summary appears immediately above the BUILD FAILURE banner text.
-        int failedHeader = out.indexOf("Failed tests:");
-        int banner = out.indexOf("[INFO] BUILD FAILURE");
-        assertEquals(banner - 4, failedHeader, "summary block must sit directly above the BUILD FAILURE banner");
-        assertEquals(
-                java.util.List.of(
-                        "Failed tests:",
-                        "  camel-jms FooTest#bar: expected <5> but was <4>",
-                        "Errored tests:",
-                        "  camel-nats NatsIT#connects: refused",
-                        "[INFO] BUILD FAILURE"),
-                out.subList(failedHeader, banner + 1));
-        // The banned "Skipping / banned from the build" block is gone, but the reactor SKIPPED row stays.
-        assertTrue(out.stream().noneMatch(s -> s.contains("banned from the build")), "banned block must be dropped");
-        assertTrue(out.stream().noneMatch(s -> s.contains("Skipping Camel")), "skipping line must be dropped");
-        assertTrue(
-                out.contains("[INFO] camel-core ......... SKIPPED"), "reactor summary SKIPPED row must be preserved");
+        assertEquals(java.util.List.of("[INFO] Reactor Summary:", "[INFO] camel-core ......... SKIPPED"), out);
     }
 
     @Test
@@ -259,9 +193,6 @@ class TerminalOutputTest {
         TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
         TerminalOutput.acceptReactorLine(
                 "[INFO] This project has been banned from the build due to previous failures.",
-                false,
-                new LinkedHashMap<>(),
-                new LinkedHashMap<>(),
                 false,
                 filter,
                 out::add);

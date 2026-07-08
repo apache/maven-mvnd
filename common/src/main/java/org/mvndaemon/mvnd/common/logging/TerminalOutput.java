@@ -145,11 +145,6 @@ public class TerminalOutput implements ClientOutput {
     private boolean displayDone = false;
     private boolean noBuffering;
     private final Map<String, Message.ProjectTestProgressEvent> failureProgress = new LinkedHashMap<>();
-    private final Map<String, Set<String>> flakyTests = new LinkedHashMap<>();
-    private final Map<String, Set<String>> failedTests = new LinkedHashMap<>();
-    private final Map<String, Set<String>> erroredTests = new LinkedHashMap<>();
-    /** Guards against emitting the aggregated failed/errored summary more than once. */
-    private boolean failureSummaryEmitted;
     /** When {@code true}, "Skipping X / banned from the build" reactor blocks are dropped from the console. */
     private final boolean hideBannedProjectSkips;
 
@@ -324,14 +319,6 @@ public class TerminalOutput implements ClientOutput {
                     bannedSkipFilter.flush(log::accept);
                 }
                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                if (!failureSummaryEmitted) {
-                    emitFailedTestsSummary(log::accept, failedTests, erroredTests);
-                    failureSummaryEmitted = true;
-                }
-                String flakySummary = formatFlakySummary(flakyTests);
-                if (flakySummary != null) {
-                    log.accept(flakySummary);
-                }
                 if (failures.isEmpty()) {
                     clearDisplay();
                 }
@@ -511,21 +498,6 @@ public class TerminalOutput implements ClientOutput {
                 final Project prj = projects.get(e.getProjectId());
                 if (prj != null) {
                     prj.testProgress.put(e.getForkChannelId(), e);
-                }
-                if (!e.getFlakyTests().isEmpty()) {
-                    flakyTests
-                            .computeIfAbsent(e.getProjectId(), k -> new LinkedHashSet<>())
-                            .addAll(e.getFlakyTests());
-                }
-                if (!e.getFailedTests().isEmpty()) {
-                    failedTests
-                            .computeIfAbsent(e.getProjectId(), k -> new LinkedHashSet<>())
-                            .addAll(e.getFailedTests());
-                }
-                if (!e.getErroredTests().isEmpty()) {
-                    erroredTests
-                            .computeIfAbsent(e.getProjectId(), k -> new LinkedHashSet<>())
-                            .addAll(e.getErroredTests());
                 }
                 break;
             }
@@ -958,32 +930,6 @@ public class TerminalOutput implements ClientOutput {
         lines.add(asb.toAttributedString());
     }
 
-    static String formatFlakySummary(Map<String, Set<String>> flakyTests) {
-        if (flakyTests.isEmpty()) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Flaky tests: ");
-        boolean firstProject = true;
-        for (Map.Entry<String, Set<String>> entry : flakyTests.entrySet()) {
-            if (!firstProject) {
-                sb.append("; ");
-            }
-            firstProject = false;
-            sb.append(entry.getKey()).append(" [");
-            boolean firstTest = true;
-            for (String test : entry.getValue()) {
-                if (!firstTest) {
-                    sb.append(", ");
-                }
-                firstTest = false;
-                sb.append(test);
-            }
-            sb.append(']');
-        }
-        return sb.toString();
-    }
-
     /** Matches SGR (color) escape sequences emitted by the daemon-side log renderer. */
     private static final Pattern ANSI = Pattern.compile("\\[[0-9;]*m");
     /** Matches a leading {@code [LEVEL] } prefix such as {@code [INFO] } or {@code [ERROR] }. */
@@ -1014,68 +960,22 @@ public class TerminalOutput implements ClientOutput {
     }
 
     /**
-     * Handles a reactor-level (project-less) Maven log line: injects the aggregated failed/errored summary directly
-     * above the {@code BUILD FAILURE} banner, and drops "banned from the build" skip blocks when enabled.
+     * Handles a reactor-level (project-less) Maven log line: drops "banned from the build" skip blocks when enabled.
      */
     private void acceptReactorLine(String line) {
-        failureSummaryEmitted = acceptReactorLine(
-                line,
-                hideBannedProjectSkips,
-                failedTests,
-                erroredTests,
-                failureSummaryEmitted,
-                bannedSkipFilter,
-                log::accept);
+        acceptReactorLine(line, hideBannedProjectSkips, bannedSkipFilter, log);
     }
 
     /**
-     * Processes one reactor line: injects the aggregated failed/errored summary immediately above the
-     * {@code BUILD FAILURE} banner (once), and drops "banned from the build" blocks when {@code hideBannedProjectSkips}
-     * is set. Returns the updated {@code failureSummaryEmitted} flag. Static and side-effect free apart from
-     * {@code out}/{@code filter} so the ordering can be unit-tested without a terminal.
+     * Processes one reactor line: drops "banned from the build" blocks when {@code hideBannedProjectSkips} is set.
+     * Static and side-effect free apart from {@code out}/{@code filter} so it can be unit-tested without a terminal.
      */
-    static boolean acceptReactorLine(
-            String line,
-            boolean hideBannedProjectSkips,
-            Map<String, Set<String>> failedTests,
-            Map<String, Set<String>> erroredTests,
-            boolean failureSummaryEmitted,
-            BannedSkipFilter filter,
-            Consumer<String> out) {
-        final String stripped = stripDecoration(line);
-        if (!failureSummaryEmitted
-                && stripped.equals("BUILD FAILURE")
-                && (!failedTests.isEmpty() || !erroredTests.isEmpty())) {
-            if (hideBannedProjectSkips) {
-                filter.flush(out);
-            }
-            emitFailedTestsSummary(out, failedTests, erroredTests);
-            failureSummaryEmitted = true;
-        }
+    static void acceptReactorLine(
+            String line, boolean hideBannedProjectSkips, BannedSkipFilter filter, Consumer<String> out) {
         if (hideBannedProjectSkips) {
-            filter.accept(line, stripped, out);
+            filter.accept(line, stripDecoration(line), out);
         } else {
             out.accept(line);
-        }
-        return failureSummaryEmitted;
-    }
-
-    /** Emits the aggregated failed/errored test blocks (nothing when both are empty). */
-    static void emitFailedTestsSummary(
-            Consumer<String> out, Map<String, Set<String>> failedTests, Map<String, Set<String>> erroredTests) {
-        emitCategory(out, "Failed tests:", failedTests);
-        emitCategory(out, "Errored tests:", erroredTests);
-    }
-
-    static void emitCategory(Consumer<String> out, String header, Map<String, Set<String>> byProject) {
-        if (byProject.isEmpty()) {
-            return;
-        }
-        out.accept(header);
-        for (Map.Entry<String, Set<String>> entry : byProject.entrySet()) {
-            for (String test : entry.getValue()) {
-                out.accept("  " + entry.getKey() + " " + test);
-            }
         }
     }
 
