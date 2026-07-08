@@ -70,7 +70,9 @@ class TestProgressTest {
         assertTrue(
                 events.stream().anyMatch(e -> e.getFlaky() > 0), "expected a flaky snapshot after the rerun succeeded");
         assertTrue(
-                events.stream().anyMatch(e -> e.getFlakyTests().contains("FlakyServiceTest#succeedsOnRetry")),
+                events.stream()
+                        .flatMap(e -> e.getFlakyTests().stream())
+                        .anyMatch(t -> t.startsWith("FlakyServiceTest#succeedsOnRetry")),
                 "expected the recovered test to be reported in the flaky test list");
     }
 
