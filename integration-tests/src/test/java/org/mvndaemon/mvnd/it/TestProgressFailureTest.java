@@ -57,5 +57,32 @@ class TestProgressFailureTest {
                         .flatMap(e -> e.getErroredTests().stream())
                         .anyMatch(t -> t.startsWith("FailingServiceTest#throwsError") && t.contains(": ")),
                 "expected the errored test to be reported with its message");
+
+        List<String> logLines = output.getMessages().stream()
+                .filter(Message.StringMessage.class::isInstance)
+                .filter(m -> m.getType() == Message.BUILD_LOG_MESSAGE)
+                .map(Message.StringMessage.class::cast)
+                .map(Message.StringMessage::getMessage)
+                .toList();
+
+        int failuresLine = indexOfLineContaining(logLines, "Failures:");
+        int errorsLine = indexOfLineContaining(logLines, "Errors:");
+        // test-progress-failure is a single-module fixture, so Maven never prints a "Reactor Summary" section;
+        // "BUILD FAILURE" is the banner that is always emitted, so it is the anchor used here instead.
+        int buildFailureLine = indexOfLineContaining(logLines, "BUILD FAILURE");
+        assertTrue(failuresLine >= 0, "expected a daemon-emitted log line containing 'Failures:', got: " + logLines);
+        assertTrue(errorsLine >= 0, "expected a daemon-emitted log line containing 'Errors:', got: " + logLines);
+        assertTrue(buildFailureLine >= 0, "expected a 'BUILD FAILURE' log line, got: " + logLines);
+        assertTrue(failuresLine < buildFailureLine, "the test summary must be logged before the BUILD FAILURE banner");
+        assertTrue(errorsLine < buildFailureLine, "the test summary must be logged before the BUILD FAILURE banner");
+    }
+
+    private static int indexOfLineContaining(List<String> lines, String needle) {
+        for (int i = 0; i < lines.size(); i++) {
+            if (lines.get(i).contains(needle)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
