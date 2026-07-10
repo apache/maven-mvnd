@@ -53,6 +53,26 @@ public class EnvironmentTest {
         assertEquals("", Environment.MAVEN_DEFINE.removeCommandLineOption(list("--define")));
     }
 
+    @Test
+    void mavenFileArguments() {
+        assertEquals("pom.xml", Environment.MAVEN_FILE.removeCommandLineOption(list("-f", "pom.xml")));
+        assertEquals("pom.xml", Environment.MAVEN_FILE.removeCommandLineOption(list("-fpom.xml")));
+        assertEquals("pom.xml", Environment.MAVEN_FILE.removeCommandLineOption(list("-f=pom.xml")));
+        assertEquals("pom.xml", Environment.MAVEN_FILE.removeCommandLineOption(list("--file", "pom.xml")));
+        assertEquals("pom.xml", Environment.MAVEN_FILE.removeCommandLineOption(list("--file=pom.xml")));
+    }
+
+    @Test
+    void mavenFailModeArgumentsAreNotMavenFileArguments() {
+        for (String failMode : Arrays.asList("-fae", "-ff", "-fn")) {
+            List<String> args = list(failMode, "verify");
+
+            Assertions.assertFalse(Environment.MAVEN_FILE.hasCommandLineOption(args));
+            Assertions.assertNull(Environment.MAVEN_FILE.removeCommandLineOption(args));
+            assertEquals(list(failMode, "verify"), args);
+        }
+    }
+
     private List<String> list(String... items) {
         return new ArrayList<>(Arrays.asList(items));
     }
