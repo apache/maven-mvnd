@@ -735,6 +735,8 @@ public class TerminalOutput implements ClientOutput {
 
     static String renderBar(int percent) {
         final int width = 20;
+        // percent is expected in [0, 100]; clamp defensively so a rounding/caller quirk can't under/overfill the bar.
+        percent = Math.max(0, Math.min(100, percent));
         int filled = (int) Math.round(percent / 100.0 * width);
         StringBuilder sb = new StringBuilder(width + 2);
         sb.append('[');
