@@ -45,6 +45,13 @@ class TerminalOutputTest {
     }
 
     @Test
+    void renderBarClampsOutOfRangeInput() {
+        // doneProjects*100/totalProjects can't actually exceed [0,100], but renderBar clamps defensively anyway
+        assertEquals("[                    ]", TerminalOutput.renderBar(-10));
+        assertEquals("[====================]", TerminalOutput.renderBar(150));
+    }
+
+    @Test
     void suffixAllPassing() {
         AttributedStringBuilder asb = new AttributedStringBuilder();
         TerminalOutput.appendTestProgress(
