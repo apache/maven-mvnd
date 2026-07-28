@@ -319,9 +319,7 @@ public class TerminalOutput implements ClientOutput {
                     bannedSkipFilter.flush(log::accept);
                 }
                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
-                if (failures.isEmpty()) {
-                    clearDisplay();
-                }
+                clearDisplay();
                 try {
                     log.close();
                 } catch (IOException e) {
@@ -935,6 +933,8 @@ public class TerminalOutput implements ClientOutput {
     /** Matches a leading {@code [LEVEL] } prefix such as {@code [INFO] } or {@code [ERROR] }. */
     private static final Pattern LEVEL_PREFIX = Pattern.compile("^\\[[A-Z]+\\]\\s?");
 
+    // Matched verbatim against Maven's reactor log text (no programmatic API for this exists); if Maven ever changes
+    // this message, hideBannedProjectSkips silently stops filtering instead of failing loud.
     private static final String BANNED_MARKER = "This project has been banned from the build due to previous failures.";
 
     /** Strips ANSI color and the {@code [LEVEL] } prefix so reactor lines can be matched by their bare text. */

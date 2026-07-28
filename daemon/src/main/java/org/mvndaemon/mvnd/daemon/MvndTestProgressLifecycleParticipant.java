@@ -21,6 +21,9 @@ package org.mvndaemon.mvnd.daemon;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Plugin;
@@ -44,10 +47,11 @@ public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycle
     private static final String FORK_NODE_IMPL = "org.mvndaemon.mvnd.forknode.MvndForkNodeFactory";
     private static final String SUREFIRE_KEY = "org.apache.maven.plugins:maven-surefire-plugin";
     private static final String FAILSAFE_KEY = "org.apache.maven.plugins:maven-failsafe-plugin";
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(?:-M(\\d+))?");
 
     @Override
     public void afterProjectsRead(MavenSession session) {
-        if (!isEnabled()) {
+        if (!isTestProgressEnabled()) {
             return;
         }
         for (MavenProject project : session.getProjects()) {
@@ -91,7 +95,8 @@ public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycle
         return config;
     }
 
-    private static boolean isEnabled() {
+    /** Shared with {@link Server}, which enables the daemon-side test progress listener under the same flag. */
+    static boolean isTestProgressEnabled() {
         return Environment.MVND_TEST_PROGRESS
                 .asOptional()
                 .map(Boolean::parseBoolean)
@@ -107,14 +112,19 @@ public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycle
         if (version == null) {
             return false;
         }
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(?:-M(\\d+))?")
-                .matcher(version);
+        Matcher m = VERSION_PATTERN.matcher(version);
         if (!m.find()) {
             return false;
         }
         int major = Integer.parseInt(m.group(1));
         if (major != 3) {
             return major > 3;
+        }
+        int minor = Integer.parseInt(m.group(2));
+        int patch = Integer.parseInt(m.group(3));
+        if (minor != 0 || patch != 0) {
+            // The 3.0.0-Mx milestone series is the only pre-GA run; 3.1.0+ always shipped GA.
+            return true;
         }
         String milestone = m.group(4);
         return milestone == null || Integer.parseInt(milestone) >= 5;

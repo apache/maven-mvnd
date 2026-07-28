@@ -37,4 +37,12 @@ class MvndTestProgressLifecycleParticipantTest {
         assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("3.5.6"));
         assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("4.0.0"));
     }
+
+    @Test
+    void milestoneGuardOnlyAppliesToThe300MilestoneSeries() {
+        // only 3.0.0-Mx predates the forkNode SPI; 3.1.0+ always shipped GA, so an "-Mx" suffix there
+        // must not be mistaken for a pre-SPI milestone build.
+        assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("3.1.0-M2"));
+        assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("3.2.5-M1"));
+    }
 }

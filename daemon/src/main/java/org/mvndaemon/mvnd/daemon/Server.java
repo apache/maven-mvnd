@@ -511,11 +511,7 @@ public class Server implements AutoCloseable, Runnable {
         final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64, Message.getMessageComparator());
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
         final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
-        final boolean testProgressEnabled = Environment.MVND_TEST_PROGRESS
-                .asOptional()
-                .map(Boolean::parseBoolean)
-                .orElse(Boolean.TRUE);
-        if (testProgressEnabled) {
+        if (MvndTestProgressLifecycleParticipant.isTestProgressEnabled()) {
             final ClientDispatcher clientDispatcher = (ClientDispatcher) buildEventListener;
             MvndTestProgress.setListener(
                     (projectId,
