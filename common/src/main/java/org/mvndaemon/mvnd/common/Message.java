@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UTFDataFormatException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -741,15 +742,15 @@ public abstract class Message {
         }
 
         public List<String> getFlakyTests() {
-            return flakyTests;
+            return Collections.unmodifiableList(flakyTests);
         }
 
         public List<String> getFailedTests() {
-            return failedTests;
+            return Collections.unmodifiableList(failedTests);
         }
 
         public List<String> getErroredTests() {
-            return erroredTests;
+            return Collections.unmodifiableList(erroredTests);
         }
 
         @Override
