@@ -21,6 +21,9 @@ package org.mvndaemon.mvnd.daemon;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.maven.lifecycle.MojoExecutionConfigurator;
 import org.apache.maven.lifecycle.internal.DefaultMojoExecutionConfigurator;
 import org.apache.maven.plugin.MojoExecution;
@@ -59,6 +62,7 @@ public class MvndMojoExecutionConfigurator extends DefaultMojoExecutionConfigura
         implements MojoExecutionConfigurator {
 
     private static final String FORK_NODE_IMPL = "org.mvndaemon.mvnd.forknode.MvndForkNodeFactory";
+    private static final Pattern VERSION_PATTERN = Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(?:-M(\\d+))?");
 
     public MvndMojoExecutionConfigurator() {
         super();
@@ -67,7 +71,7 @@ public class MvndMojoExecutionConfigurator extends DefaultMojoExecutionConfigura
     @Override
     public void configure(MavenProject project, MojoExecution mojoExecution, boolean allowPluginLevelConfig) {
         super.configure(project, mojoExecution, allowPluginLevelConfig);
-        if (!isEnabled() || !isTestGoal(mojoExecution) || !supportsForkNode(mojoExecution.getVersion())) {
+        if (!isTestProgressEnabled() || !isTestGoal(mojoExecution) || !supportsForkNode(mojoExecution.getVersion())) {
             // Never inject into a Surefire/Failsafe that cannot load the fork-node SPI; it would fail the build.
             return;
         }
@@ -87,7 +91,8 @@ public class MvndMojoExecutionConfigurator extends DefaultMojoExecutionConfigura
         config.addChild(forkNode);
     }
 
-    private static boolean isEnabled() {
+    /** Shared with {@link Server}, which enables the daemon-side test progress listener under the same flag. */
+    static boolean isTestProgressEnabled() {
         return Environment.MVND_TEST_PROGRESS
                 .asOptional()
                 .map(Boolean::parseBoolean)
@@ -106,14 +111,19 @@ public class MvndMojoExecutionConfigurator extends DefaultMojoExecutionConfigura
         if (version == null) {
             return false;
         }
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(\\d+)\\.(\\d+)\\.(\\d+)(?:-M(\\d+))?")
-                .matcher(version);
+        Matcher m = VERSION_PATTERN.matcher(version);
         if (!m.find()) {
             return false;
         }
         int major = Integer.parseInt(m.group(1));
         if (major != 3) {
             return major > 3;
+        }
+        int minor = Integer.parseInt(m.group(2));
+        int patch = Integer.parseInt(m.group(3));
+        if (minor != 0 || patch != 0) {
+            // The 3.0.0-Mx milestone series is the only pre-GA run; 3.1.0+ always shipped GA.
+            return true;
         }
         String milestone = m.group(4);
         return milestone == null || Integer.parseInt(milestone) >= 5;
