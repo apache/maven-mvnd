@@ -76,6 +76,15 @@ public class TestBuildSummary {
     /** Latest cumulative per-fork snapshot for each project, indexed by fork channel id. */
     private final Map<String, Map<Integer, int[]>> currentByProject = new LinkedHashMap<>();
 
+    /** Indices into the per-fork snapshot {@code int[]} recorded by {@link #record} and folded by {@link #foldProject}. */
+    private static final int IDX_COMPLETED = 0;
+
+    private static final int IDX_FAILURES = 1;
+    private static final int IDX_ERRORS = 2;
+    private static final int IDX_SKIPPED = 3;
+    // IDX_RETRYING = 4 is intentionally not folded into totals: a test still retrying has no final outcome yet.
+    private static final int IDX_FLAKY = 5;
+
     private TestTotals totals = TestTotals.EMPTY;
 
     /**
@@ -109,9 +118,9 @@ public class TestBuildSummary {
                     .computeIfAbsent(projectId, k -> new LinkedHashSet<>())
                     .addAll(erroredTests);
         }
-        currentByProject
-                .computeIfAbsent(projectId, k -> new LinkedHashMap<>())
-                .put(forkChannelId, new int[] {completed, failures, errors, skipped, retrying, flaky});
+        currentByProject.computeIfAbsent(projectId, k -> new LinkedHashMap<>()).put(forkChannelId, new int[] {
+            completed, failures, errors, skipped, retrying, flaky
+        }); // indices: see IDX_* fields
     }
 
     /**
@@ -130,11 +139,11 @@ public class TestBuildSummary {
         int skipped = 0;
         int flaky = 0;
         for (int[] snapshot : snapshots.values()) {
-            completed += snapshot[0];
-            failures += snapshot[1];
-            errors += snapshot[2];
-            skipped += snapshot[3];
-            flaky += snapshot[5];
+            completed += snapshot[IDX_COMPLETED];
+            failures += snapshot[IDX_FAILURES];
+            errors += snapshot[IDX_ERRORS];
+            skipped += snapshot[IDX_SKIPPED];
+            flaky += snapshot[IDX_FLAKY];
         }
         totals = new TestTotals(
                 totals.completed + completed,
