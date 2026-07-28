@@ -218,6 +218,9 @@ public class TerminalInputHandler implements AutoCloseable {
     }
 
     private void handleAvailableLength() throws IOException {
+        if (daemonReceive == null) {
+            return;
+        }
         // terminal.reader().available() will attempt to return the number of available characters using some math, but
         // this method powers System.in.available() when called from a mojo, which needs to return the number of
         // available bytes.

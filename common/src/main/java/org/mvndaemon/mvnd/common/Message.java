@@ -155,6 +155,8 @@ public abstract class Message {
             case PRINT_ERR:
             case REQUEST_INPUT:
             case INPUT_DATA:
+            case REQUEST_INPUT_AVAILABLE:
+            case INPUT_AVAILABLE_DATA:
                 return 2;
             case PROJECT_STARTED:
                 return 3;
