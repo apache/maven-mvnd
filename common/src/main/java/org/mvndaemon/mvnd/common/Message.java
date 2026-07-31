@@ -159,7 +159,6 @@ public abstract class Message {
             case PROMPT:
             case PROMPT_RESPONSE:
             case DISPLAY:
-            case PROJECT_TEST_PROGRESS:
             case PRINT_OUT:
             case PRINT_ERR:
             case REQUEST_INPUT:
@@ -171,6 +170,8 @@ public abstract class Message {
                 return 3;
             case MOJO_STARTED:
                 return 4;
+            case PROJECT_TEST_PROGRESS:
+                return 5;
             case EXECUTION_FAILURE:
                 return 10;
             case TRANSFER_INITIATED:

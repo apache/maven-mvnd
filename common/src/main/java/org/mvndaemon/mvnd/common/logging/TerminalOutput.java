@@ -801,11 +801,13 @@ public class TerminalOutput implements ClientOutput {
                     .append(String.format(artifactIdFormat, prj.id))
                     .style(GREEN_FOREGROUND);
             if (execution.getPluginGoalPrefix().isEmpty()) {
-                asb.append(execution.getPluginArtifactId());
+                asb.append(execution.getPluginGroupId()).append(':').append(execution.getPluginArtifactId());
             } else {
                 asb.append(execution.getPluginGoalPrefix());
             }
             asb.append(':')
+                    .append(execution.getPluginVersion())
+                    .append(':')
                     .append(execution.getMojo())
                     .append(' ')
                     .style(AttributedStyle.DEFAULT)
