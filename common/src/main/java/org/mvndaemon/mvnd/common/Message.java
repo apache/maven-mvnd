@@ -153,7 +153,6 @@ public abstract class Message {
             case PROMPT:
             case PROMPT_RESPONSE:
             case DISPLAY:
-            case PROJECT_TEST_PROGRESS:
             case PRINT_OUT:
             case PRINT_ERR:
             case REQUEST_INPUT:
@@ -163,6 +162,8 @@ public abstract class Message {
                 return 3;
             case MOJO_STARTED:
                 return 4;
+            case PROJECT_TEST_PROGRESS:
+                return 5;
             case EXECUTION_FAILURE:
                 return 10;
             case TRANSFER_INITIATED:
@@ -242,17 +243,6 @@ public abstract class Message {
     private static final int UTF_BUFS_CHAR_CNT = 256;
     private static final int UTF_BUFS_BYTE_CNT = UTF_BUFS_CHAR_CNT * 3;
     private static final ThreadLocal<byte[]> BUF_TLS = ThreadLocal.withInitial(() -> new byte[UTF_BUFS_BYTE_CNT]);
-
-    static void writeNullableUTF(DataOutputStream output, String value) throws IOException {
-        output.writeBoolean(value != null);
-        if (value != null) {
-            writeUTF(output, value);
-        }
-    }
-
-    static String readNullableUTF(DataInputStream input) throws IOException {
-        return input.readBoolean() ? readUTF(input) : null;
-    }
 
     static String readUTF(DataInputStream input) throws IOException {
         byte[] byteBuf = BUF_TLS.get();
@@ -646,8 +636,8 @@ public abstract class Message {
 
         public static ProjectTestProgressEvent read(DataInputStream input) throws IOException {
             final String projectId = readUTF(input);
-            final String testClass = readNullableUTF(input);
-            final String testMethod = readNullableUTF(input);
+            final String testClass = readUTF(input);
+            final String testMethod = readUTF(input);
             final int completed = input.readInt();
             final int failures = input.readInt();
             final int errors = input.readInt();
@@ -705,8 +695,8 @@ public abstract class Message {
         public void write(DataOutputStream output) throws IOException {
             super.write(output);
             writeUTF(output, projectId);
-            writeNullableUTF(output, testClass);
-            writeNullableUTF(output, testMethod);
+            writeUTF(output, testClass);
+            writeUTF(output, testMethod);
             output.writeInt(completed);
             output.writeInt(failures);
             output.writeInt(errors);
