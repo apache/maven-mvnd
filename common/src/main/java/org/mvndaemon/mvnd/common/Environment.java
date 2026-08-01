@@ -23,9 +23,11 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -329,6 +331,10 @@ public enum Environment {
     MVND_CANCEL_CONNECT_TIMEOUT("mvnd.cancelConnectTimeout", null, "3 seconds", OptionType.DURATION, Flags.NONE),
     ;
 
+    // Maven defines these as complete short options, not as "-f" with an attached value.
+    private static final Set<String> MAVEN_FILE_SHORT_OPTION_CONFLICTS =
+            Collections.unmodifiableSet(new HashSet<>(Arrays.asList("-fae", "-ff", "-fn")));
+
     static Properties properties;
 
     public static void setProperties(Properties properties) {
@@ -492,7 +498,8 @@ public enum Environment {
 
     public boolean hasCommandLineOption(Collection<String> args) {
         final String[] prefixes = getPrefixes();
-        return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
+        return args.stream()
+                .anyMatch(arg -> Stream.of(prefixes).anyMatch(prefix -> matchesCommandLineOption(arg, prefix)));
     }
 
     public String getCommandLineOption(Collection<String> args) {
@@ -508,12 +515,12 @@ public enum Environment {
         String value = null;
         for (Iterator<String> it = args.iterator(); it.hasNext(); ) {
             String arg = it.next();
-            if (Stream.of(prefixes).anyMatch(arg::startsWith)) {
+            if (Stream.of(prefixes).anyMatch(prefix -> matchesCommandLineOption(arg, prefix))) {
                 if (remove) {
                     it.remove();
                 }
                 String opt = Stream.of(prefixes)
-                        .filter(arg::startsWith)
+                        .filter(prefix -> matchesCommandLineOption(arg, prefix))
                         .max(Comparator.comparing(String::length))
                         .get();
                 if (type == OptionType.VOID) {
@@ -541,6 +548,13 @@ public enum Environment {
             }
         }
         return value;
+    }
+
+    private boolean matchesCommandLineOption(String arg, String prefix) {
+        if (this == MAVEN_FILE && MAVEN_FILE_SHORT_OPTION_CONFLICTS.contains(arg)) {
+            return false;
+        }
+        return arg.startsWith(prefix);
     }
 
     private String[] getPrefixes() {
