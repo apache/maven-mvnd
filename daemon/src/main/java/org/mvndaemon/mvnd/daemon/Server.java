@@ -509,7 +509,8 @@ public class Server implements AutoCloseable, Runnable {
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
         final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
         final DaemonInputStream daemonInputStream = new DaemonInputStream(
-                (projectId, bytesToRead) -> sendQueue.add(Message.requestInput(projectId, bytesToRead)));
+                (projectId, bytesToRead) -> sendQueue.add(Message.requestInput(projectId, bytesToRead)),
+                (projectId) -> sendQueue.add(Message.requestInputAvailable(projectId)));
         InputStream in = System.in;
         try {
             System.setIn(daemonInputStream);
@@ -561,6 +562,9 @@ public class Server implements AutoCloseable, Runnable {
                             return;
                         } else if (message instanceof Message.InputData) {
                             daemonInputStream.addInputData(((Message.InputData) message).getData());
+                        } else if (message instanceof Message.InputAvailableData) {
+                            daemonInputStream.addInputAvailableData(
+                                    ((Message.InputAvailableData) message).getBytesAvailable());
                         } else {
                             synchronized (recvQueue) {
                                 recvQueue.put(message);

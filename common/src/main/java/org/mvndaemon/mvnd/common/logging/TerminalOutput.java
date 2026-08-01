@@ -50,6 +50,7 @@ import org.mvndaemon.mvnd.common.Message.ExecutionFailureEvent;
 import org.mvndaemon.mvnd.common.Message.MojoStartedEvent;
 import org.mvndaemon.mvnd.common.Message.ProjectEvent;
 import org.mvndaemon.mvnd.common.Message.RequestInput;
+import org.mvndaemon.mvnd.common.Message.RequestInputAvailable;
 import org.mvndaemon.mvnd.common.Message.StringMessage;
 import org.mvndaemon.mvnd.common.Message.TransferEvent;
 import org.mvndaemon.mvnd.common.OsUtils;
@@ -411,6 +412,15 @@ public class TerminalOutput implements ClientOutput {
                 break;
             }
             case Message.INPUT_DATA: {
+                daemonDispatch.accept(entry);
+                break;
+            }
+            case Message.REQUEST_INPUT_AVAILABLE: {
+                RequestInputAvailable ri = (RequestInputAvailable) entry;
+                inputHandler.requestProjectInputAvailable(ri.getProjectId());
+                break;
+            }
+            case Message.INPUT_AVAILABLE_DATA: {
                 daemonDispatch.accept(entry);
                 break;
             }
