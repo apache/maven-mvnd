@@ -244,6 +244,9 @@ public class TerminalOutput implements ClientOutput {
                 break;
             }
             case Message.CANCEL_BUILD: {
+                if (hideBannedProjectSkips) {
+                    bannedSkipFilter.flush(log::accept);
+                }
                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                 clearDisplay();
                 try {
@@ -263,6 +266,9 @@ public class TerminalOutput implements ClientOutput {
                     msg = "Unable to parse command line options: " + e.getMessage();
                 } else {
                     msg = e.getClassName() + ": " + e.getMessage();
+                }
+                if (hideBannedProjectSkips) {
+                    bannedSkipFilter.flush(log::accept);
                 }
                 projects.values().stream().flatMap(p -> p.log.stream()).forEach(log);
                 clearDisplay();
