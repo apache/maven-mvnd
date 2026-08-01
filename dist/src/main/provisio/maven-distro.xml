@@ -28,9 +28,6 @@
         <artifact id="org.apache.maven.daemon:mvnd-logging:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
-        <artifact id="org.slf4j:jul-to-slf4j">
-            <exclusion id="*:*"/>
-        </artifact>
         <artifact id="org.apache.maven.shared:maven-shared-utils">
             <exclusion id="*:*"/>
         </artifact>
