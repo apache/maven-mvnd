@@ -69,9 +69,9 @@ public abstract class Message {
     public static final int REQUEST_INPUT_AVAILABLE = 29;
     public static final int INPUT_AVAILABLE_DATA = 30;
     /**
-     * Live per-test progress for a project's line while surefire/failsafe run.
-     * TODO: the daemon-side feed that emits this message is not implemented on mvnd-1.x yet; until it
-     * lands in a follow-up commit, the client render stays dormant (no test-progress suffix is shown).
+     * Live per-test progress for a project's line while surefire/failsafe run. Emitted by the forked test JVM's
+     * listener bridge, relayed through the daemon, and rendered by the client as a test-progress suffix on the
+     * project's status line.
      */
     public static final int PROJECT_TEST_PROGRESS = 31;
 
