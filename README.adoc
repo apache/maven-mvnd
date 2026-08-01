@@ -78,7 +78,7 @@ sudo port install mvnd
 === Install using https://aquaproj.github.io/[aqua]
 
 [source,shell]
-----
+aqua g -i apache/maven-mvnd
 aqua g -i apache/maven-mvnd
 ----
 
