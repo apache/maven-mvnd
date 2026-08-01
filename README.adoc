@@ -79,7 +79,7 @@ sudo port install mvnd
 
 [source,shell]
 ----
-$ aqua g -i apache/maven-mvnd
+aqua g -i apache/maven-mvnd
 ----
 
 === Other installers
