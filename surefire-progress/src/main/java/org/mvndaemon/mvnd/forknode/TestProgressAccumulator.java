@@ -288,7 +288,7 @@ public class TestProgressAccumulator {
 
         private String displayName() {
             if (testClass == null) {
-                return testMethod;
+                return testMethod != null ? testMethod : "(unknown)";
             }
             String simpleClass = testClass.substring(testClass.lastIndexOf('.') + 1);
             return testMethod != null ? simpleClass + "#" + testMethod : simpleClass;
