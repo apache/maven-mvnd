@@ -314,6 +314,9 @@ public enum Environment {
     MVND_CANCEL_CONNECT_TIMEOUT("mvnd.cancelConnectTimeout", null, "3 seconds", OptionType.DURATION, Flags.NONE),
     ;
 
+    // Maven defines these as complete short options, not as "-f" with an attached value.
+    private static final Set<String> MAVEN_FILE_SHORT_OPTION_CONFLICTS = Set.of("-fae", "-ff", "-fn");
+
     static Properties properties;
 
     public static void setProperties(Properties properties) {
@@ -477,7 +480,8 @@ public enum Environment {
 
     public boolean hasCommandLineOption(Collection<String> args) {
         final String[] prefixes = getPrefixes();
-        return args.stream().anyMatch(arg -> Stream.of(prefixes).anyMatch(arg::startsWith));
+        return args.stream()
+                .anyMatch(arg -> Stream.of(prefixes).anyMatch(prefix -> matchesCommandLineOption(arg, prefix)));
     }
 
     public String getCommandLineOption(Collection<String> args) {
@@ -493,7 +497,7 @@ public enum Environment {
         String value = null;
         for (Iterator<String> it = args.iterator(); it.hasNext(); ) {
             String arg = it.next();
-            if (Stream.of(prefixes).anyMatch(arg::startsWith)) {
+            if (Stream.of(prefixes).anyMatch(prefix -> matchesCommandLineOption(arg, prefix))) {
                 if (remove) {
                     it.remove();
                 }
@@ -501,7 +505,7 @@ public enum Environment {
                     value = "";
                 } else {
                     String opt = Stream.of(prefixes)
-                            .filter(arg::startsWith)
+                            .filter(prefix -> matchesCommandLineOption(arg, prefix))
                             .max(Comparator.comparing(String::length))
                             .get();
                     value = arg.substring(opt.length());
@@ -521,6 +525,13 @@ public enum Environment {
             }
         }
         return value;
+    }
+
+    private boolean matchesCommandLineOption(String arg, String prefix) {
+        if (this == MAVEN_FILE && MAVEN_FILE_SHORT_OPTION_CONFLICTS.contains(arg)) {
+            return false;
+        }
+        return arg.startsWith(prefix);
     }
 
     private String[] getPrefixes() {
