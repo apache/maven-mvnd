@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.junit;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -235,7 +236,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     multiModuleProjectDirectory,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository,
-                    null,
+                    createIsolatedSettings(testDir.resolve("settings.xml")),
                     TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
                     keepAlive != null && !keepAlive.isEmpty()
                             ? TimeUtils.toDuration(keepAlive)
@@ -249,6 +250,24 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final TestRegistry registry = new TestRegistry(parameters.registry());
 
             return new MvndResource(parameters, registry, isNative, timeoutMs);
+        }
+
+        /**
+         * Writes a minimal, isolated {@code settings.xml} and returns its path so that the daemon
+         * is always launched with an explicit {@code -s} and never falls back to the ambient
+         * {@code ${user.home}/.m2/settings.xml}. Without this, when running with {@code -Dmrm=false}
+         * (as CI does), the daemon reads the runner's user settings. actions/setup-java writes one
+         * containing {@code <interactiveMode>false</interactiveMode>}, which made {@code versions:set}
+         * run non-interactively and broke InteractiveTest. An empty settings keeps the defaults
+         * (interactive, no ambient mirrors) so the tests behave the same everywhere.
+         */
+        static Path createIsolatedSettings(Path settingsPath) {
+            try {
+                Files.write(settingsPath, "<settings/>\n".getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new RuntimeException("Could not write " + settingsPath, e);
+            }
+            return settingsPath;
         }
 
         private static void prefillLocalRepo(final Path localMavenRepository) {

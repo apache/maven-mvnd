@@ -242,6 +242,15 @@ public class DefaultClient implements Client {
                 true);
     }
 
+    /**
+     * The environment forwarded to the daemon in the {@link Message.BuildRequest}. Defaults to the
+     * client's own environment; overridable so tests can run hermetically (e.g. without inheriting
+     * an ambient {@code MAVEN_ARGS}).
+     */
+    protected Map<String, String> buildRequestEnvironment() {
+        return System.getenv();
+    }
+
     @Override
     public ExecutionResult execute(ClientOutput output, List<String> argv) {
         LOGGER.debug("Starting client");
@@ -374,7 +383,7 @@ public class DefaultClient implements Client {
                         args,
                         parameters.userDir().toString(),
                         parameters.multiModuleProjectDirectory().toString(),
-                        System.getenv()));
+                        buildRequestEnvironment()));
 
                 output.accept(Message.buildStatus(
                         "Connected to daemon " + daemon.getDaemon().getId() + ", scanning for projects..."));
