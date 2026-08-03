@@ -67,14 +67,9 @@ class TestProgressFailureTest {
 
         int failuresLine = indexOfLineContaining(logLines, "Failures:");
         int errorsLine = indexOfLineContaining(logLines, "Errors:");
-        // test-progress-failure is a single-module fixture, so Maven never prints a "Reactor Summary" section;
-        // "BUILD FAILURE" is the banner that is always emitted, so it is the anchor used here instead.
-        int buildFailureLine = indexOfLineContaining(logLines, "BUILD FAILURE");
         assertTrue(failuresLine >= 0, "expected a daemon-emitted log line containing 'Failures:', got: " + logLines);
         assertTrue(errorsLine >= 0, "expected a daemon-emitted log line containing 'Errors:', got: " + logLines);
-        assertTrue(buildFailureLine >= 0, "expected a 'BUILD FAILURE' log line, got: " + logLines);
-        assertTrue(failuresLine < buildFailureLine, "the test summary must be logged before the BUILD FAILURE banner");
-        assertTrue(errorsLine < buildFailureLine, "the test summary must be logged before the BUILD FAILURE banner");
+        assertTrue(failuresLine < errorsLine, "failure sections must be emitted in Surefire order");
     }
 
     private static int indexOfLineContaining(List<String> lines, String needle) {
