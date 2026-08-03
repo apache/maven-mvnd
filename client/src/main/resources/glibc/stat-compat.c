@@ -16,18 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  *
- * Backward-compatible stat() shim for x86_64 targeting glibc < 2.33.
+ * Backward-compatible stat() shim for x86_64 and aarch64 targeting glibc < 2.33.
  *
  * Before glibc 2.33, stat() was a macro expanding to __xstat(_STAT_VER, ...).
  * GraalVM 25 native-image calls stat() directly (compiled against glibc 2.33+
  * headers where stat is a real function). This shim redirects stat() to
- * __xstat() which has been available since glibc 2.2.5 on x86_64.
+ * __xstat() which has been available since glibc 2.2.5 on x86_64 and 2.17 on aarch64.
  */
 
 struct stat;
 extern int __xstat(int ver, const char *path, struct stat *buf);
 
 int stat(const char *path, struct stat *buf) {
+#if defined(__x86_64__)
     /* _STAT_VER_LINUX on x86_64 is 1 */
     return __xstat(1, path, buf);
+#elif defined(__aarch64__)
+    /* _STAT_VER_LINUX on aarch64 is 0 */
+    return __xstat(0, path, buf);
+#else
+#error "Unsupported architecture for stat-compat"
+#endif
 }
