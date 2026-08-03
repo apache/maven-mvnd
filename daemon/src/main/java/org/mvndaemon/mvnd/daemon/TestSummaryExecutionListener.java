@@ -23,21 +23,14 @@ import java.util.List;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
 import org.mvndaemon.mvnd.logging.smart.TestBuildSummary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Decorates the {@link ExecutionListener} chain Maven 4 builds in {@code MavenInvoker.determineExecutionListener}
  * (wired up by {@link DaemonMavenInvoker#determineExecutionListener}) to fold per-project test-progress snapshots
- * into the reactor-wide {@link TestBuildSummary} and log it through this class's own SLF4J logger immediately
- * before {@code delegate.sessionEnded} prints the Reactor Summary. Routing through SLF4J means ANSI coloring and
- * {@code -q} log-level gating come from the normal Maven logging pipeline instead of being reimplemented
- * client-side, matching how every other Maven console line is rendered.
+ * into the reactor-wide {@link TestBuildSummary} and send it to the client immediately before
+ * {@code delegate.sessionEnded} prints the Reactor Summary.
  */
 public class TestSummaryExecutionListener implements ExecutionListener {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger("org.mvndaemon.mvnd.testsummary");
-
     private final ExecutionListener delegate;
     private final ClientDispatcher clientDispatcher;
 
@@ -65,17 +58,7 @@ public class TestSummaryExecutionListener implements ExecutionListener {
         List<TestBuildSummary.SummaryLine> lines =
                 clientDispatcher.getTestSummary().renderLines();
         for (TestBuildSummary.SummaryLine line : lines) {
-            switch (line.level) {
-                case ERROR:
-                    LOGGER.error(line.text);
-                    break;
-                case WARNING:
-                    LOGGER.warn(line.text);
-                    break;
-                default:
-                    LOGGER.info(line.text);
-                    break;
-            }
+            clientDispatcher.log(line.text);
         }
     }
 
