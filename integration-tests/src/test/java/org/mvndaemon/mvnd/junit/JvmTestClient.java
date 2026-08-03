@@ -21,7 +21,9 @@ package org.mvndaemon.mvnd.junit;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.DaemonParameters;
@@ -37,6 +39,18 @@ public class JvmTestClient extends DefaultClient {
     public JvmTestClient(DaemonParameters parameters) {
         super(parameters);
         this.parameters = parameters;
+    }
+
+    /**
+     * Strip any ambient {@code MAVEN_ARGS} (e.g. actions/setup-java sets it to {@code -ntp}) from the
+     * environment forwarded to the daemon, so it cannot override per-test flags such as
+     * ConcurrentDownloadsTest's transfer-progress expectation. Keeps the test daemon hermetic.
+     */
+    @Override
+    protected Map<String, String> buildRequestEnvironment() {
+        final Map<String, String> env = new HashMap<>(super.buildRequestEnvironment());
+        env.remove("MAVEN_ARGS");
+        return env;
     }
 
     @Override

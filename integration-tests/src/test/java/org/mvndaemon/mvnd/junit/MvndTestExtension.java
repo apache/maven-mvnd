@@ -232,7 +232,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             final Path settingsPath;
             if (mrmRepoUrl == null) {
                 LOG.info("Building without mrm-maven-plugin");
-                settingsPath = null;
+                settingsPath = createIsolatedSettings(testDir.resolve("settings.xml"));
                 prefillLocalRepo(localMavenRepository);
             } else {
                 LOG.info("Building with mrm-maven-plugin");
@@ -303,6 +303,24 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 }
             } catch (IOException e) {
                 throw new RuntimeException("Could not read " + settingsTemplatePath);
+            }
+            return settingsPath;
+        }
+
+        /**
+         * Writes a minimal, isolated {@code settings.xml} and returns its path so that the daemon
+         * is always launched with an explicit {@code -s} and never falls back to the ambient
+         * {@code ${user.home}/.m2/settings.xml}. Without this, when running with {@code -Dmrm=false}
+         * (as CI does), the daemon reads the runner's user settings. actions/setup-java writes one
+         * containing {@code <interactiveMode>false</interactiveMode>}, which made {@code versions:set}
+         * run non-interactively and broke InteractiveTest. An empty settings keeps the defaults
+         * (interactive, no ambient mirrors) so the tests behave the same everywhere.
+         */
+        static Path createIsolatedSettings(Path settingsPath) {
+            try {
+                Files.write(settingsPath, "<settings/>\n".getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                throw new RuntimeException("Could not write " + settingsPath, e);
             }
             return settingsPath;
         }

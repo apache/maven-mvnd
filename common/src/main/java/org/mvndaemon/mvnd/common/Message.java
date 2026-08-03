@@ -65,6 +65,12 @@ public abstract class Message {
     public static final int PRINT_ERR = 26;
     public static final int REQUEST_INPUT = 27;
     public static final int INPUT_DATA = 28;
+    /**
+     * Live per-test progress for a project's line while surefire/failsafe run.
+     * TODO: the daemon-side feed that emits this message is not implemented on mvnd-1.x yet; until it
+     * lands in a follow-up commit, the client render stays dormant (no test-progress suffix is shown).
+     */
+    public static final int PROJECT_TEST_PROGRESS = 29;
 
     final int type;
 
@@ -89,6 +95,8 @@ public abstract class Message {
             case PROJECT_LOG_MESSAGE:
             case DISPLAY:
                 return ProjectEvent.read(type, input);
+            case PROJECT_TEST_PROGRESS:
+                return ProjectTestProgressEvent.read(input);
             case BUILD_EXCEPTION:
                 return BuildException.read(input);
             case KEEP_ALIVE:
@@ -154,6 +162,8 @@ public abstract class Message {
                 return 3;
             case MOJO_STARTED:
                 return 4;
+            case PROJECT_TEST_PROGRESS:
+                return 5;
             case EXECUTION_FAILURE:
                 return 10;
             case TRANSFER_INITIATED:
@@ -615,6 +625,103 @@ public abstract class Message {
         }
     }
 
+    public static class ProjectTestProgressEvent extends Message {
+        final String projectId;
+        final String testClass;
+        final String testMethod;
+        final int completed;
+        final int failures;
+        final int errors;
+        final int skipped;
+
+        public static ProjectTestProgressEvent read(DataInputStream input) throws IOException {
+            final String projectId = readUTF(input);
+            final String testClass = readUTF(input);
+            final String testMethod = readUTF(input);
+            final int completed = input.readInt();
+            final int failures = input.readInt();
+            final int errors = input.readInt();
+            final int skipped = input.readInt();
+            return new ProjectTestProgressEvent(projectId, testClass, testMethod, completed, failures, errors, skipped);
+        }
+
+        public ProjectTestProgressEvent(
+                String projectId,
+                String testClass,
+                String testMethod,
+                int completed,
+                int failures,
+                int errors,
+                int skipped) {
+            super(PROJECT_TEST_PROGRESS);
+            this.projectId = Objects.requireNonNull(projectId, "projectId cannot be null");
+            this.testClass = testClass;
+            this.testMethod = testMethod;
+            this.completed = completed;
+            this.failures = failures;
+            this.errors = errors;
+            this.skipped = skipped;
+        }
+
+        public String getProjectId() {
+            return projectId;
+        }
+
+        public String getTestClass() {
+            return testClass;
+        }
+
+        public String getTestMethod() {
+            return testMethod;
+        }
+
+        public int getCompleted() {
+            return completed;
+        }
+
+        public int getFailures() {
+            return failures;
+        }
+
+        public int getErrors() {
+            return errors;
+        }
+
+        public int getSkipped() {
+            return skipped;
+        }
+
+        @Override
+        public void write(DataOutputStream output) throws IOException {
+            super.write(output);
+            writeUTF(output, projectId);
+            writeUTF(output, testClass);
+            writeUTF(output, testMethod);
+            output.writeInt(completed);
+            output.writeInt(failures);
+            output.writeInt(errors);
+            output.writeInt(skipped);
+        }
+
+        @Override
+        public String toString() {
+            return "ProjectTestProgress{projectId='" + projectId + "', testClass='" + testClass + "', testMethod='"
+                    + testMethod + "', completed=" + completed + ", failures=" + failures + ", errors=" + errors
+                    + ", skipped=" + skipped + "}";
+        }
+    }
+
+    public static ProjectTestProgressEvent projectTestProgress(
+            String projectId,
+            String testClass,
+            String testMethod,
+            int completed,
+            int failures,
+            int errors,
+            int skipped) {
+        return new ProjectTestProgressEvent(projectId, testClass, testMethod, completed, failures, errors, skipped);
+    }
+
     public static class BuildStarted extends Message {
 
         final String projectId;
@@ -993,8 +1100,8 @@ public abstract class Message {
                     + repositoryUrl + '\'' + ", resourceName='"
                     + resourceName + '\'' + ", contentLength="
                     + contentLength + ", transferredBytes="
-                    + transferredBytes + ", exception='"
-                    + exception + '\'' + '}';
+                    + transferredBytes
+                    + (exception != null ? ", exception='" + exception + '\'' : "") + '}';
         }
 
         private String mnemonic() {

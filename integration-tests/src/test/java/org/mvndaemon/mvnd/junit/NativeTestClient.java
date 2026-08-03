@@ -79,6 +79,9 @@ public class NativeTestClient implements Client {
                 .redirectErrorStream(true);
 
         final Map<String, String> env = builder.environment();
+        // Strip any ambient MAVEN_ARGS (e.g. actions/setup-java sets it to -ntp) so it cannot leak
+        // through the native binary into the daemon and override per-test flags. Keeps tests hermetic.
+        env.remove("MAVEN_ARGS");
         if (!Environment.MVND_HOME.hasCommandLineOption(args)) {
             env.put(Environment.MVND_HOME.getEnvironmentVariable(), Environment.MVND_HOME.asString());
         }

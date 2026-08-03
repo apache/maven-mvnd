@@ -55,8 +55,8 @@ If SDKMAN! supports your operating system, it is as easy as
 $ sdk install mvnd
 ----
 
-If you used the manual install in the past, please make sure that the settings in `~/.m2/mvnd.properties` still make
-sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at all, because both `JAVA_HOME` and
+If you used the manual installation in the past, please make sure that the settings in `~/.m2/mvnd.properties` still
+make sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not needed at all, because both `JAVA_HOME` and
 `MVND_HOME` are managed by SDKMAN!.
 
 === Install using https://brew.sh/[Homebrew]

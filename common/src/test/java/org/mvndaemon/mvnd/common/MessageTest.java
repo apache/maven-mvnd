@@ -73,4 +73,44 @@ public class MessageTest {
         assertTrue(msg2 instanceof Message.BuildException);
         assertNull(((Message.BuildException) msg2).getMessage());
     }
+
+    @Test
+    void projectTestProgressSerialization() throws IOException {
+        Message msg = Message.projectTestProgress("my-app", "com.acme.FooTest", "shouldWork", 3, 1, 0, 1);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (DataOutputStream daos = new DataOutputStream(baos)) {
+            msg.write(daos);
+        }
+        Message msg2;
+        try (DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+            msg2 = Message.read(dis);
+        }
+
+        assertTrue(msg2 instanceof Message.ProjectTestProgressEvent);
+        Message.ProjectTestProgressEvent e = (Message.ProjectTestProgressEvent) msg2;
+        assertEquals("my-app", e.getProjectId());
+        assertEquals("com.acme.FooTest", e.getTestClass());
+        assertEquals("shouldWork", e.getTestMethod());
+        assertEquals(3, e.getCompleted());
+        assertEquals(1, e.getFailures());
+        assertEquals(0, e.getErrors());
+        assertEquals(1, e.getSkipped());
+    }
+
+    @Test
+    void projectTestProgressNullClassAndMethod() throws IOException {
+        Message msg = Message.projectTestProgress("my-app", null, null, 0, 0, 0, 0);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (DataOutputStream daos = new DataOutputStream(baos)) {
+            msg.write(daos);
+        }
+        Message msg2;
+        try (DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+            msg2 = Message.read(dis);
+        }
+        Message.ProjectTestProgressEvent e = (Message.ProjectTestProgressEvent) msg2;
+        assertNull(e.getTestClass());
+        assertNull(e.getTestMethod());
+    }
 }
