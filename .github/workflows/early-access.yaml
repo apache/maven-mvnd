@@ -46,6 +46,22 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
 
+      - name: 'Prepare Mimir'
+        shell: bash
+        run: |
+          mkdir -p ~/.mimir
+          cp .github/ci-extensions.xml .mvn/extensions.xml
+          cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
+
+      - name: 'Handle Mimir caches'
+        uses: actions/cache@v6
+        with:
+          path: ~/.mimir/local
+          key: mimir2-${{ runner.os }}-default-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            mimir2-${{ runner.os }}-default-
+            mimir2-${{ runner.os }}-
+
       - name: 'Run default (non-native) build'
         run: ./mvnw verify -Dmrm=false -V -B -ntp -e -s .mvn/release-settings.xml
 
@@ -98,6 +114,22 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 'Prepare Mimir'
+        shell: bash
+        run: |
+          mkdir -p ~/.mimir
+          cp .github/ci-extensions.xml .mvn/extensions.xml
+          cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
+
+      - name: 'Handle Mimir caches'
+        uses: actions/cache@v6
+        with:
+          path: ~/.mimir/local
+          key: mimir2-${{ runner.os }}-native-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            mimir2-${{ runner.os }}-native-
+            mimir2-${{ runner.os }}-
 
       - name: 'Maven clean'
         run: ./mvnw clean -Dmrm=false -V -B -ntp -e
