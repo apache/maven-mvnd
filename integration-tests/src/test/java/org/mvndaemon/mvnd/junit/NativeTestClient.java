@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
 import org.mvndaemon.mvnd.client.ExecutionResult;
@@ -100,10 +101,22 @@ public class NativeTestClient implements Client {
                 log.add(s);
             }
         };
-        try (CommandProcess process =
-                new CommandProcess(builder.start(), loggingConsumer.andThen(s -> output.accept(Message.log(s))))) {
-            final int exitCode = process.waitFor(timeoutMs);
-            return new Result(args, exitCode, log);
+        try {
+            final Process rawProcess = builder.start();
+            if (output instanceof TestClientOutput) {
+                final byte[] stdin = ((TestClientOutput) output).nativeStdin();
+                if (stdin != null) {
+                    // Feed the process's real stdin, like piping data into a real mvnd invocation.
+                    // The daemon talks to this spawned binary's own stdin, not to any in-JVM message queue.
+                    rawProcess.getOutputStream().write(stdin);
+                    rawProcess.getOutputStream().close();
+                }
+            }
+            try (CommandProcess process =
+                    new CommandProcess(rawProcess, loggingConsumer.andThen(s -> output.accept(Message.log(s))))) {
+                final int exitCode = process.waitFor(timeoutMs);
+                return new Result(args, exitCode, log);
+            }
         } catch (IOException e) {
             throw new RuntimeException("Could not execute: " + cmdString, e);
         }

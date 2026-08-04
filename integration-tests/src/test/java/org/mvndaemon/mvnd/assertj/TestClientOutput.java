@@ -71,6 +71,17 @@ public class TestClientOutput implements ClientOutput {
         return messages;
     }
 
+    /**
+     * Bytes to feed to the real OS-level stdin of a natively spawned {@code mvnd} process
+     * (see {@code NativeTestClient}), or {@code null} if the test doesn't need to simulate stdin.
+     * The {@link #accept(Message)}-based {@code RequestInput}/{@code RequestInputAvailable}
+     * interception only works for the in-process JVM test client, since for a native test the
+     * daemon talks to the spawned binary's own real stdin, which this JVM never sees as messages.
+     */
+    public byte[] nativeStdin() {
+        return null;
+    }
+
     public void assertContainsMatchingSubsequence(String... patterns) {
         Assertions.assertThat(messagesToString()).is(new MatchInOrderAmongOthers<>(patterns));
     }
