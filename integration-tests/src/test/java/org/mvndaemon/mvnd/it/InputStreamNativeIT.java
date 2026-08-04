@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.it;
 import javax.inject.Inject;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
@@ -84,6 +85,11 @@ class InputStreamNativeIT {
                 if (!(message instanceof Message.TransferEvent)) {
                     super.accept(message);
                 }
+            }
+
+            @Override
+            public byte[] nativeStdin() {
+                return data.getBytes(StandardCharsets.UTF_8);
             }
         };
         client.execute(output, "install").assertSuccess();
