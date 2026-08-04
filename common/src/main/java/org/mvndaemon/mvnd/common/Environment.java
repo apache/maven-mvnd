@@ -253,7 +253,7 @@ public enum Environment {
      * a lesser priority) to the user supplied value for this parameter before being used
      * as startup options for the daemon JVM.
      */
-    MVND_JVM_ARGS("mvnd.jvmArgs", null, null, OptionType.STRING, Flags.DISCRIMINATING | Flags.OPTIONAL),
+    MVND_JVM_ARGS("mvnd.jvmArgs", null, "--enable-native-access=ALL-UNNAMED", OptionType.STRING, Flags.DISCRIMINATING | Flags.OPTIONAL),
     /**
      * If <code>true</code>, the <code>-ea</code> option will be passed to the daemon; otherwise the <code>-ea</code>
      * option is not passed to the daemon.
