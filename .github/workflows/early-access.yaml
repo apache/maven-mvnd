@@ -173,9 +173,12 @@ jobs:
                 objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef.aarch64 -- "$input" "$output" 2>/dev/null
               done
 
+          : compile stat backward-compat shim for glibc before 2.33
+          gcc -O3 -Os -Wall -Wextra -Werror -c -o client/target/stat-compat.o client/src/main/resources/glibc/stat-compat.c
+
           : patch gcc startfile
           gcc -O3 -Os -Wall -Wextra -Werror -Wconversion -Wsign-conversion -Wcast-qual -pedantic -c -o client/target/dynamic-libc-start.o client/src/main/resources/glibc/dynamic-libc-start.c
-          ld -r /lib/aarch64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o -o client/target/graalvm-libs-for-glibc-2.17/Scrt1.o
+          ld -r /lib/aarch64-linux-gnu/Scrt1.o client/target/dynamic-libc-start.o client/target/stat-compat.o -o client/target/graalvm-libs-for-glibc-2.17/Scrt1.o
           objcopy --redefine-syms=client/src/main/resources/glibc/glibc.redef.aarch64 client/target/graalvm-libs-for-glibc-2.17/Scrt1.o 2>/dev/null
 
       - name: 'Build native distribution'
@@ -196,7 +199,7 @@ jobs:
         run: |
           ldd client/target/mvnd
           err=0
-          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[017]\)[^0-9]' || err=$?
+          objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[0-7]\)[^0-9]' || err=$?
           (( err == 1 ))
 
       - name: 'Upload daemon test logs'
