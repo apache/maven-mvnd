@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.it;
 import javax.inject.Inject;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -59,10 +60,12 @@ class InteractiveTest {
                 .findFirst()
                 .get();
 
+        final AtomicBoolean promptSeen = new AtomicBoolean();
         final TestClientOutput o = new TestClientOutput() {
             @Override
             public void accept(Message m) {
                 if (m instanceof Prompt) {
+                    promptSeen.set(true);
                     daemonDispatch.accept(((Prompt) m).response("0.1.0-SNAPSHOT"));
                 }
                 super.accept(m);
@@ -73,6 +76,7 @@ class InteractiveTest {
         } else {
             client.execute(o, "versions:set").assertSuccess();
         }
+        Assertions.assertTrue(promptSeen.get(), "versions:set must request the new version");
 
         final String newVersion =
                 MvndTestUtil.version(parameters.multiModuleProjectDirectory().resolve("pom.xml"));

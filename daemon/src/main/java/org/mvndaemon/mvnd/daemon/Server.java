@@ -70,6 +70,7 @@ import org.mvndaemon.mvnd.daemon.DaemonExpiration.DaemonExpirationStrategy;
 import org.mvndaemon.mvnd.logging.smart.BuildEventListener;
 import org.mvndaemon.mvnd.logging.smart.LoggingOutputStream;
 import org.mvndaemon.mvnd.logging.smart.ProjectBuildLogAppender;
+import org.mvndaemon.mvnd.testprogress.MvndTestProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -510,6 +511,36 @@ public class Server implements AutoCloseable, Runnable {
         final BlockingQueue<Message> sendQueue = new PriorityBlockingQueue<>(64, Message.getMessageComparator());
         final BlockingQueue<Message> recvQueue = new LinkedBlockingDeque<>();
         final BuildEventListener buildEventListener = new ClientDispatcher(sendQueue);
+        if (MvndTestProgressLifecycleParticipant.isTestProgressEnabled()) {
+            final ClientDispatcher clientDispatcher = (ClientDispatcher) buildEventListener;
+            MvndTestProgress.setListener(
+                    (projectId,
+                            forkChannelId,
+                            testClass,
+                            testMethod,
+                            completed,
+                            failures,
+                            errors,
+                            skipped,
+                            retrying,
+                            flaky,
+                            flakyTests,
+                            failedTests,
+                            erroredTests) -> clientDispatcher.testProgress(
+                            projectId,
+                            forkChannelId,
+                            testClass,
+                            testMethod,
+                            completed,
+                            failures,
+                            errors,
+                            skipped,
+                            retrying,
+                            flaky,
+                            flakyTests,
+                            failedTests,
+                            erroredTests));
+        }
         final DaemonInputStream daemonInputStream =
                 new DaemonInputStream(projectId -> sendQueue.add(Message.requestInput(projectId)));
         try (ProjectBuildLogAppender logAppender = new ProjectBuildLogAppender(buildEventListener)) {
@@ -643,6 +674,7 @@ public class Server implements AutoCloseable, Runnable {
         } catch (Throwable t) {
             LOGGER.error("Error while building project", t);
         } finally {
+            MvndTestProgress.setListener(null);
             if (!noDaemon) {
                 LOGGER.info("Daemon back to idle");
                 updateState(DaemonState.Idle);
