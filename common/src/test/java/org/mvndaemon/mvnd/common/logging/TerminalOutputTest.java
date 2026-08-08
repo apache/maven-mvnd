@@ -143,11 +143,18 @@ class TerminalOutputTest {
     @Test
     void stripDecorationRemovesLevelPrefixAndAnsi() {
         assertEquals("BUILD FAILURE", TerminalOutput.stripDecoration("[INFO] BUILD FAILURE"));
-        assertEquals("BUILD FAILURE", TerminalOutput.stripDecoration("[INFO] [1mBUILD FAILURE[m"));
+        assertEquals("BUILD FAILURE", TerminalOutput.stripDecoration("[INFO] \u001b[1mBUILD FAILURE\u001b[m"));
+        // A bare "[1m" is literal text, not an SGR sequence: only an ESC-prefixed one may be stripped.
+        assertEquals("[1mBUILD FAILURE", TerminalOutput.stripDecoration("[INFO] [1mBUILD FAILURE"));
         assertEquals(
                 "This project has been banned from the build due to previous failures.",
                 TerminalOutput.stripDecoration(
                         "[INFO] This project has been banned from the build due to previous failures."));
+        // Colored reactor output must still strip down to the bare marker BannedSkipFilter matches on.
+        assertEquals(
+                "This project has been banned from the build due to previous failures.",
+                TerminalOutput.stripDecoration(
+                        "[INFO] \u001b[1mThis project has been banned from the build due to previous failures.\u001b[m"));
     }
 
     @Test

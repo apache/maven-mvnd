@@ -863,7 +863,7 @@ public class TerminalOutput implements ClientOutput {
     }
 
     /** Matches SGR (color) escape sequences emitted by the daemon-side log renderer. */
-    private static final Pattern ANSI = Pattern.compile("\\[[0-9;]*m");
+    private static final Pattern ANSI = Pattern.compile("\\u001b\\[[0-9;]*m");
     /** Matches a leading {@code [LEVEL] } prefix such as {@code [INFO] } or {@code [ERROR] }. */
     private static final Pattern LEVEL_PREFIX = Pattern.compile("^\\[[A-Z]+\\]\\s?");
 
