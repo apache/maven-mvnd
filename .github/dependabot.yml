@@ -22,10 +22,17 @@ updates:
     schedule:
       interval: "daily"
 
+  # The apache org only permits action SHAs listed in
+  # apache/infrastructure-actions/approved_patterns.yml. INFRA's allowlist
+  # review lags an upstream release by roughly a week, and a PR opened before
+  # the new SHA lands there gets startup_failure with no check attached to the
+  # PR at all. The cooldown holds the bump until the allowlist has caught up.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 10
 
   - package-ecosystem: "maven"
     directory: "/"
@@ -36,6 +43,7 @@ updates:
       - "backport"
       - "dependencies"
 
+  # Same allowlist cooldown as the master github-actions entry above.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -44,3 +52,5 @@ updates:
     labels:
       - "backport"
       - "dependencies"
+    cooldown:
+      default-days: 10
