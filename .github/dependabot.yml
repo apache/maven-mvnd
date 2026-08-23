@@ -42,6 +42,13 @@ updates:
     labels:
       - "backport"
       - "dependencies"
+    # provisio 2.0.0 rejects duplicate archive entries, and every released
+    # Maven 3 distribution carries one: lib/jansi-native is written twice as a
+    # directory entry. Master is unaffected because it builds Maven 4, whose
+    # distribution has neither. See apache/maven#12778.
+    ignore:
+      - dependency-name: "ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin"
+        versions: [ "[2.0.0,)" ]
 
   # Same allowlist cooldown as the master github-actions entry above.
   - package-ecosystem: "github-actions"
