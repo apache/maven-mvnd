@@ -105,13 +105,15 @@ $ asdf install mvnd latest
 
 === Set up completion
 
-Optionally, you can set up completion as follows:
+Optionally, you can set up completion in bash or zsh as follows:
 [source,shell]
 ----
-# ensure that MVND_HOME points to your mvnd distribution, note that sdkman does it for you
+# bash: ensure that MVND_HOME points to your mvnd distribution, note that sdkman does it for you
 $ echo 'source $MVND_HOME/bin/mvnd-bash-completion.bash' >> ~/.bashrc
+
+# zsh: same script works in zsh (it auto-detects the shell)
+$ echo 'source $MVND_HOME/bin/mvnd-bash-completion.bash' >> ~/.zshrc
 ----
-`bash` is the only shell supported at this time.
 
 === Note for oh-my-zsh users ===
 
