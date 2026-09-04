@@ -134,7 +134,7 @@ public class MvndSimpleLogger extends MvndBaseLogger {
         if (sink != null) {
             sink.accept(buf.toString());
         } else {
-            CONFIG_PARAMS.outputChoice.getTargetPrintStream().println(buf.toString());
+            CONFIG_PARAMS.outputChoice.getTargetPrintStream().println(buf);
         }
     }
 
@@ -150,16 +150,16 @@ public class MvndSimpleLogger extends MvndBaseLogger {
     protected String renderLevel(int level) {
         switch (level) {
             case LOG_LEVEL_TRACE:
-                return level().debug("TRACE").toString();
+                return level().debug("TRACE");
             case LOG_LEVEL_DEBUG:
-                return level().debug("DEBUG").toString();
+                return level().debug("DEBUG");
             case LOG_LEVEL_INFO:
-                return level().info("INFO").toString();
+                return level().info("INFO");
             case LOG_LEVEL_WARN:
-                return level().warning("WARNING").toString();
+                return level().warning("WARNING");
             case LOG_LEVEL_ERROR:
             default:
-                return level().error("ERROR").toString();
+                return level().error("ERROR");
         }
     }
 

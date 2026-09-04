@@ -152,7 +152,8 @@ public class DefaultClient implements Client {
 
         int exitCode = 0;
         boolean noBuffering = batchMode || parameters.noBuffering();
-        try (TerminalOutput output = new TerminalOutput(noBuffering, parameters.rollingWindowSize(), logFile)) {
+        try (TerminalOutput output = new TerminalOutput(
+                noBuffering, parameters.hideBannedProjectSkips(), parameters.rollingWindowSize(), logFile)) {
             try {
                 // Color
                 // We need to defer this part until the terminal is created
