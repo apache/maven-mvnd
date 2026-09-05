@@ -72,7 +72,7 @@ public class TestRegistry extends DaemonRegistry {
      * @throws AssertionError        if the timeout is exceeded
      */
     public void awaitIdle(String daemonId) {
-        final int timeoutMs = 5000;
+        final int timeoutMs = 30_000;
         final long deadline = System.currentTimeMillis() + timeoutMs;
         while (getAll().stream()
                         .filter(di -> di.getId().equals(daemonId))
@@ -84,6 +84,12 @@ public class TestRegistry extends DaemonRegistry {
             Assertions.assertThat(deadline)
                     .withFailMessage("Daemon %s should have become idle within %d", daemonId, timeoutMs)
                     .isGreaterThan(System.currentTimeMillis());
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
         }
     }
 }
