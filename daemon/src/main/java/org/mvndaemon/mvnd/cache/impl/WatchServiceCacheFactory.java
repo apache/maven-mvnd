@@ -36,6 +36,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.apache.maven.impl.cache.WeakIdentityMap;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 import org.mvndaemon.mvnd.cache.CacheRecord;
@@ -88,7 +89,12 @@ public class WatchServiceCacheFactory implements CacheFactory {
 
     @Override
     public <K, V extends CacheRecord> Cache<K, V> newCache() {
-        return new WatchServiceCache<>();
+        return new WatchServiceCache<>(new ConcurrentHashMap<>());
+    }
+
+    @Override
+    public <K, V extends CacheRecord> Cache<K, V> newWeakCache() {
+        return new WatchServiceCache<>(new WeakIdentityMap<>());
     }
 
     private Registration register(Path key, Registration value) {
@@ -210,7 +216,11 @@ public class WatchServiceCacheFactory implements CacheFactory {
 
     class WatchServiceCache<K, V extends CacheRecord> implements Cache<K, V> {
 
-        private final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
+        private final Map<K, V> map;
+
+        WatchServiceCache(Map<K, V> map) {
+            this.map = map;
+        }
 
         @Override
         public boolean contains(K key) {
