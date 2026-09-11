@@ -540,6 +540,9 @@
                   <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
                   <excludes>
                     <exclude>org.jline:jline-terminal-ffm</exclude>
+                    <exclude>org.jline:jline-terminal-jni</exclude>
+                    <exclude>org.jline:jline-terminal</exclude>
+                    <exclude>org.jline:jline-native</exclude>
                   </excludes>
                   <ignoredScopes>
                     <!-- GraalVM SVM and deps are 17+, but are provided and used only for Native -->
