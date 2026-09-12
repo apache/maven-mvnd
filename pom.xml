@@ -84,7 +84,7 @@
     <graalvm.plugin.version>1.1.12</graalvm.plugin.version>
     <groovy.version>5.1.2</groovy.version>
     <jakarta.inject.version>1.0.5</jakarta.inject.version>
-    <jline.version>3.30.13</jline.version>
+    <jline.version>4.4.3</jline.version>
     <maven.version>3.9.16</maven.version>
     <!-- Keep in sync with Maven -->
     <maven.resolver.version>1.9.27</maven.resolver.version>
@@ -540,6 +540,9 @@
                   <maxJdkVersion>${maven.compiler.target}</maxJdkVersion>
                   <excludes>
                     <exclude>org.jline:jline-terminal-ffm</exclude>
+                    <exclude>org.jline:jline-terminal-jni</exclude>
+                    <exclude>org.jline:jline-terminal</exclude>
+                    <exclude>org.jline:jline-native</exclude>
                   </excludes>
                   <ignoredScopes>
                     <!-- GraalVM SVM and deps are 17+, but are provided and used only for Native -->
