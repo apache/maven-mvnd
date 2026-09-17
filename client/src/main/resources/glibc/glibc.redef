@@ -34,3 +34,4 @@ sem_destroy sem_destroy@GLIBC_2.2.5
 sem_init sem_init@GLIBC_2.2.5
 sem_post sem_post@GLIBC_2.2.5
 sem_wait sem_wait@GLIBC_2.2.5
+stat stat@GLIBC_2.2.5
