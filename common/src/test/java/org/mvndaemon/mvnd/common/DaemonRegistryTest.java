@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -34,6 +35,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -164,7 +166,7 @@ public class DaemonRegistryTest {
             reg1.storeStopEvent(new DaemonStopEvent(
                     "11111", System.currentTimeMillis(), DaemonExpirationStatus.QUIET_EXPIRE, "because"));
             assertEquals(1, reg1.doGetDaemonStopEvents().size());
-            Files.writeString(temp, "Foobar");
+            Files.write(temp, "Foobar".getBytes(StandardCharsets.UTF_8));
             // check if registry is reset
             assertEquals(0, reg1.getAll().size());
             assertEquals(0, reg1.doGetDaemonStopEvents().size());
@@ -197,7 +199,7 @@ public class DaemonRegistryTest {
                                         System.currentTimeMillis()));
                             }
                         }))
-                        .toList()
+                        .collect(Collectors.toList())
                         .toArray(new CompletableFuture[0]))
                 .get();
 
@@ -218,7 +220,7 @@ public class DaemonRegistryTest {
                                 reg.remove(info.getId());
                             }
                         }))
-                        .toList()
+                        .collect(Collectors.toList())
                         .toArray(new CompletableFuture[0]))
                 .get();
 
@@ -237,20 +239,26 @@ public class DaemonRegistryTest {
         CompletableFuture.allOf(IntStream.range(0, nbDaemons)
                         .mapToObj(i -> {
                             try {
-                                return new ProcessBuilder(
-                                                "java",
-                                                "-cp",
-                                                System.getProperty("java.class.path"),
-                                                "org.mvndaemon.mvnd.common.RegistryMutator",
-                                                "add",
-                                                temp.toString())
-                                        .start()
-                                        .onExit();
+                                return CompletableFuture.runAsync(() -> {
+                                    try {
+                                        new ProcessBuilder(
+                                                        "java",
+                                                        "-cp",
+                                                        System.getProperty("java.class.path"),
+                                                        "org.mvndaemon.mvnd.common.RegistryMutator",
+                                                        "add",
+                                                        temp.toString())
+                                                .start()
+                                                .waitFor();
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
                         })
-                        .toList()
+                        .collect(Collectors.toList())
                         .toArray(new CompletableFuture[0]))
                 .get();
 
@@ -268,21 +276,27 @@ public class DaemonRegistryTest {
         CompletableFuture.allOf(toRemove.stream()
                         .map(info -> {
                             try {
-                                return new ProcessBuilder(
-                                                "java",
-                                                "-cp",
-                                                System.getProperty("java.class.path"),
-                                                "org.mvndaemon.mvnd.common.RegistryMutator",
-                                                "remove",
-                                                temp.toString(),
-                                                info.getId())
-                                        .start()
-                                        .onExit();
+                                return CompletableFuture.runAsync(() -> {
+                                    try {
+                                        new ProcessBuilder(
+                                                        "java",
+                                                        "-cp",
+                                                        System.getProperty("java.class.path"),
+                                                        "org.mvndaemon.mvnd.common.RegistryMutator",
+                                                        "remove",
+                                                        temp.toString(),
+                                                        info.getId())
+                                                .start()
+                                                .waitFor();
+                                    } catch (Exception e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                });
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
                         })
-                        .toList()
+                        .collect(Collectors.toList())
                         .toArray(new CompletableFuture[0]))
                 .get();
 
