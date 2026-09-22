@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.it;
 import javax.inject.Inject;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -52,10 +53,10 @@ class RawStreamsTest {
         final TestClientOutput o = new TestClientOutput();
         client.execute(o, "validate", "--quiet", "--raw-streams").assertSuccess();
         String expected = "PrintOut{payload='Hello'}";
-        o.getMessages().forEach(m -> System.out.println(m.toString()));
         assertTrue(
                 o.getMessages().stream().anyMatch(m -> m.toString().contains(expected)),
-                "Output should contain " + expected);
+                () -> "Output should contain " + expected + " but got:\n"
+                        + o.getMessages().stream().map(Object::toString).collect(Collectors.joining("\n")));
         assertDaemonRegistrySize(1);
     }
 
