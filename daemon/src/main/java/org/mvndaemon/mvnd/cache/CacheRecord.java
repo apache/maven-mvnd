@@ -35,5 +35,5 @@ public interface CacheRecord {
     /**
      * Callback called by the cache when this {@link CacheRecord} is removed from the cache.
      */
-    void invalidate();
+    default void invalidate() {}
 }
