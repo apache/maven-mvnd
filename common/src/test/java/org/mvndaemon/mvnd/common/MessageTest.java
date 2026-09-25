@@ -76,7 +76,20 @@ public class MessageTest {
 
     @Test
     void projectTestProgressSerialization() throws IOException {
-        Message msg = Message.projectTestProgress("my-app", "com.acme.FooTest", "shouldWork", 3, 1, 0, 1);
+        Message msg = Message.projectTestProgress(
+                "my-app",
+                7,
+                "com.acme.FooTest",
+                "shouldWork",
+                3,
+                1,
+                0,
+                1,
+                2,
+                1,
+                java.util.List.of("FooTest#shouldWork"),
+                java.util.List.of("FooTest#broken: expected <5> but was <4>"),
+                java.util.List.of("FooTest#blows: / by zero"));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (DataOutputStream daos = new DataOutputStream(baos)) {
@@ -90,17 +103,23 @@ public class MessageTest {
         assertTrue(msg2 instanceof Message.ProjectTestProgressEvent);
         Message.ProjectTestProgressEvent e = (Message.ProjectTestProgressEvent) msg2;
         assertEquals("my-app", e.getProjectId());
+        assertEquals(7, e.getForkChannelId());
         assertEquals("com.acme.FooTest", e.getTestClass());
         assertEquals("shouldWork", e.getTestMethod());
         assertEquals(3, e.getCompleted());
         assertEquals(1, e.getFailures());
         assertEquals(0, e.getErrors());
         assertEquals(1, e.getSkipped());
+        assertEquals(2, e.getRetrying());
+        assertEquals(1, e.getFlaky());
+        assertEquals(java.util.List.of("FooTest#shouldWork"), e.getFlakyTests());
+        assertEquals(java.util.List.of("FooTest#broken: expected <5> but was <4>"), e.getFailedTests());
+        assertEquals(java.util.List.of("FooTest#blows: / by zero"), e.getErroredTests());
     }
 
     @Test
     void projectTestProgressNullClassAndMethod() throws IOException {
-        Message msg = Message.projectTestProgress("my-app", null, null, 0, 0, 0, 0);
+        Message msg = Message.projectTestProgress("my-app", 11, null, null, 0, 0, 0, 0);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (DataOutputStream daos = new DataOutputStream(baos)) {
             msg.write(daos);
@@ -110,7 +129,11 @@ public class MessageTest {
             msg2 = Message.read(dis);
         }
         Message.ProjectTestProgressEvent e = (Message.ProjectTestProgressEvent) msg2;
+        assertEquals(11, e.getForkChannelId());
         assertNull(e.getTestClass());
         assertNull(e.getTestMethod());
+        assertEquals(0, e.getRetrying());
+        assertEquals(0, e.getFlaky());
+        assertTrue(e.getFlakyTests().isEmpty());
     }
 }
