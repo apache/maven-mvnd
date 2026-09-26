@@ -49,6 +49,23 @@ public class WatchServiceCacheFactory implements CacheFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(WatchServiceCacheFactory.class);
 
+    /**
+     * {@link com.sun.nio.file.SensitivityWatchEventModifier#HIGH}, loaded reflectively because the type is internal
+     * proprietary API and thus not reachable when compiling with {@code --release}.
+     */
+    private static final WatchEvent.Modifier[] SENSITIVITY_MODIFIERS = sensitivityModifiers();
+
+    private static WatchEvent.Modifier[] sensitivityModifiers() {
+        try {
+            Object high = Class.forName("com.sun.nio.file.SensitivityWatchEventModifier")
+                    .getField("HIGH")
+                    .get(null);
+            return new WatchEvent.Modifier[] {(WatchEvent.Modifier) high};
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     private final WatchService watchService;
 
     /**
@@ -95,18 +112,12 @@ public class WatchServiceCacheFactory implements CacheFactory {
         if (value == null) {
             LOG.debug("Starting to watch path {}", key);
             try {
-                WatchEvent.Modifier[] mods;
-                try {
-                    mods = new WatchEvent.Modifier[] {com.sun.nio.file.SensitivityWatchEventModifier.HIGH};
-                } catch (Throwable t) {
-                    mods = null;
-                }
                 final WatchKey watchKey = key.register(
                         watchService,
                         new WatchEvent.Kind[] {
                             StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY
                         },
-                        mods);
+                        SENSITIVITY_MODIFIERS);
                 return new Registration(watchKey);
             } catch (NoSuchFileException e) {
                 // we allow this exception in case of a missing reactor artifact
