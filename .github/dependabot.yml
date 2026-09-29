@@ -46,6 +46,9 @@ updates:
       # mrm-maven-plugin 2.x requires Java 17; the 1.x line builds for Java 8
       - dependency-name: "org.codehaus.mojo:mrm-maven-plugin"
         versions: [">= 2.0.0"]
+      # Groovy 6 requires Java 17; this line still builds on JDK 11
+      - dependency-name: "org.apache.groovy:*"
+        versions: [">= 6.0.0"]
 
   # Same allowlist cooldown as the master github-actions entry above.
   - package-ecosystem: "github-actions"
