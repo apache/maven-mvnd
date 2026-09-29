@@ -18,6 +18,7 @@ __libc_start_main __dynamic_libc_start_main
 clock_gettime clock_gettime@GLIBC_2.17
 dlopen dlopen@GLIBC_2.17
 dlsym dlsym@GLIBC_2.17
+dlclose dlclose@GLIBC_2.17
 memcpy memcpy@GLIBC_2.17
 posix_spawn posix_spawn@GLIBC_2.17
 pthread_attr_getguardsize pthread_attr_getguardsize@GLIBC_2.17
