@@ -18,7 +18,7 @@
  */
 package org.mvndaemon.mvnd.common;
 
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Random;
@@ -31,7 +31,7 @@ public class RegistryMutator {
     public static void main(String[] args) {
         Random random = new Random();
         if (args[0].equals("add")) {
-            try (DaemonRegistry reg = new DaemonRegistry(Path.of(args[1]))) {
+            try (DaemonRegistry reg = new DaemonRegistry(Paths.get(args[1]))) {
                 byte[] token = new byte[16];
                 random.nextBytes(token);
                 reg.store(new DaemonInfo(
@@ -48,7 +48,7 @@ public class RegistryMutator {
                         System.currentTimeMillis()));
             }
         } else {
-            try (DaemonRegistry reg = new DaemonRegistry(Path.of(args[1]))) {
+            try (DaemonRegistry reg = new DaemonRegistry(Paths.get(args[1]))) {
                 reg.remove(args[2]);
             }
         }

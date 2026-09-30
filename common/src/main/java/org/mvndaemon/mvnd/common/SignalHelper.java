@@ -24,9 +24,21 @@ public class SignalHelper {
      * Ignore signals to that stopping the mvnd client won't stop the daemon
      */
     public static void ignoreStopSignals() throws Exception {
-        sun.misc.Signal.handle(new sun.misc.Signal("INT"), sun.misc.SignalHandler.SIG_IGN);
+        handle("INT");
         if (Os.current() != Os.WINDOWS) {
-            sun.misc.Signal.handle(new sun.misc.Signal("TSTP"), sun.misc.SignalHandler.SIG_IGN);
+            handle("TSTP");
         }
+    }
+
+    /**
+     * Equivalent of {@code sun.misc.Signal.handle(new sun.misc.Signal(signal), sun.misc.SignalHandler.SIG_IGN)},
+     * done reflectively because {@code sun.misc} is not reachable when compiling with {@code --release}.
+     */
+    private static void handle(String signal) throws Exception {
+        Class<?> signalClass = Class.forName("sun.misc.Signal");
+        Class<?> handlerClass = Class.forName("sun.misc.SignalHandler");
+        Object sigIgn = handlerClass.getField("SIG_IGN").get(null);
+        Object sig = signalClass.getConstructor(String.class).newInstance(signal);
+        signalClass.getMethod("handle", signalClass, handlerClass).invoke(null, sig, sigIgn);
     }
 }
