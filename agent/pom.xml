@@ -61,6 +61,13 @@
             </goals>
             <phase>package</phase>
             <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>javassist</pattern>
+                  <shadedPattern>org.mvndaemon.mvnd.shaded.javassist</shadedPattern>
+                </relocation>
+              </relocations>
+
               <filters>
                 <filter>
                   <artifact>org.javassist:javassist</artifact>
