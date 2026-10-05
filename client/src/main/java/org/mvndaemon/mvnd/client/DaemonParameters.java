@@ -383,6 +383,10 @@ public class DaemonParameters {
         return property(Environment.MVND_NO_BUFERING).orFail().asBoolean();
     }
 
+    public boolean hideBannedProjectSkips() {
+        return property(Environment.MVND_HIDE_BANNED_PROJECT_SKIPS).orFail().asBoolean();
+    }
+
     public int rollingWindowSize() {
         return property(Environment.MVND_ROLLING_WINDOW_SIZE).orFail().asInt();
     }

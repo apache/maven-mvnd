@@ -76,4 +76,12 @@ public abstract class BuildEventListener {
     public abstract void log(String msg);
 
     public abstract void transfer(String projectId, TransferEvent e);
+
+    /** Folds the given project's in-flight test-progress snapshots into the running reactor-wide totals. */
+    public void foldTestProgress(String projectId) {}
+
+    /** @return the collected test-summary data, or {@code null} if this listener does not track one */
+    public TestBuildSummary getTestSummary() {
+        return null;
+    }
 }
