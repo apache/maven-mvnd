@@ -62,7 +62,7 @@ import org.mvndaemon.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
-import org.slf4j.impl.MvndLoggerFactory;
+import org.slf4j.simple.MvndLoggerFactory;
 
 import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 

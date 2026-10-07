@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# key = Slf4j effective logger factory implementation
-# value = corresponding o.a.m.cli.logging.Slf4jConfiguration class
-org.slf4j.simple.MvndLoggerFactory org.slf4j.simple.MvndConfiguration
+# SLF4J 2.x discovers its provider through the ServiceLoader; Maven's own
+# maven-slf4j-provider is excluded from the mvnd distribution, so mvnd
+# provides its own implementation here.
+org.slf4j.simple.MvndServiceProvider

@@ -16,15 +16,14 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.slf4j.impl;
+package org.slf4j.simple;
 
 import java.util.Date;
 import java.util.function.Consumer;
 
-import org.apache.maven.shared.utils.logging.MessageBuilder;
-import org.apache.maven.shared.utils.logging.MessageUtils;
+import org.apache.maven.message.MessageBuilder;
 
-import static org.apache.maven.shared.utils.logging.MessageUtils.level;
+import static org.apache.maven.jline.MessageUtils.builder;
 
 /**
  * Logger for Maven, that support colorization of levels and stacktraces. This class implements 2 methods introduced in
@@ -150,16 +149,16 @@ public class MvndSimpleLogger extends MvndBaseLogger {
     protected String renderLevel(int level) {
         switch (level) {
             case LOG_LEVEL_TRACE:
-                return level().debug("TRACE").toString();
+                return builder().debug("TRACE").build();
             case LOG_LEVEL_DEBUG:
-                return level().debug("DEBUG").toString();
+                return builder().debug("DEBUG").build();
             case LOG_LEVEL_INFO:
-                return level().info("INFO").toString();
+                return builder().info("INFO").build();
             case LOG_LEVEL_WARN:
-                return level().warning("WARNING").toString();
+                return builder().warning("WARNING").build();
             case LOG_LEVEL_ERROR:
             default:
-                return level().error("ERROR").toString();
+                return builder().error("ERROR").build();
         }
     }
 
@@ -167,7 +166,7 @@ public class MvndSimpleLogger extends MvndBaseLogger {
         if (t == null) {
             return;
         }
-        MessageBuilder builder = MessageUtils.buffer(sb);
+        MessageBuilder builder = builder();
         builder.newline();
         builder.failure(t.getClass().getName());
         if (t.getMessage() != null) {
@@ -177,6 +176,7 @@ public class MvndSimpleLogger extends MvndBaseLogger {
         builder.newline();
 
         printStackTrace(t, builder, "");
+        sb.append(builder.build());
     }
 
     private void printStackTrace(Throwable t, MessageBuilder builder, String prefix) {
