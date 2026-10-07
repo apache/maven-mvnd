@@ -58,18 +58,9 @@
         <artifact id="org.codehaus.plexus:plexus-interactivity-api">
             <exclusion id="*:*"/>
         </artifact>
-        <artifact id="org.jline:jline-terminal">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="org.jline:jline-terminal-ffm">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="org.jline:jline-terminal-jni">
-            <exclusion id="*:*"/>
-        </artifact>
-        <artifact id="org.jline:jline-native">
-            <exclusion id="*:*"/>
-        </artifact>
+        <!-- jline is not listed here: Maven 3.10.0 ships it in mvn/lib already (jline-terminal,
+             jline-terminal-ffm, jline-terminal-jni, jline-native), so adding it again would put
+             two copies of each jar into the distribution. -->
     </artifactSet>
 
     <fileSet to="/">
