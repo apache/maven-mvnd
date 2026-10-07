@@ -57,7 +57,7 @@ import org.mvndaemon.mvnd.common.SocketFamily;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.SimpleLogger;
+import org.slf4j.simple.SimpleLogger;
 
 import static java.lang.Thread.sleep;
 import static org.mvndaemon.mvnd.common.DaemonState.Canceled;

@@ -19,7 +19,7 @@
 package org.mvndaemon.mvnd.logging.smart;
 
 import org.slf4j.MDC;
-import org.slf4j.impl.MvndSimpleLogger;
+import org.slf4j.simple.MvndSimpleLogger;
 
 /**
  * Forwards log messages to the client.

@@ -85,10 +85,10 @@
     <groovy.version>5.1.3</groovy.version>
     <jakarta.inject.version>1.0.5</jakarta.inject.version>
     <jline.version>3.30.17</jline.version>
-    <maven.version>3.9.16</maven.version>
+    <maven.version>3.10.0</maven.version>
     <!-- Keep in sync with Maven -->
-    <maven.resolver.version>1.9.27</maven.resolver.version>
-    <slf4j.version>1.7.36</slf4j.version>
+    <maven.resolver.version>2.0.24</maven.resolver.version>
+    <slf4j.version>2.0.19</slf4j.version>
     <sisu.version>1.1.0</sisu.version>
 
     <!-- plugin versions a..z -->
@@ -213,9 +213,9 @@
 
       <!-- Only for MessageBuilder/MessageUtils -->
       <dependency>
-        <groupId>org.apache.maven.shared</groupId>
-        <artifactId>maven-shared-utils</artifactId>
-        <version>3.5.0</version>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-jline</artifactId>
+        <version>${maven.version}</version>
       </dependency>
 
       <dependency>
@@ -399,6 +399,7 @@
               <exclude>.mvn/**/*</exclude>
               <exclude>*.adoc</exclude>
               <exclude>*.md</exclude>
+              <exclude>**/dependency-reduced-pom.xml</exclude>
               <exclude>src/test/projects/**/.classpath</exclude>
               <exclude>src/test/projects/**/.project</exclude>
               <exclude>src/test/projects/**/.settings/**</exclude>

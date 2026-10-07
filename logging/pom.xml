@@ -36,8 +36,8 @@
       <artifactId>maven-embedder</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven.shared</groupId>
-      <artifactId>maven-shared-utils</artifactId>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-jline</artifactId>
     </dependency>
 
     <!-- Logging -->
@@ -79,8 +79,9 @@
                   <classifier>sources</classifier>
                 </artifactItem>
               </artifactItems>
-              <includes>org/apache/maven/logwrapper/*.java,org/slf4j/impl/*.java</includes>
-              <excludes>**/StaticLoggerBinder.java,**/StaticMDCBinder.java</excludes>
+              <!-- Maven 3.10.0 moved its slf4j provider from org.slf4j.impl to org.slf4j.simple (SLF4J 2.x) -->
+              <includes>org/apache/maven/logwrapper/*.java,org/slf4j/simple/*.java</includes>
+              <excludes>**/MavenSimpleServiceProvider.java</excludes>
               <outputDirectory>${project.build.directory}/generated-sources/unpack</outputDirectory>
             </configuration>
           </execution>
