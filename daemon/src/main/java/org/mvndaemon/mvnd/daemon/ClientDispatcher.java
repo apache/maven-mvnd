@@ -38,12 +38,14 @@ import org.eclipse.aether.transfer.TransferEvent.RequestType;
 import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildStarted;
+import org.mvndaemon.mvnd.logging.smart.TestBuildSummary;
 
 /**
  * Sends events back to the client.
  */
 public class ClientDispatcher implements BuildEventListener {
     private final Collection<Message> queue;
+    private final TestBuildSummary testSummary = new TestBuildSummary();
     private static final Pattern TRAILING_EOLS_PATTERN = Pattern.compile("[\r\n]+$");
 
     public ClientDispatcher(Collection<Message> queue) {
@@ -128,6 +130,56 @@ public class ClientDispatcher implements BuildEventListener {
                 execution.getVersion(),
                 execution.getGoal(),
                 execution.getExecutionId()));
+    }
+
+    public void testProgress(
+            String projectId,
+            int forkChannelId,
+            String testClass,
+            String testMethod,
+            int completed,
+            int failures,
+            int errors,
+            int skipped,
+            int retrying,
+            int flaky,
+            List<String> flakyTests,
+            List<String> failedTests,
+            List<String> erroredTests) {
+        queue.add(Message.projectTestProgress(
+                projectId,
+                forkChannelId,
+                testClass,
+                testMethod,
+                completed,
+                failures,
+                errors,
+                skipped,
+                retrying,
+                flaky,
+                flakyTests,
+                failedTests,
+                erroredTests));
+        testSummary.record(
+                projectId,
+                forkChannelId,
+                completed,
+                failures,
+                errors,
+                skipped,
+                retrying,
+                flaky,
+                flakyTests,
+                failedTests,
+                erroredTests);
+    }
+
+    public void foldTestProgress(String projectId) {
+        testSummary.foldProject(projectId);
+    }
+
+    public TestBuildSummary getTestSummary() {
+        return testSummary;
     }
 
     public void finish(int exitCode) throws Exception {
