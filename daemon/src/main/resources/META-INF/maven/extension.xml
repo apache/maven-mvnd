@@ -26,5 +26,7 @@ under the License.
 
     <exportedArtifacts>
         <exportedArtifact>org.codehaus.plexus:plexus-interactivity-api</exportedArtifact>
+        <!-- Not really exported (as package); here to prevent adding Takari Smart Builder as transitive of some extension like Tycho is -->
+        <exportedArtifact>io.takari.maven:takari-smart-builder</exportedArtifact>
     </exportedArtifacts>
 </extension>
