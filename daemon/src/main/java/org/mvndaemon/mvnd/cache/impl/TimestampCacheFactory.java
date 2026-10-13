@@ -33,6 +33,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.maven.impl.cache.WeakIdentityMap;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
 import org.mvndaemon.mvnd.cache.CacheRecord;
@@ -47,7 +48,12 @@ public class TimestampCacheFactory implements CacheFactory {
 
     @Override
     public <K, V extends CacheRecord> Cache<K, V> newCache() {
-        return new TimestampCache<>();
+        return new TimestampCache<>(new ConcurrentHashMap<>());
+    }
+
+    @Override
+    public <K, V extends CacheRecord> Cache<K, V> newWeakCache() {
+        return new TimestampCache<>(new WeakIdentityMap<>());
     }
 
     /**
@@ -116,7 +122,11 @@ public class TimestampCacheFactory implements CacheFactory {
 
     static class TimestampCache<K, V extends CacheRecord> implements Cache<K, V> {
 
-        private final ConcurrentHashMap<K, Record<V>> map = new ConcurrentHashMap<>();
+        private final Map<K, Record<V>> map;
+
+        TimestampCache(Map<K, Record<V>> map) {
+            this.map = map;
+        }
 
         @Override
         public boolean contains(K key) {

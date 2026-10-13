@@ -54,9 +54,6 @@ public class InvalidatingPluginArtifactsCache extends DefaultPluginArtifactsCach
             return record.getArtifacts().stream()
                     .map(artifact -> artifact.getFile().toPath());
         }
-
-        @Override
-        public void invalidate() {}
     }
 
     final Cache<Key, Record> cache;
