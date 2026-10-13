@@ -133,7 +133,7 @@ public class MvndSimpleLogger extends MvndBaseLogger {
         if (sink != null) {
             sink.accept(buf.toString());
         } else {
-            CONFIG_PARAMS.outputChoice.getTargetPrintStream().println(buf.toString());
+            CONFIG_PARAMS.outputChoice.getTargetPrintStream().println(buf);
         }
     }
 

@@ -21,6 +21,8 @@ package org.mvndaemon.mvnd.logging.smart;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import java.util.List;
+
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -30,11 +32,17 @@ import org.apache.maven.execution.ProjectExecutionListener;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.lifecycle.internal.ReactorBuildStatus;
 import org.eclipse.sisu.Typed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @Named
 @Typed({LoggingExecutionListener.class, ExecutionListener.class, ProjectExecutionListener.class})
 public class LoggingExecutionListener implements ExecutionListener, ProjectExecutionListener {
+
+    /** Binds to {@code MvndSimpleLogger} because this class lives in the Maven realm, so the summary is colorized
+     *  and routed to the client through the same pipeline as any other Maven console line. */
+    private static final Logger LOGGER = LoggerFactory.getLogger("org.mvndaemon.mvnd.testsummary");
 
     private ExecutionListener delegate;
     private BuildEventListener buildEventListener;
@@ -93,7 +101,38 @@ public class LoggingExecutionListener implements ExecutionListener, ProjectExecu
     @Override
     public void sessionEnded(ExecutionEvent event) {
         setMdc(event);
+        emitTestSummary();
         delegate.sessionEnded(event);
+    }
+
+    /**
+     * Logs the collected test summary immediately before Maven's Reactor Summary/BUILD banner (emitted next by
+     * {@code delegate.sessionEnded}), through this listener's own {@link #LOGGER} so coloring, the {@code [LEVEL]}
+     * prefix, and {@code -q} gating all come from the normal Maven logging pipeline.
+     */
+    private void emitTestSummary() {
+        TestBuildSummary summary = buildEventListener.getTestSummary();
+        if (summary == null) {
+            return;
+        }
+        List<TestBuildSummary.SummaryLine> lines = summary.renderLines();
+        if (lines.isEmpty()) {
+            return;
+        }
+        ProjectBuildLogAppender.setProjectId(null);
+        for (TestBuildSummary.SummaryLine line : lines) {
+            switch (line.level) {
+                case ERROR:
+                    LOGGER.error(line.text);
+                    break;
+                case WARNING:
+                    LOGGER.warn(line.text);
+                    break;
+                default:
+                    LOGGER.info(line.text);
+                    break;
+            }
+        }
     }
 
     @Override
@@ -130,6 +169,8 @@ public class LoggingExecutionListener implements ExecutionListener, ProjectExecu
         setMdc(event);
         buildEventListener.mojoStarted(event);
         delegate.mojoStarted(event);
+        // Folds the previous test-running mojo's snapshots into the reactor totals; a no-op for non-test mojos.
+        buildEventListener.foldTestProgress(event.getProject().getArtifactId());
     }
 
     @Override
