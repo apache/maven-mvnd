@@ -37,7 +37,7 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
-      <artifactId>maven-embedder</artifactId>
+      <artifactId>maven-api-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.daemon</groupId>
@@ -77,53 +77,6 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>fallback-main</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <release>${maven-dist.required.jdk}</release>
-              <compileSourceRoots>
-                <root>${project.basedir}/src/main/java-fallback</root>
-              </compileSourceRoots>
-            </configuration>
-          </execution>
-          <execution>
-            <id>mvnd-main</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <multiReleaseOutput>true</multiReleaseOutput>
-              <compileSourceRoots>
-                <root>${project.basedir}/src/main/java-mvnd</root>
-              </compileSourceRoots>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Multi-Release>true</Multi-Release>
-            </manifestEntries>
-          </archive>
-        </configuration>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
