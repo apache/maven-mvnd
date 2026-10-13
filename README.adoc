@@ -180,6 +180,16 @@ The last column lists the Java 17 or later builds that vendors published as of O
 |FreeBSD x86 (32-bit) |no |yes |FreeBSD ports: 17, 21
 |===
 
+On Linux, the native client links to the system C library dynamically and needs glibc 2.12 or later on x86_64,
+or glibc 2.17 or later on aarch64; the release workflow checks both limits.
+When the native client cannot load, for example on an older glibc, `bin/mvnd.sh` runs the Java client instead.
+
+A native client takes its glibc requirement from the system that builds it, not from GraalVM:
+GraalVM's own static libraries need nothing newer than glibc 2.17.
+Built on Ubuntu 24.04 without the release workflow's adjustments, the client needs glibc 2.34; built inside AlmaLinux 8,
+it needs only glibc 2.17 on aarch64. AlmaLinux 8 needs the `zlib-static` package from its `powertools` repository for
+the build.
+
 == Usage
 
 `mvnd` is designed to accept the same command line options like stock `mvn` (plus some extras - see below), e.g.:
