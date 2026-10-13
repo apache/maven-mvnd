@@ -104,6 +104,7 @@ import org.codehaus.plexus.interpolation.AbstractValueSource;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.eclipse.aether.DefaultRepositoryCache;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.transfer.TransferListener;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingExtensionRealmCache;
 import org.mvndaemon.mvnd.cache.invalidating.InvalidatingPluginArtifactsCache;
@@ -1248,6 +1249,25 @@ public class DaemonMavenCli implements DaemonCli {
             updateSnapshots = true;
         }
 
+        String artifactsUpdatePolicy = null;
+        String metadataUpdatePolicy = null;
+
+        if (commandLine.hasOption(CLIManager.UPDATE_ARTIFACTS)) {
+            artifactsUpdatePolicy = RepositoryPolicy.UPDATE_POLICY_ALWAYS;
+        }
+
+        if (artifactsUpdatePolicy == null && commandLine.hasOption(CLIManager.ARTIFACTS_UPDATE_POLICY)) {
+            artifactsUpdatePolicy = commandLine.getOptionValue(CLIManager.ARTIFACTS_UPDATE_POLICY);
+        }
+
+        if (commandLine.hasOption(CLIManager.UPDATE_METADATA)) {
+            metadataUpdatePolicy = RepositoryPolicy.UPDATE_POLICY_ALWAYS;
+        }
+
+        if (metadataUpdatePolicy == null && commandLine.hasOption(CLIManager.METADATA_UPDATE_POLICY)) {
+            metadataUpdatePolicy = commandLine.getOptionValue(CLIManager.METADATA_UPDATE_POLICY);
+        }
+
         String globalChecksumPolicy = null;
 
         if (commandLine.hasOption(CLIManager.CHECKSUM_FAILURE_POLICY)) {
@@ -1308,6 +1328,8 @@ public class DaemonMavenCli implements DaemonCli {
                 .setTransferListener(transferListener) // default: batch mode which goes along with interactive
                 .setUpdateSnapshots(updateSnapshots) // default: false
                 .setNoSnapshotUpdates(noSnapshotUpdates) // default: false
+                .setArtifactsUpdatePolicy(artifactsUpdatePolicy) // default: null
+                .setMetadataUpdatePolicy(metadataUpdatePolicy) // default: null
                 .setGlobalChecksumPolicy(globalChecksumPolicy) // default: warn
                 .setMultiModuleProjectDirectory(cliRequest.getMultiModuleProjectDirectory());
 
