@@ -31,12 +31,15 @@ import org.apache.maven.cling.invoker.ProtoLookup;
 import org.apache.maven.cling.invoker.mvn.MavenContext;
 import org.apache.maven.cling.invoker.mvn.resident.ResidentMavenInvoker;
 import org.apache.maven.cling.utils.CLIReportingUtils;
+import org.apache.maven.execution.ExecutionListener;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.jline.MessageUtils;
 import org.apache.maven.logging.BuildEventListener;
 import org.apache.maven.logging.LoggingOutputStream;
 import org.jline.terminal.TerminalBuilder;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.daemon.ClientDispatcher;
+import org.mvndaemon.mvnd.daemon.TestSummaryExecutionListener;
 
 public class DaemonMavenInvoker extends ResidentMavenInvoker {
     public DaemonMavenInvoker(ProtoLookup protoLookup, @Nullable Consumer<LookupContext> contextConsumer) {
@@ -76,6 +79,16 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
     @Override
     protected org.apache.maven.logging.BuildEventListener doDetermineBuildEventListener(MavenContext context) {
         return context.invokerRequest.lookup().lookup(BuildEventListener.class);
+    }
+
+    @Override
+    protected ExecutionListener determineExecutionListener(MavenContext context) {
+        ExecutionListener delegate = super.determineExecutionListener(context);
+        BuildEventListener buildEventListener = doDetermineBuildEventListener(context);
+        if (buildEventListener instanceof ClientDispatcher clientDispatcher) {
+            return new TestSummaryExecutionListener(delegate, clientDispatcher);
+        }
+        return delegate;
     }
 
     @Override
