@@ -82,7 +82,7 @@ NATIVE_DLL:=$(NATIVE_DIR)/$(LIBNAME)
 # For cross-compilation, install docker. See also https://github.com/dockcross/dockcross
 # Disabled linux-armv6 build because of this issue; https://github.com/dockcross/dockcross/issues/190
 native-all: linux-x86 linux-x86_64 linux-arm linux-armv6 linux-armv7 \
-	linux-arm64 linux-ppc64 win-x86 win-x86_64 mac-x86 mac-x86_64 mac-arm64 freebsd-x86 freebsd-x86_64
+	linux-arm64 linux-ppc64 win-x86 win-x86_64 mac-x86_64 mac-arm64 freebsd-x86 freebsd-x86_64
 
 native: $(NATIVE_DLL)
 
@@ -135,10 +135,6 @@ target/dockcross/dockcross-windows-static-x64: dockcross
 	chmod +x target/dockcross/dockcross-windows-static-x64
 win-x86_64: download-includes target/dockcross/dockcross-windows-static-x64
 	target/dockcross/dockcross-windows-static-x64 --image dockcross/windows-static-x64$(windows-static-x64-digest) bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
-
-mac-x86: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
-		-e CROSS_TRIPLE=i386-apple-darwin multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Mac OS_ARCH=x86
 
 mac-x86_64: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \

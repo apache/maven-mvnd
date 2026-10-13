@@ -17,7 +17,7 @@
 
 # os=Default is meant to be generic unix/linux
 
-known_targets := Linux-x86 Linux-x86_64 Linux-arm Linux-armv6 Linux-armv7 Linux-android-arm Linux-ppc64 Mac-x86 Mac-x86_64 Mac-arm64 DragonFly-x86_64 FreeBSD-x86_64 OpenBSD-x86_64 Windows-x86 Windows-x86_64 SunOS-sparcv9 HPUX-ia64_32
+known_targets := Linux-x86 Linux-x86_64 Linux-arm Linux-armv6 Linux-armv7 Linux-android-arm Linux-ppc64 Mac-x86_64 Mac-arm64 DragonFly-x86_64 FreeBSD-x86_64 OpenBSD-x86_64 Windows-x86 Windows-x86_64 SunOS-sparcv9 HPUX-ia64_32
 target := $(OS_NAME)-$(OS_ARCH)
 
 ifeq (,$(findstring $(strip $(target)),$(known_targets)))
@@ -124,13 +124,6 @@ HPUX-ia64_32_CCFLAGS	:= -Itarget/inc -Itarget/inc/unix +Osize +z -Bhidden
 HPUX-ia64_32_LINKFLAGS	:= -b
 HPUX-ia64_32_LIBNAME	:= libmvndnative.so
 HPUX-ia64_32_JANSI_FLAGS :=
-
-Mac-x86_CC        := gcc
-Mac-x86_STRIP     := strip -x
-Mac-x86_CCFLAGS    := -I$(JAVA_HOME)/include -Itarget/inc -Itarget/inc/unix -Os -fPIC -mmacosx-version-min=10.4 -fvisibility=hidden
-Mac-x86_LINKFLAGS := -dynamiclib
-Mac-x86_LIBNAME   := libmvndnative.jnilib
-Mac-x86_JANSI_FLAGS  := -DJANSI_ENABLE_LOCKING_STYLE=0
 
 Mac-x86_64_CC        := gcc -arch $(OS_ARCH)
 Mac-x86_64_STRIP     := strip -x
