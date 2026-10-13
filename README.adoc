@@ -152,6 +152,34 @@ If you are on macOS, you'll need to remove the quarantine flags from all the fil
 $ xattr -r -d com.apple.quarantine mvnd-x.y.z-darwin-amd64
 ----
 
+=== Supported platforms
+
+The daemon runs on Java 17 or later.
+The `bin/mvnd` native client is built with GraalVM `native-image` for four platforms; on any other platform,
+`bin/mvnd.sh` (`bin/mvnd.cmd` on Windows) runs the Java client instead.
+The daemon also loads `mvndnative`, a small JNI library for `setenv`, `chdir` and macOS memory information,
+which is prebuilt for the platforms in the following table.
+The last column lists the Java 17 or later builds that vendors published as of October 2026.
+
+[cols="3,1,1,4",options="header"]
+|===
+|Platform |Native client |JNI library |Java builds (17, 21, 25)
+
+|Linux x86_64 |yes |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
+|Linux aarch64 |yes |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
+|Linux ppc64le |no |yes |Temurin, Liberica: 17, 21, 25
+|Linux armv6, armv7 (hard-float) |no |yes |Liberica: 17, 21, 25; Temurin, Zulu: 17
+|Linux arm (`softfp`) |no |yes |none found
+|Linux x86 (32-bit) |no |yes |Liberica: 17, 21; Zulu: 17
+|macOS aarch64 |yes |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
+|macOS x86_64 |no |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
+|Windows x86_64 |yes |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
+|Windows x86 (32-bit) |no |yes |Temurin, Zulu: 17
+|Windows aarch64 |no |no |Microsoft, Zulu: 17, 21, 25; Temurin: 21
+|FreeBSD x86_64 |no |yes |FreeBSD ports: 17, 21, 25
+|FreeBSD x86 (32-bit) |no |yes |FreeBSD ports: 17, 21
+|===
+
 == Usage
 
 `mvnd` is designed to accept the same command line options like stock `mvn` (plus some extras - see below), e.g.:
