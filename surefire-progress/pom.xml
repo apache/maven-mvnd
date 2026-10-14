@@ -30,7 +30,7 @@
   <name>Maven Daemon - Surefire Test Progress</name>
 
   <properties>
-    <surefire.spi.version>3.5.2</surefire.spi.version>
+    <surefire.spi.version>3.6.0</surefire.spi.version>
   </properties>
 
   <dependencies>
