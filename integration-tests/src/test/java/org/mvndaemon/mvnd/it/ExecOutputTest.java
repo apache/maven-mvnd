@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
 import org.mvndaemon.mvnd.client.DaemonParameters;
+import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.junit.MvndTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,5 +48,16 @@ class ExecOutputTest {
                 .assertSuccess();
         assertTrue(output.messagesToString()
                 .contains("ProjectLogMessage{projectId='exec-output', message='[INFO] [stdout] Hello world!'}"));
+    }
+
+    @Test
+    void cleanTestInheritStderrOnly() throws InterruptedException {
+
+        final TestClientOutput output = new TestClientOutput();
+        client.execute(output, "clean", "test", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
+        assertTrue(output.getMessages().stream()
+                .filter(Message.ProjectEvent.class::isInstance)
+                .map(Message.ProjectEvent.class::cast)
+                .anyMatch(it -> it.getMessage().contains("From child stderr")));
     }
 }

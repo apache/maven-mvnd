@@ -28,12 +28,17 @@ import javassist.CtClass;
 public class Agent {
 
     public static final String START_WITH_PIPES = "if (redirects != null\n"
-            + "         && redirects[1] == ProcessBuilder$Redirect.INHERIT\n"
-            + "         && redirects[2] == ProcessBuilder$Redirect.INHERIT) {\n"
-            + "   redirects[1] = redirects[2] = ProcessBuilder$Redirect.PIPE;"
-            + "   Process p = start(redirects);\n"
-            + "   AgentHelper.pump(p.getInputStream(), System.out);\n"
-            + "   AgentHelper.pump(p.getErrorStream(), System.err);\n"
+            + "         && (redirects[1] == ProcessBuilder$Redirect.INHERIT\n"
+            + "             || redirects[2] == ProcessBuilder$Redirect.INHERIT)) {\n"
+            + "   ProcessBuilder$Redirect[] piped = (ProcessBuilder$Redirect[])\n"
+            + "           java.util.Arrays.copyOf(redirects, redirects.length);\n"
+            + "   boolean pumpOut = piped[1] == ProcessBuilder$Redirect.INHERIT;\n"
+            + "   boolean pumpErr = piped[2] == ProcessBuilder$Redirect.INHERIT;\n"
+            + "   if (pumpOut) piped[1] = ProcessBuilder$Redirect.PIPE;\n"
+            + "   if (pumpErr) piped[2] = ProcessBuilder$Redirect.PIPE;\n"
+            + "   Process p = start(piped);\n"
+            + "   if (pumpOut) AgentHelper.pump(p.getInputStream(), System.out);\n"
+            + "   if (pumpErr) AgentHelper.pump(p.getErrorStream(), System.err);\n"
             + "   return p;\n"
             + "}";
 
