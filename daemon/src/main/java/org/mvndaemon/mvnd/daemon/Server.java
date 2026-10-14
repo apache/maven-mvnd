@@ -43,6 +43,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -278,7 +279,12 @@ public class Server implements AutoCloseable, Runnable {
                         request.complete(message);
                     })
                     .start();
-            Message message = request.get(1, TimeUnit.MINUTES);
+            Message message;
+            try {
+                message = request.get(1, TimeUnit.MINUTES);
+            } catch (TimeoutException e) {
+                message = null;
+            }
             if (message == null) {
                 LOGGER.info("Could not receive request after one minute, dropping connection");
                 updateState(DaemonState.Idle);
