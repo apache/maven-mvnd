@@ -67,7 +67,7 @@
            embedded Maven distribution supplies the class in the core realm (plexus-utils 4.x no longer bundles it) -->
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-xml</artifactId>
-      <version>4.0.4</version>
+      <version>4.2.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
