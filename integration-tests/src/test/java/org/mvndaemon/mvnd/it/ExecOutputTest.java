@@ -58,6 +58,17 @@ class ExecOutputTest {
         assertHasTestMessage(output);
     }
 
+    @Test
+    void cleanTestInheritStderrOnly() throws InterruptedException {
+
+        final TestClientOutput output = new TestClientOutput();
+        client.execute(output, "clean", "test", "-e", "-Dmvnd.log.level=DEBUG").assertSuccess();
+        assertTrue(output.getMessages().stream()
+                .filter(Message.ProjectEvent.class::isInstance)
+                .map(Message.ProjectEvent.class::cast)
+                .anyMatch(it -> it.getMessage().contains("From child stderr")));
+    }
+
     private void assertHasTestMessage(final TestClientOutput output) {
         assertTrue(output.getMessages().stream()
                 .filter(Message.ProjectEvent.class::isInstance)
