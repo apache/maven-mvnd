@@ -99,6 +99,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <rerunFailingTestsCount>4</rerunFailingTestsCount>
+          <configurationParameters>junit.jupiter.execution.timeout.default = 10 m</configurationParameters>
+          <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
         </configuration>
         <executions>
           <execution>
@@ -198,6 +200,8 @@
                   <goal>verify</goal>
                 </goals>
                 <configuration>
+                  <configurationParameters>junit.jupiter.execution.timeout.default = 10 m</configurationParameters>
+                  <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
                   <systemPropertyVariables>
                     <project.version>${project.version}</project.version>
                     <mvnd.home>${mvnd.home}</mvnd.home>

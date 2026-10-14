@@ -41,6 +41,7 @@ import org.mvndaemon.mvnd.common.DaemonRegistry;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.TimeUtils;
 
+import static org.mvndaemon.mvnd.junit.TestParameters.TEST_IDLE_TIMEOUT;
 import static org.mvndaemon.mvnd.junit.TestParameters.TEST_MIN_THREADS;
 import static org.mvndaemon.mvnd.junit.TestUtils.deleteDir;
 
@@ -159,6 +160,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
         private final TestRegistry registry;
         private final boolean isNative;
         private final long timeoutMs;
+        private final Thread shutdownHook;
 
         public static MvndResource create(
                 String className,
@@ -172,6 +174,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                 throw new IllegalStateException("rawProjectDir of @MvndTest must be set");
             }
             final Path testDir = Paths.get("target/mvnd-tests/" + className).toAbsolutePath();
+            TestRegistry.killLeftovers(testDir.resolve("home"));
             deleteDir(testDir);
             Files.createDirectories(testDir);
             final Path testExecutionDir;
@@ -249,7 +252,7 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
                     Paths.get(System.getProperty("java.home")).toAbsolutePath().normalize(),
                     localMavenRepository,
                     settingsPath,
-                    TimeUtils.toDuration(Environment.MVND_IDLE_TIMEOUT.getDefault()),
+                    TEST_IDLE_TIMEOUT,
                     keepAlive != null && !keepAlive.isEmpty()
                             ? TimeUtils.toDuration(keepAlive)
                             : TimeUtils.toDuration(Environment.MVND_KEEP_ALIVE.getDefault())
@@ -331,10 +334,18 @@ public class MvndTestExtension implements BeforeAllCallback, BeforeEachCallback,
             this.registry = registry;
             this.isNative = isNative;
             this.timeoutMs = timeoutMs;
+            // afterAll does not run when the test JVM is interrupted or times out
+            this.shutdownHook = new Thread(registry::killAll, "mvnd-test-daemon-killer");
+            Runtime.getRuntime().addShutdownHook(shutdownHook);
         }
 
         @Override
         public void close() throws Exception {
+            try {
+                Runtime.getRuntime().removeShutdownHook(shutdownHook);
+            } catch (IllegalStateException e) {
+                // already shutting down, the hook does the work
+            }
             registry.killAll();
         }
     }
