@@ -26,9 +26,10 @@ import java.io.PrintStream;
 public class AgentHelper {
 
     public static void pump(InputStream stream, PrintStream out) {
-        new Thread(() -> new BufferedReader(new InputStreamReader(stream))
-                        .lines()
-                        .forEach(out::println))
-                .start();
+        Thread pump = new Thread(
+                () -> new BufferedReader(new InputStreamReader(stream)).lines().forEach(out::println),
+                "mvnd-process-pump");
+        pump.setDaemon(true);
+        pump.start();
     }
 }
