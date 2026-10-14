@@ -19,8 +19,8 @@
 package org.mvndaemon.mvnd.junit;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -36,30 +36,60 @@ public class TestRegistry extends DaemonRegistry {
     }
 
     /**
-     * Kill all daemons in the registry.
+     * Kill all daemons in the registry, forcibly if they do not exit within a few seconds.
+     *
+     * @throws IllegalStateException if a daemon is still alive afterwards
      */
     public void killAll() {
+        final List<String> survivors = new ArrayList<>();
+        final long deadline = System.currentTimeMillis() + 30_000;
         List<DaemonInfo> daemons;
-        final int timeout = 5000;
-        final long deadline = System.currentTimeMillis() + timeout;
+        // repeat, as a daemon may register while others are being stopped
         while (!(daemons = getAll()).isEmpty()) {
             for (DaemonInfo di : daemons) {
-                try {
-                    final Optional<ProcessHandle> maybeHandle = ProcessHandle.of(di.getPid());
-                    if (maybeHandle.isPresent()) {
-                        final ProcessHandle handle = maybeHandle.get();
-                        final CompletableFuture<ProcessHandle> exit = handle.onExit();
-                        handle.destroy();
-                        exit.get(5, TimeUnit.SECONDS);
+                ProcessHandle.of(di.getPid()).ifPresent(handle -> {
+                    if (!kill(handle)) {
+                        survivors.add(di.getId() + " (pid " + di.getPid() + ")");
                     }
-                } catch (Exception t) {
-                    System.out.println("Daemon " + di.getId() + ": " + t);
-                } finally {
-                    remove(di.getId());
-                }
+                });
+                remove(di.getId());
             }
-            if (deadline < System.currentTimeMillis() && !getAll().isEmpty()) {
-                throw new RuntimeException("Could not stop all mvnd daemons within " + timeout + " ms");
+            if (deadline < System.currentTimeMillis()) {
+                break;
+            }
+        }
+        if (!survivors.isEmpty()) {
+            throw new IllegalStateException("Could not stop mvnd daemons " + survivors);
+        }
+    }
+
+    /**
+     * Kill the daemons a previous run left behind for this test: their registry may already be gone, so they are
+     * found by the {@code -Dmvnd.daemonStorage} path on their command line.
+     */
+    static void killLeftovers(Path daemonStorageRoot) {
+        final String marker = "-Dmvnd.daemonStorage=" + daemonStorageRoot;
+        ProcessHandle.allProcesses()
+                .filter(handle -> handle.info()
+                        .commandLine()
+                        .filter(cmd -> cmd.contains(marker))
+                        .isPresent())
+                .forEach(TestRegistry::kill);
+    }
+
+    static boolean kill(ProcessHandle handle) {
+        final CompletableFuture<ProcessHandle> exit = handle.onExit();
+        handle.destroy();
+        try {
+            exit.get(5, TimeUnit.SECONDS);
+            return true;
+        } catch (Exception e) {
+            handle.destroyForcibly();
+            try {
+                exit.get(5, TimeUnit.SECONDS);
+                return true;
+            } catch (Exception e2) {
+                return !handle.isAlive();
             }
         }
     }

@@ -27,6 +27,8 @@ import org.mvndaemon.mvnd.common.TimeUtils;
 
 public class TestParameters extends DaemonParameters {
     static final int TEST_MIN_THREADS = 2;
+    // bounds how long a leftover test daemon lingers; reuse within a test class takes seconds
+    static final Duration TEST_IDLE_TIMEOUT = Duration.ofMinutes(10);
     private final Path testDir;
     private final boolean noTransferProgress;
 
