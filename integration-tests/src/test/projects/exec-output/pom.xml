@@ -93,6 +93,16 @@
                             </arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>run-inherit-stderr-only</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>org.mvndaemon.mvnd.test.InheritStderrOnly</mainClass>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
