@@ -201,6 +201,16 @@ jobs:
           objdump -T client/target/mvnd | grep GLIBC_ | grep -v 'GLIBC_\([01]\|2\.[0-9]\|2\.1[0-7]\)[^0-9]' || err=$?
           (( err == 1 ))
 
+      - name: 'Verify Windows native binary does not require the Visual C++ redistributable'
+        if: ${{ env.OS == 'windows' }}
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $dumpbin = & $vswhere -latest -products * -find 'VC\Tools\MSVC\**\bin\Hostx64\x64\dumpbin.exe' | Select-Object -First 1
+          $deps = & $dumpbin /nologo /dependents client\target\mvnd.exe
+          $deps
+          if ($deps -match '^\s*(vcruntime|msvcp)\d') { throw 'mvnd.exe must not depend on the Visual C++ redistributable' }
+
       - name: 'Upload daemon test logs'
         if: always()
         uses: actions/upload-artifact@v7
