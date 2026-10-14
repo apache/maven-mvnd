@@ -327,6 +327,39 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <!--
+        Link the native client against the static vcruntime and the system UCRT (the "hybrid CRT"),
+        so mvnd.exe does not need the Visual C++ redistributable (vcruntime140.dll,
+        vcruntime140_1.dll), which is not part of Windows. ucrtbase.dll ships with Windows 10 and later.
+        GraalVM links with /MD; these options run after its own and swap only the vcruntime and startup libraries.
+        See https://github.com/apache/maven-mvnd/issues/607 and https://github.com/oracle/graal/issues/1762
+      -->
+      <id>native-windows-hybrid-crt</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <configuration>
+              <buildArgs combine.children="append">
+                <buildArg>-H:NativeLinkerOption=/NODEFAULTLIB:msvcrt.lib</buildArg>
+                <buildArg>-H:NativeLinkerOption=/NODEFAULTLIB:vcruntime.lib</buildArg>
+                <buildArg>-H:NativeLinkerOption=/NODEFAULTLIB:libucrt.lib</buildArg>
+                <buildArg>-H:NativeLinkerOption=libcmt.lib</buildArg>
+                <buildArg>-H:NativeLinkerOption=libvcruntime.lib</buildArg>
+                <buildArg>-H:NativeLinkerOption=ucrt.lib</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 </project>
