@@ -286,6 +286,7 @@
                 <buildArg>-H:-ParseRuntimeOptions</buildArg>
                 <buildArg>-H:+AddAllCharsets</buildArg>
                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>-H:ExcludeResources=${jline.native.excludes}</buildArg>
                 <buildArg>-ea</buildArg>
               </buildArgs>
             </configuration>
@@ -295,6 +296,32 @@
                   <goal>compile-no-fork</goal>
                 </goals>
                 <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.gmavenplus</groupId>
+            <artifactId>gmavenplus-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>set-jline-native-excludes</id>
+                <goals>
+                  <goal>execute</goal>
+                </goals>
+                <phase>generate-resources</phase>
+                <configuration>
+                  <scripts>
+                    <script>// jline-native registers its JNI library for every platform; keep only the target's.
+                      // Directory names follow org.jline.nativ.OSInfo.
+                      String os = ['linux': 'Linux', 'darwin': 'Mac', 'windows': 'Windows'][project.properties['os.detected.name']]
+                      String arch = project.properties['os.detected.arch']
+                      arch = ['amd64': 'x86_64', 'aarch64': 'arm64'].getOrDefault(arch, arch)
+                      // (?!) matches nothing, so an unknown platform keeps every library
+                      project.properties['jline.native.excludes'] = os == null
+                      ? '(?!)'
+                      : 'org/jline/nativ/(?!' + os + '/' + arch + '/)[^/]+/.*'</script>
+                  </scripts>
+                </configuration>
               </execution>
             </executions>
           </plugin>
