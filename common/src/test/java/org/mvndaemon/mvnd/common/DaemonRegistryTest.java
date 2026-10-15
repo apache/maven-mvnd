@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,7 +42,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class DaemonRegistryTest {
 
@@ -286,5 +289,25 @@ public class DaemonRegistryTest {
         try (DaemonRegistry reg = new DaemonRegistry(temp)) {
             assertEquals(nbDaemons - toRemove.size(), reg.getAll().size());
         }
+    }
+
+    @Test
+    public void testRegistryIsOwnerOnly() throws IOException {
+        Path base = Files.createTempDirectory("reg");
+        assumeTrue(base.getFileSystem().supportedFileAttributeViews().contains("posix"));
+
+        Path created = base.resolve("new/registry.bin");
+        new DaemonRegistry(created).close();
+        assertEquals("rwx------", PosixFilePermissions.toString(Files.getPosixFilePermissions(created.getParent())));
+        assertEquals("rw-------", PosixFilePermissions.toString(Files.getPosixFilePermissions(created)));
+
+        Path existing = Files.createFile(
+                base.resolve("old.bin"),
+                PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-r--r--")));
+        new DaemonRegistry(existing).close();
+        assertEquals("rw-------", PosixFilePermissions.toString(Files.getPosixFilePermissions(existing)));
+
+        Path link = Files.createSymbolicLink(base.resolve("link.bin"), existing);
+        assertThrows(DaemonException.class, () -> new DaemonRegistry(link));
     }
 }

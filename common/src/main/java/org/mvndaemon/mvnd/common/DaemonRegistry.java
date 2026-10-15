@@ -28,12 +28,18 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.nio.file.attribute.UserPrincipal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -71,11 +77,56 @@ public class DaemonRegistry implements AutoCloseable {
         this.lck = locks.computeIfAbsent(absPath, p -> new Object());
         this.registryFile = absPath;
         try {
-            Files.createDirectories(absPath.getParent());
-            channel = FileChannel.open(
-                    absPath, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
+            // The registry belongs to the user running the daemons: create it owner-only, tighten one left
+            // by an older version, and refuse a file owned by someone else or reached through a symlink.
+            // A directory created here is owner-only too, since the daemon logs go next to the registry;
+            // an existing directory is left as it is.
+            if (absPath.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                Path dir = absPath.getParent();
+                Files.createDirectories(
+                        dir, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
+                channel = FileChannel.open(
+                        absPath,
+                        new HashSet<OpenOption>(Arrays.asList(
+                                StandardOpenOption.CREATE,
+                                StandardOpenOption.READ,
+                                StandardOpenOption.WRITE,
+                                LinkOption.NOFOLLOW_LINKS)),
+                        PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")));
+                UserPrincipal owner = Files.getOwner(absPath, LinkOption.NOFOLLOW_LINKS);
+                UserPrincipal user = currentUser(absPath);
+                if (user != null && !owner.equals(user)) {
+                    channel.close();
+                    throw new DaemonException("The daemon registry " + absPath + " is owned by " + owner.getName()
+                            + ", not by " + user.getName());
+                }
+                restrictToOwner(absPath, "rw-------");
+            } else {
+                Files.createDirectories(absPath.getParent());
+                channel = FileChannel.open(
+                        absPath, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
+            }
         } catch (IOException e) {
             throw new DaemonException(e);
+        }
+    }
+
+    private static UserPrincipal currentUser(Path path) {
+        // Unresolvable (no passwd entry, as in some containers): skip the owner check rather than refuse.
+        try {
+            return path.getFileSystem()
+                    .getUserPrincipalLookupService()
+                    .lookupPrincipalByName(System.getProperty("user.name"));
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static void restrictToOwner(Path path, String permissions) {
+        try {
+            Files.setPosixFilePermissions(path, PosixFilePermissions.fromString(permissions));
+        } catch (IOException e) {
+            LOGGER.warn("Could not restrict the permissions of {}: {}", path, e.toString());
         }
     }
 
