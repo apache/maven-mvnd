@@ -92,6 +92,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
+          <configurationParameters>junit.jupiter.execution.timeout.default = 10 m</configurationParameters>
+          <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
           <systemPropertyVariables>
             <mvnd.home>${mvnd.home}</mvnd.home>
             <project.version>${project.version}</project.version>
@@ -141,6 +143,8 @@
                   <goal>verify</goal>
                 </goals>
                 <configuration>
+                  <configurationParameters>junit.jupiter.execution.timeout.default = 10 m</configurationParameters>
+                  <forkedProcessTimeoutInSeconds>3600</forkedProcessTimeoutInSeconds>
                   <systemPropertyVariables>
                     <project.version>${project.version}</project.version>
                     <mvnd.home>${mvnd.home}</mvnd.home>
