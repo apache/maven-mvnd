@@ -54,8 +54,9 @@ jobs:
           cp .github/ci-extensions.xml .mvn/extensions.xml
           cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
 
-      - name: 'Handle Mimir caches'
-        uses: actions/cache@v6
+      - name: 'Restore Mimir caches'
+        id: mimir-cache
+        uses: actions/cache/restore@v6
         with:
           path: ~/.mimir/local
           key: mimir2-${{ runner.os }}-default-${{ hashFiles('**/pom.xml') }}
@@ -72,6 +73,14 @@ jobs:
         with:
           name: daemon-test-logs-default-build
           path: integration-tests/target/mvnd-tests/**/daemon*.log
+
+      - name: 'Save Mimir caches'
+        # pull requests and topic branches restore master's entry; their own saves could serve nobody else
+        if: steps.mimir-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && (github.ref_name == github.event.repository.default_branch || endsWith(github.ref_name, '.x'))
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.mimir/local
+          key: ${{ steps.mimir-cache.outputs.cache-primary-key }}
 
   native-build:
     name: 'Build with GraalVM on ${{ matrix.os }}'
@@ -124,8 +133,9 @@ jobs:
           cp .github/ci-extensions.xml .mvn/extensions.xml
           cp .github/ci-mimir-daemon.properties ~/.mimir/daemon.properties
 
-      - name: 'Handle Mimir caches'
-        uses: actions/cache@v6
+      - name: 'Restore Mimir caches'
+        id: mimir-cache
+        uses: actions/cache/restore@v6
         with:
           path: ~/.mimir/local
           key: mimir2-${{ runner.os }}-native-${{ hashFiles('**/pom.xml') }}
@@ -225,3 +235,11 @@ jobs:
         with:
           name: mvnd-${{ env.OS }}-${{ env.ARCH }}
           path: dist/target/maven-mvnd-*.zip
+
+      - name: 'Save Mimir caches'
+        # pull requests and topic branches restore master's entry; their own saves could serve nobody else
+        if: steps.mimir-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && (github.ref_name == github.event.repository.default_branch || endsWith(github.ref_name, '.x'))
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.mimir/local
+          key: ${{ steps.mimir-cache.outputs.cache-primary-key }}
