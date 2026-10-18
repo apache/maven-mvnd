@@ -18,6 +18,9 @@
  */
 package org.mvndaemon.mvnd.common.logging;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,11 +30,25 @@ import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mvndaemon.mvnd.common.Message;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TerminalOutputTest {
+
+    @Test
+    void fileLogIgnoresWritesAfterClose(@TempDir Path dir) throws Exception {
+        Path file = dir.resolve("build.log");
+        TerminalOutput.FileLog log = new TerminalOutput.FileLog(file);
+        log.accept("before");
+        log.close();
+        assertDoesNotThrow(() -> log.accept("after"));
+        assertDoesNotThrow(log::flush);
+        assertDoesNotThrow(log::close);
+        assertEquals("before\n", new String(Files.readAllBytes(file), StandardCharsets.UTF_8));
+    }
 
     @Test
     void renderBarZero() {
