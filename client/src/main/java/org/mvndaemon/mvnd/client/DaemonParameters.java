@@ -218,6 +218,30 @@ public class DaemonParameters {
         return multiModuleProjectDirectory().resolve(".mvn/jvm.config");
     }
 
+    /**
+     * The <code>.mvn/maven.config</code> file, whose arguments Maven prepends to the command line.
+     */
+    public Path mavenConfigPath() {
+        return multiModuleProjectDirectory().resolve(".mvn/maven.config");
+    }
+
+    /**
+     * @return the arguments found in {@code mavenConfig}, or an empty list if it does not exist
+     */
+    static List<String> readMavenConfig(Path mavenConfig) {
+        if (!Files.isRegularFile(mavenConfig)) {
+            return Collections.emptyList();
+        }
+        try (Stream<String> lines = Files.lines(mavenConfig, StandardCharsets.UTF_8)) {
+            return lines.map(String::trim)
+                    .filter(line -> !line.isEmpty())
+                    .flatMap(line -> Stream.of(line.split("\\s+")))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read " + mavenConfig, e);
+        }
+    }
+
     public Path localPropertiesPath() {
         return multiModuleProjectDirectory().resolve(".mvn/mvnd.properties");
     }
