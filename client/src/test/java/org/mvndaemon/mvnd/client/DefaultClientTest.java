@@ -20,15 +20,21 @@ package org.mvndaemon.mvnd.client;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mvndaemon.mvnd.common.Environment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultClientTest {
 
@@ -79,5 +85,18 @@ public class DefaultClientTest {
         Files.write(config, Arrays.asList("-bturbo", "", "  -T 4  ", "-Dfoo=bar"));
         assertEquals(Arrays.asList("-bturbo", "-T", "4", "-Dfoo=bar"), DaemonParameters.readMavenConfig(config));
         assertEquals(Arrays.asList(), DaemonParameters.readMavenConfig(dir.resolve("missing")));
+    }
+
+    @Test
+    void purgeKeepsLogsOfActiveDaemons(@TempDir Path dir) throws Exception {
+        FileTime old = FileTime.from(Instant.now().minusSeconds(30L * 24 * 3600));
+        for (String name : Arrays.asList("daemon-abc.log", "daemon-abc.out.log", "daemon-gone.log")) {
+            Path p = Files.createFile(dir.resolve(name));
+            Files.setLastModifiedTime(p, old);
+        }
+        DefaultClient.purgeLogs(dir, Duration.ofDays(7), Set.of("abc"));
+        assertTrue(Files.exists(dir.resolve("daemon-abc.log")));
+        assertTrue(Files.exists(dir.resolve("daemon-abc.out.log")));
+        assertFalse(Files.exists(dir.resolve("daemon-gone.log")));
     }
 }
