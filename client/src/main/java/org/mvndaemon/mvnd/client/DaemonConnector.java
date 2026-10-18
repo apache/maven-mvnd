@@ -19,6 +19,7 @@
 package org.mvndaemon.mvnd.client;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -533,6 +534,10 @@ public class DaemonConnector {
             throws DaemonException.ConnectException {
         LOGGER.debug("Connecting to Daemon");
         try {
+            if (!isAlive(daemon.getPid())) {
+                throw new DaemonException.ConnectException(
+                        String.format("The daemon process %d is no longer running.", daemon.getPid()));
+            }
             DaemonConnection connection = connect(daemon.getAddress(), daemon.getToken());
             return new DaemonClientConnection(connection, daemon, staleAddressDetector, newDaemon, parameters);
         } catch (DaemonException.ConnectException e) {
@@ -563,8 +568,27 @@ public class DaemonConnector {
         }
     }
 
+    /**
+     * Daemons only listen on the loopback interface, so the client never sends its environment and arguments to an
+     * address read from the registry that points anywhere else.
+     */
+    static void checkLocal(SocketAddress address) throws DaemonException.ConnectException {
+        if (address instanceof InetSocketAddress) {
+            InetAddress ia = ((InetSocketAddress) address).getAddress();
+            if (ia == null || !ia.isLoopbackAddress()) {
+                throw new DaemonException.ConnectException(
+                        String.format("Refusing to connect to %s: not a loopback address.", address));
+            }
+        }
+    }
+
+    static boolean isAlive(int pid) {
+        return pid <= 0 || ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false);
+    }
+
     public DaemonConnection connect(String str, byte[] token) throws DaemonException.ConnectException {
         SocketAddress address = SocketFamily.fromString(str);
+        checkLocal(address);
         try {
             LOGGER.debug("Trying to connect to address {}.", address);
             SocketFamily family = SocketFamily.familyOf(address);
