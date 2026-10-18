@@ -18,11 +18,15 @@
  */
 package org.mvndaemon.mvnd.client;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mvndaemon.mvnd.common.Environment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,5 +37,34 @@ public class DefaultClientTest {
         List<String> args = new ArrayList<>(Arrays.asList("clean", "", "  ", "install"));
         DefaultClient.removeBlankArguments(args);
         assertEquals(Arrays.asList("clean", "install"), args);
+    }
+
+    @Test
+    void builderFromMavenConfigIsNotOverridden() {
+        List<String> args = new ArrayList<>(Arrays.asList("clean"));
+        DefaultClient.addDefaultOption(Environment.MVND_BUILDER, args, Arrays.asList("-b", "turbo"), () -> "smart");
+        assertEquals(Arrays.asList("clean"), args);
+    }
+
+    @Test
+    void builderFromCommandLineWinsOverDefault() {
+        List<String> args = new ArrayList<>(Arrays.asList("--builder=turbo", "clean"));
+        DefaultClient.addDefaultOption(Environment.MVND_BUILDER, args, Arrays.asList(), () -> "smart");
+        assertEquals(Arrays.asList("clean", "-b", "turbo"), args);
+    }
+
+    @Test
+    void defaultBuilderIsAddedOtherwise() {
+        List<String> args = new ArrayList<>(Arrays.asList("clean"));
+        DefaultClient.addDefaultOption(Environment.MVND_BUILDER, args, Arrays.asList("-T4"), () -> "smart");
+        assertEquals(Arrays.asList("clean", "-b", "smart"), args);
+    }
+
+    @Test
+    void readsMavenConfig(@TempDir Path dir) throws Exception {
+        Path config = dir.resolve("maven.config");
+        Files.write(config, Arrays.asList("-bturbo", "", "  -T 4  ", "-Dfoo=bar"));
+        assertEquals(Arrays.asList("-bturbo", "-T", "4", "-Dfoo=bar"), DaemonParameters.readMavenConfig(config));
+        assertEquals(Arrays.asList(), DaemonParameters.readMavenConfig(dir.resolve("missing")));
     }
 }

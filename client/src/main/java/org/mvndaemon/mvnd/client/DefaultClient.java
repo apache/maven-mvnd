@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -351,8 +352,8 @@ public class DefaultClient implements Client {
             Optional<String> threads = Optional.ofNullable(Environment.MVND_THREADS.removeCommandLineOption(args));
             Environment.MVND_THREADS.addCommandLineOption(args, threads.orElseGet(parameters::threads));
 
-            Optional<String> builder = Optional.ofNullable(Environment.MVND_BUILDER.removeCommandLineOption(args));
-            Environment.MVND_BUILDER.addCommandLineOption(args, builder.orElseGet(parameters::builder));
+            List<String> mavenConfig = DaemonParameters.readMavenConfig(parameters.mavenConfigPath());
+            addDefaultOption(Environment.MVND_BUILDER, args, mavenConfig, parameters::builder);
 
             Optional<String> settings = Optional.ofNullable(Environment.MAVEN_SETTINGS.removeCommandLineOption(args))
                     .or(() -> Optional.ofNullable(parameters.settings()).map(Path::toString));
@@ -435,6 +436,20 @@ public class DefaultClient implements Client {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Passes {@code env} to the daemon. A value given on the command line is kept, one given in
+     * {@code .mvn/maven.config} is left for Maven to read, and only otherwise is the default added.
+     */
+    static void addDefaultOption(
+            Environment env, List<String> args, List<String> mavenConfig, Supplier<String> defaultValue) {
+        String value = env.removeCommandLineOption(args);
+        if (value != null) {
+            env.addCommandLineOption(args, value);
+        } else if (!env.hasCommandLineOption(mavenConfig)) {
+            env.addCommandLineOption(args, defaultValue.get());
         }
     }
 
