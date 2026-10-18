@@ -73,6 +73,7 @@ public class DefaultClient implements Client {
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
+        removeBlankArguments(args);
 
         // Log file
         Path logFile = null;
@@ -178,6 +179,14 @@ public class DefaultClient implements Client {
             }
         }
         System.exit(exitCode);
+    }
+
+    /**
+     * Drops empty and blank arguments, like Maven does, so that e.g. an empty string passed by PowerShell is not
+     * mistaken for a goal.
+     */
+    static void removeBlankArguments(List<String> args) {
+        args.removeIf(arg -> arg.trim().isEmpty());
     }
 
     public static Map<String, String> setSystemPropertiesFromCommandLine(List<String> args) {
