@@ -61,6 +61,19 @@ public class DefaultClientTest {
     }
 
     @Test
+    void threadsFromMavenConfigAreNotOverridden() {
+        List<String> args = new ArrayList<>(Arrays.asList("clean"));
+        DefaultClient.addDefaultOption(Environment.MVND_THREADS, args, Arrays.asList("-T4"), () -> "7");
+        assertEquals(Arrays.asList("clean"), args);
+
+        DefaultClient.addDefaultOption(Environment.MVND_THREADS, args, Arrays.asList("--threads=1C"), () -> "7");
+        assertEquals(Arrays.asList("clean"), args);
+
+        DefaultClient.addDefaultOption(Environment.MVND_THREADS, args, Arrays.asList(), () -> "7");
+        assertEquals(Arrays.asList("clean", "-T", "7"), args);
+    }
+
+    @Test
     void readsMavenConfig(@TempDir Path dir) throws Exception {
         Path config = dir.resolve("maven.config");
         Files.write(config, Arrays.asList("-bturbo", "", "  -T 4  ", "-Dfoo=bar"));
