@@ -225,13 +225,6 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'zulu'
 
-      - name: 'Cache Maven packages'
-        uses: actions/cache@v6
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-${{ runner.arch }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-${{ runner.arch }}-m2
-
       - name: ls -R
         run: ls -R
 
