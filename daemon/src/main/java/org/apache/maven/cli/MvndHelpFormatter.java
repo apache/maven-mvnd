@@ -40,6 +40,13 @@ public class MvndHelpFormatter {
     private static final Pattern HTML_TAGS_PATTERN = Pattern.compile("<[^>]*>");
     private static final Pattern COLUMNS_DETECTOR_PATTERN = Pattern.compile("^[ ]+[^s]");
     private static final Pattern WS_PATTERN = Pattern.compile("\\s+");
+    private static final String[][] INTERACTIVE_KEYS = {
+        {"+", "Show more output lines per project in the rolling window."},
+        {"-", "Show fewer output lines per project in the rolling window."},
+        {"Ctrl-B", "Switch between the buffering and no-buffering modes."},
+        {"Ctrl-L", "Redisplay the output."},
+        {"Ctrl-M", "Switch between full-buffering and module-buffering (Enter works too)."}
+    };
 
     static String toPlainText(String javadocText) {
         return HTML_TAGS_PATTERN.matcher(javadocText).replaceAll("");
@@ -144,6 +151,18 @@ public class MvndHelpFormatter {
             spaces(help, indentPos - help.length());
             wrap(help, toPlainText(entry.getJavaDoc()), terminalWidth, lineEnd, indent);
         });
+
+        help.append(lineSeparator).append(lineSeparator).append("mvnd interactive keys:");
+
+        for (String[] key : INTERACTIVE_KEYS) {
+            help.append(lineSeparator);
+            int indentPos = help.length() + indent.length();
+            int lineEnd = help.length() + terminalWidth;
+            spaces(help, HelpFormatter.DEFAULT_LEFT_PAD);
+            help.append(key[0]);
+            spaces(help, indentPos - help.length());
+            wrap(help, key[1], terminalWidth, lineEnd, indent);
+        }
 
         return help.toString();
     }
