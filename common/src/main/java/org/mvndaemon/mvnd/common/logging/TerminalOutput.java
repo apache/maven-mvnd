@@ -155,6 +155,8 @@ public class TerminalOutput implements ClientOutput {
         this.start = System.currentTimeMillis();
         TerminalBuilder builder = TerminalBuilder.builder();
         builder.systemOutput(TerminalBuilder.SystemOutput.SysErr);
+        // fall back to a dumb terminal silently when there is no system terminal, e.g. on headless CI
+        builder.dumb(true);
         this.terminal = builder.build();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
