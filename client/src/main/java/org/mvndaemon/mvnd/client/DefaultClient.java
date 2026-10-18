@@ -39,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -344,7 +345,7 @@ public class DefaultClient implements Client {
                 return DefaultResult.success(argv);
             }
             if (Environment.PURGE.removeCommandLineOption(args) != null) {
-                String result = purgeLogs();
+                String result = purgeLogs(activeDaemons(registry));
                 output.accept(Message.out(result != null ? result : "Nothing to purge"));
                 return DefaultResult.success(argv);
             }
@@ -398,9 +399,10 @@ public class DefaultClient implements Client {
 
                 // We've sent the request, so it gives us a bit of time to purge the logs
                 AtomicReference<String> purgeMessage = new AtomicReference<>();
+                Set<String> activeDaemons = activeDaemons(registry);
                 Thread purgeLog = new Thread(
                         () -> {
-                            purgeMessage.set(purgeLogs());
+                            purgeMessage.set(purgeLogs(activeDaemons));
                         },
                         "Log purge");
                 purgeLog.setDaemon(true);
@@ -451,9 +453,19 @@ public class DefaultClient implements Client {
         }
     }
 
-    private String purgeLogs() {
-        Path storage = parameters.daemonStorage();
-        Duration purgeLogPeriod = parameters.purgeLogPeriod();
+    private String purgeLogs(Set<String> activeDaemons) {
+        return purgeLogs(parameters.daemonStorage(), parameters.purgeLogPeriod(), activeDaemons);
+    }
+
+    private static Set<String> activeDaemons(DaemonRegistry registry) {
+        return registry.getAll().stream().map(DaemonInfo::getId).collect(Collectors.toSet());
+    }
+
+    /**
+     * Deletes the old logs in {@code storage}, except those of the daemons in {@code activeDaemons}, whose log
+     * files are still open.
+     */
+    static String purgeLogs(Path storage, Duration purgeLogPeriod, Set<String> activeDaemons) {
         if (!Files.isDirectory(storage) || !TimeUtils.isPositive(purgeLogPeriod)) {
             return null;
         }
@@ -468,6 +480,7 @@ public class DefaultClient implements Client {
             storagePath
                     .filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
                     .filter(p -> !log.equals(p))
+                    .filter(p -> !isActiveDaemonLog(p, activeDaemons))
                     .filter(p -> {
                         try {
                             FileTime lmt = Files.getLastModifiedTime(p);
@@ -522,6 +535,19 @@ public class DefaultClient implements Client {
             return String.format(
                     "Purged %d log files with %d exceptions (%s)", deleted.size(), exceptions.size(), logMessage);
         }
+    }
+
+    private static boolean isActiveDaemonLog(Path p, Set<String> activeDaemons) {
+        String name = p.getFileName().toString();
+        if (!name.startsWith("daemon-")) {
+            return false;
+        }
+        // daemon-<id>.log and daemon-<id>.out.log
+        String id = name.substring("daemon-".length(), name.length() - LOG_EXTENSION.length());
+        if (id.endsWith(".out")) {
+            id = id.substring(0, id.length() - ".out".length());
+        }
+        return activeDaemons.contains(id);
     }
 
     private static class DefaultResult implements ExecutionResult {
