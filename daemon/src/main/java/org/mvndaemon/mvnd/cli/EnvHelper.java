@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 
 import org.jline.utils.ExecHelper;
 import org.mvndaemon.mvnd.common.JavaVersion;
+import org.mvndaemon.mvnd.common.LogMasking;
 import org.mvndaemon.mvnd.common.Os;
 import org.mvndaemon.mvnd.nativ.CLibrary;
 import org.slf4j.Logger;
@@ -65,7 +66,8 @@ public class EnvHelper {
                 String vr = requested.get(key);
                 int rc = CLibrary.setenv(key, vr);
                 if (Os.current() == Os.WINDOWS ^ rc != 0) {
-                    log.accept(String.format("Error setting environment value %s = %s", key, vr));
+                    log.accept(
+                            String.format("Error setting environment value %s = %s", key, LogMasking.value(key, vr)));
                 }
             }
             setEnv(requested);
@@ -83,8 +85,8 @@ public class EnvHelper {
         if (!diffs.isEmpty()) {
             log.accept("A few environment mismatches have been detected between the client and the daemon.");
             diffs.forEach(key -> {
-                String vr = requested.get(key);
-                String va = nactual.get(key);
+                String vr = LogMasking.value(key, requested.get(key));
+                String va = LogMasking.value(key, nactual.get(key));
                 log.accept(String.format(
                         "   %s -> %s instead of %s",
                         key, va != null ? "'" + va + "'" : "<null>", vr != null ? "'" + vr + "'" : "<null>"));
