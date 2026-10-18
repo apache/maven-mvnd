@@ -73,6 +73,18 @@ public class EnvironmentTest {
         }
     }
 
+    @Test
+    void voidOptionHonoursExplicitFalse() {
+        Assertions.assertNull(Environment.SERIAL.getCommandLineOption(list("-Dmvnd.serial=false")));
+        Assertions.assertNull(Environment.SERIAL.getCommandLineOption(list("--serial=false")));
+        assertEquals("", Environment.SERIAL.getCommandLineOption(list("-Dmvnd.serial=true")));
+        assertEquals("", Environment.SERIAL.getCommandLineOption(list("--serial")));
+        assertEquals("", Environment.SERIAL.getCommandLineOption(list("-1")));
+        List<String> args = list("-Dmvnd.serial=false", "clean");
+        Assertions.assertNull(Environment.SERIAL.removeCommandLineOption(args));
+        assertEquals(list("clean"), args);
+    }
+
     private List<String> list(String... items) {
         return new ArrayList<>(Arrays.asList(items));
     }
