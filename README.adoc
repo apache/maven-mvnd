@@ -195,6 +195,15 @@ the build.
 mvnd verify
 ----
 
+Output that plugins write to `System.out` is collected per project and rendered by the client, so it can appear
+reordered or, with `--quiet`, not at all. When a script needs that output unchanged, as with `help:evaluate`, add
+`--raw-streams`:
+
+[source,shell]
+----
+mvnd help:evaluate -Dexpression=project.version -q -DforceStdout --raw-streams
+----
+
 == `mvnd` specific options
 
 `--status` lists running daemons
