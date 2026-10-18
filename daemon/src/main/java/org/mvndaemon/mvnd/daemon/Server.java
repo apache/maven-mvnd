@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
@@ -85,6 +87,7 @@ public class Server implements AutoCloseable, Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Server.class);
     public static final int CANCEL_TIMEOUT = 10 * 1000;
+    static final long TOKEN_READ_TIMEOUT_MS = 5 * 1000;
 
     private final String daemonId;
     private final boolean noDaemon;
@@ -265,9 +268,8 @@ public class Server implements AutoCloseable, Runnable {
     private void client(SocketChannel socket) {
         LOGGER.info("Client connected");
         if (!checkToken(socket)) {
+            // Leave the state alone: a connection that cannot authenticate must not change it
             LOGGER.error("Received invalid token, dropping connection");
-            updateState(DaemonState.Idle);
-
             return;
         }
 
@@ -312,20 +314,41 @@ public class Server implements AutoCloseable, Runnable {
     }
 
     private boolean checkToken(SocketChannel socket) {
-        byte[] token = new byte[info.getToken().length];
-        ByteBuffer tokenBuffer = ByteBuffer.wrap(token);
-
-        try {
-            do {
-                if (socket.read(tokenBuffer) == -1) {
-                    break;
-                }
-            } while (tokenBuffer.remaining() > 0);
-        } catch (final IOException e) {
-            LOGGER.debug("Discarding EOFException: {}", e.toString(), e);
-        }
-
+        byte[] token = readToken(socket, info.getToken().length, TOKEN_READ_TIMEOUT_MS);
         return MessageDigest.isEqual(info.getToken(), token);
+    }
+
+    /**
+     * Reads up to {@code size} bytes, giving up after {@code timeoutMs} so that a peer that connects and sends
+     * nothing cannot hold the (serial) accept loop. Bytes not received stay zero.
+     */
+    static byte[] readToken(SocketChannel socket, int size, long timeoutMs) {
+        byte[] token = new byte[size];
+        ByteBuffer tokenBuffer = ByteBuffer.wrap(token);
+        try {
+            socket.configureBlocking(false);
+            try (Selector selector = Selector.open()) {
+                socket.register(selector, SelectionKey.OP_READ);
+                long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs);
+                while (tokenBuffer.hasRemaining()) {
+                    long left = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+                    if (left <= 0) {
+                        LOGGER.info("No token received within {} ms", timeoutMs);
+                        break;
+                    }
+                    if (selector.select(left) > 0) {
+                        selector.selectedKeys().clear();
+                        if (socket.read(tokenBuffer) == -1) {
+                            break;
+                        }
+                    }
+                }
+            }
+            socket.configureBlocking(true);
+        } catch (final IOException e) {
+            LOGGER.debug("Discarding exception while reading the token: {}", e.toString(), e);
+        }
+        return token;
     }
 
     private void expirationCheck() {
