@@ -384,7 +384,7 @@ public abstract class Message {
         @Override
         public String toString() {
             return "BuildRequest{" + "args="
-                    + args + ", workingDir='"
+                    + LogMasking.args(args) + ", workingDir='"
                     + workingDir + '\'' + ", projectDir='"
                     + projectDir + '\'' + '}';
         }
@@ -1108,8 +1108,8 @@ public abstract class Message {
         public String toString() {
             return "PromptResponse{" + "projectId='"
                     + projectId + '\'' + ", uid='"
-                    + uid + '\'' + ", message='"
-                    + message + '\'' + '}';
+                    + uid + '\'' + ", message="
+                    + (message == null ? "null" : "[" + message.length() + " chars]") + '}';
         }
 
         @Override
@@ -1362,7 +1362,7 @@ public abstract class Message {
 
         @Override
         public String toString() {
-            return "InputResponse{" + "data='" + data + "\'" + '}';
+            return "InputResponse{" + (data == null ? "eof" : "data=[" + data.length() + " chars]") + '}';
         }
 
         @Override
