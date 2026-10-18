@@ -895,6 +895,7 @@ public class TerminalOutput implements ClientOutput {
 
         private final Writer out;
         private final Path logFile;
+        private volatile boolean closed;
 
         public FileLog(Path logFile) throws IOException {
             super();
@@ -904,6 +905,9 @@ public class TerminalOutput implements ClientOutput {
 
         @Override
         public void accept(String message) {
+            if (closed) {
+                return;
+            }
             try {
                 out.write(message);
                 out.write('\n');
@@ -914,11 +918,15 @@ public class TerminalOutput implements ClientOutput {
 
         @Override
         public void flush() throws IOException {
+            if (closed) {
+                return;
+            }
             out.flush();
         }
 
         @Override
         public void close() throws IOException {
+            closed = true;
             out.close();
         }
     }
