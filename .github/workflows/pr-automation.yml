@@ -17,9 +17,9 @@
 
 name: PR Automation
 on:
-  pull_request_target:
-    types:
-      - closed
+  push:
+    branches:
+      - mvnd-1.x
 
 jobs:
   pr-automation:
