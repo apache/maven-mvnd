@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.it;
 import javax.inject.Inject;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
@@ -44,7 +45,7 @@ class TestProgressFailureTest {
         List<Message.ProjectTestProgressEvent> events = output.getMessages().stream()
                 .filter(Message.ProjectTestProgressEvent.class::isInstance)
                 .map(Message.ProjectTestProgressEvent.class::cast)
-                .toList();
+                .collect(Collectors.toList());
 
         assertTrue(!events.isEmpty(), "expected PROJECT_TEST_PROGRESS messages, got none");
         assertTrue(
@@ -63,7 +64,7 @@ class TestProgressFailureTest {
                 .filter(m -> m.getType() == Message.BUILD_LOG_MESSAGE)
                 .map(Message.StringMessage.class::cast)
                 .map(Message.StringMessage::getMessage)
-                .toList();
+                .collect(Collectors.toList());
 
         int failuresLine = indexOfLineContaining(logLines, "Failures:");
         int errorsLine = indexOfLineContaining(logLines, "Errors:");

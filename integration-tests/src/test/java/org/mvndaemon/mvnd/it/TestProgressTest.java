@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.it;
 import javax.inject.Inject;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
@@ -89,6 +90,6 @@ class TestProgressTest {
         return output.getMessages().stream()
                 .filter(Message.ProjectTestProgressEvent.class::isInstance)
                 .map(Message.ProjectTestProgressEvent.class::cast)
-                .toList();
+                .collect(Collectors.toList());
     }
 }

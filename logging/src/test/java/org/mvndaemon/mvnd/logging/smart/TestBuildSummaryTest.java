@@ -18,7 +18,10 @@
  */
 package org.mvndaemon.mvnd.logging.smart;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.logging.smart.TestBuildSummary.SummaryLevel;
@@ -41,11 +44,22 @@ class TestBuildSummaryTest {
                 0,
                 0,
                 0,
-                List.of(),
-                List.of("FooTest#bar: expected <5> but was <4>"),
-                List.of());
+                Collections.emptyList(),
+                Arrays.asList("FooTest#bar: expected <5> but was <4>"),
+                Collections.emptyList());
         summary.foldProject("camel-jms");
-        summary.record("camel-nats", 1, 1, 0, 1, 0, 0, 0, List.of(), List.of(), List.of("NatsIT#connects: refused"));
+        summary.record(
+                "camel-nats",
+                1,
+                1,
+                0,
+                1,
+                0,
+                0,
+                0,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Arrays.asList("NatsIT#connects: refused"));
         summary.foldProject("camel-nats");
         summary.record(
                 "camel-mllp",
@@ -56,15 +70,15 @@ class TestBuildSummaryTest {
                 0,
                 0,
                 1,
-                List.of("FlakyTest#retries\n  Run 1: boom\n  Run 2: PASS"),
-                List.of(),
-                List.of());
+                Arrays.asList("FlakyTest#retries\n  Run 1: boom\n  Run 2: PASS"),
+                Collections.emptyList(),
+                Collections.emptyList());
         summary.foldProject("camel-mllp");
 
         List<SummaryLine> lines = summary.renderLines();
 
         assertEquals(
-                List.of(
+                Arrays.asList(
                         line(SummaryLevel.INFO, ""),
                         line(SummaryLevel.INFO, "Results:"),
                         line(SummaryLevel.INFO, ""),
@@ -94,9 +108,9 @@ class TestBuildSummaryTest {
                 0,
                 0,
                 0,
-                List.of(),
-                List.of("FooTest#bar: expected <5> but was <4>"),
-                List.of());
+                Collections.emptyList(),
+                Arrays.asList("FooTest#bar: expected <5> but was <4>"),
+                Collections.emptyList());
         summary.foldProject("camel-jms");
 
         List<SummaryLine> lines = summary.renderLines();
@@ -109,38 +123,94 @@ class TestBuildSummaryTest {
     @Test
     void emitsNothingWhenAllCategoriesEmpty() {
         TestBuildSummary summary = new TestBuildSummary();
-        summary.record("camel-core", 1, 5, 0, 0, 0, 0, 0, List.of(), List.of(), List.of());
+        summary.record(
+                "camel-core",
+                1,
+                5,
+                0,
+                0,
+                0,
+                0,
+                0,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList());
         summary.foldProject("camel-core");
 
-        assertEquals(List.of(), summary.renderLines());
+        assertEquals(Collections.emptyList(), summary.renderLines());
     }
 
     @Test
     void unionsFailedTestIdentitiesAcrossForksWithinTheSameProject() {
         TestBuildSummary summary = new TestBuildSummary();
-        summary.record("camel-jms", 1, 1, 1, 0, 0, 0, 0, List.of(), List.of("FooTest#bar: boom"), List.of());
+        summary.record(
+                "camel-jms",
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                Collections.emptyList(),
+                Arrays.asList("FooTest#bar: boom"),
+                Collections.emptyList());
         // A second fork on the same project reports a different failed test; identities must union, not overwrite.
-        summary.record("camel-jms", 2, 1, 1, 0, 0, 0, 0, List.of(), List.of("BarTest#baz: boom"), List.of());
+        summary.record(
+                "camel-jms",
+                2,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                Collections.emptyList(),
+                Arrays.asList("BarTest#baz: boom"),
+                Collections.emptyList());
         // Re-recording the same test on the same fork must not create a duplicate line (Set semantics).
-        summary.record("camel-jms", 1, 2, 1, 0, 0, 0, 0, List.of(), List.of("FooTest#bar: boom"), List.of());
+        summary.record(
+                "camel-jms",
+                1,
+                2,
+                1,
+                0,
+                0,
+                0,
+                0,
+                Collections.emptyList(),
+                Arrays.asList("FooTest#bar: boom"),
+                Collections.emptyList());
         summary.foldProject("camel-jms");
 
         List<SummaryLine> lines = summary.renderLines();
         List<String> failureLines = lines.stream()
                 .filter(l -> l.text.startsWith("  camel-jms"))
                 .map(l -> l.text)
-                .toList();
-        assertEquals(List.of("  camel-jms FooTest#bar: boom", "  camel-jms BarTest#baz: boom"), failureLines);
+                .collect(Collectors.toList());
+        assertEquals(Arrays.asList("  camel-jms FooTest#bar: boom", "  camel-jms BarTest#baz: boom"), failureLines);
     }
 
     @Test
     void foldProjectSumsCumulativeCountsAcrossSurefireThenFailsafeReusingForkChannelIds() {
         TestBuildSummary summary = new TestBuildSummary();
         // Surefire execution: fork channel 1 finishes with 5 completed tests.
-        summary.record("app", 1, 5, 0, 0, 0, 0, 0, List.of(), List.of(), List.of());
+        summary.record(
+                "app", 1, 5, 0, 0, 0, 0, 0, Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         summary.foldProject("app");
         // Failsafe execution reuses fork channel id 1 with its own cumulative count; must add, not replace.
-        summary.record("app", 1, 3, 1, 0, 0, 0, 0, List.of(), List.of("ItTest#works: boom"), List.of());
+        summary.record(
+                "app",
+                1,
+                3,
+                1,
+                0,
+                0,
+                0,
+                0,
+                Collections.emptyList(),
+                Arrays.asList("ItTest#works: boom"),
+                Collections.emptyList());
         summary.foldProject("app");
 
         List<SummaryLine> lines = summary.renderLines();
@@ -151,7 +221,18 @@ class TestBuildSummaryTest {
     @Test
     void renderLinesFoldsAnyProjectsNotYetFolded() {
         TestBuildSummary summary = new TestBuildSummary();
-        summary.record("app", 1, 4, 1, 0, 0, 0, 0, List.of(), List.of("FooTest#bar: boom"), List.of());
+        summary.record(
+                "app",
+                1,
+                4,
+                1,
+                0,
+                0,
+                0,
+                0,
+                Collections.emptyList(),
+                Arrays.asList("FooTest#bar: boom"),
+                Collections.emptyList());
         // No explicit foldProject call: renderLines() must fold remaining snapshots itself.
 
         List<SummaryLine> lines = summary.renderLines();
