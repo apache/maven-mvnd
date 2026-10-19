@@ -243,3 +243,23 @@ jobs:
         with:
           path: ~/.mimir/local
           key: ${{ steps.mimir-cache.outputs.cache-primary-key }}
+
+  prune-caches:
+    name: 'Prune superseded Mimir caches'
+    # every POM change saves a new generation; restores only use the exact key or the newest fallback
+    needs: [default-build, native-build]
+    if: ${{ !cancelled() && github.event_name == 'push' && (github.ref_name == github.event.repository.default_branch || endsWith(github.ref_name, '.x')) }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: 'Delete all but the newest cache of each family on this branch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache list --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF" --key mimir2- --limit 100 --json id,key,createdAt \
+            --jq 'group_by(.key | sub("-[0-9a-f]{64}$"; "")) | .[] | sort_by(.createdAt) | .[:-1][] | "\(.id) \(.key)"' |
+          while read -r id key; do
+            echo "Deleting $key"
+            gh cache delete "$id" --repo "$GITHUB_REPOSITORY"
+          done
