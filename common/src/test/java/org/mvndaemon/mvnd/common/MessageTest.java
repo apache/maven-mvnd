@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
@@ -87,9 +88,9 @@ public class MessageTest {
                 1,
                 2,
                 1,
-                java.util.List.of("FooTest#shouldWork"),
-                java.util.List.of("FooTest#broken: expected <5> but was <4>"),
-                java.util.List.of("FooTest#blows: / by zero"));
+                Arrays.asList("FooTest#shouldWork"),
+                Arrays.asList("FooTest#broken: expected <5> but was <4>"),
+                Arrays.asList("FooTest#blows: / by zero"));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (DataOutputStream daos = new DataOutputStream(baos)) {
@@ -112,9 +113,9 @@ public class MessageTest {
         assertEquals(1, e.getSkipped());
         assertEquals(2, e.getRetrying());
         assertEquals(1, e.getFlaky());
-        assertEquals(java.util.List.of("FooTest#shouldWork"), e.getFlakyTests());
-        assertEquals(java.util.List.of("FooTest#broken: expected <5> but was <4>"), e.getFailedTests());
-        assertEquals(java.util.List.of("FooTest#blows: / by zero"), e.getErroredTests());
+        assertEquals(Arrays.asList("FooTest#shouldWork"), e.getFlakyTests());
+        assertEquals(Arrays.asList("FooTest#broken: expected <5> but was <4>"), e.getFailedTests());
+        assertEquals(Arrays.asList("FooTest#blows: / by zero"), e.getErroredTests());
     }
 
     @Test

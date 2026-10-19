@@ -18,6 +18,8 @@
  */
 package org.mvndaemon.mvnd.forknode;
 
+import java.util.Arrays;
+
 import org.apache.maven.surefire.api.report.RunMode;
 import org.junit.jupiter.api.Test;
 
@@ -77,8 +79,8 @@ class TestProgressAccumulatorTest {
 
         assertEquals(1, acc.getFailures());
         assertEquals(1, acc.getErrors());
-        assertEquals(java.util.List.of("CalcTest#adds: expected: <5> but was: <4>"), acc.getFailedTests());
-        assertEquals(java.util.List.of("CalcTest#divides: / by zero"), acc.getErroredTests());
+        assertEquals(Arrays.asList("CalcTest#adds: expected: <5> but was: <4>"), acc.getFailedTests());
+        assertEquals(Arrays.asList("CalcTest#divides: / by zero"), acc.getErroredTests());
     }
 
     @Test
@@ -87,7 +89,7 @@ class TestProgressAccumulatorTest {
         acc.record(TEST_STARTING, "T", "a", RunMode.NORMAL_RUN, null);
         acc.record(TEST_FAILED, "T", "a", RunMode.NORMAL_RUN, null, "line one\n  line two");
 
-        assertEquals(java.util.List.of("T#a: line one line two"), acc.getFailedTests());
+        assertEquals(Arrays.asList("T#a: line one line two"), acc.getFailedTests());
     }
 
     @Test
@@ -100,7 +102,7 @@ class TestProgressAccumulatorTest {
 
         assertTrue(acc.getFailedTests().isEmpty(), "a recovered test must not be listed as failed");
         assertTrue(acc.getErroredTests().isEmpty(), "a recovered test must not be listed as errored");
-        assertEquals(java.util.List.of("T#a\n  Run 1: boom\n  Run 2: PASS"), acc.getFlakyTests());
+        assertEquals(Arrays.asList("T#a\n  Run 1: boom\n  Run 2: PASS"), acc.getFlakyTests());
     }
 
     @Test
@@ -129,7 +131,7 @@ class TestProgressAccumulatorTest {
         assertEquals(0, acc.getFailures());
         assertEquals(0, acc.getRetrying());
         assertEquals(1, acc.getFlaky());
-        assertEquals(java.util.List.of("MyServiceTest#shouldWork\n  Run 1: FAIL\n  Run 2: PASS"), acc.getFlakyTests());
+        assertEquals(Arrays.asList("MyServiceTest#shouldWork\n  Run 1: FAIL\n  Run 2: PASS"), acc.getFlakyTests());
     }
 
     @Test
@@ -149,7 +151,7 @@ class TestProgressAccumulatorTest {
         acc.record(TEST_SUCCEEDED, "org.example.FlakyTest", "retries", RunMode.RERUN_TEST_AFTER_FAILURE, 7L);
 
         assertEquals(
-                java.util.List.of("FlakyTest#retries\n"
+                Arrays.asList("FlakyTest#retries\n"
                         + "  Run 1: expected <5> but was <0>\n"
                         + "  Run 2: NullPointerException\n"
                         + "  Run 3: PASS"),

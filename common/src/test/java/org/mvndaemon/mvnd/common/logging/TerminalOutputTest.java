@@ -18,6 +18,11 @@
  */
 package org.mvndaemon.mvnd.common.logging;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
@@ -98,9 +103,9 @@ class TerminalOutputTest {
                         0,
                         1,
                         2,
-                        java.util.List.of("FooTest#shouldWork", "FooTest#other"),
-                        java.util.List.of(),
-                        java.util.List.of()));
+                        Arrays.asList("FooTest#shouldWork", "FooTest#other"),
+                        Collections.emptyList(),
+                        Collections.emptyList()));
         AttributedString s = asb.toAttributedString();
         assertEquals(" [Tests: 4, Retrying: 1, Flaky: 2] FooTest#shouldWork", s.toString());
         int flakyDigit = s.toString().indexOf("Flaky: ") + "Flaky: ".length();
@@ -123,7 +128,7 @@ class TerminalOutputTest {
                 Message.projectTestProgress("app", 2, "com.acme.FooTest", "skippedTest", 2, 0, 0, 1);
 
         Message.ProjectTestProgressEvent aggregated =
-                TerminalOutput.aggregateTestProgress(java.util.List.of(failed, skipped));
+                TerminalOutput.aggregateTestProgress(Arrays.asList(failed, skipped));
 
         assertEquals(5, aggregated.getCompleted());
         assertEquals(1, aggregated.getFailures());
@@ -153,7 +158,7 @@ class TerminalOutputTest {
     @Test
     void bannedSkipFilterDropsBannedBlockButKeepsOtherLines() {
         TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
-        java.util.List<String> out = new java.util.ArrayList<>();
+        List<String> out = new ArrayList<>();
         String sep = "[INFO] ------------------------------------------------------------------------";
         String[] lines = {
             "[INFO] Reactor Summary:",
@@ -169,7 +174,7 @@ class TerminalOutputTest {
         }
         filter.flush(out::add);
 
-        assertEquals(java.util.List.of("[INFO] Reactor Summary:", "[INFO] camel-core ......... SKIPPED"), out);
+        assertEquals(Arrays.asList("[INFO] Reactor Summary:", "[INFO] camel-core ......... SKIPPED"), out);
     }
 
     @Test
@@ -184,19 +189,19 @@ class TerminalOutputTest {
             "[INFO] camel-core ......... SKIPPED",
         };
 
-        java.util.List<String> out = new java.util.ArrayList<>();
+        List<String> out = new ArrayList<>();
         TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
         for (String l : lines) {
             TerminalOutput.acceptReactorLine(l, true, filter, out::add);
         }
         filter.flush(out::add);
 
-        assertEquals(java.util.List.of("[INFO] Reactor Summary:", "[INFO] camel-core ......... SKIPPED"), out);
+        assertEquals(Arrays.asList("[INFO] Reactor Summary:", "[INFO] camel-core ......... SKIPPED"), out);
     }
 
     @Test
     void reactorLineIsPassedThroughUnchangedWhenSuppressionDisabled() {
-        java.util.List<String> out = new java.util.ArrayList<>();
+        List<String> out = new ArrayList<>();
         TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
         TerminalOutput.acceptReactorLine(
                 "[INFO] This project has been banned from the build due to previous failures.",
@@ -204,18 +209,18 @@ class TerminalOutputTest {
                 filter,
                 out::add);
         assertEquals(
-                java.util.List.of("[INFO] This project has been banned from the build due to previous failures."), out);
+                Arrays.asList("[INFO] This project has been banned from the build due to previous failures."), out);
     }
 
     @Test
     void bannedSkipFilterKeepsUnbannedSkippingLine() {
         TerminalOutput.BannedSkipFilter filter = new TerminalOutput.BannedSkipFilter();
-        java.util.List<String> out = new java.util.ArrayList<>();
+        List<String> out = new ArrayList<>();
         filter.accept(
                 "[INFO] Skipping bad plugin", TerminalOutput.stripDecoration("[INFO] Skipping bad plugin"), out::add);
         filter.accept("[INFO] Building foo", TerminalOutput.stripDecoration("[INFO] Building foo"), out::add);
         filter.flush(out::add);
 
-        assertEquals(java.util.List.of("[INFO] Skipping bad plugin", "[INFO] Building foo"), out);
+        assertEquals(Arrays.asList("[INFO] Skipping bad plugin", "[INFO] Building foo"), out);
     }
 }
