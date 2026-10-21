@@ -24,12 +24,11 @@ import javax.inject.Singleton;
 
 import java.util.Map;
 
-import org.eclipse.aether.impl.RepositorySystemLifecycle;
+import org.eclipse.aether.impl.NamedLockFactorySelector;
 import org.eclipse.aether.internal.impl.synccontext.named.NameMapper;
 import org.eclipse.aether.internal.impl.synccontext.named.NameMappers;
 import org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactoryAdapterFactoryImpl;
-import org.eclipse.aether.named.NamedLockFactory;
-import org.eclipse.aether.named.providers.FileLockNamedLockFactory;
+import org.eclipse.aether.spi.locking.LockingInhibitorFactory;
 import org.eclipse.sisu.Priority;
 
 /**
@@ -42,9 +41,9 @@ import org.eclipse.sisu.Priority;
 public final class DaemonNamedLockFactoryAdapterFactoryImpl extends NamedLockFactoryAdapterFactoryImpl {
     @Inject
     public DaemonNamedLockFactoryAdapterFactoryImpl(
-            final Map<String, NamedLockFactory> factories,
+            final NamedLockFactorySelector namedLockFactorySelector,
             final Map<String, NameMapper> nameMappers,
-            final RepositorySystemLifecycle lifecycle) {
-        super(factories, FileLockNamedLockFactory.NAME, nameMappers, NameMappers.FILE_GAV_NAME, lifecycle);
+            final Map<String, LockingInhibitorFactory> lockingInhibitorFactories) {
+        super(namedLockFactorySelector, nameMappers, NameMappers.FILE_GAV_NAME, lockingInhibitorFactories);
     }
 }
