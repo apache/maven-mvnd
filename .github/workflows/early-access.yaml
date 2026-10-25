@@ -232,6 +232,14 @@ jobs:
           path: integration-tests/target/mvnd-tests/**/daemon*.log
           include-hidden-files: 'true'
 
+      - name: 'Upload native image build report'
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-image-build-report-${{ matrix.os }}-${{ env.ARCH }}
+          path: client/target/*build-report*.html
+          if-no-files-found: ignore
+
       - name: 'Upload artifact'
         uses: actions/upload-artifact@v7
         with:
