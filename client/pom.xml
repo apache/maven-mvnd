@@ -192,6 +192,7 @@
                 <buildArg>-H:-ParseRuntimeOptions</buildArg>
                 <buildArg>-H:+AddAllCharsets</buildArg>
                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>--emit build-report</buildArg>
                 <buildArg>-ea</buildArg>
               </buildArgs>
             </configuration>
