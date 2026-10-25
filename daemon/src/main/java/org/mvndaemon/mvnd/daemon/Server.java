@@ -617,7 +617,7 @@ public class Server implements AutoCloseable, Runnable {
                         }
                         LOGGER.info("Received message: {}", message);
                         if (message == Message.BareMessage.CANCEL_BUILD_SINGLETON) {
-                            updateState(Canceled);
+                            cancelRunningBuild();
                             return;
                         } else if (message instanceof Message.InputData) {
                             daemonInputStream.addInputData(((Message.InputData) message).getData());
@@ -629,7 +629,7 @@ public class Server implements AutoCloseable, Runnable {
                         }
                     }
                 } catch (DaemonException.RecoverableMessageIOException t) {
-                    updateState(Canceled);
+                    cancelRunningBuild();
                 } catch (Throwable t) {
                     updateState(Broken);
                     LOGGER.error("Error receiving events", t);
@@ -709,6 +709,22 @@ public class Server implements AutoCloseable, Runnable {
                 updateState(DaemonState.Idle);
                 System.gc();
             }
+        }
+    }
+
+    /**
+     * The receiver thread outlives the build: the client closing its socket after {@code BuildFinished} would
+     * otherwise turn an idle daemon into a canceled one, which no client reuses and which stops itself.
+     */
+    private void cancelRunningBuild() {
+        stateLock.lock();
+        try {
+            DaemonState state = getState();
+            if (state == Busy || state == StopRequested) {
+                updateState(Canceled);
+            }
+        } finally {
+            stateLock.unlock();
         }
     }
 
