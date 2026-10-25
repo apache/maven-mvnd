@@ -281,7 +281,6 @@
               <mainClass>org.mvndaemon.mvnd.client.DefaultClient</mainClass>
               <imageName>mvnd</imageName>
               <buildArgs combine.children="append">
-                <buildArg>--no-fallback</buildArg>
                 <buildArg>-march=compatibility</buildArg>
                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
                 <buildArg>-H:IncludeResources=org/mvndaemon/mvnd/.*</buildArg>
