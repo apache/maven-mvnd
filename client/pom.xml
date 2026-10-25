@@ -187,6 +187,7 @@
                 <buildArg>--no-fallback</buildArg>
                 <buildArg>-march=compatibility</buildArg>
                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                <buildArg>--future-defaults=all</buildArg>
                 <buildArg>-H:IncludeResources=org/mvndaemon/mvnd/.*</buildArg>
                 <buildArg>-H:IncludeResources=mvnd-bash-completion.bash</buildArg>
                 <buildArg>-H:-ParseRuntimeOptions</buildArg>
