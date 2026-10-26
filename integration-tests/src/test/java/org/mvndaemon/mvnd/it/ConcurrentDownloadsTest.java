@@ -22,7 +22,6 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.assertj.TestClientOutput;
 import org.mvndaemon.mvnd.client.Client;
@@ -33,7 +32,6 @@ import org.mvndaemon.mvnd.junit.TestParameters;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled("Due use of Mimir in ITs this test does not download but gets from Mimir cache instead")
 @MvndTest(projectDir = "src/test/projects/concurrent-downloads")
 class ConcurrentDownloadsTest {
 
@@ -48,7 +46,9 @@ class ConcurrentDownloadsTest {
 
         final TestClientOutput o = new TestClientOutput();
         Client client = clientFactory.newClient(parameters.withTransferProgress());
-        client.execute(o, "clean", "install", "-e", "-B").assertSuccess();
+        // Mimir would serve the artifacts from its cache instead of downloading them
+        client.execute(o, "clean", "install", "-e", "-B", "-Dmimir.enabled=false")
+                .assertSuccess();
 
         int maxConcurrentDownloads = 0;
         int cur = 0;

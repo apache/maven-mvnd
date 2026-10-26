@@ -102,12 +102,19 @@ public class EnvHelper {
                 String p = path.endsWith("\\") ? path.substring(0, path.length() - 1) : path;
                 return ExecHelper.exec(false, "cygpath", p).trim();
             } catch (IOException e) {
-                String root = path.substring(0, 1);
-                String p = path.substring(3);
-                return "/cygdrive/" + root.toLowerCase(Locale.ROOT) + "/" + p.replace('\\', '/');
+                return toCygdrive(path);
             }
         }
         return path;
+    }
+
+    /**
+     * The conversion {@link #toCygwin(String)} falls back to when {@code cygpath} cannot be run.
+     */
+    static String toCygdrive(String path) {
+        String root = path.substring(0, 1);
+        String p = path.substring(3);
+        return "/cygdrive/" + root.toLowerCase(Locale.ROOT) + "/" + p.replace('\\', '/');
     }
 
     static void chDir(String workingDir) throws Exception {
