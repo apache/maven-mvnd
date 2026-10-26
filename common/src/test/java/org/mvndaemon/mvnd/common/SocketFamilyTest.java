@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledForJreRange;
@@ -68,8 +69,10 @@ public class SocketFamilyTest {
     @Test
     @EnabledForJreRange(min = JRE.JAVA_16)
     void testUnixFromTo() {
-        SocketAddress address = SocketFamily.fromString("unix:/tmp/foo-0123456.socket");
+        // the address keeps its path as a platform Path, so Windows prints it with backslashes
+        String unix = "unix:" + Paths.get("/tmp/foo-0123456.socket");
+        SocketAddress address = SocketFamily.fromString(unix);
         assertEquals(SocketFamily.unix, SocketFamily.familyOf(address));
-        assertEquals("unix:/tmp/foo-0123456.socket", SocketFamily.toString(address));
+        assertEquals(unix, SocketFamily.toString(address));
     }
 }
