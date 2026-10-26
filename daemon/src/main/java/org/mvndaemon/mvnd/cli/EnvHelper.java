@@ -20,6 +20,7 @@ package org.mvndaemon.mvnd.cli;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -118,10 +119,7 @@ public class EnvHelper {
         if (JavaVersion.getJavaSpec() >= 11.0) {
             Field fsField = fileClass.getDeclaredField(JavaVersion.getJavaSpec() >= 21.0 ? "FS" : "fs");
             fsField.setAccessible(true);
-            Object fs = fsField.get(null);
-            Field userDirField = fs.getClass().getDeclaredField("userDir");
-            userDirField.setAccessible(true);
-            userDirField.set(fs, workingDir);
+            setUserDir(fsField.get(null), workingDir);
         }
         // change current dir for the java.nio.Path class
         Object fs = FileSystems.getDefault();
@@ -145,6 +143,36 @@ public class EnvHelper {
             }
             fsClass = fsClass.getSuperclass();
         }
+    }
+
+    /**
+     * Sets {@code userDir} on the {@code java.io.FileSystem} behind {@link java.io.File}. The JetBrains Runtime
+     * wraps the platform file system in {@code java.io.IoOverNioFileSystem}, which keeps it in a field of its own.
+     */
+    private static void setUserDir(Object fs, String workingDir) throws ReflectiveOperationException {
+        Class<?> fileSystemClass = Class.forName("java.io.FileSystem");
+        for (Class<?> c = fs.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            for (Field field : c.getDeclaredFields()) {
+                if ("userDir".equals(field.getName())) {
+                    field.setAccessible(true);
+                    field.set(fs, workingDir);
+                    return;
+                }
+            }
+        }
+        for (Class<?> c = fs.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            for (Field field : c.getDeclaredFields()) {
+                if (fileSystemClass.isAssignableFrom(field.getType()) && !Modifier.isStatic(field.getModifiers())) {
+                    field.setAccessible(true);
+                    Object delegate = field.get(fs);
+                    if (delegate != null && delegate != fs) {
+                        setUserDir(delegate, workingDir);
+                        return;
+                    }
+                }
+            }
+        }
+        throw new NoSuchFieldException("userDir in " + fs.getClass().getName());
     }
 
     @SuppressWarnings("unchecked")
