@@ -28,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Os;
 
@@ -72,8 +71,8 @@ public class EnvHelperTest {
     }
 
     @Test
-    @Disabled
-    void testCygwin() throws Exception {
-        assertEquals("/cygdrive/c/work/tmp/", EnvHelper.toCygwin("C:\\work\\tmp\\"));
+    void testCygwin() {
+        // toCygwin() itself runs cygpath when it is on the PATH (Git for Windows ships one), so test the fallback
+        assertEquals("/cygdrive/c/work/tmp/", EnvHelper.toCygdrive("C:\\work\\tmp\\"));
     }
 }
