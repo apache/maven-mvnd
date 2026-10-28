@@ -297,9 +297,18 @@ public class DefaultClient implements Client {
             output.accept(Message.log(v));
             // Print terminal information
             output.describeTerminal();
+            if (version) {
+                /*
+                 * -v/--version always makes Maven itself print its own version and return without running a
+                 * build, no matter what else is on the command line, so a daemon round trip could not add
+                 * anything here. Skip connecting to (and possibly spawning) a daemon just to get that same
+                 * answer back.
+                 */
+                return DefaultResult.success(argv);
+            }
             /*
-             * Do not return, rather pass -v to the server so that the client module does not need to depend on any
-             * Maven artifacts
+             * Do not return, rather pass -V/-X to the server so that the client module does not need to depend
+             * on any Maven artifacts
              */
         }
 

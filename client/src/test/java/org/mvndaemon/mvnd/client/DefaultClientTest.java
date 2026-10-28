@@ -27,16 +27,73 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mvndaemon.mvnd.common.Environment;
+import org.mvndaemon.mvnd.common.Message;
+import org.mvndaemon.mvnd.common.logging.ClientOutput;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class DefaultClientTest {
+
+    /**
+     * {@code --version} must complete without ever touching a daemon: with no fix, this would try to connect
+     * to (and possibly spawn) one using the bogus paths below and fail or hang instead of returning quickly.
+     */
+    @Test
+    void versionDoesNotConnectToDaemon(@TempDir Path dir) {
+        final Path bogusHome = dir.resolve("no-such-mvnd-home");
+        DaemonParameters parameters = new DaemonParameters() {
+            @Override
+            public Path mvndHome() {
+                return bogusHome;
+            }
+
+            @Override
+            public Path registry() {
+                return bogusHome.resolve("registry.bin");
+            }
+        };
+        DefaultClient client = new DefaultClient(parameters);
+
+        ExecutionResult result = client.execute(new NoopClientOutput(), Arrays.asList("--version"));
+
+        assertTrue(result.isSuccess());
+        assertEquals(0, result.getExitCode());
+    }
+
+    private static final class NoopClientOutput implements ClientOutput {
+        @Override
+        public void setDaemonId(String daemonId) {}
+
+        @Override
+        public void setDaemonDispatch(Consumer<Message> sink) {}
+
+        @Override
+        public void setDaemonReceive(Consumer<Message> sink) {}
+
+        @Override
+        public void accept(Message message) {}
+
+        @Override
+        public void accept(List<Message> messages) {}
+
+        @Override
+        public void describeTerminal() {}
+
+        @Override
+        public int getTerminalWidth() {
+            return 80;
+        }
+
+        @Override
+        public void close() {}
+    }
 
     @Test
     void blankArgumentsAreDropped() {
