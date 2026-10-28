@@ -302,8 +302,9 @@ public class DefaultClient implements Client {
                  * -v/--version always makes Maven itself print its own version and return without running a
                  * build, no matter what else is on the command line, so a daemon round trip could not add
                  * anything here. Skip connecting to (and possibly spawning) a daemon just to get that same
-                 * answer back.
+                 * answer back, printing the same "Maven home" line Maven itself would have printed.
                  */
+                output.accept(Message.log("Maven home: " + parameters.mvndHome()));
                 return DefaultResult.success(argv);
             }
             /*
