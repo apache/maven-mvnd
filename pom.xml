@@ -71,6 +71,11 @@
     <url>https://github.com/apache/maven-mvnd/issues</url>
   </issueManagement>
 
+  <ciManagement>
+    <system>GitHub</system>
+    <url>https://github.com/apache/maven-mvnd/actions</url>
+  </ciManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>8</maven.compiler.target>
