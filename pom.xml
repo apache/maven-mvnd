@@ -70,6 +70,11 @@
     <url>https://github.com/apache/maven-mvnd/issues</url>
   </issueManagement>
 
+  <ciManagement>
+    <system>GitHub</system>
+    <url>https://github.com/apache/maven-mvnd/actions</url>
+  </ciManagement>
+
   <properties>
     <javaVersion>17</javaVersion>
     <maven-dist.required.jdk>17</maven-dist.required.jdk>
