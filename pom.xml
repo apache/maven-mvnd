@@ -61,11 +61,15 @@
   </modules>
 
   <scm>
-    <connection>scm:git:${repository.url}.git</connection>
-    <developerConnection>scm:git:${repository.url}.git</developerConnection>
-    <tag>head</tag>
-    <url>${repository.url}</url>
+    <connection>scm:git:https://gitbox.apache.org/repos/asf/maven-mvnd.git</connection>
+    <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/maven-mvnd.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/apache/maven-mvnd/tree/${project.scm.tag}</url>
   </scm>
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/apache/maven-mvnd/issues</url>
+  </issueManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -76,8 +80,6 @@
     <maven-dist.required.jdk>8</maven-dist.required.jdk>
     <project.build.outputTimestamp>2026-05-27T20:12:56Z</project.build.outputTimestamp>
     <trimStackTrace>false</trimStackTrace>
-    <project.github.repository>apache/maven-mvnd</project.github.repository>
-    <repository.url>github.com:${project.github.repository}</repository.url>
 
     <!-- dependency versions a..z -->
     <apiguardian-api.version>1.0.0</apiguardian-api.version>
