@@ -44,27 +44,40 @@ public class DefaultClientTest {
     /**
      * {@code --version} must complete without ever touching a daemon: with no fix, this would try to connect
      * to (and possibly spawn) one using the bogus paths below and fail or hang instead of returning quickly.
+     *
+     * <p>{@link DaemonParameters#mvndHome()} is faked through the {@code mvnd.home}/{@code mvnd.daemonStorage}
+     * system properties rather than by overriding {@link DaemonParameters}, because {@link DefaultClient}'s
+     * constructor derives its own copy of the given parameters (see {@link DaemonParameters#withJdkJavaOpts}),
+     * which would silently drop any overridden method.
      */
     @Test
     void versionDoesNotConnectToDaemon(@TempDir Path dir) {
         final Path bogusHome = dir.resolve("no-such-mvnd-home");
-        DaemonParameters parameters = new DaemonParameters() {
-            @Override
-            public Path mvndHome() {
-                return bogusHome;
-            }
+        final String homeProperty = Environment.MVND_HOME.getProperty();
+        final String storageProperty = Environment.MVND_DAEMON_STORAGE.getProperty();
+        final String previousHome = System.getProperty(homeProperty);
+        final String previousStorage = System.getProperty(storageProperty);
+        System.setProperty(homeProperty, bogusHome.toString());
+        System.setProperty(storageProperty, bogusHome.resolve("storage").toString());
+        try {
+            DefaultClient client = new DefaultClient(new DaemonParameters());
 
-            @Override
-            public Path registry() {
-                return bogusHome.resolve("registry.bin");
-            }
-        };
-        DefaultClient client = new DefaultClient(parameters);
+            ExecutionResult result = client.execute(new NoopClientOutput(), Arrays.asList("--version"));
 
-        ExecutionResult result = client.execute(new NoopClientOutput(), Arrays.asList("--version"));
+            assertTrue(result.isSuccess());
+            assertEquals(0, result.getExitCode());
+        } finally {
+            restoreProperty(homeProperty, previousHome);
+            restoreProperty(storageProperty, previousStorage);
+        }
+    }
 
-        assertTrue(result.isSuccess());
-        assertEquals(0, result.getExitCode());
+    private static void restoreProperty(final String key, final String previousValue) {
+        if (previousValue != null) {
+            System.setProperty(key, previousValue);
+        } else {
+            System.clearProperty(key);
+        }
     }
 
     private static final class NoopClientOutput implements ClientOutput {
