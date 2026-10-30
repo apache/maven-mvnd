@@ -431,20 +431,20 @@
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
           <configuration>
-            <excludes combine.children="append">
-              <exclude>**/*.png</exclude>
-              <exclude>**/*.json</exclude>
-              <exclude>**/.mvn/*</exclude>
-              <exclude>.cache/**</exclude>
-              <exclude>.mvn/**/*</exclude>
-              <exclude>*.adoc</exclude>
-              <exclude>*.md</exclude>
-              <exclude>src/test/projects/**/.classpath</exclude>
-              <exclude>src/test/projects/**/.project</exclude>
-              <exclude>src/test/projects/**/.settings/**</exclude>
-              <exclude>src/test/projects/**/target/**</exclude>
-              <exclude>**/META-INF/services/**</exclude>
-            </excludes>
+            <inputExcludes combine.children="append">
+              <inputExclude>**/*.png</inputExclude>
+              <inputExclude>**/*.json</inputExclude>
+              <inputExclude>**/.mvn/*</inputExclude>
+              <inputExclude>.cache/**</inputExclude>
+              <inputExclude>.mvn/**/*</inputExclude>
+              <inputExclude>*.adoc</inputExclude>
+              <inputExclude>*.md</inputExclude>
+              <inputExclude>src/test/projects/**/.classpath</inputExclude>
+              <inputExclude>src/test/projects/**/.project</inputExclude>
+              <inputExclude>src/test/projects/**/.settings/**</inputExclude>
+              <inputExclude>src/test/projects/**/target/**</inputExclude>
+              <inputExclude>**/META-INF/services/**</inputExclude>
+            </inputExcludes>
           </configuration>
         </plugin>
         <plugin>
