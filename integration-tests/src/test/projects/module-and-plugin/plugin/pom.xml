@@ -36,12 +36,12 @@
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <scope>provided</scope>
-            <version>3.5</version>
+            <version>3.15.1</version>
         </dependency>
         <dependency>
           <groupId>org.apache.maven</groupId>
           <artifactId>maven-plugin-api</artifactId>
-          <version>3.6.0</version>
+          <version>3.9.9</version>
         </dependency>
 
     </dependencies>
