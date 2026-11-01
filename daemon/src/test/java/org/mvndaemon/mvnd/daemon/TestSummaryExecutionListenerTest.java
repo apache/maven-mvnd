@@ -63,10 +63,15 @@ class TestSummaryExecutionListenerTest {
         MessageUtils.systemInstall(terminal);
     }
 
-    /** Not {@code systemUninstall()}: it requires an AnsiConsole install that {@code systemInstall(Terminal)} skips. */
+    /** {@code systemUninstall()} clears the terminal, then throws: {@code systemInstall(Terminal)} skips AnsiConsole. */
     @AfterAll
     static void closeTerminal() throws IOException {
         terminal.close();
+        try {
+            MessageUtils.systemUninstall();
+        } catch (IllegalStateException expected) {
+            // "Already uninstalled"; the terminal field is cleared regardless
+        }
         MessageUtils.setColorEnabled(true);
     }
 
