@@ -18,30 +18,52 @@
  */
 package org.mvndaemon.mvnd.daemon;
 
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 
+import org.apache.maven.execution.AbstractExecutionListener;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.execution.ExecutionListener;
+import org.apache.maven.jline.MessageUtils;
 import org.mvndaemon.mvnd.logging.smart.TestBuildSummary;
 
 /**
- * Decorates the {@link ExecutionListener} chain Maven 4 builds in {@code MavenInvoker.determineExecutionListener}
- * (wired up by {@link DaemonMavenInvoker#determineExecutionListener}) to fold per-project test-progress snapshots
- * into the reactor-wide {@link TestBuildSummary} and send it to the client immediately before
- * {@code delegate.sessionEnded} prints the Reactor Summary.
+ * Folds per-project test-progress snapshots into the reactor-wide {@link TestBuildSummary} and sends it to the client.
+ * {@link #decorate} puts this listener in front of the {@link ExecutionListener} chain Maven 4 builds in
+ * {@code MavenInvoker.determineExecutionListener} (wired up by {@link DaemonMavenInvoker#determineExecutionListener}),
+ * so the summary is sent immediately before {@code delegate.sessionEnded} prints the Reactor Summary.
  */
-public class TestSummaryExecutionListener implements ExecutionListener {
-    private final ExecutionListener delegate;
+public class TestSummaryExecutionListener extends AbstractExecutionListener {
     private final ClientDispatcher clientDispatcher;
 
-    public TestSummaryExecutionListener(ExecutionListener delegate, ClientDispatcher clientDispatcher) {
-        this.delegate = delegate;
+    private TestSummaryExecutionListener(ClientDispatcher clientDispatcher) {
         this.clientDispatcher = clientDispatcher;
+    }
+
+    /**
+     * Returns a listener that calls a {@link TestSummaryExecutionListener} and then {@code delegate} for every
+     * {@link ExecutionListener} method. It is a proxy so that a method Maven adds to the interface still reaches
+     * {@code delegate}: a default method would otherwise be skipped without a compile error.
+     */
+    public static ExecutionListener decorate(ExecutionListener delegate, ClientDispatcher clientDispatcher) {
+        ExecutionListener summary = new TestSummaryExecutionListener(clientDispatcher);
+        return (ExecutionListener) Proxy.newProxyInstance(
+                ExecutionListener.class.getClassLoader(),
+                new Class<?>[] {ExecutionListener.class},
+                (proxy, method, args) -> {
+                    try {
+                        if (method.getDeclaringClass() != Object.class) {
+                            method.invoke(summary, args);
+                        }
+                        return method.invoke(delegate, args);
+                    } catch (InvocationTargetException e) {
+                        throw e.getCause();
+                    }
+                });
     }
 
     @Override
     public void mojoStarted(ExecutionEvent event) {
-        delegate.mojoStarted(event);
         // Folds the previous test-running mojo's snapshots into the reactor totals; a no-op for non-test mojos.
         // Needed so a project's failsafe run doesn't overwrite its still-unfolded surefire snapshots (both start
         // fork-channel ids at 0).
@@ -50,90 +72,18 @@ public class TestSummaryExecutionListener implements ExecutionListener {
 
     @Override
     public void sessionEnded(ExecutionEvent event) {
-        emitTestSummary();
-        delegate.sessionEnded(event);
-    }
-
-    private void emitTestSummary() {
-        List<TestBuildSummary.SummaryLine> lines =
-                clientDispatcher.getTestSummary().renderLines();
-        for (TestBuildSummary.SummaryLine line : lines) {
-            clientDispatcher.log(line.text);
+        for (TestBuildSummary.SummaryLine line :
+                clientDispatcher.getTestSummary().renderLines()) {
+            clientDispatcher.log(styled(line));
         }
     }
 
-    @Override
-    public void projectDiscoveryStarted(ExecutionEvent event) {
-        delegate.projectDiscoveryStarted(event);
-    }
-
-    @Override
-    public void sessionStarted(ExecutionEvent event) {
-        delegate.sessionStarted(event);
-    }
-
-    @Override
-    public void projectSkipped(ExecutionEvent event) {
-        delegate.projectSkipped(event);
-    }
-
-    @Override
-    public void projectStarted(ExecutionEvent event) {
-        delegate.projectStarted(event);
-    }
-
-    @Override
-    public void projectSucceeded(ExecutionEvent event) {
-        delegate.projectSucceeded(event);
-    }
-
-    @Override
-    public void projectFailed(ExecutionEvent event) {
-        delegate.projectFailed(event);
-    }
-
-    @Override
-    public void mojoSkipped(ExecutionEvent event) {
-        delegate.mojoSkipped(event);
-    }
-
-    @Override
-    public void mojoSucceeded(ExecutionEvent event) {
-        delegate.mojoSucceeded(event);
-    }
-
-    @Override
-    public void mojoFailed(ExecutionEvent event) {
-        delegate.mojoFailed(event);
-    }
-
-    @Override
-    public void forkStarted(ExecutionEvent event) {
-        delegate.forkStarted(event);
-    }
-
-    @Override
-    public void forkSucceeded(ExecutionEvent event) {
-        delegate.forkSucceeded(event);
-    }
-
-    @Override
-    public void forkFailed(ExecutionEvent event) {
-        delegate.forkFailed(event);
-    }
-
-    @Override
-    public void forkedProjectStarted(ExecutionEvent event) {
-        delegate.forkedProjectStarted(event);
-    }
-
-    @Override
-    public void forkedProjectSucceeded(ExecutionEvent event) {
-        delegate.forkedProjectSucceeded(event);
-    }
-
-    @Override
-    public void forkedProjectFailed(ExecutionEvent event) {
-        delegate.forkedProjectFailed(event);
+    /** Colors a line the way Maven colors its own output, which stays plain text when color is disabled. */
+    private static String styled(TestBuildSummary.SummaryLine line) {
+        return switch (line.level) {
+            case ERROR -> MessageUtils.builder().failure(line.text).build();
+            case WARNING -> MessageUtils.builder().warning(line.text).build();
+            case INFO -> line.text;
+        };
     }
 }

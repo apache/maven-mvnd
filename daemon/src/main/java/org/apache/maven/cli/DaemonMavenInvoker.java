@@ -86,7 +86,7 @@ public class DaemonMavenInvoker extends ResidentMavenInvoker {
         ExecutionListener delegate = super.determineExecutionListener(context);
         BuildEventListener buildEventListener = doDetermineBuildEventListener(context);
         if (buildEventListener instanceof ClientDispatcher clientDispatcher) {
-            return new TestSummaryExecutionListener(delegate, clientDispatcher);
+            return TestSummaryExecutionListener.decorate(delegate, clientDispatcher);
         }
         return delegate;
     }
