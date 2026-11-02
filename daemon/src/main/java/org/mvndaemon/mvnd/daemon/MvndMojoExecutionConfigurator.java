@@ -106,7 +106,10 @@ public class MvndMojoExecutionConfigurator extends DefaultMojoExecutionConfigura
                 || ("maven-failsafe-plugin".equals(artifactId) && "integration-test".equals(goal));
     }
 
-    /** The Surefire fork-node SPI exists since 3.0.0-M5; older versions must be skipped so the build never fails. */
+    /**
+     * {@code MvndForkNodeFactory} needs {@code ForkNodeArguments}, which exists since 3.0.0-M6 (3.0.0-M5 has the
+     * fork-node SPI but not that type); older versions must be skipped so the build never fails.
+     */
     static boolean supportsForkNode(String version) {
         if (version == null) {
             return false;
@@ -126,6 +129,6 @@ public class MvndMojoExecutionConfigurator extends DefaultMojoExecutionConfigura
             return true;
         }
         String milestone = m.group(4);
-        return milestone == null || Integer.parseInt(milestone) >= 5;
+        return milestone == null || Integer.parseInt(milestone) >= 6;
     }
 }

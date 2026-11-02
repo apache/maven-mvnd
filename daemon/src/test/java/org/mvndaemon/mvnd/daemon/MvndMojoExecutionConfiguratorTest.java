@@ -27,12 +27,13 @@ class MvndMojoExecutionConfiguratorTest {
 
     @Test
     void injectsOnlyForSurefireVersionsThatSupportForkNode() {
-        // forkNode SPI exists since 3.0.0-M5 -> anything older must be skipped so the build never fails
+        // ForkNodeArguments (needed by MvndForkNodeFactory) exists since 3.0.0-M6 -> older must be skipped
         assertFalse(MvndMojoExecutionConfigurator.supportsForkNode(null));
         assertFalse(MvndMojoExecutionConfigurator.supportsForkNode("2.22.2"));
         assertFalse(MvndMojoExecutionConfigurator.supportsForkNode("3.0.0-M4"));
+        assertFalse(MvndMojoExecutionConfigurator.supportsForkNode("3.0.0-M5"));
 
-        assertTrue(MvndMojoExecutionConfigurator.supportsForkNode("3.0.0-M5"));
+        assertTrue(MvndMojoExecutionConfigurator.supportsForkNode("3.0.0-M6"));
         assertTrue(MvndMojoExecutionConfigurator.supportsForkNode("3.0.0-M8"));
         assertTrue(MvndMojoExecutionConfigurator.supportsForkNode("3.5.6"));
         assertTrue(MvndMojoExecutionConfigurator.supportsForkNode("4.0.0"));
