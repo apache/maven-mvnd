@@ -104,9 +104,11 @@ public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycle
     }
 
     /**
-     * The {@code forkNode} extension SPI ({@code ForkNodeFactory} / {@code SurefireForkNodeFactory}) exists only in
-     * Surefire {@code >= 3.0.0-M5}. Injecting {@code <forkNode>} into anything older makes the build fail hard
-     * ("unknown parameter forkNode" or a missing implementation class), so guard on the resolved plugin version.
+     * The {@code org.apache.maven.surefire.api.fork.ForkNodeArguments} / {@code api.event} packages that
+     * {@code MvndForkNodeFactory} is compiled against exist only in Surefire {@code >= 3.0.0-M6}; in {@code 3.0.0-M5}
+     * the equivalent type is still {@code org.apache.maven.surefire.extensions.ForkNodeArguments}, in a different
+     * module. Injecting {@code <forkNode>} into anything older than M6 makes the build fail hard ("unknown
+     * parameter forkNode" or a missing implementation class), so guard on the resolved plugin version.
      */
     static boolean supportsForkNode(String version) {
         if (version == null) {
@@ -127,6 +129,6 @@ public class MvndTestProgressLifecycleParticipant extends AbstractMavenLifecycle
             return true;
         }
         String milestone = m.group(4);
-        return milestone == null || Integer.parseInt(milestone) >= 5;
+        return milestone == null || Integer.parseInt(milestone) >= 6;
     }
 }
