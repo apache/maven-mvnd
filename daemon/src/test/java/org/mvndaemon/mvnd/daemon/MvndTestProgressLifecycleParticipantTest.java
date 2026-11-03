@@ -27,12 +27,14 @@ class MvndTestProgressLifecycleParticipantTest {
 
     @Test
     void injectsOnlyForSurefireVersionsThatSupportForkNode() {
-        // forkNode SPI exists since 3.0.0-M5 -> anything older must be skipped so the build never fails
+        // the org.apache.maven.surefire.api.fork/event packages MvndForkNodeFactory needs ship in 3.0.0-M6 ->
+        // anything older, including M5, must be skipped so the build never fails
         assertFalse(MvndTestProgressLifecycleParticipant.supportsForkNode(null));
         assertFalse(MvndTestProgressLifecycleParticipant.supportsForkNode("2.22.2"));
         assertFalse(MvndTestProgressLifecycleParticipant.supportsForkNode("3.0.0-M4"));
+        assertFalse(MvndTestProgressLifecycleParticipant.supportsForkNode("3.0.0-M5"));
 
-        assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("3.0.0-M5"));
+        assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("3.0.0-M6"));
         assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("3.0.0-M8"));
         assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("3.5.6"));
         assertTrue(MvndTestProgressLifecycleParticipant.supportsForkNode("4.0.0"));
