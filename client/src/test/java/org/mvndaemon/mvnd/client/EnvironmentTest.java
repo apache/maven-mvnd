@@ -33,8 +33,22 @@ import org.mvndaemon.mvnd.client.DaemonParameters.ValueSource;
 import org.mvndaemon.mvnd.common.Environment;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class EnvironmentTest {
+
+    @Test
+    void voidOptionHonoursExplicitFalse() {
+        assertNull(Environment.SERIAL.getCommandLineOption(list("-Dmvnd.serial=false")));
+        assertNull(Environment.SERIAL.getCommandLineOption(list("--serial=false")));
+        assertEquals("", Environment.SERIAL.getCommandLineOption(list("-Dmvnd.serial=true")));
+        assertEquals("", Environment.SERIAL.getCommandLineOption(list("--serial")));
+        assertEquals("", Environment.SERIAL.getCommandLineOption(list("-1")));
+
+        List<String> args = list("-Dmvnd.serial=false", "clean");
+        assertNull(Environment.SERIAL.removeCommandLineOption(args));
+        assertEquals(list("clean"), args);
+    }
 
     @Test
     void arguments() {

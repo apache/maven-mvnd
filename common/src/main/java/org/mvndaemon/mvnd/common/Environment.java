@@ -512,13 +512,18 @@ public enum Environment {
                 if (remove) {
                     it.remove();
                 }
+                String opt = Stream.of(prefixes)
+                        .filter(arg::startsWith)
+                        .max(Comparator.comparing(String::length))
+                        .get();
                 if (type == OptionType.VOID) {
-                    value = "";
+                    String explicit = arg.substring(opt.length());
+                    if (explicit.startsWith("=")) {
+                        explicit = explicit.substring(1);
+                    }
+                    // an explicit "false" switches the option off
+                    value = "false".equalsIgnoreCase(explicit) ? null : "";
                 } else {
-                    String opt = Stream.of(prefixes)
-                            .filter(arg::startsWith)
-                            .max(Comparator.comparing(String::length))
-                            .get();
                     value = arg.substring(opt.length());
                     if (value.isEmpty()) {
                         if (it.hasNext()) {
