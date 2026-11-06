@@ -42,6 +42,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -323,5 +324,41 @@ public class DaemonRegistryTest {
 
         Path link = Files.createSymbolicLink(base.resolve("link.bin"), existing);
         assertThrows(DaemonException.class, () -> new DaemonRegistry(link));
+    }
+
+    @Test
+    public void testInvalidRegistryIsCopiedBeforeReset() throws IOException {
+        Path dir = Files.createTempDirectory("reg");
+        Path file = dir.resolve("registry.bin");
+        Path corrupt = dir.resolve("registry.bin.corrupt");
+        Files.write(corrupt, new byte[] {42});
+        byte[] bad = {0, 0, 0, 5, 1, 2, 3};
+        Files.write(file, bad);
+
+        try (DaemonRegistry reg = new DaemonRegistry(file)) {
+            assertEquals(0, reg.getAll().size());
+            assertArrayEquals(bad, Files.readAllBytes(corrupt));
+            assertEquals(0, Files.size(file));
+
+            reg.store(newDaemonInfo("12345678"));
+            assertEquals(1, reg.getAll().size());
+        }
+    }
+
+    private static DaemonInfo newDaemonInfo(String id) {
+        byte[] token = new byte[16];
+        new Random().nextBytes(token);
+        return new DaemonInfo(
+                id,
+                "/java/home/",
+                "/data/reg/",
+                0x12345678,
+                "inet:/127.0.0.1:7502",
+                token,
+                Locale.getDefault().toLanguageTag(),
+                Arrays.asList("-Xmx"),
+                DaemonState.Idle,
+                System.currentTimeMillis(),
+                System.currentTimeMillis());
     }
 }
