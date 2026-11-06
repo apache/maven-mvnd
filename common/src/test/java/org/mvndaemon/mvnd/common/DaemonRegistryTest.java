@@ -19,6 +19,7 @@
 package org.mvndaemon.mvnd.common;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -323,5 +325,103 @@ public class DaemonRegistryTest {
 
         Path link = Files.createSymbolicLink(base.resolve("link.bin"), existing);
         assertThrows(DaemonException.class, () -> new DaemonRegistry(link));
+    }
+
+    @Test
+    public void testInvalidRegistryIsCopiedBeforeReset() throws IOException {
+        Path dir = Files.createTempDirectory("reg");
+        Path file = dir.resolve("registry.bin");
+        Path corrupt = dir.resolve("registry.bin.corrupt");
+        Files.write(corrupt, new byte[] {42});
+        byte[] bad = {0, 0, 0, 5, 1, 2, 3};
+        Files.write(file, bad);
+
+        try (DaemonRegistry reg = new DaemonRegistry(file)) {
+            assertEquals(0, reg.getAll().size());
+            assertArrayEquals(bad, Files.readAllBytes(corrupt));
+            assertEquals(0, Files.size(file));
+
+            reg.store(newDaemonInfo("12345678"));
+            assertEquals(1, reg.getAll().size());
+        }
+    }
+
+    private static DaemonInfo newDaemonInfo(String id) {
+        byte[] token = new byte[16];
+        new Random().nextBytes(token);
+        return new DaemonInfo(
+                id,
+                "/java/home/",
+                "/data/reg/",
+                0x12345678,
+                "inet:/127.0.0.1:7502",
+                token,
+                Locale.getDefault().toLanguageTag(),
+                Arrays.asList("-Xmx"),
+                DaemonState.Idle,
+                System.currentTimeMillis(),
+                System.currentTimeMillis());
+    }
+
+    @Test
+    public void testRegistryStartsWithHeader() throws IOException {
+        Path file = Files.createTempDirectory("reg").resolve("registry.bin");
+        try (DaemonRegistry reg = new DaemonRegistry(file)) {
+            reg.store(newDaemonInfo("12345678"));
+        }
+        ByteArrayOutputStream expected = new ByteArrayOutputStream();
+        try (DataOutputStream os = new DataOutputStream(expected)) {
+            os.writeInt(0x4D564E44);
+            os.writeInt(1);
+            os.writeInt(1);
+        }
+        byte[] actual = Files.readAllBytes(file);
+        assertArrayEquals(expected.toByteArray(), Arrays.copyOf(actual, 12));
+    }
+
+    @Test
+    public void testRegistryWithoutOrWithOtherHeaderIsReset() throws IOException {
+        Path dir = Files.createTempDirectory("reg");
+        Path file = dir.resolve("registry.bin");
+
+        // the format written before the header was added: the daemon count comes first
+        ByteArrayOutputStream old = new ByteArrayOutputStream();
+        try (DataOutputStream os = new DataOutputStream(old)) {
+            os.writeInt(0);
+            os.writeInt(0);
+        }
+        Files.write(file, old.toByteArray());
+        try (DaemonRegistry reg = new DaemonRegistry(file)) {
+            assertEquals(0, reg.getAll().size());
+            assertArrayEquals(old.toByteArray(), Files.readAllBytes(dir.resolve("registry.bin.corrupt")));
+            assertEquals(0, Files.size(file));
+            reg.store(newDaemonInfo("12345678"));
+            assertEquals(1, reg.getAll().size());
+        }
+
+        // a file written by another format version
+        ByteArrayOutputStream other = new ByteArrayOutputStream();
+        try (DataOutputStream os = new DataOutputStream(other)) {
+            os.writeInt(0x4D564E44);
+            os.writeInt(2);
+            os.writeInt(0);
+            os.writeInt(0);
+        }
+        Files.write(file, other.toByteArray());
+        try (DaemonRegistry reg = new DaemonRegistry(file)) {
+            assertEquals(0, reg.getAll().size());
+            assertArrayEquals(other.toByteArray(), Files.readAllBytes(dir.resolve("registry.bin.corrupt")));
+        }
+    }
+
+    @Test
+    public void testEmptyFileIsValidRegistry() throws IOException {
+        Path dir = Files.createTempDirectory("reg");
+        Path file = dir.resolve("registry.bin");
+        try (DaemonRegistry reg = new DaemonRegistry(file)) {
+            assertEquals(0, reg.getAll().size());
+        }
+        assertEquals(0, Files.size(file));
+        assertTrue(Files.notExists(dir.resolve("registry.bin.corrupt")));
     }
 }

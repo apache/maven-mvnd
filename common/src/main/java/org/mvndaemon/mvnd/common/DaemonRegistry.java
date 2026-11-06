@@ -64,6 +64,10 @@ public class DaemonRegistry implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonRegistry.class);
 
     private static final long LOCK_TIMEOUT_MS = 1000 * 20;
+    /** Start of a non-empty registry file: the magic number "MVND" followed by the int format version. */
+    private static final int MAGIC = 0x4D564E44;
+
+    private static final int FORMAT_VERSION = 1;
     private static final Map<Path, Object> locks = new ConcurrentHashMap<>();
     private final Path registryFile;
     private final Object lck;
@@ -220,84 +224,102 @@ public class DaemonRegistry implements AutoCloseable {
 
         synchronized (lck) {
             try (FileLock l = tryLock()) {
-                channel.position(0);
-                DataInputStream is = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel)));
-                infosMap.clear();
-                int nb = is.available() < 4 ? 0 : is.readInt();
-                for (int i = 0; i < nb; i++) {
-                    String daemonId = is.readUTF();
-                    String javaHome = is.readUTF();
-                    String mavenHome = is.readUTF();
-                    int pid = is.readInt();
-                    String address = is.readUTF();
-
-                    byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
-                    is.read(token);
-
-                    String locale = is.readUTF();
-                    List<String> opts = new ArrayList<>();
-                    int nbOpts = is.readInt();
-                    for (int j = 0; j < nbOpts; j++) {
-                        opts.add(is.readUTF());
-                    }
-                    DaemonState state = DaemonState.values()[is.readByte()];
-                    long lastIdle = is.readLong();
-                    long lastBusy = is.readLong();
-                    DaemonInfo di = new DaemonInfo(
-                            daemonId, javaHome, mavenHome, pid, address, token, locale, opts, state, lastIdle,
-                            lastBusy);
-                    infosMap.putIfAbsent(di.getId(), di);
-                }
-                stopEvents.clear();
-                nb = is.available() < 4 ? 0 : is.readInt();
-                for (int i = 0; i < nb; i++) {
-                    String daemonId = is.readUTF();
-                    long date = is.readLong();
-                    int ord = is.readByte();
-                    DaemonExpirationStatus des = ord >= 0 ? DaemonExpirationStatus.values()[ord] : null;
-                    String reason = is.readUTF();
-                    DaemonStopEvent se = new DaemonStopEvent(daemonId, date, des, reason);
-                    stopEvents.add(se);
-                }
-
-                if (updater != null) {
-                    updater.run();
-                    channel.truncate(0);
-                    DataOutputStream os =
-                            new DataOutputStream(new BufferedOutputStream(Channels.newOutputStream(channel)));
-                    os.writeInt(infosMap.size());
-                    for (DaemonInfo di : infosMap.values()) {
-                        String id = di.getId();
-                        os.writeUTF(id);
-                        os.writeUTF(di.getJavaHome());
-                        os.writeUTF(di.getMvndHome());
-                        os.writeInt(di.getPid());
-                        os.writeUTF(di.getAddress());
-                        os.write(di.getToken());
-                        os.writeUTF(di.getLocale());
-                        os.writeInt(di.getOptions().size());
-                        for (String opt : di.getOptions()) {
-                            os.writeUTF(opt);
+                try {
+                    channel.position(0);
+                    DataInputStream is = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel)));
+                    infosMap.clear();
+                    int nb = 0;
+                    if (is.available() > 0) {
+                        // a file without the header, as written by an older mvnd, is reset like a corrupt one
+                        int magic = is.readInt();
+                        int version = is.readInt();
+                        if (magic != MAGIC || version != FORMAT_VERSION) {
+                            throw new IOException(
+                                    String.format("Unsupported registry header 0x%08X, version %d", magic, version));
                         }
-                        os.writeByte((byte) di.getState().ordinal());
-                        os.writeLong(di.getLastIdle());
-                        os.writeLong(di.getLastBusy());
+                        nb = is.readInt();
                     }
-                    os.writeInt(stopEvents.size());
-                    for (DaemonStopEvent dse : stopEvents) {
-                        os.writeUTF(dse.getDaemonId());
-                        os.writeLong(dse.getTimestamp());
-                        os.writeByte((byte)
-                                (dse.getStatus() == null ? -1 : dse.getStatus().ordinal()));
-                        os.writeUTF(dse.getReason());
+                    for (int i = 0; i < nb; i++) {
+                        String daemonId = is.readUTF();
+                        String javaHome = is.readUTF();
+                        String mavenHome = is.readUTF();
+                        int pid = is.readInt();
+                        String address = is.readUTF();
+
+                        byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
+                        is.readFully(token);
+
+                        String locale = is.readUTF();
+                        List<String> opts = new ArrayList<>();
+                        int nbOpts = is.readInt();
+                        for (int j = 0; j < nbOpts; j++) {
+                            opts.add(is.readUTF());
+                        }
+                        DaemonState state = DaemonState.values()[is.readByte()];
+                        long lastIdle = is.readLong();
+                        long lastBusy = is.readLong();
+                        DaemonInfo di = new DaemonInfo(
+                                daemonId, javaHome, mavenHome, pid, address, token, locale, opts, state, lastIdle,
+                                lastBusy);
+                        infosMap.putIfAbsent(di.getId(), di);
                     }
-                    os.flush();
+                    stopEvents.clear();
+                    nb = is.available() < 4 ? 0 : is.readInt();
+                    for (int i = 0; i < nb; i++) {
+                        String daemonId = is.readUTF();
+                        long date = is.readLong();
+                        int ord = is.readByte();
+                        DaemonExpirationStatus des = ord >= 0 ? DaemonExpirationStatus.values()[ord] : null;
+                        String reason = is.readUTF();
+                        DaemonStopEvent se = new DaemonStopEvent(daemonId, date, des, reason);
+                        stopEvents.add(se);
+                    }
+
+                    if (updater != null) {
+                        updater.run();
+                        channel.truncate(0);
+                        DataOutputStream os =
+                                new DataOutputStream(new BufferedOutputStream(Channels.newOutputStream(channel)));
+                        os.writeInt(MAGIC);
+                        os.writeInt(FORMAT_VERSION);
+                        os.writeInt(infosMap.size());
+                        for (DaemonInfo di : infosMap.values()) {
+                            String id = di.getId();
+                            os.writeUTF(id);
+                            os.writeUTF(di.getJavaHome());
+                            os.writeUTF(di.getMvndHome());
+                            os.writeInt(di.getPid());
+                            os.writeUTF(di.getAddress());
+                            os.write(di.getToken());
+                            os.writeUTF(di.getLocale());
+                            os.writeInt(di.getOptions().size());
+                            for (String opt : di.getOptions()) {
+                                os.writeUTF(opt);
+                            }
+                            os.writeByte((byte) di.getState().ordinal());
+                            os.writeLong(di.getLastIdle());
+                            os.writeLong(di.getLastBusy());
+                        }
+                        os.writeInt(stopEvents.size());
+                        for (DaemonStopEvent dse : stopEvents) {
+                            os.writeUTF(dse.getDaemonId());
+                            os.writeLong(dse.getTimestamp());
+                            os.writeByte((byte)
+                                    (dse.getStatus() == null
+                                            ? -1
+                                            : dse.getStatus().ordinal()));
+                            os.writeUTF(dse.getReason());
+                        }
+                        os.flush();
+                    }
+                } catch (DaemonException e) {
+                    throw e;
+                } catch (Exception e) {
+                    LOGGER.warn("Invalid daemon registry info at [{}], trying to recover.", registryFile, e);
+                    this.reset();
                 }
-            } catch (DaemonException e) {
-                throw e;
-            } catch (Exception e) {
-                LOGGER.warn("Invalid daemon registry info at [{}], trying to recover.", registryFile, e);
-                this.reset();
+            } catch (IOException e) {
+                throw new DaemonException("Could not release the lock on " + registryFile, e);
             }
         }
     }
@@ -321,10 +343,40 @@ public class DaemonRegistry implements AutoCloseable {
     private void reset() {
         infosMap.clear();
         stopEvents.clear();
+        saveCorrupt();
         try {
             channel.truncate(0);
         } catch (IOException e) {
             LOGGER.error("Could not truncate [{}], please delete this file and try again.", registryFile, e);
+        }
+    }
+
+    /**
+     * Keeps a copy of the unreadable registry next to it, replacing an older copy, before it is truncated.
+     * The copy is owner-only like the registry, as it still holds the daemon tokens.
+     */
+    private void saveCorrupt() {
+        Path corrupt = registryFile.resolveSibling(registryFile.getFileName() + ".corrupt");
+        try {
+            Files.deleteIfExists(corrupt);
+            if (corrupt.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                Files.createFile(
+                        corrupt, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------")));
+            }
+            long size = channel.size();
+            try (FileChannel out = FileChannel.open(corrupt, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                long pos = 0;
+                while (pos < size) {
+                    long n = channel.transferTo(pos, size - pos, out);
+                    if (n <= 0) {
+                        break;
+                    }
+                    pos += n;
+                }
+            }
+            LOGGER.warn("Copied the invalid daemon registry to [{}] before resetting it.", corrupt);
+        } catch (IOException e) {
+            LOGGER.warn("Could not copy the invalid daemon registry to [{}]", corrupt, e);
         }
     }
 
