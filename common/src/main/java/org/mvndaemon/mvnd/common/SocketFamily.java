@@ -71,33 +71,45 @@ public enum SocketFamily {
         if (str.startsWith("inet:")) {
             String s = str.substring("inet:".length());
             int ic = s.lastIndexOf(':');
-            String ia = s.substring(0, ic);
-            int is = ia.indexOf('/');
-            String h = ia.substring(0, is);
-            String a = ia.substring(is + 1);
+            int is = ic > 0 ? s.indexOf('/') : -1;
+            if (is < 0 || is > ic) {
+                throw new IllegalArgumentException("Unsupported socket address: '" + str + "'");
+            }
+            String h = s.substring(0, is);
+            String a = s.substring(is + 1, ic);
             String p = s.substring(ic + 1);
-            InetAddress addr;
-            if ("<unresolved>".equals(a)) {
-                return InetSocketAddress.createUnresolved(h, Integer.parseInt(p));
-            } else {
-                if (a.indexOf('.') > 0) {
+            try {
+                int port = Integer.parseInt(p);
+                if ("<unresolved>".equals(a)) {
+                    return InetSocketAddress.createUnresolved(h, port);
+                }
+                byte[] ab;
+                if (a.length() > 2 && a.charAt(0) == '[' && a.charAt(a.length() - 1) == ']') {
+                    // bracketed IPv6 literal, optionally followed by a scope id
+                    String lit = a.substring(1, a.length() - 1);
+                    int pc = lit.indexOf('%');
+                    if (pc >= 0) {
+                        lit = lit.substring(0, pc);
+                    }
+                    if (lit.indexOf(':') < 0) {
+                        throw new IllegalArgumentException("Unsupported socket address: '" + str + "'");
+                    }
+                    ab = InetAddress.getByName(lit).getAddress();
+                } else if (a.indexOf('.') > 0) {
                     String[] as = a.split("\\.");
                     if (as.length != 4) {
                         throw new IllegalArgumentException("Unsupported socket address: '" + str + "'");
                     }
-                    byte[] ab = new byte[4];
+                    ab = new byte[4];
                     for (int i = 0; i < 4; i++) {
                         ab[i] = (byte) Integer.parseInt(as[i]);
                     }
-                    try {
-                        addr = InetAddress.getByAddress(h.isEmpty() ? null : h, ab);
-                    } catch (UnknownHostException e) {
-                        throw new IllegalArgumentException("Unsupported address: " + str, e);
-                    }
                 } else {
-                    throw new IllegalArgumentException("Unsupported address: " + str);
+                    throw new IllegalArgumentException("Unsupported socket address: '" + str + "'");
                 }
-                return new InetSocketAddress(addr, Integer.parseInt(p));
+                return new InetSocketAddress(InetAddress.getByAddress(h.isEmpty() ? null : h, ab), port);
+            } catch (UnknownHostException | NumberFormatException e) {
+                throw new IllegalArgumentException("Unsupported socket address: '" + str + "'", e);
             }
         } else if (str.startsWith("unix:")) {
             return SocketHelper.unixSocketAddressOf(str.substring("unix:".length()));
