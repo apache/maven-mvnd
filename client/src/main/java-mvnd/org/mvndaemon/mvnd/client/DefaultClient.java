@@ -71,9 +71,12 @@ public class DefaultClient implements Client {
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultClient.class);
 
     private final DaemonParameters parameters;
+    private final List<String> userArgs;
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
+        // What the user typed, before mvnd adds or removes options; MAVEN_CMD_LINE_ARGS is built from it
+        final List<String> userArgs = new ArrayList<>(args);
 
         // Log file
         Path logFile = null;
@@ -170,7 +173,7 @@ public class DefaultClient implements Client {
                  * and --color is not supported there yet. */
                 args.add("-D" + Environment.MAVEN_COLOR.getProperty() + "=" + styleColor.name());
 
-                final ExecutionResult result = new DefaultClient(parameters).execute(output, args);
+                final ExecutionResult result = new DefaultClient(parameters, userArgs).execute(output, args);
                 exitCode = result.getExitCode();
             } catch (DaemonException.InterruptedException e) {
                 final AttributedStyle s = new AttributedStyle().bold().foreground(AttributedStyle.RED);
@@ -227,6 +230,11 @@ public class DefaultClient implements Client {
     }
 
     public DefaultClient(DaemonParameters parameters) {
+        this(parameters, null);
+    }
+
+    DefaultClient(DaemonParameters parameters, List<String> userArgs) {
+        this.userArgs = userArgs;
         // Those options are needed in order to be able to set the environment correctly
         this.parameters = parameters.withJdkJavaOpts(
                 "--add-opens java.base/java.io=ALL-UNNAMED "
@@ -370,7 +378,7 @@ public class DefaultClient implements Client {
                         args,
                         parameters.userDir().toString(),
                         parameters.multiModuleProjectDirectory().toString(),
-                        buildRequestEnvironment()));
+                        MavenCmdLineArgs.addTo(buildRequestEnvironment(), userArgs != null ? userArgs : argv)));
 
                 output.accept(Message.buildStatus(
                         "Connected to daemon " + daemon.getDaemon().getId() + ", scanning for projects..."));
