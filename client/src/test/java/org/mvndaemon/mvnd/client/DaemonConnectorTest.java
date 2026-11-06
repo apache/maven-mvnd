@@ -20,6 +20,7 @@ package org.mvndaemon.mvnd.client;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.DaemonException;
@@ -38,6 +39,24 @@ public class DaemonConnectorTest {
         String id = DaemonConnector.newId();
         assertNotNull(id);
         assertEquals(8, id.length());
+    }
+
+    @Test
+    public void splitsJvmArgs() {
+        assertEquals(List.of(), DaemonConnector.splitJvmArgs(""));
+        assertEquals(List.of(), DaemonConnector.splitJvmArgs("   "));
+        assertEquals(List.of("-Xmx1g", "-Dfoo=bar"), DaemonConnector.splitJvmArgs("-Xmx1g -Dfoo=bar"));
+        assertEquals(List.of("-Xmx1g", "-Dfoo=bar"), DaemonConnector.splitJvmArgs("  -Xmx1g   -Dfoo=bar "));
+        assertEquals(
+                List.of("-Djavax.net.ssl.trustStore=/my trust/store.jks", "-Dx=y"),
+                DaemonConnector.splitJvmArgs("\"-Djavax.net.ssl.trustStore=/my trust/store.jks\" -Dx=y"));
+        assertEquals(
+                List.of("-Djavax.net.ssl.trustStore=/my trust/store.jks"),
+                DaemonConnector.splitJvmArgs("-Djavax.net.ssl.trustStore=\"/my trust/store.jks\""));
+        assertEquals(List.of("-Da=b c", "-Dd=e f"), DaemonConnector.splitJvmArgs("'-Da=b c' -Dd='e f'"));
+        assertEquals(List.of("-Da=it's", "x"), DaemonConnector.splitJvmArgs("\"-Da=it's\" x"));
+        assertEquals(List.of("", "a"), DaemonConnector.splitJvmArgs("\"\" a"));
+        assertEquals(List.of("-Da=b c"), DaemonConnector.splitJvmArgs("-Da=\"b c"));
     }
 
     @Test
