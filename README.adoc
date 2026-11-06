@@ -165,15 +165,15 @@ The last column lists the Java 17 or later builds that vendors published as of O
 |Linux aarch64 |yes |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
 |Linux ppc64le |no |yes |Temurin, Liberica: 17, 21, 25
 |Linux armv6, armv7 (hard-float) |no |yes |Liberica: 17, 21, 25; Temurin, Zulu: 17
-|Linux arm (`softfp`) |no |yes |none found
-|Linux x86 (32-bit) |no |yes |Liberica: 17, 21; Zulu: 17
+|Linux arm (`softfp`) |no |no |none found
+|Linux x86 (32-bit) |no |no |Liberica: 17, 21; Zulu: 17
 |macOS aarch64 |yes |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
 |macOS x86_64 |no |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
 |Windows x86_64 |yes |yes |Temurin, Liberica, Zulu, Microsoft: 17, 21, 25
-|Windows x86 (32-bit) |no |yes |Temurin, Zulu: 17
+|Windows x86 (32-bit) |no |no |Temurin, Zulu: 17
 |Windows aarch64 |no |no |Microsoft, Zulu: 17, 21, 25; Temurin: 21
 |FreeBSD x86_64 |no |yes |FreeBSD ports: 17, 21, 25
-|FreeBSD x86 (32-bit) |no |yes |FreeBSD ports: 17, 21
+|FreeBSD x86 (32-bit) |no |no |FreeBSD ports: 17, 21
 |===
 
 On Linux, the native client links to the system C library dynamically and needs glibc 2.12 or later on x86_64,

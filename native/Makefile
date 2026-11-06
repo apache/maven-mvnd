@@ -20,8 +20,6 @@ include Makefile.common
 .PHONY: all package native native-all deploy crossbuild ducible clean-native
 
 linux-armv6-digest:=@sha256:a90a7deda7f561932d9ad658f8d661d17eeb44f4e7f7024ac087db1d0b95c6f5
-linux-x86-digest:=@sha256:fbe45fcb0c2ce82f84a998a1d37d67b3906502723ed89f8191c3243d9d835d17
-windows-static-x86-digest:=@sha256:b205eeeafaef4f44482d16254670da815d5679b03cf8e51e4adc3539d1c4a9c0
 windows-static-x64-digest:=@sha256:d385eec5b60e0892b3171c5cba3b892afccb3a45aed1ee9dc41b8a13c50e8aa5
 cross-build-digest:=@sha256:8dbaa86462270db93ae1b1b319bdd88d89272faf3a68632daf4fa36b414a326e
 freebsd-crossbuild-digest:=@sha256:cda62697a15d8bdc0bc26e780b1771ee78f12c55e7d5813e62c478af5a747c43
@@ -81,8 +79,8 @@ NATIVE_DLL:=$(NATIVE_DIR)/$(LIBNAME)
 
 # For cross-compilation, install docker. See also https://github.com/dockcross/dockcross
 # Disabled linux-armv6 build because of this issue; https://github.com/dockcross/dockcross/issues/190
-native-all: linux-x86 linux-x86_64 linux-arm linux-armv6 linux-armv7 \
-	linux-arm64 linux-ppc64 win-x86 win-x86_64 mac-x86_64 mac-arm64 freebsd-x86 freebsd-x86_64
+native-all: linux-x86_64 linux-armv6 linux-armv7 \
+	linux-arm64 linux-ppc64 win-x86_64 mac-x86_64 mac-arm64 freebsd-x86_64
 
 native: $(NATIVE_DLL)
 
@@ -92,19 +90,9 @@ $(NATIVE_DLL): $(MVNDNATIVE_OUT)/$(LIBNAME)
 	@mkdir -p $(NATIVE_TARGET_DIR)
 	cp $< $(NATIVE_TARGET_DIR)/$(LIBNAME)
 
-target/dockcross/dockcross-linux-x86: dockcross
-	docker run --rm dockcross/linux-x86$(linux-x86-digest) > target/dockcross/dockcross-linux-x86
-	chmod +x target/dockcross/dockcross-linux-x86
-linux-x86: download-includes target/dockcross/dockcross-linux-x86
-	target/dockcross/dockcross-linux-x86 --image dockcross/linux-x86$(linux-x86-digest) bash -c 'make clean-native native OS_NAME=Linux OS_ARCH=x86'
-
 linux-x86_64: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		-e CROSS_TRIPLE=x86_64-linux-gnu multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=x86_64
-
-linux-arm: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
-		-e CROSS_TRIPLE=arm-linux-gnueabi multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=arm
 
 target/dockcross/dockcross-linux-armv6: dockcross
 	docker run --rm dockcross/linux-armv6$(linux-armv6-digest) > target/dockcross/dockcross-linux-armv6
@@ -124,12 +112,6 @@ linux-ppc64: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		-e CROSS_TRIPLE=powerpc64le-linux-gnu multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=ppc64
 
-target/dockcross/dockcross-windows-static-x86: dockcross
-	docker run --rm dockcross/windows-static-x86$(windows-static-x86-digest) > target/dockcross/dockcross-windows-static-x86
-	chmod +x target/dockcross/dockcross-windows-static-x86
-win-x86: download-includes target/dockcross/dockcross-windows-static-x86
-	target/dockcross/dockcross-windows-static-x86 --image dockcross/windows-static-x86$(windows-static-x86-digest) bash -c 'make clean-native native CROSS_PREFIX=i686-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86'
-
 target/dockcross/dockcross-windows-static-x64: dockcross
 	docker run --rm dockcross/windows-static-x64$(windows-static-x64-digest) > target/dockcross/dockcross-windows-static-x64
 	chmod +x target/dockcross/dockcross-windows-static-x64
@@ -143,10 +125,6 @@ mac-x86_64: download-includes
 mac-arm64: download-includes
 	docker run -it --rm -v $$PWD:/src --user $$(id -u):$$(id -g) \
 		-e TARGET=arm64-apple-darwin mcandre/snek$(mcandre-snek-digest) sh -c "make clean-native native CROSS_PREFIX=arm64-apple-darwin20.4- OS_NAME=Mac OS_ARCH=arm64"
-
-freebsd-x86: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
-		empterdose/freebsd-cross-build$(freebsd-crossbuild-digest) make clean-native native CROSS_PREFIX=i386-freebsd9- OS_NAME=FreeBSD OS_ARCH=x86
 
 freebsd-x86_64: download-includes
 	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
