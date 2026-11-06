@@ -62,6 +62,10 @@ public class DaemonRegistry implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DaemonRegistry.class);
 
     private static final long LOCK_TIMEOUT_MS = 1000 * 20;
+    /** Start of a non-empty registry file: the magic number "MVND" followed by the int format version. */
+    private static final int MAGIC = 0x4D564E44;
+
+    private static final int FORMAT_VERSION = 1;
     private static final Map<Path, Object> locks = new ConcurrentHashMap<>();
     private final Path registryFile;
     private final Object lck;
@@ -212,7 +216,17 @@ public class DaemonRegistry implements AutoCloseable {
                     channel.position(0);
                     DataInputStream is = new DataInputStream(new BufferedInputStream(Channels.newInputStream(channel)));
                     infosMap.clear();
-                    int nb = is.available() < 4 ? 0 : is.readInt();
+                    int nb = 0;
+                    if (is.available() > 0) {
+                        // a file without the header, as written by an older mvnd, is reset like a corrupt one
+                        int magic = is.readInt();
+                        int version = is.readInt();
+                        if (magic != MAGIC || version != FORMAT_VERSION) {
+                            throw new IOException(
+                                    String.format("Unsupported registry header 0x%08X, version %d", magic, version));
+                        }
+                        nb = is.readInt();
+                    }
                     for (int i = 0; i < nb; i++) {
                         String daemonId = is.readUTF();
                         String javaHome = is.readUTF();
@@ -221,7 +235,7 @@ public class DaemonRegistry implements AutoCloseable {
                         String address = is.readUTF();
 
                         byte[] token = new byte[DaemonInfo.TOKEN_SIZE];
-                        is.read(token);
+                        is.readFully(token);
 
                         String locale = is.readUTF();
                         List<String> opts = new ArrayList<>();
@@ -254,6 +268,8 @@ public class DaemonRegistry implements AutoCloseable {
                         channel.truncate(0);
                         DataOutputStream os =
                                 new DataOutputStream(new BufferedOutputStream(Channels.newOutputStream(channel)));
+                        os.writeInt(MAGIC);
+                        os.writeInt(FORMAT_VERSION);
                         os.writeInt(infosMap.size());
                         for (DaemonInfo di : infosMap.values()) {
                             String id = di.getId();
