@@ -68,7 +68,8 @@ public class SocketFamilyTest {
 
     @Test
     @EnabledForJreRange(min = JRE.JAVA_16)
-    @Disabled("Test framework does not support multi-release expanded jars")
+    @Disabled(
+            "The Java 16 SocketHelper is in META-INF/versions/16, which surefire does not see on the target/classes directory")
     void testUnixFromTo() {
         SocketAddress address = SocketFamily.fromString("unix:/tmp/foo-0123456.socket");
         assertEquals(SocketFamily.unix, SocketFamily.familyOf(address));
