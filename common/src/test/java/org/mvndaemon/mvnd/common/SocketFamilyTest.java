@@ -29,6 +29,7 @@ import org.junit.jupiter.api.condition.EnabledForJreRange;
 import org.junit.jupiter.api.condition.JRE;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SocketFamilyTest {
 
@@ -64,6 +65,49 @@ public class SocketFamilyTest {
 
         assertEquals("inet:google.com/<unresolved>:8080", SocketFamily.toString(i4a));
         assertEquals(i4a, SocketFamily.fromString("inet:google.com/<unresolved>:8080"));
+    }
+
+    @Test
+    void testInetIpv6Loopback() throws UnknownHostException {
+        InetSocketAddress i6a = new InetSocketAddress(
+                InetAddress.getByAddress("localhost", new byte[] {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}),
+                4000);
+
+        assertEquals("inet:localhost/[0:0:0:0:0:0:0:1]:4000", SocketFamily.toString(i6a));
+        assertEquals(i6a, SocketFamily.fromString("inet:localhost/[0:0:0:0:0:0:0:1]:4000"));
+        assertEquals(i6a, SocketFamily.fromString(SocketFamily.toString(i6a)));
+    }
+
+    @Test
+    void testInetIpv6NullHost() throws UnknownHostException {
+        InetSocketAddress i6a = new InetSocketAddress(
+                InetAddress.getByAddress(
+                        null, new byte[] {0x20, 0x01, 0x0d, (byte) 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}),
+                8080);
+
+        assertEquals(i6a, SocketFamily.fromString(SocketFamily.toString(i6a)));
+    }
+
+    @Test
+    void testInetMalformed() {
+        for (String s : new String[] {
+            "inet:localhost:4000",
+            "inet:",
+            "inet:/",
+            "inet:/1.2.3:4000",
+            "inet:/1.2.3.4",
+            "inet:/1.2.3.4:abc",
+            "inet:/1.2.3.x:4000",
+            "inet:/[::1:4000",
+            "inet:/[nonsense]:4000",
+            "inet:/[]:4000",
+            "inet:host/name:4000",
+            "bogus:/1.2.3.4:4000"
+        }) {
+            IllegalArgumentException e =
+                    assertThrows(IllegalArgumentException.class, () -> SocketFamily.fromString(s), s);
+            assertEquals("Unsupported socket address: '" + s + "'", e.getMessage());
+        }
     }
 
     @Test
