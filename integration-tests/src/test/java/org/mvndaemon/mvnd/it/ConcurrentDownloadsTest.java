@@ -46,7 +46,9 @@ class ConcurrentDownloadsTest {
 
         final TestClientOutput o = new TestClientOutput();
         Client client = clientFactory.newClient(parameters.withTransferProgress());
-        client.execute(o, "clean", "install", "-e", "-B").assertSuccess();
+        // Mimir would serve the artifacts from its cache instead of downloading them
+        client.execute(o, "clean", "install", "-e", "-B", "-Dmimir.enabled=false")
+                .assertSuccess();
 
         int maxConcurrentDownloads = 0;
         int cur = 0;
