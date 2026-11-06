@@ -333,6 +333,44 @@ public class DaemonConnector {
                 "Timeout waiting to connect to the Maven daemon.\n" + diag.describe());
     }
 
+    /**
+     * Splits the value of {@code mvnd.jvmArgs} into arguments. Whitespace separates arguments, and double or single
+     * quotes group characters (including whitespace) into the current argument. The quotes themselves are removed
+     * and there is no other escaping. An unterminated quote extends to the end of the input.
+     */
+    static List<String> splitJvmArgs(String jvmArgs) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inArg = false;
+        char quote = 0;
+        for (int i = 0; i < jvmArgs.length(); i++) {
+            char c = jvmArgs.charAt(i);
+            if (quote != 0) {
+                if (c == quote) {
+                    quote = 0;
+                } else {
+                    current.append(c);
+                }
+            } else if (c == '"' || c == '\'') {
+                quote = c;
+                inArg = true;
+            } else if (Character.isWhitespace(c)) {
+                if (inArg) {
+                    result.add(current.toString());
+                    current.setLength(0);
+                    inArg = false;
+                }
+            } else {
+                current.append(c);
+                inArg = true;
+            }
+        }
+        if (inArg) {
+            result.add(current.toString());
+        }
+        return result;
+    }
+
     static String newId() {
         return String.format("%08x", new Random().nextInt());
     }
@@ -418,11 +456,7 @@ public class DaemonConnector {
             // jvm args
             String jvmArgs = parameters.jvmArgs();
             if (jvmArgs != null) {
-                for (String arg : jvmArgs.split(" ")) {
-                    if (!arg.isEmpty()) {
-                        args.add(arg);
-                    }
-                }
+                args.addAll(splitJvmArgs(jvmArgs));
             }
             // memory
             String minHeapSize = parameters.minHeapSize();
