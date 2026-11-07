@@ -32,7 +32,6 @@ import org.apache.maven.plugin.PluginContainerException;
 import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
@@ -45,9 +44,11 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
     protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
 
         final CacheRecord record;
+        private final RealmDisposer realmDisposer;
 
-        public Record(CacheRecord record) {
+        public Record(CacheRecord record, RealmDisposer realmDisposer) {
             this.record = record;
+            this.realmDisposer = realmDisposer;
         }
 
         @Override
@@ -59,19 +60,17 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
         @Override
         public void invalidate() {
             ClassRealm realm = record.getRealm();
-            try {
-                realm.getWorld().disposeRealm(realm.getId());
-            } catch (NoSuchRealmException e) {
-                // ignore
-            }
+            realmDisposer.dispose(realm);
         }
     }
 
     final Cache<Key, Record> cache;
+    private final RealmDisposer realmDisposer;
 
     @Inject
-    public InvalidatingPluginRealmCache(CacheFactory cacheFactory) {
+    public InvalidatingPluginRealmCache(CacheFactory cacheFactory, RealmDisposer realmDisposer) {
         cache = cacheFactory.newCache();
+        this.realmDisposer = realmDisposer;
     }
 
     @Override
@@ -86,7 +85,7 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
         try {
             Record r = cache.computeIfAbsent(key, k -> {
                 try {
-                    return new Record(supplier.load());
+                    return new Record(supplier.load(), realmDisposer);
                 } catch (PluginResolutionException | PluginContainerException e) {
                     throw new RuntimeException(e);
                 }
@@ -107,7 +106,7 @@ public class InvalidatingPluginRealmCache extends DefaultPluginRealmCache {
     public CacheRecord put(Key key, ClassRealm pluginRealm, List<Artifact> pluginArtifacts) {
         CacheRecord record = super.put(key, pluginRealm, pluginArtifacts);
         super.cache.remove(key);
-        cache.put(key, new Record(record));
+        cache.put(key, new Record(record, realmDisposer));
         return record;
     }
 
