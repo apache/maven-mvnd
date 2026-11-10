@@ -49,6 +49,9 @@ updates:
       # Groovy 6 requires Java 17; this line still builds on JDK 11
       - dependency-name: "org.apache.groovy:*"
         versions: [">= 6.0.0"]
+      # provisio-maven-plugin 2.x is not compatible with the mvnd 1.x line
+      - dependency-name: "ca.vanzyl.provisio.maven.plugins:provisio-maven-plugin"
+        versions: [">= 2.0.0"]
       # mvnd 1.x uses SLF4J 1.7.x
       - dependency-name: "org.slf4j:*"
         versions: [">= 2.0.0"]
