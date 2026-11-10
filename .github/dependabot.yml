@@ -49,6 +49,9 @@ updates:
       # Groovy 6 requires Java 17; this line still builds on JDK 11
       - dependency-name: "org.apache.groovy:*"
         versions: [">= 6.0.0"]
+      # mvnd 1.x uses SLF4J 1.7.x
+      - dependency-name: "org.slf4j:*"
+        versions: [">= 2.0.0"]
 
   # Same allowlist cooldown as the master github-actions entry above.
   - package-ecosystem: "github-actions"
