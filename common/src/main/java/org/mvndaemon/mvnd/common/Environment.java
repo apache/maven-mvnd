@@ -175,8 +175,12 @@ public enum Environment {
      */
     MVND_DEBUG_ADDRESS("mvnd.debug.address", null, "8000", OptionType.STRING, Flags.DISCRIMINATING),
     /**
-     * A time period after which an unused daemon will terminate by itself.
+     * Maximum live daemons in this registry. Zero means unlimited. All clients sharing the registry
+     * must use the same limit. Clients wait when all slots are busy.
      */
+    MVND_MAX_DAEMONS("mvnd.maxDaemons", "MVND_MAX_DAEMONS", 0, OptionType.INTEGER, Flags.NONE),
+
+    /** Time after which an unused daemon shuts down. */
     MVND_IDLE_TIMEOUT("mvnd.idleTimeout", null, "3 hours", OptionType.DURATION, Flags.DISCRIMINATING),
     /**
      * If the daemon does not send any message to the client in this period of time, send a keep-alive message so that

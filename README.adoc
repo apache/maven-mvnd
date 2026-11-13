@@ -289,3 +289,16 @@ $ cp -R dist/target/mvnd-[version] [target-dir]
 Then you can simply add `[target-dir]/bin` to your `PATH` and run `mvnd`. 
 
 We're happy to improve `mvnd`, so https://github.com/apache/maven-mvnd/issues[feedback] is most welcome!
+
+=== Limiting daemon processes
+
+Set `mvnd.maxDaemons=1` in `~/.m2/mvnd.properties` (or pass
+`-Dmvnd.maxDaemons=1`) to wait for an available daemon rather than starting
+another when the registry is at capacity. The default, `0`, is unlimited.
+The limit counts all live daemons in the registry, including incompatible ones;
+all clients using that registry must configure the same limit. Ctrl+C cancels
+waiting. If all registered daemons are idle but incompatible with the requested
+JDK or JVM options, the client reports an error; stop them with `mvnd --stop`
+or use a separate `mvnd.daemonStorage`.
+
+This controls separate builds, not the number of threads within a build (`-T`).
