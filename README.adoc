@@ -52,7 +52,7 @@ If SDKMAN! supports your operating system, it is as easy as
 
 [source,shell]
 ----
-$ sdk install mvnd
+sdk install mvnd
 ----
 
 If you used the manual installation in the past, please make sure that the settings in `~/.m2/mvnd.properties` still
@@ -63,7 +63,17 @@ make sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not need
 
 [source,shell]
 ----
-$ brew install mvndaemon/homebrew-mvnd/mvnd
+brew install mvndaemon/homebrew-mvnd/mvnd@1
+----
+
+Note: The tap has two formulae. `mvnd@1` always installs the stable 1.x line, which embeds Maven 3.9.x.
+`mvnd` follows the tap's default line; check its version with `brew info mvndaemon/homebrew-mvnd/mvnd`.
+
+=== Install using https://www.macports.org[MacPorts]
+
+[source,shell]
+----
+sudo port install mvnd
 ----
 
 === Install using https://aquaproj.github.io/[aqua]
@@ -75,7 +85,7 @@ aqua g -i apache/maven-mvnd
 
 === Other installers
 
-We're looking for contribution to support https://www.macports.org[MacPorts],
+We're looking for contribution to support
 https://community.chocolatey.org/packages/mvndaemon/[Chocolatey], https://scoop.sh/[Scoop] or
 https://github.com/joschi/asdf-mvnd#install[asdf].  If you fancy helping us...
 
