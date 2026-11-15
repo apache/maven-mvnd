@@ -54,15 +54,7 @@ class MavenConfNativeIT {
     @Test
     void interpolation() throws IOException, InterruptedException {
         final TestClientOutput o = new TestClientOutput();
-        client.execute(
-                        o,
-                        "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
-                        "-D",
-                        "expression=something",
-                        "-q",
-                        "-DforceStdout",
-                        "--raw-streams")
-                .assertSuccess();
+        client.execute(o, mvndParams("something").toArray(new String[0])).assertSuccess();
         String conf = parameters.multiModuleProjectDirectory().toString();
         assertTrue(
                 o.getMessages().stream().anyMatch(m -> m.toString().contains(conf)), "Output should contain " + conf);
@@ -71,14 +63,7 @@ class MavenConfNativeIT {
     @Test
     void multiModuleProjectDirectory() throws IOException, InterruptedException {
         final TestClientOutput o = new TestClientOutput();
-        client.execute(
-                        o,
-                        "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
-                        "-D",
-                        "expression=maven.multiModuleProjectDirectory",
-                        "-q",
-                        "-DforceStdout",
-                        "--raw-streams")
+        client.execute(o, mvndParams("maven.multiModuleProjectDirectory").toArray(new String[0]))
                 .assertSuccess();
         String conf = parameters.multiModuleProjectDirectory().toString();
         assertTrue(
@@ -86,10 +71,14 @@ class MavenConfNativeIT {
     }
 
     protected List<String> mvndParams() {
+        return mvndParams("maven.conf");
+    }
+
+    protected List<String> mvndParams(String expression) {
         return Arrays.asList(
                 "org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate",
                 "-D",
-                "expression=maven.conf",
+                "expression=" + expression,
                 "-q",
                 "-DforceStdout",
                 "--raw-streams",

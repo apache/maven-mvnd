@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 public class TestUtils {
     /**
-     * IT circumvention for JDK transport low timeouts and GH macOS runners networking issues.
+     * IT circumvention for low connect timeouts and GH macOS runners networking issues.
      * If arguments does not contain settings for timeouts (ie as part of test), they will be
      * added to increase timeouts for IT runs.
      */
