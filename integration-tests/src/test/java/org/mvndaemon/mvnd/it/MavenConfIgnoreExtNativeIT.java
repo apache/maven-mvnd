@@ -21,24 +21,14 @@ package org.mvndaemon.mvnd.it;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 @MvndNativeTest(projectDir = "src/test/projects/maven-conf-ignore-ext")
 class MavenConfIgnoreExtNativeIT extends MavenConfNativeIT {
     @Override
-    protected List<String> mvndParams() {
-        ArrayList<String> result = new ArrayList<>(super.mvndParams());
+    protected List<String> mvndParams(String expression) {
+        ArrayList<String> result = new ArrayList<>(super.mvndParams(expression));
         result.add("-Dmvnd.coreExtensionsExclude=foo:bar");
         return result;
     }
-
-    // these 1.x tests rely on the .mvn/maven.config of the maven-conf project
-    @Override
-    @Disabled("needs the maven-conf project configuration")
-    void interpolation() {}
-
-    @Override
-    @Disabled("needs the maven-conf project configuration")
-    void multiModuleProjectDirectory() {}
 }

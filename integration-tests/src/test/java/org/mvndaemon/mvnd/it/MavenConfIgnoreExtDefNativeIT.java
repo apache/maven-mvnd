@@ -18,17 +18,7 @@
  */
 package org.mvndaemon.mvnd.it;
 
-import org.junit.jupiter.api.Disabled;
 import org.mvndaemon.mvnd.junit.MvndNativeTest;
 
 @MvndNativeTest(projectDir = "src/test/projects/maven-conf-ignore-ext-def")
-class MavenConfIgnoreExtDefNativeIT extends MavenConfNativeIT {
-    // these 1.x tests rely on the .mvn/maven.config of the maven-conf project
-    @Override
-    @Disabled("needs the maven-conf project configuration")
-    void interpolation() {}
-
-    @Override
-    @Disabled("needs the maven-conf project configuration")
-    void multiModuleProjectDirectory() {}
-}
+class MavenConfIgnoreExtDefNativeIT extends MavenConfNativeIT {}
