@@ -18,18 +18,12 @@
  */
 package org.mvndaemon.mvnd.client;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.FileTime;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -56,15 +51,12 @@ import org.mvndaemon.mvnd.common.Message;
 import org.mvndaemon.mvnd.common.Message.BuildException;
 import org.mvndaemon.mvnd.common.Message.BuildFinished;
 import org.mvndaemon.mvnd.common.OsUtils;
-import org.mvndaemon.mvnd.common.TimeUtils;
 import org.mvndaemon.mvnd.common.logging.ClientOutput;
 import org.mvndaemon.mvnd.common.logging.TerminalOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.slf4j.impl.MvndLoggerFactory;
-
-import static org.mvndaemon.mvnd.client.DaemonParameters.LOG_EXTENSION;
 
 public class DefaultClient implements Client {
 
@@ -338,7 +330,7 @@ public class DefaultClient implements Client {
                 return DefaultResult.success(argv);
             }
             if (Environment.PURGE.removeCommandLineOption(args) != null) {
-                String result = purgeLogs();
+                String result = purgeLogs(activeDaemons(registry));
                 output.accept(Message.out(result != null ? result : "Nothing to purge"));
                 return DefaultResult.success(argv);
             }
@@ -384,9 +376,10 @@ public class DefaultClient implements Client {
 
                 // We've sent the request, so it gives us a bit of time to purge the logs
                 AtomicReference<String> purgeMessage = new AtomicReference<>();
+                Set<String> activeDaemons = activeDaemons(registry);
                 Thread purgeLog = new Thread(
                         () -> {
-                            purgeMessage.set(purgeLogs());
+                            purgeMessage.set(purgeLogs(activeDaemons));
                         },
                         "Log purge");
                 purgeLog.setDaemon(true);
@@ -423,77 +416,12 @@ public class DefaultClient implements Client {
         }
     }
 
-    private String purgeLogs() {
-        Path storage = parameters.daemonStorage();
-        Duration purgeLogPeriod = parameters.purgeLogPeriod();
-        if (!Files.isDirectory(storage) || !TimeUtils.isPositive(purgeLogPeriod)) {
-            return null;
-        }
-        String date = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                .withZone(ZoneId.systemDefault())
-                .format(Instant.now());
-        Path log = storage.resolve("purge-" + date + ".log");
-        List<Path> deleted = new ArrayList<>();
-        List<Throwable> exceptions = new ArrayList<>();
-        FileTime limit = FileTime.from(Instant.now().minus(purgeLogPeriod));
-        try (Stream<Path> storagePath = Files.list(storage)) {
-            storagePath
-                    .filter(p -> p.getFileName().toString().endsWith(LOG_EXTENSION))
-                    .filter(p -> !log.equals(p))
-                    .filter(p -> {
-                        try {
-                            FileTime lmt = Files.getLastModifiedTime(p);
-                            return lmt.compareTo(limit) < 0;
-                        } catch (IOException e) {
-                            exceptions.add(e);
-                            return false;
-                        }
-                    })
-                    .forEach(p -> {
-                        try {
-                            Files.delete(p);
-                            deleted.add(p);
-                        } catch (IOException e) {
-                            exceptions.add(e);
-                        }
-                    });
-        } catch (Exception e) {
-            exceptions.add(e);
-        }
-        if (exceptions.isEmpty() && deleted.isEmpty()) {
-            return null;
-        }
-        String logMessage;
-        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(
-                log, StandardOpenOption.WRITE, StandardOpenOption.APPEND, StandardOpenOption.CREATE))) {
-            w.printf("Purge executed at %s%n", Instant.now().toString());
-            if (deleted.isEmpty()) {
-                w.printf("No files deleted.%n");
-            } else {
-                w.printf("Deleted files:%n");
-                for (Path p : deleted) {
-                    w.printf("    %s%n", p.toString());
-                }
-            }
-            if (!exceptions.isEmpty()) {
-                w.printf("%d exception(s) occurred during the purge", exceptions.size());
-                for (Throwable t : exceptions) {
-                    t.printStackTrace(w);
-                }
-            }
-            char[] buf = new char[80];
-            Arrays.fill(buf, '=');
-            w.printf("%s%n", new String(buf));
-            logMessage = "log available in " + log.toString();
-        } catch (IOException e) {
-            logMessage = "an exception occurred when writing log to " + log.toString() + ": " + e.toString();
-        }
-        if (exceptions.isEmpty()) {
-            return String.format("Purged %d log files (%s)", deleted.size(), logMessage);
-        } else {
-            return String.format(
-                    "Purged %d log files with %d exceptions (%s)", deleted.size(), exceptions.size(), logMessage);
-        }
+    private String purgeLogs(Set<String> activeDaemons) {
+        return LogPurger.purge(parameters.daemonStorage(), parameters.purgeLogPeriod(), activeDaemons);
+    }
+
+    private static Set<String> activeDaemons(DaemonRegistry registry) {
+        return registry.getAll().stream().map(DaemonInfo::getId).collect(Collectors.toSet());
     }
 
     private static class DefaultResult implements ExecutionResult {
