@@ -45,6 +45,7 @@ class ExtensionsNativeIT {
     @Inject
     TestRegistry registry;
 
+    /** {@code -v}/{@code --version} completes without spawning (or otherwise using) a daemon at all. */
     @Test
     void version() throws IOException, InterruptedException {
         registry.killAll();
@@ -52,13 +53,26 @@ class ExtensionsNativeIT {
 
         final TestClientOutput o = new TestClientOutput();
         client.execute(o, "-v").assertSuccess();
+        assertDaemonRegistrySize(0);
+
+        client.execute(o, "-v").assertSuccess();
+        assertDaemonRegistrySize(0);
+    }
+
+    @Test
+    void extensionsReachTheDaemon() throws IOException, InterruptedException {
+        registry.killAll();
+        assertDaemonRegistrySize(0);
+
+        final TestClientOutput o = new TestClientOutput();
+        client.execute(o, "validate").assertSuccess();
         assertDaemonRegistrySize(1);
         DaemonInfo daemon = registry.getAll().iterator().next();
         assertTrue(daemon.getOptions().contains("mvnd.coreExtensions=fr.jcgay.maven:maven-profiler:3.0"));
 
         registry.awaitIdle(daemon.getId());
 
-        client.execute(o, "-v").assertSuccess();
+        client.execute(o, "validate").assertSuccess();
         assertDaemonRegistrySize(1);
     }
 

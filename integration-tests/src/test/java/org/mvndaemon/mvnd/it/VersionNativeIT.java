@@ -53,7 +53,12 @@ class VersionNativeIT {
                                         + " native client"
                                 : "JVM client")
                         + "\\E",
-                "\\QMaven home: " + parameters.mvndHome() + "\\E");
+                "Apache Maven [0-9].*",
+                "\\QMaven home: " + parameters.mvndHome().resolve("mvn")
+                        + "\\E'", // the closing quote of the message payload: not the mvnd home itself
+                "Java version: .*, vendor: .*, runtime: .*",
+                "Default locale: .*, platform encoding: .*",
+                "OS name: \".*\", version: \".*\", arch: \".*\", family: \".*\"");
     }
 
     protected boolean isNative() {

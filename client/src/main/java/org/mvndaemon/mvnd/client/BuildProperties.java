@@ -41,23 +41,34 @@ public class BuildProperties {
                 buildProperties.getProperty("version"),
                 buildProperties.getProperty("revision"),
                 buildProperties.getProperty("os.detected.name"),
-                buildProperties.getProperty("os.detected.arch"));
+                buildProperties.getProperty("os.detected.arch"),
+                buildProperties.getProperty("maven.version"));
     }
 
     private final String version;
     private final String osName;
     private final String osArch;
     private final String revision;
+    private final String mavenVersion;
 
-    public BuildProperties(String version, String revision, String os, String arch) {
+    public BuildProperties(String version, String revision, String os, String arch, String mavenVersion) {
         this.version = version;
         this.revision = revision;
         this.osName = os;
         this.osArch = arch;
+        this.mavenVersion = mavenVersion;
     }
 
     public String getVersion() {
         return version;
+    }
+
+    /**
+     * The version of Apache Maven embedded in this mvnd distribution, known at mvnd's own build time rather
+     * than reported by a running daemon.
+     */
+    public String getMavenVersion() {
+        return mavenVersion;
     }
 
     public String getOsName() {
