@@ -21,6 +21,7 @@ package org.mvndaemon.mvnd.client;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -217,6 +218,30 @@ public class DaemonParameters {
      */
     public Path jvmConfigPath() {
         return multiModuleProjectDirectory().resolve(".mvn/jvm.config");
+    }
+
+    /**
+     * The <code>.mvn/maven.config</code> file, whose arguments Maven prepends to the command line.
+     */
+    public Path mavenConfigPath() {
+        return multiModuleProjectDirectory().resolve(".mvn/maven.config");
+    }
+
+    /**
+     * Reads the arguments the way the daemon does: one per line, skipping empty lines and comments.
+     *
+     * @return the arguments found in {@code mavenConfig}, or an empty list if it does not exist
+     */
+    static List<String> readMavenConfig(Path mavenConfig) {
+        if (!Files.isRegularFile(mavenConfig)) {
+            return Collections.emptyList();
+        }
+        try (Stream<String> lines = Files.lines(mavenConfig, Charset.defaultCharset())) {
+            return lines.filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                    .collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read " + mavenConfig, e);
+        }
     }
 
     public Path localPropertiesPath() {
