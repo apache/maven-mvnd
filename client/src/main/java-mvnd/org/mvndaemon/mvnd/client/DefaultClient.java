@@ -348,10 +348,8 @@ public class DefaultClient implements Client {
                 args.add("-D" + Environment.MVND_RAW_STREAMS.getProperty());
             }
 
-            Optional<String> threads = Optional.ofNullable(Environment.MVND_THREADS.removeCommandLineOption(args));
-            Environment.MVND_THREADS.addCommandLineOption(args, threads.orElseGet(parameters::threads));
-
             List<String> mavenConfig = DaemonParameters.readMavenConfig(parameters.mavenConfigPath());
+            ClientArguments.addDefaultOption(Environment.MVND_THREADS, args, mavenConfig, parameters::threads);
             ClientArguments.addDefaultOption(Environment.MVND_BUILDER, args, mavenConfig, parameters::builder);
 
             Optional<String> settings = Optional.ofNullable(Environment.MAVEN_SETTINGS.removeCommandLineOption(args))
