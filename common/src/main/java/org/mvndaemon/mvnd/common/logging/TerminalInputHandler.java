@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.jline.terminal.Terminal;
+import org.jline.utils.NonBlockingReader;
 import org.mvndaemon.mvnd.common.Message;
 
 /**
@@ -149,6 +150,16 @@ public class TerminalInputHandler implements AutoCloseable {
 
         while ((bytesToRead < 0 || idx < bytesToRead) && idx < buf.length) {
             int c = terminal.reader().read(timeout);
+            if (c == NonBlockingReader.READ_EXPIRED) {
+                // No input within the timeout: this is not the end of the stream
+                if (idx > 0) {
+                    break;
+                }
+                if (closing) {
+                    return;
+                }
+                continue;
+            }
             if (c < 0) {
                 // End of stream reached
                 if (idx > 0) {
