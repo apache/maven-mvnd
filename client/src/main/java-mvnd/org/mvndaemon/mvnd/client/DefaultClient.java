@@ -340,7 +340,10 @@ public class DefaultClient implements Client {
                 args.add("-D" + Environment.MVND_RAW_STREAMS.getProperty());
             }
 
-            List<String> mavenConfig = DaemonParameters.readMavenConfig(parameters.mavenConfigPath());
+            // Serial mode forces one thread and the singlethreaded builder, also over .mvn/maven.config
+            List<String> mavenConfig = parameters.serial()
+                    ? Collections.emptyList()
+                    : DaemonParameters.readMavenConfig(parameters.mavenConfigPath());
             ClientArguments.addDefaultOption(Environment.MVND_THREADS, args, mavenConfig, parameters::threads);
             ClientArguments.addDefaultOption(Environment.MVND_BUILDER, args, mavenConfig, parameters::builder);
 
