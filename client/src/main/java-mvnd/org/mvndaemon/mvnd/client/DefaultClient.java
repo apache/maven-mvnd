@@ -75,6 +75,7 @@ public class DefaultClient implements Client {
 
     public static void main(String[] argv) throws Exception {
         final List<String> args = new ArrayList<>(Arrays.asList(argv));
+        ClientArguments.removeBlankArguments(args);
         // What the user typed, before mvnd adds or removes options; MAVEN_CMD_LINE_ARGS is built from it
         final List<String> userArgs = new ArrayList<>(args);
 
