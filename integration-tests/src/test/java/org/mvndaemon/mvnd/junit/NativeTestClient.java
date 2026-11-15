@@ -19,6 +19,7 @@
 package org.mvndaemon.mvnd.junit;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,13 +104,14 @@ public class NativeTestClient implements Client {
         };
         try {
             final Process rawProcess = builder.start();
-            if (output instanceof TestClientOutput) {
-                final byte[] stdin = ((TestClientOutput) output).nativeStdin();
+            // Feed the process's real stdin, like piping data into a real mvnd invocation, and always close it:
+            // a mojo that reads System.in to the end would otherwise wait for input that never comes.
+            // The daemon talks to this spawned binary's own stdin, not to any in-JVM message queue.
+            try (OutputStream processStdin = rawProcess.getOutputStream()) {
+                final byte[] stdin =
+                        output instanceof TestClientOutput ? ((TestClientOutput) output).nativeStdin() : null;
                 if (stdin != null) {
-                    // Feed the process's real stdin, like piping data into a real mvnd invocation.
-                    // The daemon talks to this spawned binary's own stdin, not to any in-JVM message queue.
-                    rawProcess.getOutputStream().write(stdin);
-                    rawProcess.getOutputStream().close();
+                    processStdin.write(stdin);
                 }
             }
             try (CommandProcess process =
