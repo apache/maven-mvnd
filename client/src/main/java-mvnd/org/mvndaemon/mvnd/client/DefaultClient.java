@@ -287,9 +287,33 @@ public class DefaultClient implements Client {
             output.accept(Message.log(v));
             // Print terminal information
             output.describeTerminal();
+            if (VersionInfo.isPlainVersionRequest(args)) {
+                /*
+                 * A plain -v/--version makes Maven print its own version and return without running a build, so
+                 * a daemon round trip cannot change the answer. Print the same lines client-side instead of
+                 * connecting to (and possibly spawning) a daemon, still without the client module depending on
+                 * any Maven artifact. With -q, --help or an mvnd command such as --status the request continues
+                 * to the daemon or to the handling below.
+                 */
+                Path javaHome;
+                try {
+                    javaHome = parameters.javaHome();
+                } catch (RuntimeException e) {
+                    javaHome = null; // no JDK found: report the client JVM instead
+                }
+                for (String line : VersionInfo.lines(
+                        parameters.mvndHome().resolve("mvn").resolve("lib"),
+                        buildProperties.getMavenVersion(),
+                        parameters.mvndHome().resolve("mvn"),
+                        javaHome,
+                        System.getProperties())) {
+                    output.accept(Message.log(line));
+                }
+                return DefaultResult.success(argv);
+            }
             /*
-             * Do not return, rather pass -v to the server so that the client module does not need to depend on any
-             * Maven artifacts
+             * Do not return, rather pass -v/-V/-X to the server so that the client module does not need to depend
+             * on any Maven artifacts
              */
         }
 
