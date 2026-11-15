@@ -19,6 +19,9 @@
 package org.mvndaemon.mvnd.client;
 
 import java.util.List;
+import java.util.function.Supplier;
+
+import org.mvndaemon.mvnd.common.Environment;
 
 /**
  * Adjustments the client makes to the command line before it is sent to the daemon.
@@ -34,5 +37,19 @@ final class ClientArguments {
      */
     static void removeBlankArguments(List<String> args) {
         args.removeIf(arg -> arg.trim().isEmpty());
+    }
+
+    /**
+     * Passes {@code env} to the daemon. A value given on the command line is kept, one given in
+     * {@code .mvn/maven.config} is left for Maven to read, and only otherwise is the default added.
+     */
+    static void addDefaultOption(
+            Environment env, List<String> args, List<String> mavenConfig, Supplier<String> defaultValue) {
+        String value = env.removeCommandLineOption(args);
+        if (value != null) {
+            env.addCommandLineOption(args, value);
+        } else if (!env.hasCommandLineOption(mavenConfig)) {
+            env.addCommandLineOption(args, defaultValue.get());
+        }
     }
 }

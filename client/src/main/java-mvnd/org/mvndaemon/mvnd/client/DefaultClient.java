@@ -351,8 +351,8 @@ public class DefaultClient implements Client {
             Optional<String> threads = Optional.ofNullable(Environment.MVND_THREADS.removeCommandLineOption(args));
             Environment.MVND_THREADS.addCommandLineOption(args, threads.orElseGet(parameters::threads));
 
-            Optional<String> builder = Optional.ofNullable(Environment.MVND_BUILDER.removeCommandLineOption(args));
-            Environment.MVND_BUILDER.addCommandLineOption(args, builder.orElseGet(parameters::builder));
+            List<String> mavenConfig = DaemonParameters.readMavenConfig(parameters.mavenConfigPath());
+            ClientArguments.addDefaultOption(Environment.MVND_BUILDER, args, mavenConfig, parameters::builder);
 
             Optional<String> settings = Optional.ofNullable(Environment.MAVEN_SETTINGS.removeCommandLineOption(args))
                     .or(() -> Optional.ofNullable(parameters.settings()).map(Path::toString));
