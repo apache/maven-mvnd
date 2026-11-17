@@ -42,7 +42,8 @@ import org.mvndaemon.mvnd.common.Message;
  *    - How many bytes to read
  *
  * 3. Converting input to appropriate Message objects and sending them to either:
- *    - daemonDispatch: for prompt responses
+ *    - daemonDispatch: for prompt responses and for canceling the build on Ctrl+C, also before
+ *      the client is connected to a daemon
  *    - daemonReceive: for project input and control keys
  *
  * The class detects end-of-stream conditions (EOF) and communicates them back through
@@ -149,6 +150,10 @@ public class TerminalInputHandler implements AutoCloseable {
 
         while ((bytesToRead < 0 || idx < bytesToRead) && idx < buf.length) {
             int c = terminal.reader().read(timeout);
+            if (c == TerminalOutput.KEY_CTRL_C) {
+                daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON);
+                return;
+            }
             if (c < 0) {
                 // End of stream reached
                 if (idx > 0) {
@@ -170,11 +175,14 @@ public class TerminalInputHandler implements AutoCloseable {
     }
 
     private void handleControlKeys() throws IOException {
-        if (daemonReceive == null) {
+        if (daemonDispatch == null) {
             return;
         }
+        // Keep reading before the client is connected, so that Ctrl+C is seen; other keys are dropped until then
         int c = terminal.reader().read(10);
-        if (c != -1 && isControlKey(c)) {
+        if (c == TerminalOutput.KEY_CTRL_C) {
+            daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON);
+        } else if (c != -1 && daemonReceive != null && isControlKey(c)) {
             daemonReceive.accept(Message.keyboardInput((char) c));
         }
     }
@@ -193,6 +201,9 @@ public class TerminalInputHandler implements AutoCloseable {
         while (true) {
             int c = terminal.reader().read();
             if (c < 0) {
+                break;
+            } else if (c == TerminalOutput.KEY_CTRL_C) {
+                daemonDispatch.accept(Message.BareMessage.CANCEL_BUILD_SINGLETON);
                 break;
             } else if (c == '\n' || c == '\r') {
                 terminal.writer().println();

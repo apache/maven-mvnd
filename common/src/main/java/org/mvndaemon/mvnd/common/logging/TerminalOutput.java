@@ -88,6 +88,10 @@ public class TerminalOutput implements ClientOutput {
      * the terminal the log for a given module once it's finished.
      */
     public static final int KEY_CTRL_M = 'M' & 0x1f;
+    /**
+     * The Ctrl+C key cancels the build.
+     */
+    public static final int KEY_CTRL_C = 'C' & 0x1f;
 
     private static final AttributedStyle GREEN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.GREEN);
     private static final AttributedStyle CYAN_FOREGROUND = new AttributedStyle().foreground(AttributedStyle.CYAN);
@@ -157,6 +161,8 @@ public class TerminalOutput implements ClientOutput {
         builder.systemOutput(TerminalBuilder.SystemOutput.SysErr);
         // fall back to a dumb terminal silently when there is no system terminal, e.g. on headless CI
         builder.dumb(true);
+        // Ctrl+C is read as a key by TerminalInputHandler, so JLine must not also raise INT for it in raw mode
+        System.setProperty(TerminalBuilder.PROP_SOFTWARE_SIGNALS, "false");
         this.terminal = builder.build();
         this.dumb = terminal.getType().startsWith("dumb");
         this.noBuffering = noBuffering;
@@ -173,6 +179,7 @@ public class TerminalOutput implements ClientOutput {
         this.display = new Display(terminal, false);
         this.log = logFile == null ? new MessageCollector() : new FileLog(logFile);
         this.inputHandler = new TerminalInputHandler(terminal, this.dumb);
+        this.inputHandler.setDaemonDispatch(daemonDispatch);
     }
 
     @Override
