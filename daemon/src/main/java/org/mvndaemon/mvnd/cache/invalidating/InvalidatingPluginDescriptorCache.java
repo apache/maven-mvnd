@@ -35,7 +35,6 @@ import org.apache.maven.plugin.PluginDescriptorParsingException;
 import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.sisu.Priority;
@@ -50,9 +49,11 @@ public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCa
     protected static class Record implements CacheRecord {
 
         private final PluginDescriptor descriptor;
+        private final RealmDisposer realmDisposer;
 
-        public Record(PluginDescriptor descriptor) {
+        public Record(PluginDescriptor descriptor, RealmDisposer realmDisposer) {
             this.descriptor = descriptor;
+            this.realmDisposer = realmDisposer;
         }
 
         @Override
@@ -67,19 +68,17 @@ public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCa
             if (realm == null) {
                 return;
             }
-            try {
-                realm.getWorld().disposeRealm(realm.getId());
-            } catch (NoSuchRealmException e) {
-                // ignore
-            }
+            realmDisposer.dispose(realm);
         }
     }
 
     final Cache<Key, Record> cache;
+    private final RealmDisposer realmDisposer;
 
     @Inject
-    public InvalidatingPluginDescriptorCache(CacheFactory cacheFactory) {
+    public InvalidatingPluginDescriptorCache(CacheFactory cacheFactory, RealmDisposer realmDisposer) {
         this.cache = cacheFactory.newCache();
+        this.realmDisposer = realmDisposer;
     }
 
     @Override
@@ -99,7 +98,7 @@ public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCa
         try {
             Record r = cache.computeIfAbsent(key, k -> {
                 try {
-                    return new Record(clone(supplier.load()));
+                    return new Record(clone(supplier.load()), realmDisposer);
                 } catch (PluginDescriptorParsingException
                         | PluginResolutionException
                         | InvalidPluginDescriptorException e) {
@@ -123,7 +122,7 @@ public class InvalidatingPluginDescriptorCache extends DefaultPluginDescriptorCa
 
     @Override
     public void put(Key key, PluginDescriptor descriptor) {
-        cache.put(key, new Record(clone(descriptor)));
+        cache.put(key, new Record(clone(descriptor), realmDisposer));
     }
 
     @Override
