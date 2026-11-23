@@ -492,6 +492,14 @@
           </configuration>
         </plugin>
         <plugin>
+          <groupId>org.apache.tooling</groupId>
+          <artifactId>atr-maven-plugin</artifactId>
+          <configuration>
+            <!-- project key on https://releases.apache.org/projects/maven-mvnd differs from the artifactId -->
+            <project>maven-mvnd</project>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-site-plugin</artifactId>
           <version>3.22.0</version>
