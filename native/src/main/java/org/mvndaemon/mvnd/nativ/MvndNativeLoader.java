@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -135,8 +134,10 @@ public class MvndNativeLoader {
                     return "Read size different (" + numRead1 + " vs " + numRead2 + ")";
                 }
                 // Otherwise same number of bytes read
-                if (!Arrays.equals(buffer1, buffer2)) {
-                    return "Content differs";
+                for (int i = 0; i < numRead1; i++) {
+                    if (buffer1[i] != buffer2[i]) {
+                        return "Content differs";
+                    }
                 }
                 // Otherwise same bytes read, so continue ...
             } else {
