@@ -23,11 +23,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.cli.Option;
+import org.apache.maven.cli.CLIManager;
 import org.junit.jupiter.api.Test;
 import org.mvndaemon.mvnd.common.Environment;
 import org.mvndaemon.mvnd.common.Environment.OptionOrigin;
@@ -67,6 +71,29 @@ public class CompletionGeneratorTest {
                 .map(prop -> "-D" + prop)
                 .collect(Collectors.joining("|"));
 
+        // Maven options as known to the embedded Maven, plus the options DaemonMavenCli adds on top
+        final Collection<Option> mavenOptions = new CLIManager() {
+            Collection<Option> all() {
+                return options.getOptions();
+            }
+        }.all();
+        final String mavenOpts = Stream.concat(
+                        mavenOptions.stream().map(Option::getOpt).filter(Objects::nonNull), Stream.of("r"))
+                .map(opt -> "-" + opt)
+                .filter(opt -> !Arrays.asList(shortOpts.split("\\|")).contains(opt))
+                .sorted()
+                .distinct()
+                .collect(Collectors.joining("|"));
+        final String mavenLongOpts = Stream.concat(
+                        mavenOptions.stream().map(Option::getLongOpt).filter(Objects::nonNull), Stream.of("resume"))
+                .map(opt -> "--" + opt)
+                .filter(opt -> !Arrays.asList(longOpts.split("\\|")).contains(opt))
+                .sorted()
+                .distinct()
+                .collect(Collectors.joining("|"));
+
+        template = template.replace("%maven_opts%", mavenOpts);
+        template = template.replace("%maven_long_opts%", mavenLongOpts);
         template = template.replace("%mvnd_opts%", shortOpts);
         template = template.replace("%mvnd_long_opts%", longOpts);
         template = template.replace("%mvnd_properties%", props);

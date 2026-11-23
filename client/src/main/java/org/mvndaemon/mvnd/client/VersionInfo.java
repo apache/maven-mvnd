@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -57,7 +58,7 @@ final class VersionInfo {
     }
 
     /**
-     * Mirrors {@code CLIReportingUtils.showVersion()} of Maven 3.9.
+     * Mirrors {@code CLIReportingUtils.showVersion()} of Maven 3.10.
      *
      * @param mavenLib the {@code mvn/lib} directory of the distribution, may be {@code null}
      * @param embeddedMavenVersion the Maven version recorded when mvnd was built, used if the Maven jar cannot be read
@@ -89,7 +90,8 @@ final class VersionInfo {
         lines.add("Java version: " + javaVersion + ", vendor: " + javaVendor + ", runtime: " + runtime);
 
         lines.add("Default locale: " + Locale.getDefault() + ", platform encoding: "
-                + sys.getProperty("file.encoding", "<unknown encoding>"));
+                + sys.getProperty("file.encoding", "<unknown encoding>") + ", time zone: "
+                + ZoneId.systemDefault().getId());
 
         String osName = sys.getProperty("os.name", "");
         lines.add("OS name: \"" + osName.toLowerCase(Locale.ENGLISH) + "\", version: \""

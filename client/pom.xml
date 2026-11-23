@@ -60,13 +60,6 @@
       <artifactId>jul-to-slf4j</artifactId>
     </dependency>
 
-    <!-- GraalVM SVM: provided, uses only to configure native image build -->
-    <dependency>
-      <groupId>org.graalvm.nativeimage</groupId>
-      <artifactId>svm</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

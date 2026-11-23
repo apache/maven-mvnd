@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -476,11 +477,16 @@ public class DaemonParameters {
             return String.join(",", cp);
         } else if (env == Environment.MVND_CORE_EXTENSIONS) {
             try {
-                List<String> extensions = readCoreExtensionsDescriptor(multiModuleProjectDirectory()).stream()
+                Path projectDir = multiModuleProjectDirectory();
+                List<String> extensions = readCoreExtensions(
+                                projectDir != null ? projectDir.resolve(EXTENSIONS_FILENAME) : null,
+                                userHome().resolve(".m2/extensions.xml"),
+                                mvndHome().resolve("mvn/conf/extensions.xml"))
+                        .stream()
                         .map(e -> e.getGroupId() + ":" + e.getArtifactId() + ":" + e.getVersion())
                         .collect(Collectors.toList());
                 return String.join(";", extensions);
-            } catch (IOException | XmlPullParserException e) {
+            } catch (IOException e) {
                 throw new RuntimeException("Unable to parse core extensions", e);
             }
         } else {
@@ -500,21 +506,40 @@ public class DaemonParameters {
         return jars;
     }
 
-    private static List<CoreExtension> readCoreExtensionsDescriptor(Path multiModuleProjectDirectory)
-            throws IOException, XmlPullParserException {
-        if (multiModuleProjectDirectory == null) {
-            return Collections.emptyList();
+    /**
+     * Reads the given {@code extensions.xml} files (project, user, installation) and selects one version per
+     * {@code groupId:artifactId}, the first file having precedence, as Maven 3.10 does.
+     */
+    static List<CoreExtension> readCoreExtensions(Path... extensionsFiles) throws IOException {
+        Map<String, CoreExtension> selected = new LinkedHashMap<>();
+        for (Path extensionsFile : extensionsFiles) {
+            if (extensionsFile == null || !Files.isRegularFile(extensionsFile)) {
+                continue;
+            }
+            for (CoreExtension extension : readCoreExtensionsDescriptor(extensionsFile)) {
+                String key = extension.getGroupId() + ":" + extension.getArtifactId();
+                CoreExtension conflict = selected.putIfAbsent(key, extension);
+                if (conflict != null && !Objects.equals(conflict.getVersion(), extension.getVersion())) {
+                    LOG.warn(
+                            "Conflicting extension {}: {} vs {} in {}; using {}",
+                            key,
+                            extension.getVersion(),
+                            conflict.getVersion(),
+                            extensionsFile,
+                            conflict.getId());
+                }
+            }
         }
-        Path extensionsFile = multiModuleProjectDirectory.resolve(EXTENSIONS_FILENAME);
-        if (!Files.exists(extensionsFile)) {
-            return Collections.emptyList();
-        }
-        CoreExtensionsXpp3Reader parser = new CoreExtensionsXpp3Reader();
-        List<CoreExtension> extensions;
+        return filterCoreExtensions(new ArrayList<>(selected.values()));
+    }
+
+    private static List<CoreExtension> readCoreExtensionsDescriptor(Path extensionsFile) throws IOException {
         try (InputStream is = Files.newInputStream(extensionsFile)) {
-            extensions = parser.read(is).getExtensions();
+            return new CoreExtensionsXpp3Reader().read(is).getExtensions();
+        } catch (IOException | XmlPullParserException e) {
+            throw new IOException(
+                    "Unable to parse core extensions descriptor " + extensionsFile + ": " + e.getMessage(), e);
         }
-        return filterCoreExtensions(extensions);
     }
 
     private static List<CoreExtension> filterCoreExtensions(List<CoreExtension> coreExtensions) {
