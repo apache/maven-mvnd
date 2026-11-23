@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -72,7 +73,9 @@ public class VersionInfoTest {
         assertEquals("Maven home: " + mavenHome, lines.get(1));
         assertEquals("Java version: 17.0.20, vendor: Amazon.com Inc., runtime: " + jdk, lines.get(2));
         assertTrue(lines.get(3).startsWith("Default locale: "));
-        assertTrue(lines.get(3).endsWith(", platform encoding: UTF-8"));
+        assertTrue(lines.get(3)
+                .endsWith(", platform encoding: UTF-8, time zone: "
+                        + ZoneId.systemDefault().getId()));
         assertEquals("OS name: \"mac os x\", version: \"14.1\", arch: \"aarch64\", family: \"mac\"", lines.get(4));
         assertEquals(5, lines.size());
     }
@@ -105,11 +108,11 @@ public class VersionInfoTest {
         sys.setProperty("native.encoding", "ISO-8859-2");
         assertTrue(VersionInfo.lines(null, "3.9.16", Paths.get("m"), null, sys)
                 .get(3)
-                .endsWith(", platform encoding: UTF-8"));
+                .contains(", platform encoding: UTF-8, time zone: "));
         sys.remove("file.encoding");
         assertTrue(VersionInfo.lines(null, "3.9.16", Paths.get("m"), null, sys)
                 .get(3)
-                .endsWith(", platform encoding: <unknown encoding>"));
+                .contains(", platform encoding: <unknown encoding>, time zone: "));
     }
 
     @Test

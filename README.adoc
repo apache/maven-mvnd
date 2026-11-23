@@ -66,7 +66,7 @@ make sense. With SDKMAN!, the `~/.m2/mvnd.properties` file is typically not need
 brew install mvndaemon/homebrew-mvnd/mvnd@1
 ----
 
-Note: The tap has two formulae. `mvnd@1` always installs the stable 1.x line, which embeds Maven 3.9.x.
+Note: The tap has two formulae. `mvnd@1` always installs the stable 1.x line, which embeds Maven 3.10.x.
 `mvnd` follows the tap's default line; check its version with `brew info mvndaemon/homebrew-mvnd/mvnd`.
 
 === Install using https://www.macports.org[MacPorts]
