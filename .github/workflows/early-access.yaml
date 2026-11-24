@@ -21,8 +21,7 @@ name: Early Access
 on:
   push:
     branches:
-      - master
-      - mvnd-1.x
+      - mvnd-1.0.x
   pull_request:
 
 env:
