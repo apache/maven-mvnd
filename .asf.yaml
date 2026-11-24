@@ -26,8 +26,16 @@ github:
     - build-management
     - apache-maven
     - maven
-  protected_branches:
-    master: { }
+  rulesets:
+    - name: "Default Branch Protection"
+      type: branch
+      branches:
+        includes:
+          - "~DEFAULT_BRANCH"
+          - "mvnd-0.9.x"
+          - "mvnd-0.10.x"
+          - "mvnd-1.0.x"
+          - "mvnd-1.1.x"
   pull_requests:
     del_branch_on_merge: true
   enabled_merge_buttons:
