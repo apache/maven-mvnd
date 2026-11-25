@@ -39,3 +39,42 @@ notifications:
   commits: commits@maven.apache.org
   issues: issues@maven.apache.org
   pullrequests: issues@maven.apache.org
+
+# https://releases.apache.org/projects/maven-mvnd
+project:
+  metadata:
+    key: maven-mvnd
+    committee: maven
+    name: Apache Maven Daemon
+    description: This project aims at providing faster https://maven.apache.org/ builds
+      using techniques known from Gradle and Takari.
+    homepage: https://maven.apache.org/
+    download_page: https://maven.apache.org/download.html
+    bug_database: https://github.com/apache/maven-mvnd/issues
+    mailing_lists: https://maven.apache.org/mailing-lists.html
+    repositories:
+      - https://github.com/apache/maven-mvnd
+    categories:
+      - build-management
+    programming_languages:
+      - Java
+    version_method: semver
+    cycle_match: (\d+\.\d+)(?:[.\-].*)?
+  policy:
+    announce_release_template_url: https://maven.apache.org/atr/templates/announce_release_template.txt
+    start_vote_template_url: https://maven.apache.org/atr/templates/start_vote_template_mvnd.txt
+    finish_vote_template_url: https://maven.apache.org/atr/templates/finish_vote_template.txt
+    download_path_suffix: mvnd/{{VERSION}}
+    auto_archive_prior_release: true
+    vote_recipients:
+      to: dev@maven.apache.org
+    announce_recipients:
+      to: announce@apache.org
+      cc:
+        - announce@maven.apache.org
+        - dev@maven.apache.org
+        - users@maven.apache.org
+  features:
+    atr_sync: true
+    atr_sync_mode: full
+
