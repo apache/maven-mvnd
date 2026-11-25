@@ -19,7 +19,7 @@ name: PR Automation
 on:
   push:
     branches:
-      - mvnd-1.x
+      - mvnd-1.1.x
 
 jobs:
   pr-automation:

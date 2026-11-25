@@ -45,9 +45,9 @@ startup_check()
       local branch
       branch=${branch_ref##refs/heads/}
 
-      if [ "$branch" != "mvnd-1.x" ]
+      if [ "$branch" != "mvnd-1.1.x" ]
       then
-        echo "Not working on the mvnd-1.x - cannot proceed"
+        echo "Not working on the mvnd-1.1.x - cannot proceed"
         exit 1
       fi
 
@@ -71,7 +71,7 @@ startup_check()
       fi
 
       if [[ $unpull -gt 0 ]]; then
-        echo "There are changes which have not been pulled - cannot proceed. The following commits have been added to mvnd-1.x since your last pull:"
+        echo "There are changes which have not been pulled - cannot proceed. The following commits have been added to mvnd-1.1.x since your last pull:"
         local unpulled
         unpulled=$(git rev-list $branch..$branch_origin)
         for commit in $unpulled; do
@@ -137,10 +137,10 @@ mvn versions:set -DnewVersion=$NEXT_VERSION
 # commit
 git add -A
 git commit -m "Next is $NEXT_VERSION"
-# git push origin mvnd-1.x
+# git push origin mvnd-1.1.x
 
-# NOTE: Manually push once done: git push origin mvnd-1.x --tags
+# NOTE: Manually push once done: git push origin mvnd-1.1.x --tags
 echo "=============================================================================="
 echo "Release done, nothing got pushed (yet); please push changes with command below"
-echo "$ git push origin mvnd-1.x --tags"
+echo "$ git push origin mvnd-1.1.x --tags"
 echo ""
