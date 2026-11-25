@@ -22,3 +22,22 @@ You can now call a vote on the mailto:dev@maven.apache.org[dev mailing list] poi
 ./build/release-publish.sh <released-version>
 ----
 WARNING: *TODO*: document the publication process (move to the final svn area, homebrew, sdkman, choco updates...)
+
+== Release using ATR
+
+Instead of the https://dist.apache.org/repos/dist/dev/maven/mvnd/[dev distribution repository], the release candidate can be staged in https://releases.apache.org/projects/maven-mvnd[ATR].
+The steps differ from the ones above as follows:
+
+* The version must already exist in ATR in the composing phase.
+ATR credentials are read from the `apache.atr` server in `settings.xml`: the username is the ASF user ID and the password is the ATR Personal Access Token.
+
+* Instead of `release-candidate.sh`, run the https://raw.githubusercontent.com/apache/maven-mvnd/master/build/release-candidate-atr.sh[release-candidate-atr script], which checks the version in ATR, downloads the built assemblies, computes the checksums and signatures and uploads them to ATR.
+[source,shell]
+----
+./build/release-candidate-atr.sh <released-version>
+----
+
+* Start the vote in ATR, using *Start voting* on the project page, instead of calling it manually on the dev mailing list.
+
+* Once the vote passes, finish the release process in ATR, which publishes the release to the https://dist.apache.org/repos/dist/release/maven/mvnd/[release distribution repository].
+Then run `release-publish.sh` as usual. It detects that the release candidate is not in the dev distribution repository, so it does not move anything in svn, it only checks that the release is already published and fails otherwise.
