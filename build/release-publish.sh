@@ -28,9 +28,25 @@ then
   exit 1
 fi
 
-svn move -m "Release Apache Maven Daemon ${VERSION}" \
-  https://dist.apache.org/repos/dist/dev/maven/mvnd/${VERSION} \
-  https://dist.apache.org/repos/dist/release/maven/mvnd/
+DIST_DEV_URL="https://dist.apache.org/repos/dist/dev/maven/mvnd/${VERSION}"
+DIST_RELEASE_URL="https://dist.apache.org/repos/dist/release/maven/mvnd/${VERSION}"
+
+if svn info "${DIST_DEV_URL}" > /dev/null 2>&1
+then
+  # release candidate was staged in dist/dev by release-candidate.sh
+  svn move -m "Release Apache Maven Daemon ${VERSION}" \
+    "${DIST_DEV_URL}" \
+    https://dist.apache.org/repos/dist/release/maven/mvnd/
+elif svn info "${DIST_RELEASE_URL}" > /dev/null 2>&1
+then
+  # release candidate was staged in ATR by release-candidate-atr.sh,
+  # ATR has already published it to dist/release
+  echo "${VERSION} not found in dist/dev, but already in dist/release (released by ATR), skipping svn move"
+else
+  echo "${VERSION} not found in ${DIST_DEV_URL} nor in ${DIST_RELEASE_URL}"
+  echo "If the release candidate was staged in ATR, finish the release on https://releases.apache.org/projects/maven-mvnd first"
+  exit 1
+fi
 
 ./build/publish-on-homebrew.sh ${VERSION}
 ./build/publish-on-sdkman.sh ${VERSION}
