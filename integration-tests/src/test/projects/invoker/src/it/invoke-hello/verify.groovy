@@ -16,8 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import java.nio.file.Path;
-import java.nio.file.Files;
+import java.nio.file.Path
+import java.nio.file.Files
 
 Path basePath = basedir.toPath()
 Path helloPath = basePath.resolve('target/hello.txt')
