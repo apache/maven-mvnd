@@ -31,7 +31,6 @@ import org.apache.maven.plugin.DefaultExtensionRealmCache;
 import org.apache.maven.project.ExtensionDescriptor;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.realm.ClassRealm;
-import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.eclipse.sisu.Priority;
 import org.mvndaemon.mvnd.cache.Cache;
 import org.mvndaemon.mvnd.cache.CacheFactory;
@@ -44,9 +43,11 @@ public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache 
     protected static class Record implements org.mvndaemon.mvnd.cache.CacheRecord {
 
         final CacheRecord record;
+        private final RealmDisposer realmDisposer;
 
-        public Record(CacheRecord record) {
+        public Record(CacheRecord record, RealmDisposer realmDisposer) {
             this.record = record;
+            this.realmDisposer = realmDisposer;
         }
 
         @Override
@@ -58,19 +59,17 @@ public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache 
         @Override
         public void invalidate() {
             ClassRealm realm = record.getRealm();
-            try {
-                realm.getWorld().disposeRealm(realm.getId());
-            } catch (NoSuchRealmException e) {
-                // ignore
-            }
+            realmDisposer.dispose(realm);
         }
     }
 
     final Cache<Key, Record> cache;
+    private final RealmDisposer realmDisposer;
 
     @Inject
-    public InvalidatingExtensionRealmCache(CacheFactory cacheFactory) {
+    public InvalidatingExtensionRealmCache(CacheFactory cacheFactory, RealmDisposer realmDisposer) {
         cache = cacheFactory.newCache();
+        this.realmDisposer = realmDisposer;
     }
 
     @Override
@@ -84,7 +83,7 @@ public class InvalidatingExtensionRealmCache extends DefaultExtensionRealmCache 
             Key key, ClassRealm extensionRealm, ExtensionDescriptor extensionDescriptor, List<Artifact> artifacts) {
         CacheRecord record = super.put(key, extensionRealm, extensionDescriptor, artifacts);
         super.cache.remove(key);
-        cache.put(key, new Record(record));
+        cache.put(key, new Record(record, realmDisposer));
         return record;
     }
 
