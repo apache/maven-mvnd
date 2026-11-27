@@ -36,6 +36,7 @@ public class DaemonPlexusContainerCapsuleFactory extends PlexusContainerCapsuleF
             CoreExtensionEntry coreEntry, List<CoreExtensionEntry> extensionEntries) {
         HashSet<String> result = new HashSet<>(super.collectExportedPackages(coreEntry, extensionEntries));
         result.add("org.mvndaemon.mvnd.interactivity");
+        result.add("org.mvndaemon.mvnd.testprogress");
         return result;
     }
 

@@ -49,6 +49,9 @@
         <artifact id="org.apache.maven.daemon:mvnd-common:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
+        <artifact id="org.apache.maven.daemon:mvnd-surefire-progress:${project.version}">
+            <exclusion id="*:*"/>
+        </artifact>
         <artifact id="org.apache.maven.daemon:mvnd-agent:${project.version}">
             <exclusion id="*:*"/>
         </artifact>
