@@ -91,45 +91,44 @@ $(NATIVE_DLL): $(MVNDNATIVE_OUT)/$(LIBNAME)
 	cp $< $(NATIVE_TARGET_DIR)/$(LIBNAME)
 
 linux-x86_64: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+	docker run -it --rm --platform linux/amd64 -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		-e CROSS_TRIPLE=x86_64-linux-gnu multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=x86_64
 
 target/dockcross/dockcross-linux-armv6: dockcross
-	docker run --rm dockcross/linux-armv6$(linux-armv6-digest) > target/dockcross/dockcross-linux-armv6
+	docker run --rm --platform linux/amd64 dockcross/linux-armv6$(linux-armv6-digest) > target/dockcross/dockcross-linux-armv6
 	chmod +x target/dockcross/dockcross-linux-armv6
 linux-armv6: download-includes target/dockcross/dockcross-linux-armv6
-	target/dockcross/dockcross-linux-armv6 --image dockcross/linux-armv6$(linux-armv6-digest) bash -c 'make clean-native native CROSS_PREFIX=armv6-unknown-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
+	target/dockcross/dockcross-linux-armv6 --args "--platform linux/amd64" --image dockcross/linux-armv6$(linux-armv6-digest) bash -c 'make clean-native native CROSS_PREFIX=armv6-unknown-linux-gnueabihf- OS_NAME=Linux OS_ARCH=armv6'
 
 linux-armv7: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+	docker run -it --rm --platform linux/amd64 -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		-e CROSS_TRIPLE=arm-linux-gnueabihf multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=armv7
 
 linux-arm64: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+	docker run -it --rm --platform linux/amd64 -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		-e CROSS_TRIPLE=aarch64-linux-gnu multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=arm64
 
 linux-ppc64: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+	docker run -it --rm --platform linux/amd64 -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		-e CROSS_TRIPLE=powerpc64le-linux-gnu multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Linux OS_ARCH=ppc64
 
 target/dockcross/dockcross-windows-static-x64: dockcross
-	docker run --rm dockcross/windows-static-x64$(windows-static-x64-digest) > target/dockcross/dockcross-windows-static-x64
+	docker run --rm --platform linux/amd64 dockcross/windows-static-x64$(windows-static-x64-digest) > target/dockcross/dockcross-windows-static-x64
 	chmod +x target/dockcross/dockcross-windows-static-x64
 win-x86_64: download-includes target/dockcross/dockcross-windows-static-x64
-	target/dockcross/dockcross-windows-static-x64 --image dockcross/windows-static-x64$(windows-static-x64-digest) bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
+	target/dockcross/dockcross-windows-static-x64 --args "--platform linux/amd64" --image dockcross/windows-static-x64$(windows-static-x64-digest) bash -c 'make clean-native native CROSS_PREFIX=x86_64-w64-mingw32.static- OS_NAME=Windows OS_ARCH=x86_64'
 
 mac-x86_64: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+	docker run -it --rm --platform linux/amd64 -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		-e CROSS_TRIPLE=x86_64-apple-darwin multiarch/crossbuild$(cross-build-digest) make clean-native native OS_NAME=Mac OS_ARCH=x86_64
 
 mac-arm64: download-includes
-	docker run -it --rm -v $$PWD:/src --user $$(id -u):$$(id -g) \
+	docker run -it --rm --platform linux/amd64 -v $$PWD:/src --user $$(id -u):$$(id -g) \
 		-e TARGET=arm64-apple-darwin mcandre/snek$(mcandre-snek-digest) sh -c "make clean-native native CROSS_PREFIX=arm64-apple-darwin20.4- OS_NAME=Mac OS_ARCH=arm64"
 
 freebsd-x86_64: download-includes
-	docker run -it --rm -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
+	docker run -it --rm --platform linux/amd64 -v $$PWD:/workdir --user $$(id -u):$$(id -g) \
 		empterdose/freebsd-cross-build$(freebsd-crossbuild-digest) make clean-native native CROSS_PREFIX=x86_64-freebsd9- OS_NAME=FreeBSD OS_ARCH=x86_64
 
 #sparcv9:
 #	$(MAKE) native OS_NAME=SunOS OS_ARCH=sparcv9
-
