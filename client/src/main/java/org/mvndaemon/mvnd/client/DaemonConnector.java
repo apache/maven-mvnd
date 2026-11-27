@@ -23,6 +23,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.file.DirectoryStream;
@@ -40,6 +43,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -97,8 +101,15 @@ public class DaemonConnector {
             return connectNoDaemon();
         }
 
+        int maximum = parameters.property(Environment.MVND_MAX_DAEMONS).asInt();
+        if (maximum < 0) {
+            throw new IllegalArgumentException("mvnd.maxDaemons must be nonnegative");
+        }
         final DaemonCompatibilitySpec constraint =
                 new DaemonCompatibilitySpec(parameters.javaHome(), parameters.getDaemonOpts());
+        if (maximum > 0) {
+            return connectWithLimit(output, constraint, maximum);
+        }
         output.accept(Message.buildStatus("Looking up daemon..."));
         Map<Boolean, List<DaemonInfo>> idleBusy =
                 registry.getAll().stream().collect(Collectors.groupingBy(di -> di.getState() == DaemonState.Idle));
@@ -122,6 +133,81 @@ public class DaemonConnector {
         String message = handleStopEvents(daemonId, idleDaemons, busyDaemons);
         output.accept(Message.buildStatus(message));
         return startDaemon(daemonId, output);
+    }
+
+    private DaemonClientConnection connectWithLimit(
+            ClientOutput output, DaemonCompatibilitySpec constraint, int maximum) {
+        Path lockPath = registry.getRegistryFile()
+                .resolveSibling(registry.getRegistryFile().getFileName() + ".connect.lock");
+        boolean waiting = false;
+        AtomicBoolean canceled = new AtomicBoolean();
+        output.setDaemonDispatch(message -> {
+            if (message == Message.BareMessage.CANCEL_BUILD_SINGLETON) {
+                canceled.set(true);
+            }
+        });
+        try (FileChannel channel = FileChannel.open(
+                lockPath,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+                java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+            while (true) {
+                if (canceled.get() || Thread.currentThread().isInterrupted()) {
+                    throw new DaemonException.InterruptedException(new InterruptedException());
+                }
+                // A separate lock allows the new daemon to register while startup is serialized.
+                try (FileLock lock = tryConnectLock(channel)) {
+                    if (lock != null) {
+                        List<DaemonInfo> live = new ArrayList<>();
+                        for (DaemonInfo daemon : registry.getAll()) {
+                            if (isAlive(daemon.getPid())) {
+                                live.add(daemon);
+                            } else {
+                                registry.remove(daemon.getId());
+                            }
+                        }
+                        List<DaemonInfo> idle = live.stream()
+                                .filter(d -> d.getState() == DaemonState.Idle)
+                                .collect(Collectors.toList());
+                        DaemonClientConnection connection = connectToIdleDaemon(idle, constraint);
+                        if (connection != null) {
+                            return connection;
+                        }
+                        // Failed connections may have removed stale entries.
+                        if (registry.getAll().size() < maximum) {
+                            String id = newId();
+                            output.accept(Message.buildStatus("Starting new daemon " + id));
+                            return startDaemon(id, output);
+                        }
+                        if (idle.size() == live.size()) {
+                            throw new DaemonException("Daemon limit reached by incompatible idle daemons. "
+                                    + "Use mvnd --stop or a separate mvnd.daemonStorage.");
+                        }
+                    }
+                }
+                if (!waiting) {
+                    output.accept(Message.buildStatus(
+                            "Waiting for an available daemon (mvnd.maxDaemons=" + maximum + ")..."));
+                    waiting = true;
+                }
+                sleep(200);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new DaemonException.InterruptedException(e);
+        } catch (IOException e) {
+            throw new DaemonException("Could not coordinate daemon startup", e);
+        } finally {
+            output.setDaemonDispatch(message -> {});
+        }
+    }
+
+    private static FileLock tryConnectLock(FileChannel channel) throws IOException {
+        try {
+            return channel.tryLock();
+        } catch (OverlappingFileLockException e) {
+            return null;
+        }
     }
 
     private DaemonClientConnection connectNoDaemon() {
